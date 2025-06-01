@@ -10,7 +10,7 @@ const config = {
   port: process.env.PORT || 5000,
   
   // Base de données
-  mongodbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/chaif-ses',
+  mongodbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/chaifses',
   
   // JWT
   jwtSecret: process.env.JWT_SECRET,
@@ -27,14 +27,17 @@ const config = {
   menuDefaultServings: process.env.MENU_DEFAULT_SERVINGS || 4
 };
 
+
 // Vérification des variables critiques
 const requiredEnvVars = ['JWT_SECRET', 'MONGODB_URI', 'OPENAI_API_KEY'];
 const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
 if (missingEnvVars.length > 0) {
-  console.error(`Variables d'environnement manquantes: ${missingEnvVars.join(', ')}`);
-  console.error('Veuillez vérifier votre fichier .env');
-  process.exit(1); // Arrête l'application si des variables critiques sont manquantes
+  console.error(`❌ Erreur de config : variables manquantes : ${missingEnvVars.join(', ')}`);
+  if (config.nodeEnv === 'production') process.exit(1);
 }
+
+isProduction: process.env.NODE_ENV === 'production',
+
 
 export default config;
