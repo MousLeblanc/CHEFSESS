@@ -1,12 +1,15 @@
-const express = require('express');
-const router = express.Router();
-const restaurantController = require('../controllers/restaurantController');
-const authMiddleware = require('../middleware/authMiddleware');
-const roleMiddleware = require('../middleware/roleMiddleware');
+//routes/restaurantRoutes.js
+import express from 'express';
+import * as restaurantController from '../controllers/restaurantController.js'; 
+import { protect, authorize } from '../middleware/authMiddleware.js'; 
 
-// Protéger toutes les routes et vérifier le rôle restaurateur
-router.use(authMiddleware);
-router.use(roleMiddleware('restaurant'));
+const router = express.Router();
+
+// Protéger toutes les routes de cette section et vérifier le rôle 'resto'
+// 'protect' vérifie si l'utilisateur est connecté.
+// 'authorize('resto')' vérifie si l'utilisateur connecté a le rôle 'resto'.
+router.use(protect);
+router.use(authorize('resto')); 
 
 // Routes catalogue
 router.get('/catalog', restaurantController.getCatalog);
@@ -19,4 +22,4 @@ router.put('/orders/:id/cancel', restaurantController.cancelOrder);
 // Routes statistiques
 router.get('/stats', restaurantController.getStats);
 
-module.exports = router; 
+export default router;

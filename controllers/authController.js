@@ -1,50 +1,34 @@
 // controllers/authController.js
-import User from '../models/User.js'; 
+import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
-import asyncHandler from 'express-async-handler'; // Pour simplifier la gestion des erreurs async
+import asyncHandler from 'express-async-handler';
 
-// @desc    Register a new user
-// @route   POST /api/auth/register
-// @access  Public
 export const register = asyncHandler(async (req, res) => {
-  const { name, email, password, role, businessName } = req.body;
-
-  // Vérifier si l'utilisateur existe déjà
-  const userExists = await User.findOne({ email });
-
-  if (userExists) {
-    res.status(400); // Bad Request
-    throw new Error('Un utilisateur avec cet email existe déjà.');
+  const { name, email, password, role, businessName, establishmentType } = req.body;
+  
+  if (!name || !email || !password || !role) {
+    res.status(400);
+    throw new Error('Champs obligatoires manquants.');
   }
 
-  // Créer l'utilisateur
-  // Le mot de passe sera haché par le middleware pre-save du modèle User.js
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    res.status(409).send({ message: 'Un utilisateur avec cet email existe déjà.' });
+    return; // Stop execution
+  }
+
+  const finalEstablishmentType = ['resto', 'collectivite'].includes(role) ? establishmentType : null;
+
   const user = await User.create({
-    name,
-    email,
-    password,
-    role: role || 'chef', // 'chef' par défaut si non fourni
-    businessName,
+    name, email, password, role, businessName,
+    establishmentType: finalEstablishmentType
   });
-
+  
   if (user) {
-    // Générer le token JWT
-    const token = jwt.sign(
-      { id: user._id, role: user.role }, // Payload
-      process.env.JWT_SECRET,             // Secret depuis .env
-      { expiresIn: process.env.JWT_EXPIRE || '1d' } // Expiration depuis .env ou 1 jour par défaut
-    );
-
-    res.status(201).json({ // 201 Created
+    res.status(201).json({
       success: true,
-      token,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        businessName: user.businessName,
-      },
+      message: 'Utilisateur créé avec succès. Veuillez vous connecter.',
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, establishmentType: user.establishmentType }
     });
   } else {
     res.status(400);
@@ -52,59 +36,36 @@ export const register = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Login user & get token
-// @route   POST /api/auth/login
-// @access  Public
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+  const user = await User.findOne({ email });
 
-  // Vérifier l'email et le mot de passe
-  if (!email || !password) {
-    res.status(400);
-    throw new Error('Veuillez fournir un email et un mot de passe.');
-  }
-
-  // Vérifier l'utilisateur et inclure le mot de passe pour la comparaison
-  const user = await User.findOne({ email }).select('+password');
-
-  if (user && (await user.comparePassword(password))) { // Utilise la méthode du modèle User.js
+  if (user && (await user.matchPassword(password))) {
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      { 
+        id: user._id, 
+        role: user.role, 
+        name: user.name, 
+        email: user.email,
+        establishmentType: user.establishmentType // Ajouter au payload du token
+      },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRE || '1d' }
+      { expiresIn: process.env.JWT_EXPIRE || '1h' }
     );
-
     res.json({
       success: true,
       token,
       user: {
-        _id: user._id,
+        id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
         businessName: user.businessName,
+        establishmentType: user.establishmentType // Renvoyer dans l'objet user
       },
     });
   } else {
-    res.status(401); // Unauthorized
+    res.status(401);
     throw new Error('Email ou mot de passe incorrect.');
   }
 });
-
-// Vous pouvez ajouter d'autres fonctions ici si nécessaire, par exemple :
-// export const getMe = asyncHandler(async (req, res) => {
-//   // req.user est disponible grâce au middleware `protect`
-//   const user = await User.findById(req.user._id);
-//   if (user) {
-//     res.json({
-//       _id: user._id,
-//       name: user.name,
-//       email: user.email,
-//       role: user.role,
-//       businessName: user.businessName,
-//     });
-//   } else {
-//     res.status(404);
-//     throw new Error('Utilisateur non trouvé.');
-//   }
-// });

@@ -1,127 +1,77 @@
+// server.js (Version Finale Intégrée)
 import dotenv from 'dotenv';
 dotenv.config();
+
 import path from 'path';
 import { fileURLToPath } from 'url';
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import OpenAI from 'openai';
+
+// Importer les fichiers de routes (s'assurer que les extensions .js sont présentes pour les imports locaux)
+import authRoutes from './routes/authRoutes.js'; // Doit pointer vers authRoutes.js et non authRoutes.js.js
+import menuRoutes from './routes/menuRoutes.js';   // Doit pointer vers menuRoutes.js et non menuRoutes.js.js
+import stockRoutes from './routes/stockRoutes.js';
+import planningRoutes from './routes/planningRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import supplierRoutes from './routes/supplierRoutes.js';
+import restaurantRoutes from './routes/restaurantRoutes.js';
+
+// Importer les middlewares
+import { errorHandler } from './middleware/errorHandler.js';
+// import { languageMiddleware } from './middleware/languageMiddleware.js'; // Décommentez si i18nService est prêt
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const app = express();
 
-import express from 'express';
-import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import cors from 'cors';
+// Initialisation du client OpenAI
+export const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
-
-const app = express(); 
-
-// Middleware
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000' }));
+// --- Middlewares Globaux ---
+app.use(cors({ origin: process.env.FRONTEND_URL || '*' }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'client'))); 
-// ————————————————————————————————
-// Sert les fichiers statiques du dossier "client"
+// app.use(languageMiddleware); // Décommentez si i18nService est prêt
 
+// Servir les fichiers statiques du dossier "client"
 app.use(express.static(path.join(__dirname, 'client')));
 
-// Redirection vers index.html si tu accèdes à /
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'choisir-profil.html'));
+// --- Monter les Routes API ---
+app.use('/api/auth', authRoutes);
+app.use('/api/menus', menuRoutes);
+app.use('/api/stock', stockRoutes);
+app.use('/api/planning', planningRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/suppliers', supplierRoutes);
+app.use('/api/restaurants', restaurantRoutes);
+
+// --- Gestion des Routes Non-API et Page d'Accueil ---
+// Doit être après les routes API pour ne pas les intercepter
+app.get('*', (req, res, next) => {
+  if (req.originalUrl.startsWith('/api')) {
+    const error = new Error(`Endpoint API non trouvé : ${req.method} ${req.originalUrl}`);
+    error.statusCode = 404;
+    return next(error); // Passe à errorHandler
+  }
+  res.sendFile(path.join(__dirname, 'client', 'choisir-profil.html')); // Page d'atterrissage par défaut
 });
-// ————————————————————————————————
 
-// Middleware
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000' }));
-app.use(express.json());
-
-// Modèle Mongoose
-const UserSchema = new mongoose.Schema({
-  name: String,
-  email: { type: String, unique: true },
-  password: String,
-  role: { type: String, enum: ['maison', 'resto', 'fournisseur', 'admin'], required: true },
-  businessName: String
-});
-const User = mongoose.model('User', UserSchema);
-
-// Connexion MongoDB Atlas
+// --- Connexion à MongoDB ---
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connecté à MongoDB Atlas'))
-  .catch(err => console.error('Erreur MongoDB:', err));
-
-// Middleware d'authentification
-const authenticateToken = (req, res, next) => {
-  const token = req.headers['authorization']?.split(' ')[1];
-  if (!token) return res.sendStatus(401);
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
+  .then(() => console.log('Connecté avec succès à MongoDB Atlas.'))
+  .catch(err => {
+    console.error('Erreur de connexion à MongoDB:', err.message);
   });
-};
 
-// Routes
-// POST /api/auth/register
-app.post('/api/auth/register', async (req, res) => {
-  try {
-    const { name, email, password, role, businessName } = req.body;
-    if (!email || !password || !role) {
-        return res.status(400).json({ message: 'Email, mot de passe et rôle sont requis.' });
-    }
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(409).json({ message: 'Email déjà utilisé' });
-    }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashedPassword, role, businessName });
-    await user.save();
-    res.status(201).json({ message: 'Utilisateur créé avec succès. Veuillez vous connecter.' });
-  } catch (error) {
-    console.error("Erreur d'inscription:", error);
-    if (error.code === 11000) {
-      return res.status(409).json({ message: 'Email déjà utilisé' });
-    }
-    res.status(500).json({ message: 'Erreur serveur lors de l\'inscription' });
-  }
-});
+// --- Gestionnaire d'Erreurs Global ---
+app.use(errorHandler);
 
-// POST /api/auth/login
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Email et mot de passe sont requis.' });
-    }
-    const user = await User.findOne({ email });
-    if (!user || !await bcrypt.compare(password, user.password)) {
-      return res.status(401).json({ message: 'Identifiants invalides' });
-    }
-    const token = jwt.sign(
-      { id: user._id, role: user.role, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-    res.json({
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        businessName: user.businessName
-      }
-    });
-  } catch (error) {
-    console.error("Erreur de connexion:", error);
-    res.status(500).json({ message: 'Erreur serveur lors de la connexion' });
-  }
-});
-
-// GET /api/auth/verify (optionnel mais recommandé)
-app.get('/api/auth/verify', authenticateToken, (req, res) => {
-  res.status(200).json({ message: "Token valide", user: req.user });
-});
-
+// --- Démarrage du Serveur ---
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Serveur démarré sur le port ${PORT} et servant les fichiers depuis le dossier 'client'`));
+app.listen(PORT, () => console.log(
+  `Serveur ChAIf SES démarré en mode ${process.env.NODE_ENV || 'development'} sur le port ${PORT}.`
+));

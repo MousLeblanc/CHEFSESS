@@ -1,24 +1,35 @@
-const express = require('express');
-const router = express.Router();
-const supplierController = require('../controllers/supplierController');
-const authMiddleware = require('../middleware/authMiddleware');
-const roleMiddleware = require('../middleware/roleMiddleware');
+// routes/supplierRoutes.js
+import express from 'express';
+// Supposons que supplierController exporte ses fonctions nommément
+import {
+  getStats,
+  getProducts,
+  addProduct,
+  updateProduct,
+  deleteProduct,
+  getOrders,
+  updateOrderStatus
+} from '../controllers/supplierController.js'; 
+// Importer les middlewares d'authentification et d'autorisation
+import { protect, authorize } from '../middleware/authMiddleware.js'; 
 
-// Protéger toutes les routes et vérifier le rôle fournisseur
-router.use(authMiddleware);
-router.use(roleMiddleware('supplier'));
+const router = express.Router();
+
+// Protéger toutes les routes de cette section et vérifier le rôle 'fournisseur'
+router.use(protect); // Applique la protection JWT
+router.use(authorize('fournisseur')); 
 
 // Routes statistiques
-router.get('/stats', supplierController.getStats);
+router.get('/stats', getStats);
 
 // Routes produits
-router.get('/products', supplierController.getProducts);
-router.post('/products', supplierController.addProduct);
-router.put('/products/:id', supplierController.updateProduct);
-router.delete('/products/:id', supplierController.deleteProduct);
+router.get('/products', getProducts);
+router.post('/products', addProduct);
+router.put('/products/:id', updateProduct);
+router.delete('/products/:id', deleteProduct);
 
 // Routes commandes
-router.get('/orders', supplierController.getOrders);
-router.put('/orders/:id/status', supplierController.updateOrderStatus);
+router.get('/orders', getOrders);
+router.put('/orders/:id/status', updateOrderStatus);
 
-module.exports = router; 
+export default router;

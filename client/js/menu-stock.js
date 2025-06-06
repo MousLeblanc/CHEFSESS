@@ -197,20 +197,81 @@ function openRecipeModal(recipeId) {
         modal.querySelector('.modal-body').textContent = 'Recette introuvable.';
     }
 }
-document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('generate-btn');
-    if (btn) {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            generateMenus();
-        });
-    } else {
-        console.warn("Bouton 'generate-btn' non trouvé.");
-    }
-});
+let ingredientsFromUrl = []; // Variable pour stocker les ingrédients de l'URL
 
+document.addEventListener('DOMContentLoaded', async () => {
+const urlParams = new URLSearchParams(window.location.search);
+    const ingredientsToUseQuery = urlParams.get('useIngredients');
+    const reason = urlParams.get('reason');
+
+if (loading) loading.style.display = 'flex';
+    if (menusResults) menusResults.innerHTML = '';
+
+    // Récupérer les valeurs des filtres standards
+    const cuisineType = document.getElementById('cuisine-type')?.value;
+    const mealType = document.getElementById('meal-type')?.value;
+    const diet = document.getElementById('diet')?.value;
+    const guests = parseInt(document.getElementById('guests')?.value) || 4;
+    const occasion = document.getElementById('occasion')?.value;
+    const optimizeFor = document.getElementById('optimize')?.value;
+    const aiInstructions = useAI ? document.getElementById('ai-instructions')?.value : '';
+
+    let payload = {
+        cuisineType,
+        mealType,
+        diet,
+        guests,
+        occasion,
+        optimizeFor,
+        // On ajoute les ingrédients de l'URL ici pour qu'ils soient pris en compte par l'IA
+        // Le backend devra savoir comment les traiter (ex: les prioriser)
+        priorityIngredients: ingredientsFromUrl, // Envoyer les ingrédients de l'URL
+        additionalInstructions: aiInstructions // Si génération IA
+    };
+
+    let apiUrl = '';
+    if (useAI) {
+        apiUrl = '/api/menus/generate-pro-menu';
+        // Pour la génération IA, les 'priorityIngredients' seront des instructions supplémentaires
+        // ou un champ spécifique que le backend peut utiliser pour ajuster le prompt.
+    } else {
+        // Pour la génération basée sur le stock, le backend doit savoir
+        // comment utiliser 'priorityIngredients' pour filtrer ou prioriser.
+        // Si votre backend /api/menus/generate-stock-menu (ou équivalent) ne le gère pas encore,
+        // il faudra l'adapter. Pour l'instant, on l'envoie.
+        apiUrl = '/api/menus/generate-stock-menu'; // À DÉFINIR SI DIFFÉRENT
+        // Si generateStockBasedMenus est purement client (comme dans menu-stock.js),
+        // alors il faut adapter cette fonction directement ici.
+        // payload.useStockMethod = true; // Indiquer la méthode
+    }
+
+    try {
+        console.log(`Appel API vers ${apiUrl} avec payload:`, payload);
+        showToast(`Génération de menus en cours (${useAI ? 'IA' : 'Stock'})...`, 'info');
+
+        const response = await fetchProtectedAPI(apiUrl, { // Assurez-vous que fetchProtectedAPI est défini et importé
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json(); // fetchProtectedAPI gère les erreurs HTTP et le .json()
+
+        if (data.success && data.menus) {
+            displayMenuResults(data.menus, guests); // Votre fonction d'affichage
+            showToast('Menus générés avec succès !', 'success');
+        } else {
+            throw new Error(data.error || "La génération de menus a échoué.");
+        }
+    } catch (error) {
+        console.error("Erreur lors de la génération de menus:", error);
+        showToast(error.message || "Erreur de génération.", "error");
+        if (menusResults) menusResults.innerHTML = `<p class="error-message">${error.message}</p>`;
+    } finally {
+        if (loading) loading.style.display = 'none';
+    }
+}); // <-- Ajout de la parenthèse et de l'accolade manquantes ici
 // Simulation de génération de menus
-function generateMenus() {
+
+async function generateMenus() {
     const cuisineType = document.getElementById('cuisine-type')?.value || 'Tous';
     const mealType = document.getElementById('meal-type')?.value || 'Tous';
     const servings = parseInt(document.getElementById('guests')?.value) || 4;

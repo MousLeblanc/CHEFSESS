@@ -1,433 +1,583 @@
+// client/js/stock.js
 import { fetchProtectedAPI } from './apiHelper.js'; 
 import { showToast } from './utils.js'; 
+import { getToken, logout } from './auth.js'; // Import de logout pour la protection de page
 
-const ingredientCategories = {
-  // Poissons
-  'poisson': ['poisson', 'saumon', 'thon', 'dorade', 'cabillaud', 'merlu', 'truite', 'raie', 'aile de raie', 'ailes de raie', 'sole', 'bar', 'loup', 'merlan', 'sardine', 'anchois', 'hareng', 'maquereau', 'lotte', 'julienne', 'colin', 'crevette', 'gambas', 'langoustine', 'homard', 'langouste', 'crabe', 'moule', 'huître', 'palourde', 'coquille', 'st-jacques', 'saint-jacques', 'calamars', 'poulpe', 'seiche'],
-  // Viandes
-  'viande': ['viande', 'boeuf', 'poulet', 'dinde', 'porc', 'veau', 'agneau', 'lapin', 'canard', 'cheval', 'foie', 'gésier', 'coeur', 'rognon', 'tripe', 'ris de veau', 'jambon', 'lard', 'bacon', 'saucisse', 'saucisson', 'chorizo', 'salami', 'pâté', 'terrine', 'andouillette', 'boudin', 'merguez', 'chipolata', 'côte', 'entrecôte', 'filet', 'cuisse', 'aile', 'escalope', 'gigot', 'épaule'],
-  // Légumes
-  'légume': ['légume', 'carotte', 'pomme de terre', 'oignon', 'poireau', 'ail', 'échalote', 'tomate', 'courgette', 'aubergine', 'poivron', 'salade', 'laitue', 'endive', 'épinard', 'brocoli', 'chou', 'chou-fleur', 'asperge', 'artichaut', 'céleri', 'fenouil', 'betterave', 'radis', 'navet', 'champignon', 'maïs', 'petit pois', 'haricot vert', 'haricot blanc', 'lentille', 'pois chiche', 'concombre', 'avocat', 'olive'],
+// --- LISTE DES INGRÉDIENTS AVEC CATÉGORIES ---
+const INGREDIENTS_WITH_CATEGORIES = [
   // Fruits
-  'fruit': ['fruit', 'pomme', 'poire', 'banane', 'orange', 'citron', 'pamplemousse', 'mandarine', 'clémentine', 'ananas', 'mangue', 'kiwi', 'fraise', 'framboise', 'myrtille', 'mûre', 'groseille', 'cassis', 'cerise', 'abricot', 'pêche', 'nectarine', 'prune', 'mirabelle', 'raisin', 'melon', 'pastèque', 'figue', 'grenade', 'papaye', 'goyave', 'litchi', 'noix de coco', 'datte', 'châtaigne', 'marron'],
-  // Épices
-  'épice': ['épice', 'sel', 'poivre', 'cannelle', 'muscade', 'vanille', 'curry', 'cumin', 'coriandre', 'paprika', 'piment', 'thym', 'romarin', 'laurier', 'basilic', 'persil', 'menthe', 'safran', 'gingembre', 'cardamome', 'clou de girofle', 'anis', 'badiane', 'herbe', 'bouquet garni', 'estragon', 'ciboulette', 'aneth', 'curcuma', 'ras el hanout', 'garam masala', 'quatre-épices', 'piment d\'espelette'],
-  // Produits laitiers
-  'produit laitier': ['lait', 'crème', 'beurre', 'fromage', 'yaourt', 'yogourt', 'camembert', 'brie', 'emmental', 'gruyère', 'comté', 'roquefort', 'bleu', 'chèvre', 'mozzarella', 'parmesan', 'ricotta', 'mascarpone', 'feta', 'crème fraîche', 'crème liquide', 'lait de coco', 'petit-suisse', 'faisselle', 'cottage cheese', 'kéfir', 'babeurre', 'lait fermenté'],
-  // Céréales
-  'céréale': ['céréale', 'riz', 'pâtes', 'spaghetti', 'macaroni', 'blé', 'semoule', 'couscous', 'quinoa', 'boulgour', 'orge', 'avoine', 'millet', 'sarrasin', 'tapioca', 'polenta', 'maïzena', 'farine', 'pain', 'baguette', 'biscottes', 'crackers', 'flocon d\'avoine', 'muesli', 'céréales petit déjeuner'],
-  // Liquides
-  'liquide': ['eau', 'huile', 'vinaigre', 'vin', 'bière', 'cidre', 'spiritueux', 'rhum', 'whisky', 'cognac', 'vodka', 'jus', 'sirop', 'soda', 'limonade', 'café', 'thé', 'chocolat chaud', 'infusion', 'bouillon', 'fond', 'sauce', 'ketchup', 'mayonnaise', 'moutarde', 'huile d\'olive', 'huile de tournesol', 'huile de colza', 'huile de sésame', 'vinaigre balsamique', 'vinaigre de vin', 'vin blanc', 'vin rouge'],
-  'autre': [] // Catégorie par défaut pour ceux non listés explicitement
-};
+  { name: "Abricot sec", category: "Fruits" }, // Note: sec vs frais
+  { name: "Abricot", category: "Fruits" },
+  { name: "Ananas", category: "Fruits" },
+  { name: "Avocat", category: "Fruits" }, // Techniquement un fruit
+  { name: "Banane", category: "Fruits" },
+  { name: "Cassis", category: "Fruits" },
+  { name: "Cerise", category: "Fruits" },
+  { name: "Châtaigne", category: "Fruits" }, // Ou "Noix et Graines"
+  { name: "Citron", category: "Fruits" },
+  { name: "Clémentine", category: "Fruits" },
+  { name: "Datte", category: "Fruits" },
+  { name: "Figue", category: "Fruits" },
+  { name: "Fraise", category: "Fruits" },
+  { name: "Framboises", category: "Fruits" }, // Note: pluriel vs singulier
+  { name: "Grenade", category: "Fruits" },
+  { name: "Groseille", category: "Fruits" },
+  { name: "Goyave", category: "Fruits" },
+  { name: "Kiwi", category: "Fruits" },
+  { name: "Litchi", category: "Fruits" },
+  { name: "Mandarine", category: "Fruits" },
+  { name: "Mangue", category: "Fruits" },
+  { name: "Marron", category: "Fruits" }, // Souvent cuisiné comme un légume
+  { name: "Melon", category: "Fruits" },
+  { name: "Mirabelle", category: "Fruits" },
+  { name: "Mûre", category: "Fruits" },
+  { name: "Myrtilles", category: "Fruits" }, // Note: pluriel vs singulier
+  { name: "Nectarine", category: "Fruits" },
+  { name: "Noix de coco", category: "Fruits" },
+  { name: "Orange", category: "Fruits" },
+  { name: "Pamplemousse", category: "Fruits" },
+  { name: "Papaye", category: "Fruits" },
+  { name: "Pastèque", category: "Fruits" },
+  { name: "Pêche", category: "Fruits" },
+  { name: "Poires", category: "Fruits" }, // Note: pluriel vs singulier
+  { name: "Pommes", category: "Fruits" }, // Note: pluriel vs singulier
+  { name: "Prune", category: "Fruits" },
+  { name: "Raisin", category: "Fruits" },
+  { name: "Tomates", category: "Fruits" }, // Techniquement un fruit
 
-const ingredientsComplets = [
-  // Ingrédients de base
-  'Ail', 'Ananas', 'Aubergine', 'Avoine', 'Avocat',
-  'Banane', 'Betterave', 'Beurre', 'Blé', 'Boeuf',
-  'Café', 'Cannelle', 'Carottes', 'Céleri', 'Champignons', 'Chocolat', 'Chou', 'Citron', 'Concombre', 'Coriandre', 'Courgette', 'Crème',
-  'Eau', 'Epaule d\'agneau', 'Epinards',
-  'Farine', 'Fraise', 'Framboises', 'Fromage',
-  'Gingembre', 'Glace',
-  'Haricots', 'Huile d\'olive', 'Huile',
-  'Jambon',
-  'Kiwi',
-  'Lait', 'Laitue', 'Légumes', 'Lentilles',
-  'Maïs', 'Mangue', 'Miel', 'Moutarde', 'Myrtilles',
-  'Noisettes', 'Noix',
-  'Oeufs', 'Oignons', 'Olives', 'Orange',
-  'Pain', 'Pâtes', 'Pêche', 'Persil', 'Poireau', 'Poires', 'Poisson', 'Poivre', 'Pommes', 'Pommes de terre', 'Porc', 'Poulet',
-  'Quinoa',
-  'Radis', 'Riz',
-  'Salade', 'Saumon', 'Sel', 'Sucre',
-  'Thé', 'Thon', 'Tomates',
-  'Vanille', 'Viande', 'Vinaigre', 'Vin',
-  'Yaourt',
-  // Poissons
-  'Dorade', 'Cabillaud', 'Merlu', 'Truite', 'Raie', 'Aile de raie', 'Ailes de raie', 'Sole', 'Bar', 'Loup', 'Merlan', 'Sardine',
-  'Anchois', 'Hareng', 'Maquereau', 'Lotte', 'Julienne', 'Colin', 'Crevette', 'Gambas', 'Langoustine', 'Homard', 'Langouste',
-  'Crabe', 'Moule', 'Huître', 'Palourde', 'Coquille', 'St-Jacques', 'Saint-Jacques', 'Calamars', 'Poulpe', 'Seiche',
-  // Viandes
-  'Dinde', 'Veau', 'Lapin', 'Canard', 'Cheval', 'Foie', 'Gésier', 'Coeur', 'Rognon', 'Tripe', 'Ris de veau',
-  'Lard', 'Bacon', 'Saucisse', 'Saucisson', 'Chorizo', 'Salami', 'Pâté', 'Terrine', 'Andouillette', 'Boudin', 'Merguez',
-  'Chipolata', 'Côte', 'Entrecôte', 'Filet', 'Cuisse', 'Aile', 'Escalope', 'Gigot',
   // Légumes
-  'Échalote', 'Poivron', 'Endive', 'Brocoli', 'Chou-fleur', 'Asperge', 'Artichaut', 'Fenouil', 'Navet', 'Petit pois',
-  'Haricot vert', 'Haricot blanc', 'Pois chiche',
-  // Fruits
-  'Pamplemousse', 'Mandarine', 'Clémentine', 'Mûre', 'Groseille', 'Cassis', 'Cerise', 'Abricot', 'Nectarine',
-  'Prune', 'Mirabelle', 'Raisin', 'Melon', 'Pastèque', 'Figue', 'Grenade', 'Papaye', 'Goyave', 'Litchi', 'Noix de coco',
-  'Datte', 'Châtaigne', 'Marron',
-  // Épices
-  'Muscade', 'Curry', 'Cumin', 'Paprika', 'Piment', 'Thym', 'Romarin', 'Laurier', 'Basilic', 'Menthe', 'Safran',
-  'Cardamome', 'Clou de girofle', 'Anis', 'Badiane', 'Herbe', 'Bouquet garni', 'Estragon', 'Ciboulette', 'Aneth',
-  'Curcuma', 'Ras el hanout', 'Garam masala', 'Quatre-épices', 'Piment d\'espelette',
-  // Produits laitiers
-  'Yogourt', 'Camembert', 'Brie', 'Emmental', 'Gruyère', 'Comté', 'Roquefort', 'Bleu', 'Chèvre', 'Mozzarella',
-  'Parmesan', 'Ricotta', 'Mascarpone', 'Feta', 'Crème fraîche', 'Crème liquide', 'Lait de coco', 'Petit-suisse',
-  'Faisselle', 'Cottage cheese', 'Kéfir', 'Babeurre', 'Lait fermenté',
-  // Céréales
-  'Spaghetti', 'Macaroni', 'Semoule', 'Couscous', 'Boulgour', 'Orge', 'Millet', 'Sarrasin', 'Tapioca', 'Polenta',
-  'Maïzena', 'Baguette', 'Biscottes', 'Crackers', 'Flocon d\'avoine', 'Muesli', 'Céréales petit déjeuner',
-  // Liquides
-  'Bière', 'Cidre', 'Spiritueux', 'Rhum', 'Whisky', 'Cognac', 'Vodka', 'Jus', 'Sirop', 'Soda', 'Limonade',
-  'Chocolat chaud', 'Infusion', 'Bouillon', 'Fond', 'Sauce', 'Ketchup', 'Mayonnaise', 'Huile de tournesol',
-  'Huile de colza', 'Huile de sésame', 'Vinaigre balsamique', 'Vinaigre de vin', 'Vin blanc', 'Vin rouge'
-].sort(); // Sorted for potentially better autocomplete performance/logic
+  { name: "Ail", category: "Légumes" }, // Peut aussi être "Épices et Condiments"
+  { name: "Artichaut", category: "Légumes" },
+  { name: "Asperge", category: "Légumes" },
+  { name: "Aubergine", category: "Légumes" },
+  { name: "Betterave", category: "Légumes" },
+  { name: "Brocoli", category: "Légumes" },
+  { name: "Carottes", category: "Légumes" },
+  { name: "Céleri", category: "Légumes" },
+  { name: "Champignons", category: "Légumes" }, // Techniquement un champignon
+  { name: "Chou", category: "Légumes" },
+  { name: "Chou-fleur", category: "Légumes" },
+  { name: "Concombre", category: "Légumes" },
+  { name: "Courgette", category: "Légumes" },
+  { name: "Échalote", category: "Légumes" },
+  { name: "Endive", category: "Légumes" },
+  { name: "Epinards", category: "Légumes" },
+  { name: "Fenouil", category: "Légumes" },
+  { name: "Haricot vert", category: "Légumes" },
+  { name: "Haricot blanc", category: "Légumes" }, // Ou "Céréales et Féculents" si sec
+  { name: "Laitue", category: "Légumes" },
+  { name: "Légumes", category: "Légumes" }, // Générique
+  { name: "Maïs", category: "Légumes" }, // Peut aussi être "Céréales"
+  { name: "Navet", category: "Légumes" },
+  { name: "Oignons", category: "Légumes" },
+  { name: "Olives", category: "Légumes" }, // Techniquement un fruit, utilisé comme condiment/légume
+  { name: "Petit pois", category: "Légumes" },
+  { name: "Poireau", category: "Légumes" },
+  { name: "Poivron", category: "Légumes" },
+  { name: "Pommes de terre", category: "Légumes" }, // Peut aussi être "Céréales et Féculents"
+  { name: "Potiron", category: "Légumes" },
+  { name: "Radis", category: "Légumes" },
+  { name: "Salade", category: "Légumes" }, // Générique
+
+  // Viandes et Poissons
+  { name: "Agneau", category: "Viandes et Poissons" },
+  { name: "Aile de raie", category: "Viandes et Poissons" }, // Regroupé "Raie", "Aile de raie", "Ailes de raie"
+  { name: "Anchois", category: "Viandes et Poissons" },
+  { name: "Andouillette", category: "Viandes et Poissons" },
+  { name: "Bacon", category: "Viandes et Poissons" },
+  { name: "Bar", category: "Viandes et Poissons" }, // Loup
+  { name: "Boeuf", category: "Viandes et Poissons" },
+  { name: "Boudin", category: "Viandes et Poissons" },
+  { name: "Cabillaud", category: "Viandes et Poissons" },
+  { name: "Calamars", category: "Viandes et Poissons" },
+  { name: "Canard", category: "Viandes et Poissons" },
+  { name: "Cheval", category: "Viandes et Poissons" },
+  { name: "Chipolata", category: "Viandes et Poissons" },
+  { name: "Chorizo", category: "Viandes et Poissons" },
+  { name: "Coeur", category: "Viandes et Poissons" }, // Abats
+  { name: "Colin", category: "Viandes et Poissons" },
+  { name: "Coquille St-Jacques", category: "Viandes et Poissons" }, // Regroupé
+  { name: "Côte", category: "Viandes et Poissons" }, // (de porc, de boeuf?)
+  { name: "Crabe", category: "Viandes et Poissons" },
+  { name: "Crevette", category: "Viandes et Poissons" }, // Inclut Gambas
+  { name: "Cuisse", category: "Viandes et Poissons" }, // (de poulet, canard?)
+  { name: "Dinde", category: "Viandes et Poissons" },
+  { name: "Dorade", category: "Viandes et Poissons" },
+  { name: "Entrecôte", category: "Viandes et Poissons" },
+  { name: "Escalope", category: "Viandes et Poissons" }, // (de veau, dinde?)
+  { name: "Filet", category: "Viandes et Poissons" }, // (de boeuf, poulet?)
+  { name: "Foie", category: "Viandes et Poissons" }, // Abats
+  { name: "Gambas", category: "Viandes et Poissons" },
+  { name: "Gésier", category: "Viandes et Poissons" }, // Abats
+  { name: "Gigot", category: "Viandes et Poissons" }, // (d'agneau?)
+  { name: "Hareng", category: "Viandes et Poissons" },
+  { name: "Homard", category: "Viandes et Poissons" },
+  { name: "Huître", category: "Viandes et Poissons" },
+  { name: "Jambon", category: "Viandes et Poissons" },
+  { name: "Julienne", category: "Viandes et Poissons" }, // Poisson
+  { name: "Langouste", category: "Viandes et Poissons" },
+  { name: "Langoustine", category: "Viandes et Poissons" },
+  { name: "Lapin", category: "Viandes et Poissons" },
+  { name: "Lard", category: "Viandes et Poissons" },
+  { name: "Lotte", category: "Viandes et Poissons" },
+  { name: "Loup", category: "Viandes et Poissons" }, // Bar
+  { name: "Maquereau", category: "Viandes et Poissons" },
+  { name: "Merguez", category: "Viandes et Poissons" },
+  { name: "Merlan", category: "Viandes et Poissons" },
+  { name: "Merlu", category: "Viandes et Poissons" },
+  { name: "Moule", category: "Viandes et Poissons" },
+  { name: "Pâté", category: "Viandes et Poissons" },
+  { name: "Palourde", category: "Viandes et Poissons" },
+  { name: "Poisson", category: "Viandes et Poissons" }, // Générique
+  { name: "Porc", category: "Viandes et Poissons" },
+  { name: "Poulpe", category: "Viandes et Poissons" },
+  { name: "Poulet", category: "Viandes et Poissons" },
+  { name: "Ris de veau", category: "Viandes et Poissons" }, // Abats
+  { name: "Rognon", category: "Viandes et Poissons" }, // Abats
+  { name: "Salami", category: "Viandes et Poissons" },
+  { name: "Sardine", category: "Viandes et Poissons" },
+  { name: "Saucisse", category: "Viandes et Poissons" },
+  { name: "Saucisson", category: "Viandes et Poissons" },
+  { name: "Saumon", category: "Viandes et Poissons" },
+  { name: "Seiche", category: "Viandes et Poissons" },
+  { name: "Sole", category: "Viandes et Poissons" },
+  { name: "Terrine", category: "Viandes et Poissons" },
+  { name: "Thon", category: "Viandes et Poissons" },
+  { name: "Tripe", category: "Viandes et Poissons" }, // Abats
+  { name: "Truite", category: "Viandes et Poissons" },
+  { name: "Veau", category: "Viandes et Poissons" },
+  { name: "Viande", category: "Viandes et Poissons" }, // Générique
+
+  // Produits Laitiers et Oeufs
+  { name: "Babeurre", category: "Produits Laitiers" },
+  { name: "Beurre", category: "Produits Laitiers" },
+  { name: "Bleu", category: "Produits Laitiers" }, // Fromage
+  { name: "Brie", category: "Produits Laitiers" }, // Fromage
+  { name: "Camembert", category: "Produits Laitiers" }, // Fromage
+  { name: "Chèvre", category: "Produits Laitiers" }, // Fromage
+  { name: "Comté", category: "Produits Laitiers" }, // Fromage
+  { name: "Cottage cheese", category: "Produits Laitiers" },
+  { name: "Crème", category: "Produits Laitiers" }, // Générique (fraîche, liquide?)
+  { name: "Crème fraîche", category: "Produits Laitiers" },
+  { name: "Crème liquide", category: "Produits Laitiers" },
+  { name: "Emmental", category: "Produits Laitiers" }, // Fromage
+  { name: "Faisselle", category: "Produits Laitiers" },
+  { name: "Feta", category: "Produits Laitiers" }, // Fromage
+  { name: "Fromage", category: "Produits Laitiers" }, // Générique
+  { name: "Gruyère", category: "Produits Laitiers" }, // Fromage
+  { name: "Kéfir", category: "Produits Laitiers" },
+  { name: "Lait", category: "Produits Laitiers" },
+  { name: "Lait de coco", category: "Produits Laitiers" }, // Souvent utilisé comme tel, mais techniquement pas laitier animal
+  { name: "Lait fermenté", category: "Produits Laitiers" },
+  { name: "Mascarpone", category: "Produits Laitiers" }, // Fromage
+  { name: "Mozzarella", category: "Produits Laitiers" }, // Fromage
+  { name: "Oeufs", category: "Produits Laitiers" }, // Catégorie commune, parfois séparée
+  { name: "Parmesan", category: "Produits Laitiers" }, // Fromage
+  { name: "Petit-suisse", category: "Produits Laitiers" },
+  { name: "Ricotta", category: "Produits Laitiers" }, // Fromage
+  { name: "Roquefort", category: "Produits Laitiers" }, // Fromage
+  { name: "Yaourt", category: "Produits Laitiers" }, // Inclut Yogourt
+  { name: "Yogourt", category: "Produits Laitiers" },
+
+  // Céréales et Féculents
+  { name: "Avoine", category: "Céréales et Féculents" },
+  { name: "Baguette", category: "Céréales et Féculents" },
+  { name: "Biscottes", category: "Céréales et Féculents" },
+  { name: "Blé", category: "Céréales et Féculents" },
+  { name: "Boulgour", category: "Céréales et Féculents" },
+  { name: "Céréales petit déjeuner", category: "Céréales et Féculents" },
+  { name: "Couscous", category: "Céréales et Féculents" },
+  { name: "Crackers", category: "Céréales et Féculents" },
+  { name: "Farine", category: "Céréales et Féculents" },
+  { name: "Flocon d'avoine", category: "Céréales et Féculents" },
+  { name: "Haricots", category: "Céréales et Féculents" }, // Haricots secs (pois chiches, lentilles aussi)
+  { name: "Lentilles", category: "Céréales et Féculents" },
+  { name: "Macaroni", category: "Céréales et Féculents" },
+  { name: "Maïzena", category: "Céréales et Féculents" },
+  { name: "Millet", category: "Céréales et Féculents" },
+  { name: "Muesli", category: "Céréales et Féculents" },
+  { name: "Orge", category: "Céréales et Féculents" },
+  { name: "Pain", category: "Céréales et Féculents" },
+  { name: "Pâtes", category: "Céréales et Féculents" },
+  { name: "Pois chiche", category: "Céréales et Féculents" },
+  { name: "Polenta", category: "Céréales et Féculents" },
+  { name: "Quinoa", category: "Céréales et Féculents" },
+  { name: "Riz", category: "Céréales et Féculents" },
+  { name: "Sarrasin", category: "Céréales et Féculents" },
+  { name: "Semoule", category: "Céréales et Féculents" },
+  { name: "Spaghetti", category: "Céréales et Féculents" },
+  { name: "Tapioca", category: "Céréales et Féculents" },
+
+  // Épices et Condiments (inclut aussi "Épicerie" pour certains articles)
+  { name: "Ail", category: "Épices et Condiments" }, // Répété, choisissez une catégorie principale
+  { name: "Anis", category: "Épices et Condiments" },
+  { name: "Badiane", category: "Épices et Condiments" }, // Anis étoilé
+  { name: "Basilic", category: "Épices et Condiments" }, // Herbe
+  { name: "Bouquet garni", category: "Épices et Condiments" },
+  { name: "Cannelle", category: "Épices et Condiments" },
+  { name: "Cardamome", category: "Épices et Condiments" },
+  { name: "Ciboulette", category: "Épices et Condiments" }, // Herbe
+  { name: "Clou de girofle", category: "Épices et Condiments" },
+  { name: "Coriandre", category: "Épices et Condiments" }, // Herbe
+  { name: "Cumin", category: "Épices et Condiments" },
+  { name: "Curcuma", category: "Épices et Condiments" },
+  { name: "Curry", category: "Épices et Condiments" },
+  { name: "Estragon", category: "Épices et Condiments" }, // Herbe
+  { name: "Garam masala", category: "Épices et Condiments" },
+  { name: "Gingembre", category: "Épices et Condiments" },
+  { name: "Herbe", category: "Épices et Condiments" }, // Générique
+  { name: "Huile", category: "Épices et Condiments" }, // Huile de cuisson générique
+  { name: "Huile d'olive", category: "Épices et Condiments" },
+  { name: "Huile de colza", category: "Épices et Condiments" },
+  { name: "Huile de sésame", category: "Épices et Condiments" },
+  { name: "Huile de tournesol", category: "Épices et Condiments" },
+  { name: "Ketchup", category: "Épices et Condiments" },
+  { name: "Laurier", category: "Épices et Condiments" }, // Herbe
+  { name: "Mayonnaise", category: "Épices et Condiments" },
+  { name: "Menthe", category: "Épices et Condiments" }, // Herbe
+  { name: "Miel", category: "Épicerie et Condiments" }, // Généralement épicerie sucrée
+  { name: "Moutarde", category: "Épices et Condiments" },
+  { name: "Muscade", category: "Épices et Condiments" },
+  { name: "Noisettes", category: "Épicerie et Condiments" }, // Ou une catégorie "Noix et Graines"
+  { name: "Noix", category: "Épicerie et Condiments" }, // Ou "Noix et Graines"
+  { name: "Olives", category: "Épices et Condiments" }, // Répété, choisissez une
+  { name: "Paprika", category: "Épices et Condiments" },
+  { name: "Persil", category: "Épices et Condiments" }, // Herbe
+  { name: "Piment", category: "Épices et Condiments" },
+  { name: "Piment d'espelette", category: "Épices et Condiments" },
+  { name: "Poivre", category: "Épices et Condiments" },
+  { name: "Quatre-épices", category: "Épices et Condiments" },
+  { name: "Ras el hanout", category: "Épices et Condiments" },
+  { name: "Romarin", category: "Épices et Condiments" }, // Herbe
+  { name: "Safran", category: "Épices et Condiments" },
+  { name: "Sauce", category: "Épices et Condiments" }, // Générique
+  { name: "Sel", category: "Épices et Condiments" },
+  { name: "Sucre", category: "Épicerie et Condiments" },
+  { name: "Thym", category: "Épices et Condiments" }, // Herbe
+  { name: "Vanille", category: "Épices et Condiments" }, // ou "Pâtisserie"
+  { name: "Vinaigre", category: "Épices et Condiments" }, // Générique
+  { name: "Vinaigre balsamique", category: "Épices et Condiments" },
+  { name: "Vinaigre de vin", category: "Épices et Condiments" },
+  { name: "Aneth", category: "Épices et Condiments"},
+
+  // Boissons et Liquides (certains étaient déjà dans Condiments)
+  { name: "Bière", category: "Boissons" },
+  { name: "Bouillon", category: "Boissons" }, // Ou "Aides Culinaires"
+  { name: "Café", category: "Boissons" },
+  { name: "Chocolat chaud", category: "Boissons" },
+  { name: "Cidre", category: "Boissons" },
+  { name: "Cognac", category: "Boissons" },
+  { name: "Eau", category: "Boissons" },
+  { name: "Fond", category: "Boissons" }, // Ou "Aides Culinaires" (fond de veau, etc.)
+  { name: "Glace", category: "Produits Laitiers" }, // Souvent à base de lait/crème, ou "Desserts"
+  { name: "Infusion", category: "Boissons" },
+  { name: "Jus", category: "Boissons" },
+  { name: "Limonade", category: "Boissons" },
+  { name: "Rhum", category: "Boissons" },
+  { name: "Sirop", category: "Boissons" }, // Ou "Épicerie Sucrée"
+  { name: "Soda", category: "Boissons" },
+  { name: "Spiritueux", category: "Boissons" }, // Générique
+  { name: "Thé", category: "Boissons" },
+  { name: "Vin", category: "Boissons" }, // Générique
+  { name: "Vin blanc", category: "Boissons" },
+  { name: "Vin rouge", category: "Boissons" },
+  { name: "Vodka", category: "Boissons" },
+  { name: "Whisky", category: "Boissons" },
+
+  // Épicerie (pour les items qui ne rentrent pas ailleurs facilement)
+  { name: "Chocolat", category: "Épicerie et Condiments" }, // Si différent de "Chocolat chaud"
+];
+
+// --- SÉLECTEURS DOM ---
 const elements = {
     ingredientListBody: null,
     emptyStockMessage: null,
     itemModal: null,
-    itemForm: null,
+    itemForm: null, // Sera document.getElementById('item-form')
+    modalTitle: null,
     itemIdField: null,
     itemNameField: null,
     itemCategoryField: null,
     itemQuantityField: null,
     itemUnitField: null,
     itemExpiryField: null,
-    // itemThresholdField: null, // Décommentez si vous l'ajoutez
+    itemThresholdField: null, // Pour le seuil d'alerte
+    itemAlertActiveField: null, // Pour la checkbox d'alerte active
     modalAutocompleteContainer: null,
     addItemBtn: null,
     cancelItemBtn: null,
     closeModalBtn: null,
+    logoutBtnPage: null,
 
-    // Initialisation des éléments
     initDOM() {
         this.ingredientListBody = document.getElementById('ingredient-list');
         this.emptyStockMessage = document.getElementById('empty-stock-message');
         this.itemModal = document.getElementById('item-modal');
-        this.itemForm = document.getElementById('item-form');
+        this.itemForm = document.getElementById('item-form'); // ID HTML devrait être 'item-form'
+        this.modalTitle = document.getElementById('modal-title');
         this.itemIdField = document.getElementById('item-id');
         this.itemNameField = document.getElementById('item-name');
         this.itemCategoryField = document.getElementById('item-category');
         this.itemQuantityField = document.getElementById('item-quantity');
         this.itemUnitField = document.getElementById('item-unit');
         this.itemExpiryField = document.getElementById('item-expiry');
-        // this.itemThresholdField = document.getElementById('item-threshold'); // Décommentez
+        this.itemThresholdField = document.getElementById('item-threshold'); // Assurez-vous que cet ID existe dans stock.html
+        this.itemAlertActiveField = document.getElementById('item-alert-active'); // Assurez-vous que cet ID existe
         this.modalAutocompleteContainer = document.getElementById('modal-autocomplete');
         this.addItemBtn = document.getElementById('add-item-btn');
         this.cancelItemBtn = document.getElementById('cancel-item-btn');
-        this.closeModalBtn = document.getElementById('close-modal-btn'); // Dans stock.html, c'est la classe .close-btn dans la modale
+        this.closeModalBtn = document.getElementById('close-modal-btn'); // ID du bouton X dans le modal
+        this.logoutBtnPage = document.getElementById('logout-btn'); // Bouton de déconnexion de la page stock.html
     }
 };
 
+// --- FONCTIONS DE GESTION DU STOCK (localStorage pour l'instant) ---
+function loadStockFromLocalStorage() {
+    // TODO: Migrer vers API backend /api/stock
+    return JSON.parse(localStorage.getItem('stock') || "[]");
+}
 
-// ===== FONCTIONS =====
+function saveStockToLocalStorage(stockArray) {
+    // TODO: Migrer vers API backend /api/stock
+    localStorage.setItem('stock', JSON.stringify(stockArray));
+}
 
-async function refreshTable() {
-    if (!elements.ingredientListBody || !elements.emptyStockMessage) {
-        console.error("Éléments du tableau de stock non trouvés.");
+// --- FONCTIONS DU MODAL ET AUTOCOMPLÉTION ---
+function openModal(editId = null) {
+    if (!elements.itemModal || !elements.itemForm) {
+        showToast("Erreur: Le formulaire d'ingrédient n'a pas pu être initialisé.", "error");
         return;
     }
-    elements.ingredientListBody.innerHTML = ""; // Vider le tableau
+    elements.itemForm.reset();
+    elements.itemIdField.value = "";
+    elements.modalTitle.textContent = editId ? "Modifier l'ingrédient" : "Ajouter un ingrédient";
 
-    try {
-        const response = await fetchProtectedAPI('http://localhost:5000/api/stock');
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: response.statusText }));
-            throw new Error(errorData.message || `Erreur HTTP ${response.status}`);
-        }
-        const responseData = await response.json();
-        const items = responseData.data || [];
-
-        if (!items.length) {
-            elements.emptyStockMessage.style.display = "block";
+    if (editId) {
+        const stock = loadStockFromLocalStorage();
+        const item = stock.find(x => x.id === editId);
+        if (item) {
+            elements.itemIdField.value = item.id;
+            elements.itemNameField.value = item.nom;
+            elements.itemCategoryField.value = item.categorie;
+            elements.itemQuantityField.value = item.qte;
+            elements.itemUnitField.value = item.unite;
+            elements.itemExpiryField.value = item.dateExpiration || ""; // Utiliser 'dateExpiration' comme clé
+            if (elements.itemThresholdField) elements.itemThresholdField.value = item.seuilAlerte || "";
+            if (elements.itemAlertActiveField) elements.itemAlertActiveField.checked = item.alerteActive || false;
+        } else {
+            showToast(`Ingrédient avec ID ${editId} non trouvé.`, "error");
             return;
         }
-        elements.emptyStockMessage.style.display = "none";
-
-        items.forEach(ing => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${ing.name || 'N/A'}</td>
-              <td>${ing.category || 'N/A'}</td>
-              <td>${ing.quantity !== undefined ? ing.quantity : 'N/A'}</td>
-              <td>${ing.unit || 'N/A'}</td>
-              <td>${ing.expirationDate ? new Date(ing.expirationDate).toLocaleDateString() : ""}</td>
-              <td>
-                <button class="btn-icon" onclick="window.editStockItem('${ing._id}')">✏️</button>
-                <button class="btn-icon" onclick="window.deleteStockItem('${ing._id}')">🗑️</button>
-              </td>
-            `;
-            elements.ingredientListBody.appendChild(tr);
-        });
-    } catch (error) {
-        console.error("Erreur lors du rafraîchissement du stock:", error);
-        showToast(`Erreur de chargement du stock: ${error.message}`, 'error');
-        elements.emptyStockMessage.style.display = "block";
-    }
-}
-
-async function handleItemFormSubmit(e) {
-    e.preventDefault();
-
-    if (!elements.itemIdField || !elements.itemNameField || !elements.itemCategoryField || !elements.itemQuantityField || !elements.itemUnitField || !elements.itemExpiryField) {
-        showToast("Erreur: Un ou plusieurs champs du formulaire sont introuvables.", "error");
-        return;
-    }
-    const itemId = elements.itemIdField.value;
-
-
-    const newItemData = {
-        name: elements.itemNameField.value.trim(),
-        category: elements.itemCategoryField.value,
-        quantity: parseFloat(elements.itemQuantityField.value),
-        unit: elements.itemUnitField.value,
-        expirationDate: elements.itemExpiryField.value || null,
-        // alertThreshold: parseFloat(elements.itemThresholdField.value) || 0, // Décommentez
-    };
-
-    if (!newItemData.name || isNaN(newItemData.quantity)) {
-        showToast("Le nom et une quantité valide sont requis.", "error");
-        return;
-    }
-    if (newItemData.quantity < 0) {
-        showToast("La quantité ne peut pas être négative.", "error");
-        return;
-    }
-
-    try {
-        const stockResponse = await fetchProtectedAPI('http://localhost:5000/api/stock');
-        if (!stockResponse.ok) {
-            const errorText = await stockResponse.text().catch(() => stockResponse.statusText);
-            throw new Error(`Impossible de récupérer le stock actuel: ${errorText}`);
-        }
-        const stockResult = await stockResponse.json();
-        let currentStockItems = stockResult.data || [];
-
-        if (itemId) { // Mode Modification
-            currentStockItems = currentStockItems.map(item =>
-                item._id === itemId ? { ...item, ...newItemData } : item // Conserver _id existant
-            );
-        } else { // Mode Ajout
-            currentStockItems.push(newItemData); // Le backend assignera _id
-        }
-
-        const updateResponse = await fetchProtectedAPI('http://localhost:5000/api/stock', {
-            method: 'PUT',
-            body: JSON.stringify({ items: currentStockItems })
-        });
-
-        if (!updateResponse.ok) {
-            const errorData = await updateResponse.json().catch(() => ({ message: updateResponse.statusText }));
-            throw new Error(errorData.message || `Erreur HTTP ${updateResponse.status} lors de la sauvegarde.`);
-        }
-
-        closeModal();
-        showToast(`Ingrédient ${itemId ? 'modifié' : 'ajouté'} !`, "success");
-        refreshTable();
-
-    } catch (error) {
-        console.error("Erreur lors de la sauvegarde de l'item:", error);
-        showToast(`Erreur de sauvegarde: ${error.message}`, 'error');
-    }
-}
-
-window.deleteStockItem = async function(itemIdToDelete) {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cet ingrédient ?")) return;
-
-    try {
-        const stockResponse = await fetchProtectedAPI('http://localhost:5000/api/stock');
-        if (!stockResponse.ok) {
-            const errorText = await stockResponse.text().catch(() => stockResponse.statusText);
-            throw new Error(`Impossible de récupérer le stock actuel: ${errorText}`);
-        }
-        const stockResult = await stockResponse.json();
-        let currentStockItems = stockResult.data || [];
-
-        currentStockItems = currentStockItems.filter(item => item._id !== itemIdToDelete);
-
-        const updateResponse = await fetchProtectedAPI('http://localhost:5000/api/stock', {
-            method: 'PUT',
-            body: JSON.stringify({ items: currentStockItems })
-        });
-
-        if (!updateResponse.ok) {
-            const errorData = await updateResponse.json().catch(() => ({ message: updateResponse.statusText }));
-            throw new Error(errorData.message || `Erreur HTTP ${updateResponse.status} lors de la suppression.`);
-        }
-
-        showToast("Ingrédient supprimé !", "success");
-        refreshTable();
-
-    } catch (error) {
-        console.error("Erreur lors de la suppression de l'item:", error);
-        showToast(`Erreur de suppression: ${error.message}`, 'error');
-    }
-};
-
-window.editStockItem = async function(itemId) {
-    try {
-        const response = await fetchProtectedAPI('http://localhost:5000/api/stock');
-        if (!response.ok) {
-            const errorText = await response.text().catch(() => response.statusText);
-            throw new Error(`Impossible de récupérer le stock: ${errorText}`);
-        }
-        const stockData = await response.json();
-        const items = stockData.data || [];
-        const item = items.find(x => x._id === itemId);
-
-        if (item) {
-            elements.itemIdField.value = item._id;
-            elements.itemNameField.value = item.name;
-            elements.itemCategoryField.value = item.category;
-            elements.itemQuantityField.value = item.quantity;
-            elements.itemUnitField.value = item.unit;
-            elements.itemExpiryField.value = item.expirationDate ? new Date(item.expirationDate).toISOString().split('T')[0] : "";
-            // elements.itemThresholdField.value = item.alertThreshold || ""; // Décommentez
-            openModal(true); // Passer un flag pour indiquer que c'est une édition
-        } else {
-            showToast("Ingrédient non trouvé pour modification.", "error");
-        }
-    } catch (error) {
-        showToast(`Erreur édition: ${error.message}`, "error");
-    }
-};
-
-function openModal(isEdit = false) {
-    if (!elements.itemModal || !elements.itemForm || !elements.itemIdField) return;
-    
-    if (!isEdit) {
-        elements.itemForm.reset();
-        elements.itemIdField.value = "";
     }
     elements.itemModal.classList.add('show');
-    // L'appel à initModalAutocomplete doit être fait ici pour s'assurer que itemNameField est visible et prêt
-    if(elements.itemNameField) { // Vérifier si itemNameField est initialisé
-        setTimeout(initModalAutocomplete, 80);
-    }
+    elements.itemNameField.focus();
 }
 
 function closeModal() {
-    if (!elements.itemModal) return;
-    elements.itemModal.classList.remove('show');
+    if (elements.itemModal) elements.itemModal.classList.remove('show');
 }
 
-function suggestCategory(nom) { //
-    const lower = nom.toLowerCase();
-    for (const categoryValue in ingredientCategories) {
-        // Les clés de ingredientCategories sont 'poisson', 'viande', etc.
-        // Les valeurs des <option> dans stock.html sont "Poissons", "Viandes", etc.
-        // Il faut une correspondance. Soit les clés de ingredientCategories sont normalisées,
-        // soit on compare avec les listes d'ingrédients.
-        if (ingredientCategories[categoryValue].some(keyword => lower.includes(keyword))) {
-            // Trouver la valeur exacte de l'option du select qui correspond à categoryKey
-            const selectOptions = Array.from(elements.itemCategoryField.options);
-            const matchingOption = selectOptions.find(opt => opt.textContent.toLowerCase() === categoryValue || opt.value.toLowerCase() === categoryValue);
-            if (matchingOption) return matchingOption.value;
-        }
-    }
-    // Correction pour correspondre aux valeurs exactes du select de `stock.html`
-    if (["pomme", "poire", "banane", "fraise", "raisin", "orange", "abricot", "ananas", "kiwi", "melon", "cerise", "mangue"].some(x => lower.includes(x))) {
-        return "Fruits";
-    }
-    if (["carotte", "tomate", "aubergine", "courgette", "oignon", "poireau", "épinard", "laitue", "salade", "brocoli"].some(x => lower.includes(x))) {
-        return "Légumes";
-    }
-    if (["poulet", "boeuf", "saumon", "cabillaud", "truite", "canard", "porc", "veau", "jambon"].some(x => lower.includes(x))) {
-        return "Viandes et Poissons";
-    }
-    if (["lait", "fromage", "beurre", "yaourt", "crème"].some(x => lower.includes(x))) {
-        return "Produits Laitiers";
-    }
-    if (["riz", "pâtes", "blé", "semoule", "couscous", "pain", "farine"].some(x => lower.includes(x))) {
-        return "Céréales et Féculents";
-    }
-    if (["sel", "poivre", "basilic", "thym", "laurier", "épice", "herbe", "curry", "safran"].some(x => lower.includes(x))) {
-        return "Épices et Condiments";
-    }
-    return ""; // Catégorie par défaut ou la première du select
-}
-
-function initModalAutocomplete() { //
+function initModalAutocomplete() {
     if (!elements.itemNameField || !elements.modalAutocompleteContainer || !elements.itemCategoryField) {
-        console.error("Éléments nécessaires pour l'autocomplétion manquants.");
+        console.warn("Éléments pour l'autocomplétion non trouvés. L'autocomplétion sera désactivée.");
         return;
     }
 
     elements.itemNameField.oninput = function() {
-        const val = this.value.toLowerCase().trim();
-        elements.modalAutocompleteContainer.innerHTML = '';
-        if (!val) {
+        const searchTerm = this.value.toLowerCase().trim();
+        elements.modalAutocompleteContainer.innerHTML = ''; 
+
+        if (!searchTerm) {
             elements.modalAutocompleteContainer.style.display = 'none';
             return;
         }
-        const found = ingredientsComplets.filter(ing => ing.toLowerCase().startsWith(val));
 
-        found.slice(0, 12).forEach(ing => { // Limité à 12 suggestions pour la performance
-            const div = document.createElement('div');
-            div.className = 'autocomplete-item';
-            div.textContent = ing;
-            div.onmousedown = function(e) {
-                e.preventDefault();
-                elements.itemNameField.value = ing;
-                elements.modalAutocompleteContainer.innerHTML = '';
-                elements.modalAutocompleteContainer.style.display = 'none';
+        // Utiliser INGREDIENTS_WITH_CATEGORIES pour le filtrage
+        const foundIngredients = INGREDIENTS_WITH_CATEGORIES.filter(ingData =>
+            ingData.name.toLowerCase().startsWith(searchTerm)
+        );
 
-                const catVal = suggestCategory(ing);
-                if (elements.itemCategoryField && catVal) {
-                    // Recherche de la valeur exacte (insensible à la casse) dans les options
-                    let optionFound = false;
-                    for (const opt of elements.itemCategoryField.options) {
-                        if (opt.value.trim().toLowerCase() === catVal.trim().toLowerCase()) {
-                            elements.itemCategoryField.value = opt.value;
-                            optionFound = true;
-                            break;
-                        }
+        if (foundIngredients.length > 0) {
+            foundIngredients.slice(0, 10).forEach(ingData => { // ingData est {name, category}
+                const suggestionDiv = document.createElement('div');
+                suggestionDiv.className = 'autocomplete-item';
+                suggestionDiv.textContent = ingData.name;
+
+                suggestionDiv.onmousedown = function(e) {
+                    e.preventDefault(); 
+                    elements.itemNameField.value = ingData.name;
+                    // Vérifier si la catégorie existe dans le select avant de la définir
+                    const categoryOptionExists = Array.from(elements.itemCategoryField.options).some(opt => opt.value === ingData.category);
+                    if (categoryOptionExists) {
+                        elements.itemCategoryField.value = ingData.category;
+                    } else {
+                        console.warn(`Catégorie "${ingData.category}" pour "${ingData.name}" non trouvée dans les options du select.`);
+                        elements.itemCategoryField.value = ""; // ou une valeur par défaut
                     }
-                    if (!optionFound) {
-                        console.warn(`Catégorie suggérée "${catVal}" pour "${ing}" non trouvée dans les options. Valeurs possibles:`, Array.from(elements.itemCategoryField.options).map(o => o.value));
-                         // Optionnel: définir une valeur par défaut si aucune correspondance exacte
-                        // elements.itemCategoryField.value = elements.itemCategoryField.options[0].value; // ou ""
-                    }
-                }
-            };
-            elements.modalAutocompleteContainer.appendChild(div);
-        });
-        elements.modalAutocompleteContainer.style.display = found.length ? 'block' : 'none';
+                    
+                    elements.modalAutocompleteContainer.innerHTML = '';
+                    elements.modalAutocompleteContainer.style.display = 'none';
+                };
+                elements.modalAutocompleteContainer.appendChild(suggestionDiv);
+            });
+            elements.modalAutocompleteContainer.style.display = 'block';
+        } else {
+            elements.modalAutocompleteContainer.style.display = 'none';
+        }
     };
+
     elements.itemNameField.onblur = function() {
         setTimeout(() => {
             if (elements.modalAutocompleteContainer) elements.modalAutocompleteContainer.style.display = 'none';
-        }, 150); // Délai pour permettre le clic sur un item de l'autocomplétion
+        }, 200); 
     };
 }
 
-// ----- INITIALISATION -----
-document.addEventListener('DOMContentLoaded', () => {
-    elements.initDOM(); // Initialiser les références aux éléments DOM
+// --- GESTION DU FORMULAIRE ET DE LA TABLE ---
+// Dans client/js/stock.js
 
-    if (!elements.itemForm || !elements.addItemBtn || !elements.cancelItemBtn || !elements.closeModalBtn) {
-        console.error("Un ou plusieurs éléments essentiels du formulaire ou de la modale sont manquants.");
+// ... (imports et autres fonctions) ...
+
+function handleItemFormSubmit(e) {
+    e.preventDefault();
+    const id = elements.itemIdField.value || Date.now().toString();
+    const nom = elements.itemNameField.value.trim();
+    const categorie = elements.itemCategoryField.value;
+    const qte = parseFloat(elements.itemQuantityField.value);
+    const unite = elements.itemUnitField.value;
+    const dateExpiration = elements.itemExpiryField.value;
+
+    // Gestion améliorée du seuil d'alerte (optionnel)
+    let seuilAlerteNum = 0; // Valeur par défaut si le champ est vide ou non valide
+    if (elements.itemThresholdField && elements.itemThresholdField.value.trim() !== "") {
+        const parsedThreshold = parseFloat(elements.itemThresholdField.value);
+        if (!isNaN(parsedThreshold) && parsedThreshold >= 0) {
+            seuilAlerteNum = parsedThreshold;
+        } else {
+            showToast("Le seuil d'alerte, s'il est renseigné, doit être un nombre positif.", "error");
+            return; // Bloquer si une valeur est entrée mais n'est pas un nombre positif
+        }
+    }
+
+    const alerteActive = elements.itemAlertActiveField ? elements.itemAlertActiveField.checked : false;
+    if (!nom || !categorie || isNaN(qte) || !unite) {
+        showToast("Veuillez remplir tous les champs obligatoires (Nom, Catégorie, Quantité, Unité).", "error");
         return;
     }
+    if (qte < 0) {
+        showToast("La quantité ne peut pas être négative.", "error");
+        return;
+    }
+    // La validation spécifique pour seuilAlerte (s'il est rempli mais invalide) est faite au-dessus
 
-    elements.itemForm.addEventListener('submit', handleItemFormSubmit);
-    elements.addItemBtn.addEventListener('click', () => openModal(false)); // false pour isEdit
-    elements.cancelItemBtn.addEventListener('click', closeModal);
+    let stock = loadStockFromLocalStorage(); // Assurez-vous que cette fonction est définie
+    const itemIndex = stock.findIndex(x => x.id === id);
     
-    // Votre `stock.html` utilise une classe `.close-btn` pour la fermeture de la modale.
-    // S'il y a plusieurs boutons avec cette classe, ou si l'ID est différent, ajustez ici.
-    // Si 'close-modal-btn' est l'ID unique du bouton X de la modale:
-    if(elements.closeModalBtn) elements.closeModalBtn.addEventListener('click', closeModal);
-    // Si c'est une classe (et qu'il y en a qu'un dans cette modale) :
-    const modalCloseButton = elements.itemModal ? elements.itemModal.querySelector('.close-btn') : null;
-    if(modalCloseButton) modalCloseButton.addEventListener('click', closeModal);
+    const stockItem = { 
+        id, 
+        nom, 
+        categorie, 
+        qte, 
+        unite, 
+        dateExpiration: dateExpiration || null, 
+        seuilAlerte: seuilAlerteNum, // Utiliser la valeur traitée
+        alerteActive 
+    };
 
-
-    // Protection de la page et chargement initial des données
-    if (window.auth && typeof window.auth.protectPage === 'function') {
-        window.auth.protectPage()
-            .then(() => {
-                refreshTable();
-            })
-            .catch(err => {
-                console.error("Protection de page échouée, chargement du stock annulé.", err);
-                // La redirection devrait être gérée par auth.js ou apiHelper.js
-            });
+    if (itemIndex >= 0) {
+        stock[itemIndex] = stockItem; // Modifier
     } else {
-        console.warn("Module d'authentification ou `protectPage` non défini. Le chargement du stock peut échouer ou exposer des données.");
-        // Tentative de chargement, mais cela suppose que les appels non authentifiés sont soit permis, soit échoueront gracieusement.
+        stock.push(stockItem); // Ajouter
+    }
+
+    saveStockToLocalStorage(stock); // Assurez-vous que cette fonction est définie
+    closeModal(); // Assurez-vous que cette fonction est définie
+    showToast(`Ingrédient "${nom}" ${itemIndex >= 0 ? 'modifié' : 'ajouté'} !`, "success");
+    refreshTable(); // Assurez-vous que cette fonction est définie
+}
+
+window.editStockItem = (id) => { 
+    openModal(id);
+};
+
+window.deleteStockItem = (id) => {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer cet ingrédient ?`)) {
+        let stock = loadStockFromLocalStorage();
+        stock = stock.filter(x => x.id !== id);
+        saveStockToLocalStorage(stock);
+        showToast("Ingrédient supprimé !", "success");
         refreshTable();
     }
+};
+
+// Fonction pour formater les dates (si non importée depuis common.js/utils.js)
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
+function refreshTable() {
+    if (!elements.ingredientListBody || !elements.emptyStockMessage) {
+        console.error("Éléments du tableau de stock pour refreshTable non trouvés.");
+        return;
+    }
+    const data = loadStockFromLocalStorage();
+    elements.ingredientListBody.innerHTML = "";
+
+ if (!data || !data.length) {
+            elements.emptyStockMessage.style.display = "block";
+    } else {
+        elements.emptyStockMessage.style.display = "none";
+        data.forEach(ing => {
+            const tr = document.createElement('tr');
+            // Adaptez les noms de propriété si nécessaire (ex: ing.dateExpiration)
+            tr.innerHTML = `
+              <td>${ing.nom || '-'}</td>
+              <td>${ing.categorie || '-'}</td>
+              <td>${ing.qte !== undefined ? ing.qte : '-'}</td>
+              <td>${ing.unite || '-'}</td>
+              <td>${ing.seuilAlerte !== undefined && ing.seuilAlerte > 0 ? ing.seuilAlerte : '-'}</td> 
+              <td>${ing.dateExpiration ? formatDate(ing.dateExpiration) : "-"}</td> 
+              <td>
+                <button class="btn-icon" onclick="window.editStockItem('${ing.id}')">✏️</button>
+                <button class="btn-icon" onclick="window.deleteStockItem('${ing.id}')">🗑️</button>
+              </td>
+            `;
+                        elements.ingredientListBody.appendChild(tr);
+        });
+    }
+}
+
+// --- INITIALISATION DE LA PAGE ---
+document.addEventListener('DOMContentLoaded', () => {
+    elements.initDOM(); 
+
+    // Authentification de la page
+    const token = getToken();
+    if (!token) {
+        logout(); 
+        return; 
+    }
+    // Vous pouvez ajouter un appel à /api/auth/verify ici si vous voulez une validation serveur à chaque chargement
+    
+    // Attacher les écouteurs d'événements
+    if (elements.addItemBtn) elements.addItemBtn.addEventListener('click', () => openModal());
+    if (elements.itemForm) elements.itemForm.addEventListener('submit', handleItemFormSubmit);
+    if (elements.cancelItemBtn) elements.cancelItemBtn.addEventListener('click', closeModal);
+    if (elements.closeModalBtn) elements.closeModalBtn.addEventListener('click', closeModal);
+    
+    // Bouton de déconnexion de la page stock.html
+    if(elements.logoutBtnPage) {
+        elements.logoutBtnPage.addEventListener('click', (e) => {
+            e.preventDefault();
+            logout();
+        });
+    }
+
+    initModalAutocomplete();
+    refreshTable();
 });

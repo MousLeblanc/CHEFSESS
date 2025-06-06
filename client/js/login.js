@@ -1,4 +1,5 @@
-// Dans login.js
+//  login.js
+import { showToast } from './utils.js'; // 
 
 async function handleLogin(email, password) {
 
@@ -38,25 +39,6 @@ async function handleLogin(email, password) {
   }
 }
 
-function showToast(message, type = "info", container = document.body) {
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`; // Pour styler via CSS
-  toast.textContent = message;
-  
-  toast.style.position = "fixed";
-  toast.style.bottom = "20px";
-  toast.style.left = "50%";
-  toast.style.transform = "translateX(-50%)";
-  toast.style.background = type === "success" ? "#28a745" : (type === "error" ? "#dc3545" : "#17a2b8");
-  toast.style.color = "white";
-  toast.style.padding = "10px 20px";
-  toast.style.borderRadius = "8px";
-  toast.style.zIndex = 10000;
-  toast.style.opacity = 0; // Pour l'animation
-  toast.style.transition = "opacity 0.5s ease";
-document.body.appendChild(toast);
-  setTimeout(() => { toast.remove(); }, 3000);
-}
 document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.getElementById('login-form');
   const emailInput = document.getElementById('email');     // Utilise getElementById

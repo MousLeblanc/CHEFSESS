@@ -1,6 +1,7 @@
 // client/js/apiHelper.js
 
-import auth from './auth.js'; // Attention au chemin selon où tu mets ce fichier !
+// client/js/apiHelper.js
+import { getToken, logout, redirectToLogin } from './auth.js'; // Importer les fonctions nécessaires
 
 /**
  * Helper universel pour tous les appels API protégés (JWT).

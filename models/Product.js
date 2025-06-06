@@ -1,5 +1,5 @@
 // models/Product.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose'; // Changé de require à import
 
 const productSchema = new mongoose.Schema({
   name: {
@@ -32,7 +32,7 @@ const productSchema = new mongoose.Schema({
     required: [true, 'La commande minimum est requise'],
     min: [1, 'La commande minimum doit être supérieure à 0']
   },
-  supplier: {
+  supplier: { // Utilisateur qui a le rôle 'fournisseur'
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: [true, 'Le fournisseur est requis']
@@ -50,4 +50,5 @@ productSchema.index({ category: 1 });
 productSchema.index({ supplier: 1 });
 productSchema.index({ active: 1 });
 
-module.exports = mongoose.model('Product', productSchema);
+const Product = mongoose.model('Product', productSchema); // Changé pour définir Product avant d'exporter
+export default Product; // Changé de module.exports

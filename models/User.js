@@ -5,8 +5,15 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, default: 'chef' },
-  businessName: { type: String }
+  role: { type: String, enum: ['maison', 'resto', 'fournisseur', 'admin'], required: true },
+  businessName: { type: String },
+  // NOUVEAU CHAMP
+  establishmentType: { 
+    type: String,
+    enum: ['restaurant_traditionnel', 'cantine_scolaire', 'maison_de_retraite',  'traiteur', 'hopital', 'autre'], // 'null' si ce n'est pas un 'resto'
+    default: null
+  }
+
 });
 
 // Hash le mot de passe avant sauvegarde
@@ -23,3 +30,4 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
 
 const User = mongoose.model('User', userSchema);
 export default User;
+// models/User.js

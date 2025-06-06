@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+// models/Order.js
+import mongoose from 'mongoose'; // Changé de require à import
 
 const orderItemSchema = new mongoose.Schema({
     product: {
@@ -11,7 +12,7 @@ const orderItemSchema = new mongoose.Schema({
         required: true,
         min: [1, 'La quantité minimum est de 1']
     },
-    price: {
+    price: { // Prix au moment de la commande
         type: Number,
         required: true
     },
@@ -22,12 +23,12 @@ const orderItemSchema = new mongoose.Schema({
 });
 
 const orderSchema = new mongoose.Schema({
-    client: {
+    client: { // Utilisateur (restaurant) qui passe la commande
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: [true, 'Le client est requis']
     },
-    supplier: {
+    supplier: { // Utilisateur (fournisseur) qui reçoit la commande
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: [true, 'Le fournisseur est requis']
@@ -35,14 +36,15 @@ const orderSchema = new mongoose.Schema({
     items: [orderItemSchema],
     status: {
         type: String,
-        enum: ['pending', 'accepted', 'rejected', 'delivered', 'cancelled'],
+        enum: ['pending', 'accepted', 'rejected', 'shipped', 'delivered', 'cancelled'], // 'shipped' ajouté
         default: 'pending'
     },
-    total: {
+    total: { // Le total sera calculé par le hook pre-save
         type: Number,
-        required: true
+        required: true,
+        default: 0
     },
-    deliveryDate: {
+    deliveryDate: { // Date de livraison souhaitée par le client
         type: Date,
         required: true
     },
@@ -50,12 +52,12 @@ const orderSchema = new mongoose.Schema({
         type: String
     }
 }, {
-    timestamps: true
+    timestamps: true // Ajoute createdAt et updatedAt
 });
 
-// Calculer le total automatiquement
+// Calculer le total automatiquement avant de sauvegarder
 orderSchema.pre('save', function(next) {
-    if (this.items && this.items.length > 0) {
+    if (this.isModified('items') || this.isNew) { // Recalculer si les items changent ou si c'est une nouvelle commande
         this.total = this.items.reduce((sum, item) => {
             return sum + (item.price * item.quantity);
         }, 0);
@@ -68,4 +70,5 @@ orderSchema.index({ client: 1, status: 1 });
 orderSchema.index({ supplier: 1, status: 1 });
 orderSchema.index({ deliveryDate: 1 });
 
-module.exports = mongoose.model('Order', orderSchema); 
+const Order = mongoose.model('Order', orderSchema); // Changé pour définir Order avant d'exporter
+export default Order; // Changé de module.exports
