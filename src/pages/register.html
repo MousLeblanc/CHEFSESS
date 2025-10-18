@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inscription - Chef SES</title>
+  <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>🍽️ Chef SES</h1>
+      <p>Créer un compte</p>
+    </header>
+
+    <main class="auth-form">
+      <form id="register-form">
+        <div class="form-group">
+          <label for="name">Nom complet</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Mot de passe</label>
+          <input type="password" id="password" name="password" required minlength="6">
+        </div>
+
+        <div class="form-group">
+          <label for="role">Type de compte</label>
+          <select id="role" name="role" required>
+            <option value="">Sélectionner...</option>
+            <option value="groupe">Groupe (Administration centrale)</option>
+            <option value="collectivite">Collectivité</option>
+            <option value="resto">Restaurant</option>
+            <option value="fournisseur">Fournisseur</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="businessName">Nom de l'établissement</label>
+          <input type="text" id="businessName" name="businessName" required>
+        </div>
+
+        <div class="form-group" id="establishment-type-group" style="display: none;">
+          <label for="establishmentType">Type d'établissement</label>
+          <select id="establishmentType" name="establishmentType">
+            <option value="">Sélectionner...</option>
+            <option value="ehpad">EHPAD</option>
+            <option value="hopital">Hôpital</option>
+            <option value="ecole">École</option>
+            <option value="maison_retraite">Maison de retraite</option>
+            <option value="cantine_entreprise">Cantine d'entreprise</option>
+          </select>
+        </div>
+
+        <div id="error-message" class="error-message" style="display: none;"></div>
+
+        <button type="submit" class="btn btn-primary">S'inscrire</button>
+      </form>
+
+      <div class="auth-links">
+        <a href="/">← Retour</a>
+        <a href="/pages/login.html">Déjà un compte ? Se connecter</a>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="/pages/register.js"></script>
+</body>
+</html>

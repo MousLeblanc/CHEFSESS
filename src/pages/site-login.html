@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion Site - Chef SES</title>
+  <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>🍽️ Chef SES</h1>
+      <p>Connexion Compte Site</p>
+    </header>
+
+    <main class="auth-form">
+      <form id="site-login-form">
+        <div class="form-group">
+          <label for="email">Email du site</label>
+          <input type="email" id="email" name="email" required placeholder="nomdusite@vulpia.com">
+        </div>
+
+        <div class="form-group">
+          <label for="password">Mot de passe</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+
+        <div id="error-message" class="error-message" style="display: none;"></div>
+
+        <button type="submit" class="btn btn-primary">Se connecter</button>
+      </form>
+
+      <div class="auth-links">
+        <a href="/">← Retour</a>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="/pages/site-login.js"></script>
+</body>
+</html>

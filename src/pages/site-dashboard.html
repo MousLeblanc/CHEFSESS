@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tableau de bord Site - Chef SES</title>
+  <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+  <div class="dashboard">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>🍽️ Chef SES</h2>
+        <p id="site-name"></p>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-link active" id="dashboard-link">
+          📊 Tableau de bord
+        </a>
+        <a href="#" class="nav-link" id="residents-link">
+          👥 Résidents
+        </a>
+        <a href="#" class="nav-link" id="menus-link">
+          📋 Menus
+        </a>
+        <a href="#" class="nav-link logout-link">
+          🚪 Déconnexion
+        </a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="dashboard-header">
+        <div>
+          <h1 id="site-title">Tableau de bord</h1>
+          <p id="site-type"></p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary" id="refresh-btn">🔄 Actualiser</button>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="sync-status" id="sync-status" style="display: none;">
+          <span class="sync-icon" id="sync-icon"></span>
+          <span id="sync-message"></span>
+        </div>
+
+        <section class="week-selector">
+          <label for="week-select">Semaine :</label>
+          <select id="week-select"></select>
+        </section>
+
+        <div id="dashboard-content">
+          <div class="loading">Chargement...</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="/pages/site-dashboard.js"></script>
+</body>
+</html>

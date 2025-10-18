@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chef SES - Choisir votre profil</title>
+  <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>🍽️ Chef SES</h1>
+      <p>Système de gestion multi-sites pour cantines et restaurants</p>
+    </header>
+
+    <main class="profile-selector">
+      <h2>Choisissez votre type de connexion</h2>
+
+      <div class="profile-cards">
+        <div class="profile-card" onclick="window.location.href='/pages/login.html'">
+          <div class="card-icon">🏢</div>
+          <h3>Compte Groupe</h3>
+          <p>Administration centralisée de plusieurs sites</p>
+          <button class="btn btn-primary">Se connecter</button>
+        </div>
+
+        <div class="profile-card" onclick="window.location.href='/pages/site-login.html'">
+          <div class="card-icon">🏥</div>
+          <h3>Compte Site</h3>
+          <p>Gestion d'un établissement individuel</p>
+          <button class="btn btn-secondary">Se connecter</button>
+        </div>
+      </div>
+
+      <div class="register-link">
+        <p>Pas encore de compte ? <a href="/pages/register.html">S'inscrire</a></p>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

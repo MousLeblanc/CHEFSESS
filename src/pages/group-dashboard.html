@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tableau de bord Groupe - Chef SES</title>
+  <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+  <div class="dashboard">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>🍽️ Chef SES</h2>
+        <p id="user-name"></p>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/pages/group-dashboard.html" class="nav-link active">
+          📊 Tableau de bord
+        </a>
+        <a href="#" class="nav-link" id="sites-link">
+          🏥 Sites
+        </a>
+        <a href="#" class="nav-link" id="residents-link">
+          👥 Résidents
+        </a>
+        <a href="#" class="nav-link" id="menus-link">
+          📋 Menus
+        </a>
+        <a href="#" class="nav-link logout-link">
+          🚪 Déconnexion
+        </a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="dashboard-header">
+        <h1>Tableau de bord Groupe</h1>
+        <div class="header-actions">
+          <button class="btn btn-primary" id="create-site-btn">+ Créer un site</button>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">🏥</div>
+            <div class="stat-content">
+              <h3 id="total-sites">0</h3>
+              <p>Sites</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+              <h3 id="total-residents">0</h3>
+              <p>Résidents</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-content">
+              <h3 id="total-menus">0</h3>
+              <p>Menus</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+              <h3 id="active-sites">0</h3>
+              <p>Sites actifs</p>
+            </div>
+          </div>
+        </div>
+
+        <section class="sites-section">
+          <h2>Mes sites</h2>
+          <div id="sites-list" class="sites-grid"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="create-site-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="modal-close">&times;</span>
+      <h2>Créer un nouveau site</h2>
+      <form id="create-site-form">
+        <div class="form-group">
+          <label>Nom du site</label>
+          <input type="text" id="site-name" required>
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <select id="site-type" required>
+            <option value="ehpad">EHPAD</option>
+            <option value="hopital">Hôpital</option>
+            <option value="ecole">École</option>
+            <option value="maison_retraite">Maison de retraite</option>
+            <option value="cantine_entreprise">Cantine d'entreprise</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Créer</button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="/pages/group-dashboard.js"></script>
+</body>
+</html>

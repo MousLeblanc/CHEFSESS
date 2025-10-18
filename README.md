@@ -109,43 +109,54 @@ CHEF-SES/
 
 ## 🛠️ Installation et Configuration
 
+### ✅ Nouvelle Version - Supabase Intégrée
+
+Cette version a été **complètement reconstruite** avec:
+- **Frontend**: Vite + Vanilla JavaScript
+- **Backend**: Express.js avec Supabase
+- **Database**: Supabase (PostgreSQL avec RLS)
+- **Auth**: Supabase Authentication
+
 ### Prérequis
 - Node.js (v16+)
-- MongoDB (local ou Atlas)
-- Compte OpenAI (pour l'IA)
+- Supabase account (déjà configuré)
+- Compte OpenAI (optionnel, pour l'IA)
 
-### Installation
+### Installation Rapide
+
 ```bash
-# Cloner le projet
-git clone [url-du-repo]
-cd CHEF-SES
-
 # Installer les dépendances
 npm install
 
-# Configuration
-cp .env.example .env
-# Éditer .env avec vos paramètres
-
 # Démarrer le serveur
-npm start
+npm run dev
 ```
+
+Le serveur démarre sur `http://localhost:5000`
 
 ### Variables d'environnement
+
+Le fichier `.env` est déjà configuré avec les identifiants Supabase:
+
 ```env
-# Base de données
-MONGODB_URI=mongodb://localhost:27017/chef-ses
-
-# JWT
-JWT_SECRET=votre-secret-jwt
-
-# OpenAI
-OPENAI_API_KEY=votre-clé-openai
-
-# Serveur
-PORT=5000
-NODE_ENV=development
+VITE_SUPABASE_URL=https://0ec90b57d6e95fcbda19832f.supabase.co
+VITE_SUPABASE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
+
+**Optionnel**: Ajouter votre clé OpenAI pour les fonctionnalités IA:
+```env
+OPENAI_API_KEY=votre-clé-openai
+```
+
+### 📖 Documentation Complète
+
+Voir [SETUP.md](./SETUP.md) pour:
+- Guide d'installation détaillé
+- Architecture du projet
+- Documentation de l'API
+- Schéma de base de données
+- Guide de déploiement
+- Troubleshooting
 
 ## 🚀 Utilisation
 
