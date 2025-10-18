@@ -136,6 +136,10 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'client', 'choisir-profil.html'));
 });
 
+// --- Route principale pour Bolt ---
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "client", "index.html")); // ou accueil.html selon ton fichier principal
+});
 
 // --- Connexion à MongoDB ---
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/chef-ses';
