@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inscription - ChAIf SES</title>
+  <link rel="stylesheet" href="CSS/main.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Créer un compte CHaiF SES</h1>
+
+    <form id="register-form">
+      <label for="name">Nom complet</label>
+<input type="text" id="name" name="name" required /> 
+      <label for="email">Email</label>
+<input type="email" id="email" name="email" required /> 
+
+      <label for="password">Mot de passe</label>
+<input type="password" id="password" name="password" required /> 
+
+<label>Votre profil</label><br />
+<input type="radio" name="role" id="role-resto" value="resto" />
+<label for="role-resto">Restaurant</label><br />
+<input type="radio" name="role" id="role-collectivite" value="collectivite" />
+<label for="role-collectivite">Collectivité (école, hôpital, EHPAD, etc.)</label><br />
+<input type="radio" name="role" id="role-fournisseur" value="fournisseur" />
+<label for="role-fournisseur">Fournisseur</label><br />
+    
+      <div id="businessNameContainer" style="display: none;">
+        <label for="businessName">Nom de l'établissement</label> 
+        <input type="text" id="businessName" name="businessName" /> 
+      </div>
+      
+      <!-- Type d'établissement pour les collectivités -->
+      <div id="collectivite-type-group" style="display: none;">
+        <label for="establishment-type">Type d'établissement *</label>
+        <select id="establishment-type" name="establishmentType" class="form-control">
+          <option value="">-- Sélectionnez un type --</option>
+          <option value="cantine_scolaire">Cantine Scolaire</option>
+          <option value="cantine_entreprise">Cantine d'Entreprise</option>
+          <option value="ehpad">EHPAD</option>
+          <option value="hopital">Hôpital</option>
+          <option value="maison_de_retraite">Maison de Retraite</option>
+          <option value="autre">Autre</option>
+        </select>
+      </div>
+      
+      <!-- Type d'établissement pour les restaurants -->
+      <div id="restaurant-type-group" style="display: none;">
+        <label for="restaurant-type">Type de restaurant</label>
+        <select id="restaurant-type" name="restaurantType" class="form-control">
+          <option value="restaurant_traditionnel">Restaurant Traditionnel</option>
+          <option value="traiteur">Traiteur</option>
+          <option value="autre">Autre</option>
+        </select>
+      </div>
+
+      <button type="submit">S'inscrire</button>
+    </form>
+
+    <p>Déjà inscrit ? <a href="index.html">Se connecter</a></p>
+<div id="toast-container"></div> <!-- Conteneur pour les notifications -->
+
+  <script type="module" src="JS/register-fixed.js"></script> 
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(window.location.search);
+        const defaultRole = params.get('role') || 'resto';
+        const roleElement = document.getElementById(`role-${defaultRole}`);
+        if (roleElement) {
+          roleElement.checked = true;
+          // Déclencher un événement 'change' pour que register.js mette à jour la visibilité
+          roleElement.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    });
+  </script>
+    <script src="js/init.js"></script>`r`n</body>
+</html>

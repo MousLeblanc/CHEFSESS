@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter un Résident - Chef SES</title>
+    <link rel="stylesheet" href="CSS/main.css">
+    <link rel="stylesheet" href="CSS/components/forms.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .form-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .form-header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.8rem;
+        }
+        
+        .form-header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        
+        .form-body {
+            padding: 2rem;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+        }
+        
+        .form-section h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .nutritional-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .nutritional-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .allergy-item,
+        .intolerance-item,
+        .restriction-item {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .allergy-item input,
+        .intolerance-item input,
+        .restriction-item input {
+            flex: 1;
+        }
+        
+        .btn-add-item {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .btn-add-item:hover {
+            background: #218838;
+        }
+        
+        .btn-remove-item {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .btn-remove-item:hover {
+            background: #c82333;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s ease;
+        }
+        
+        .btn-cancel:hover {
+            background: #5a6268;
+            color: white;
+        }
+        
+        .btn-save {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .btn-save:hover {
+            background: #0056b3;
+        }
+        
+        .btn-save:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #667eea;
+        }
+        
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .form-grid,
+            .nutritional-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-header">
+            <h1><i class="fas fa-user-plus"></i> Ajouter un Résident</h1>
+            <p id="site-info">Chargement...</p>
+        </div>
+        
+        <div class="form-body">
+            <form id="resident-form">
+                <!-- Informations personnelles -->
+                <div class="form-section">
+                    <h3><i class="fas fa-user"></i> Informations Personnelles</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="firstName">Prénom *</label>
+                            <input type="text" id="firstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Nom *</label>
+                            <input type="text" id="lastName" name="lastName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dateOfBirth">Date de naissance *</label>
+                            <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="gender">Genre *</label>
+                            <select id="gender" name="gender" required>
+                                <option value="">Sélectionner...</option>
+                                <option value="homme">Homme</option>
+                                <option value="femme">Femme</option>
+                                <option value="autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Téléphone</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="roomNumber">Numéro de chambre</label>
+                            <input type="text" id="roomNumber" name="roomNumber">
+                        </div>
+                        <div class="form-group">
+                            <label for="bedNumber">Numéro de lit</label>
+                            <input type="text" id="bedNumber" name="bedNumber">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Adresse -->
+                <div class="form-section">
+                    <h3><i class="fas fa-map-marker-alt"></i> Adresse</h3>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="address.street">Rue</label>
+                            <input type="text" id="address.street" name="address.street">
+                        </div>
+                        <div class="form-group">
+                            <label for="address.city">Ville</label>
+                            <input type="text" id="address.city" name="address.city">
+                        </div>
+                        <div class="form-group">
+                            <label for="address.postalCode">Code postal</label>
+                            <input type="text" id="address.postalCode" name="address.postalCode">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Carte d'identité nutritionnelle -->
+                <div class="form-section">
+                    <h3><i class="fas fa-heart"></i> Carte d'Identité Nutritionnelle</h3>
+                    
+                    <!-- Allergies -->
+                    <div class="nutritional-section">
+                        <h4>Allergies</h4>
+                        <div id="allergies-container">
+                            <div class="allergy-item">
+                                <input type="text" placeholder="Allergène (ex: arachides, gluten...)" name="allergies[0].allergen">
+                                <select name="allergies[0].severity">
+                                    <option value="légère">Légère</option>
+                                    <option value="modérée" selected>Modérée</option>
+                                    <option value="sévère">Sévère</option>
+                                    <option value="critique">Critique</option>
+                                </select>
+                                <button type="button" class="btn-add-item" onclick="addAllergy()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Intolérances -->
+                    <div class="nutritional-section">
+                        <h4>Intolérances</h4>
+                        <div id="intolerances-container">
+                            <div class="intolerance-item">
+                                <input type="text" placeholder="Substance (ex: lactose, fructose...)" name="intolerances[0].substance">
+                                <select name="intolerances[0].severity">
+                                    <option value="légère">Légère</option>
+                                    <option value="modérée" selected>Modérée</option>
+                                    <option value="sévère">Sévère</option>
+                                </select>
+                                <button type="button" class="btn-add-item" onclick="addIntolerance()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Restrictions alimentaires -->
+                    <div class="nutritional-section">
+                        <h4>Restrictions Alimentaires</h4>
+                        <div id="restrictions-container">
+                            <div class="restriction-item">
+                                <select name="restrictions[0].type">
+                                    <option value="religieuse">Religieuse</option>
+                                    <option value="éthique">Éthique</option>
+                                    <option value="médicale">Médicale</option>
+                                    <option value="personnelle">Personnelle</option>
+                                </select>
+                                <input type="text" placeholder="Description de la restriction" name="restrictions[0].restriction">
+                                <button type="button" class="btn-add-item" onclick="addRestriction()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Besoins nutritionnels -->
+                    <div class="nutritional-section">
+                        <h4>Besoins Nutritionnels Spécifiques</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="calories.daily">Calories quotidiennes</label>
+                                <input type="number" id="calories.daily" name="calories.daily" placeholder="2000">
+                            </div>
+                            <div class="form-group">
+                                <label for="proteins.daily">Protéines (g/jour)</label>
+                                <input type="number" id="proteins.daily" name="proteins.daily" placeholder="50">
+                            </div>
+                            <div class="form-group">
+                                <label for="sodium.restriction">Restriction sodium</label>
+                                <select id="sodium.restriction" name="sodium.restriction">
+                                    <option value="normal">Normal</option>
+                                    <option value="réduit">Réduit</option>
+                                    <option value="très réduit">Très réduit</option>
+                                    <option value="sans sel">Sans sel</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="sugar.restriction">Restriction sucre</label>
+                                <select id="sugar.restriction" name="sugar.restriction">
+                                    <option value="normal">Normal</option>
+                                    <option value="réduit">Réduit</option>
+                                    <option value="très réduit">Très réduit</option>
+                                    <option value="sans sucre">Sans sucre</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact d'urgence -->
+                <div class="form-section">
+                    <h3><i class="fas fa-phone"></i> Contact d'Urgence</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="emergencyContact.name">Nom</label>
+                            <input type="text" id="emergencyContact.name" name="emergencyContact.name">
+                        </div>
+                        <div class="form-group">
+                            <label for="emergencyContact.relationship">Relation</label>
+                            <input type="text" id="emergencyContact.relationship" name="emergencyContact.relationship">
+                        </div>
+                        <div class="form-group">
+                            <label for="emergencyContact.phone">Téléphone</label>
+                            <input type="tel" id="emergencyContact.phone" name="emergencyContact.phone">
+                        </div>
+                        <div class="form-group">
+                            <label for="emergencyContact.email">Email</label>
+                            <input type="email" id="emergencyContact.email" name="emergencyContact.email">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notes générales -->
+                <div class="form-section">
+                    <h3><i class="fas fa-sticky-note"></i> Notes Générales</h3>
+                    <div class="form-group">
+                        <label for="generalNotes">Notes importantes</label>
+                        <textarea id="generalNotes" name="generalNotes" placeholder="Informations supplémentaires importantes..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="#" id="cancel-btn" class="btn-cancel">
+                        <i class="fas fa-times"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn-save" id="save-btn">
+                        <i class="fas fa-save"></i> Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="js/add-resident.js"></script>
+</body>
+</html>

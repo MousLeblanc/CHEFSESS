@@ -1,0 +1,28 @@
+{
+  "app": {
+    "name": "ChAIf SES",
+    "description": "Assistant IA de planification de menus et gestion de stock"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "menus": "Menus",
+    "stock": "Stock",
+    "suppliers": "Fournisseurs",
+    "settings": "Paramètres"
+  },
+  "menu": {
+    "generate": "Générer un menu",
+    "plan": "Planifier la semaine",
+    "view": "Voir les menus"
+  },
+  "stock": {
+    "add": "Ajouter un produit",
+    "alerts": "Alertes stock",
+    "inventory": "Inventaire"
+  },
+  "auth": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "logout": "Déconnexion"
+  }
+} 

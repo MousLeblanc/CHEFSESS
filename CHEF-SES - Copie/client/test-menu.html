@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Génération Menu - ChAIf SES</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    h1 {
+      color: #667eea;
+      margin-bottom: 1rem;
+      font-size: 2rem;
+    }
+    
+    .info {
+      background: #e3f2fd;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      border-left: 4px solid #2196f3;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 1.2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    
+    .btn:active {
+      transform: translateY(0);
+    }
+    
+    #results {
+      margin-top: 2rem;
+    }
+    
+    .success {
+      background: #d4edda;
+      color: #155724;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border-left: 4px solid #28a745;
+    }
+    
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border-left: 4px solid #dc3545;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 3rem;
+    }
+    
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fas fa-vial"></i> Test Système de Génération de Menus</h1>
+    
+    <div class="info">
+      <strong>🧪 Page de test sans cache</strong><br>
+      Cette page teste directement le système de génération de menus.
+    </div>
+    
+    <form id="test-form">
+      <div class="form-group">
+        <label for="num-dishes">Nombre de plats :</label>
+        <input type="number" id="num-dishes" min="1" max="10" value="3" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="age-count">Nombre de personnes :</label>
+        <input type="number" id="age-count" min="1" value="30" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="age-range">Tranche d'âge :</label>
+        <select id="age-range" required>
+          <option value="2.5-6">2.5 - 6 ans (Maternelle)</option>
+          <option value="6-12" selected>6 - 12 ans (Primaire)</option>
+          <option value="12-18">12 - 18 ans (Secondaire)</option>
+          <option value="adulte">Adultes</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="specific-needs">Restrictions (optionnel) :</label>
+        <textarea id="specific-needs" rows="3" placeholder="Ex: sans gluten, végétarien"></textarea>
+      </div>
+      
+      <button type="submit" class="btn">
+        <i class="fas fa-magic"></i> Générer le Menu
+      </button>
+    </form>
+    
+    <div id="results"></div>
+  </div>
+
+  <!-- Charger les scripts avec timestamp pour éviter le cache -->
+  <script src="js/intelligent-menu-generator.js?v=<?php echo time(); ?>"></script>
+  <script>
+    document.getElementById('test-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const resultsDiv = document.getElementById('results');
+      
+      // Afficher le loading
+      resultsDiv.innerHTML = `
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>🎨 Génération en cours...</p>
+        </div>
+      `;
+      
+      try {
+        // Vérifier que IntelligentMenuGenerator existe
+        if (typeof IntelligentMenuGenerator === 'undefined') {
+          throw new Error('IntelligentMenuGenerator n\'est pas chargé');
+        }
+        
+        const generator = new IntelligentMenuGenerator();
+        
+        const config = {
+          establishmentType: 'cantine_scolaire',
+          ageGroups: [{
+            ageRange: document.getElementById('age-range').value,
+            count: parseInt(document.getElementById('age-count').value)
+          }],
+          numDishes: parseInt(document.getElementById('num-dishes').value),
+          allergens: [],
+          dietaryRestrictions: [],
+          medicalConditions: [],
+          texture: 'normale',
+          useStockOnly: false,
+          specificNeeds: document.getElementById('specific-needs').value || ''
+        };
+        
+        console.log('Configuration:', config);
+        
+        const menu = await generator.generateMenu(config);
+        
+        resultsDiv.innerHTML = `
+          <div class="success">
+            <h3><i class="fas fa-check-circle"></i> Succès !</h3>
+            <p>Menu généré avec ${menu.selectedRecipes?.length || 0} plats</p>
+            <pre style="margin-top: 1rem; white-space: pre-wrap;">${JSON.stringify(menu, null, 2)}</pre>
+          </div>
+        `;
+        
+      } catch (error) {
+        console.error('Erreur:', error);
+        resultsDiv.innerHTML = `
+          <div class="error">
+            <h3><i class="fas fa-exclamation-triangle"></i> Erreur</h3>
+            <p><strong>${error.message}</strong></p>
+            <p style="margin-top: 0.5rem;">Vérifiez la console (F12) pour plus de détails.</p>
+          </div>
+        `;
+      }
+    });
+    
+    console.log('✅ Page de test chargée');
+    console.log('IntelligentMenuGenerator disponible:', typeof IntelligentMenuGenerator !== 'undefined');
+  </script>
+</body>
+</html>
+

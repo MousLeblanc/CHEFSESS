@@ -1,0 +1,531 @@
+/* CSS pour le système de génération intelligente de menus */
+
+:root {
+  --primary-color: #3498db;
+  --secondary-color: #2ecc71;
+  --danger-color: #e74c3c;
+  --warning-color: #f39c12;
+  --dark-color: #2c3e50;
+  --light-color: #ecf0f1;
+  --border-radius: 8px;
+  --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
+
+/* Container principal */
+.menu-generator-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.menu-generator-container h1 {
+  color: var(--dark-color);
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.menu-generator-container > p {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+}
+
+/* Sections du formulaire */
+.form-section {
+  background: white;
+  padding: 25px;
+  margin-bottom: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+}
+
+.form-section:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.form-section h3 {
+  margin-top: 0;
+  color: var(--dark-color);
+  border-bottom: 3px solid var(--primary-color);
+  padding-bottom: 12px;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Groupes de formulaire */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--dark-color);
+  font-size: 0.95rem;
+}
+
+.form-group small {
+  display: block;
+  color: #95a5a6;
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #ddd;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: var(--transition);
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Entrées de groupe d'âge */
+.age-group-entry {
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  gap: 15px;
+  margin-bottom: 15px;
+  align-items: end;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--primary-color);
+}
+
+/* Groupes de checkbox */
+.checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: normal;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.checkbox-group label:hover {
+  background: #e9ecef;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+.checkbox-group input[type="checkbox"]:checked + label {
+  background: rgba(52, 152, 219, 0.1);
+}
+
+/* Boutons */
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #2980b9;
+}
+
+.btn-secondary {
+  background: #95a5a6;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #7f8c8d;
+}
+
+.btn-danger {
+  background: var(--danger-color);
+  color: white;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+}
+
+.btn-danger:hover {
+  background: #c0392b;
+}
+
+.btn-add {
+  background: var(--secondary-color);
+  color: white;
+  padding: 10px 20px;
+  margin-top: 10px;
+}
+
+.btn-add:hover {
+  background: #27ae60;
+}
+
+/* Messages */
+.error-message,
+.success-message {
+  padding: 15px 20px;
+  border-radius: var(--border-radius);
+  margin-bottom: 20px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideIn 0.3s ease;
+}
+
+.error-message {
+  background: var(--danger-color);
+  color: white;
+  border-left: 5px solid #c0392b;
+}
+
+.success-message {
+  background: var(--secondary-color);
+  color: white;
+  border-left: 5px solid #27ae60;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.spinner {
+  border: 5px solid var(--light-color);
+  border-top: 5px solid var(--primary-color);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Menu généré */
+.generated-menu {
+  margin-top: 40px;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.generated-menu h2 {
+  color: var(--dark-color);
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.menu-description {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+.menu-metadata {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: var(--border-radius);
+}
+
+.menu-metadata span {
+  font-size: 0.95rem;
+}
+
+.menu-metadata strong {
+  color: var(--dark-color);
+}
+
+/* Plats */
+.menu-dishes h3 {
+  color: var(--dark-color);
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--secondary-color);
+  padding-bottom: 10px;
+}
+
+.dish-card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  padding: 25px;
+  margin-bottom: 20px;
+  border-radius: var(--border-radius);
+  border-left: 5px solid var(--primary-color);
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+}
+
+.dish-card:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.dish-card h4 {
+  margin-top: 0;
+  color: var(--dark-color);
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+}
+
+.dish-category {
+  display: inline-block;
+  padding: 5px 15px;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.dish-description {
+  color: #7f8c8d;
+  font-style: italic;
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+/* Nutrition */
+.dish-nutrition {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin: 15px 0;
+  font-size: 0.9rem;
+}
+
+.dish-nutrition span {
+  background: white;
+  padding: 8px 15px;
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+}
+
+/* Details/Summary */
+details {
+  margin-top: 15px;
+}
+
+summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 12px 15px;
+  background: white;
+  border-radius: var(--border-radius);
+  margin-bottom: 10px;
+  border: 2px solid var(--light-color);
+  transition: var(--transition);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+summary:hover {
+  border-color: var(--primary-color);
+  background: rgba(52, 152, 219, 0.05);
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary::before {
+  content: '▶';
+  font-size: 0.8rem;
+  transition: var(--transition);
+}
+
+details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.ingredients-list,
+.instructions-list {
+  padding-left: 25px;
+  margin: 15px 0;
+  line-height: 1.8;
+}
+
+.ingredients-list li,
+.instructions-list li {
+  margin-bottom: 8px;
+  color: var(--dark-color);
+}
+
+/* Liste de courses */
+.shopping-list {
+  margin-top: 40px;
+  background: white;
+  padding: 25px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.shopping-list h3 {
+  color: var(--dark-color);
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--warning-color);
+  padding-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.shopping-list table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.shopping-list th,
+.shopping-list td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.shopping-list th {
+  background: var(--primary-color);
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+.shopping-list tr:hover {
+  background: #f8f9fa;
+}
+
+.shopping-list tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .menu-generator-container {
+    padding: 15px;
+  }
+
+  .menu-generator-container h1 {
+    font-size: 2rem;
+  }
+
+  .age-group-entry {
+    grid-template-columns: 1fr;
+  }
+
+  .checkbox-group {
+    grid-template-columns: 1fr;
+  }
+
+  .dish-nutrition {
+    flex-direction: column;
+  }
+
+  .shopping-list table {
+    font-size: 0.85rem;
+  }
+
+  .shopping-list th,
+  .shopping-list td {
+    padding: 10px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .form-section,
+  .btn {
+    display: none;
+  }
+
+  .generated-menu {
+    page-break-inside: avoid;
+  }
+
+  .dish-card {
+    page-break-inside: avoid;
+  }
+}
+

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Supplier Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .hidden { display: none; }
+        .show { display: block; }
+        .form-group { margin: 10px 0; }
+        .form-group label { display: block; margin-bottom: 5px; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; }
+        button { padding: 10px 20px; margin: 5px; }
+        .btn-primary { background: #007bff; color: white; border: none; }
+        .btn-secondary { background: #6c757d; color: white; border: none; }
+    </style>
+</head>
+<body>
+    <h1>Test Supplier Dashboard</h1>
+    
+    <button id="show-form" class="btn-primary">Afficher le formulaire</button>
+    <button id="test-direct" class="btn-secondary">Test Direct</button>
+    
+    <form id="add-product-form" class="hidden">
+        <h3>Ajouter un produit</h3>
+        <div class="form-group">
+            <label for="product-name">Nom du produit *</label>
+            <input type="text" id="product-name" required>
+        </div>
+        <div class="form-group">
+            <label for="product-category">Catégorie *</label>
+            <select id="product-category" required>
+                <option value="">Sélectionner une catégorie</option>
+                <option value="fruits-legumes">Fruits et Légumes</option>
+                <option value="viandes">Viandes</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="product-price">Prix (€) *</label>
+            <input type="number" id="product-price" step="0.01" min="0" required>
+        </div>
+        <div class="form-group">
+            <label for="product-unit">Unité *</label>
+            <select id="product-unit" required>
+                <option value="">Sélectionner une unité</option>
+                <option value="kg">Kilogramme (kg)</option>
+                <option value="g">Gramme (g)</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-primary">Ajouter le produit</button>
+        <button type="button" id="cancel-form" class="btn-secondary">Annuler</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        console.log('🚀 Script de test chargé');
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOM chargé');
+            
+            const showFormBtn = document.getElementById('show-form');
+            const testDirectBtn = document.getElementById('test-direct');
+            const addProductForm = document.getElementById('add-product-form');
+            const cancelFormBtn = document.getElementById('cancel-form');
+            
+            console.log('🔍 Éléments trouvés:', {
+                showFormBtn: !!showFormBtn,
+                testDirectBtn: !!testDirectBtn,
+                addProductForm: !!addProductForm,
+                cancelFormBtn: !!cancelFormBtn
+            });
+            
+            if (showFormBtn) {
+                showFormBtn.addEventListener('click', function() {
+                    console.log('🖱️ Clic sur "Afficher le formulaire"');
+                    addProductForm.classList.add('show');
+                });
+            }
+            
+            if (testDirectBtn) {
+                testDirectBtn.addEventListener('click', function() {
+                    console.log('🧪 Clic sur "Test Direct"');
+                    addProductForm.classList.add('show');
+                });
+            }
+            
+            if (cancelFormBtn) {
+                cancelFormBtn.addEventListener('click', function() {
+                    console.log('🖱️ Clic sur "Annuler"');
+                    addProductForm.classList.remove('show');
+                    addProductForm.reset();
+                });
+            }
+            
+            if (addProductForm) {
+                addProductForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('📝 Soumission du formulaire');
+                    
+                    const formData = {
+                        name: document.getElementById('product-name').value,
+                        category: document.getElementById('product-category').value,
+                        price: document.getElementById('product-price').value,
+                        unit: document.getElementById('product-unit').value
+                    };
+                    
+                    console.log('📝 Données:', formData);
+                    
+                    // Afficher le résultat
+                    document.getElementById('result').innerHTML = `
+                        <h3>Résultat du test :</h3>
+                        <p><strong>Nom:</strong> ${formData.name}</p>
+                        <p><strong>Catégorie:</strong> ${formData.category}</p>
+                        <p><strong>Prix:</strong> ${formData.price}€</p>
+                        <p><strong>Unité:</strong> ${formData.unit}</p>
+                        <p style="color: green;">✅ Formulaire fonctionne correctement !</p>
+                    `;
+                });
+            }
+        });
+    </script>
+    <script src="js/init.js"></script>`r`n</body>
+</html>

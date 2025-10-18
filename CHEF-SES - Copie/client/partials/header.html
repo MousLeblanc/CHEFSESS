@@ -1,0 +1,44 @@
+<!-- partials/header.html -->
+<header id="header" class="header">
+  <div class="container">
+    <div class="header-content">
+      <div class="logo">
+        <a href="accueil.html">
+          <img src="img/logo.png" alt="ChAIf SES" id="logo-placeholder" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22><text y=%2230%22 font-size=%2230%22>👨‍🍳</text></svg>';">
+          <span>ChAIf SES</span>
+        </a>
+      </div>
+      
+      <nav>
+        <div class="mobile-menu-toggle" id="mobile-menu-button">
+          <i class="fas fa-bars"></i>
+        </div>
+        
+        <ul id="nav-links">
+          <li><a href="accueil.html"><i class="fas fa-home"></i> Accueil</a></li>
+          <li><a href="stock.html"><i class="fas fa-boxes-stacked"></i> Stock</a></li>
+          <li><a href="historique.html"><i class="fas fa-history"></i> Menus</a></li>
+          <li><a href="fournisseurs.html"><i class="fas fa-truck"></i> Fournisseurs</a></li>
+        </ul>
+      </nav>
+      
+      <div class="header-actions">
+        <button class="btn-icon" title="Paramètres">
+          <i class="fas fa-cog"></i>
+        </button>
+        
+        <div class="user-menu">
+          <button id="user-menu-toggle" class="user-menu-button">
+            <span id="user-name">Utilisateur</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          
+          <ul id="user-dropdown" class="dropdown-menu">
+            <li><a href="profile.html"><i class="fas fa-user"></i> Profil</a></li>
+            <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

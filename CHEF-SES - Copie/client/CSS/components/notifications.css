@@ -1,0 +1,104 @@
+/* components/notifications.css */
+.notification-container {
+  position: fixed;
+  top: var(--spacing-6);
+  right: var(--spacing-6);
+  z-index: var(--z-index-toast);
+  max-width: 350px;
+  width: 100%;
+}
+
+.notification {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+  box-shadow: var(--shadow-md);
+  animation: notification-in var(--transition-normal) ease forwards;
+  overflow: hidden;
+}
+
+@keyframes notification-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes notification-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+.notification.hide {
+  animation: notification-out var(--transition-normal) ease forwards;
+}
+
+.notification-icon {
+  flex: 0 0 auto;
+  margin-right: var(--spacing-3);
+  font-size: var(--font-size-lg);
+}
+
+.notification-content {
+  flex: 1 1 auto;
+}
+
+.notification-title {
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--spacing-1);
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-2);
+  margin: -var(--spacing-2);
+  color: currentColor;
+  opacity: 0.5;
+  transition: opacity var(--transition-fast);
+  font-size: var(--font-size-lg);
+  line-height: 1;
+}
+
+.notification-close:hover {
+  opacity: 1;
+}
+
+/* Types de notifications */
+.notification-success {
+  background-color: rgba(46, 204, 113, 0.1);
+  border-left: 4px solid var(--success);
+  color: var(--success);
+}
+
+.notification-error {
+  background-color: rgba(231, 76, 60, 0.1);
+  border-left: 4px solid var(--danger);
+  color: var(--danger);
+}
+
+.notification-warning {
+  background-color: rgba(243, 156, 18, 0.1);
+  border-left: 4px solid var(--warning);
+  color: var(--warning);
+}
+
+.notification-info {
+  background-color: rgba(52, 152, 219, 0.1);
+  border-left: 4px solid var(--primary);
+  color: var(--primary);
+}

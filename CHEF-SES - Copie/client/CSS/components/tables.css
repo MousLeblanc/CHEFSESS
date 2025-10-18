@@ -1,0 +1,82 @@
+/* tables.css */
+.table {
+  width: 100%;
+  margin-bottom: var(--spacing-6);
+  color: var(--gray-800);
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: var(--spacing-4);
+  vertical-align: top;
+  border-top: var(--border-width-thin) solid var(--gray-300);
+}
+
+.table thead th {
+  vertical-align: bottom;
+  border-bottom: calc(2 * var(--border-width-thin)) solid var(--gray-300);
+  background-color: var(--light);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary);
+}
+
+.table tbody + tbody {
+  border-top: calc(2 * var(--border-width-thin)) solid var(--gray-300);
+}
+
+/* Table bordure */
+.table-bordered {
+  border: var(--border-width-thin) solid var(--gray-300);
+}
+
+.table-bordered th,
+.table-bordered td {
+  border: var(--border-width-thin) solid var(--gray-300);
+}
+
+/* Table rayée */
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Table survol */
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.075);
+}
+
+/* Row success, warning, etc */
+.table-success,
+.table-success > th,
+.table-success > td {
+  background-color: rgba(46, 204, 113, 0.1);
+}
+
+.table-warning,
+.table-warning > th,
+.table-warning > td {
+  background-color: rgba(243, 156, 18, 0.1);
+}
+
+.table-danger,
+.table-danger > th,
+.table-danger > td {
+  background-color: rgba(231, 76, 60, 0.1);
+}
+
+/* Table responsive */
+.table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 767.98px) {
+  .table-responsive-md {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

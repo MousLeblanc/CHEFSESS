@@ -1,0 +1,2527 @@
+[
+  {
+    "name": "Soupe de potiron douce",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté"
+    ],
+    "pathologies": [
+      "hypertension"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 120,
+      "protein": 2,
+      "lipids": 3,
+      "carbs": 20
+    },
+    "ingredients": [
+      {
+        "name": "potiron",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      },
+      {
+        "name": "eau",
+        "quantity": 300,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Couper le potiron en cubes.",
+      "Cuire à la vapeur 20 min.",
+      "Mixer avec un filet d’huile et servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Velouté de courgettes au lait d’amande",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans lactose",
+      "végétalien"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "amande"
+    ],
+    "nutritionalProfile": {
+      "kcal": 130,
+      "protein": 3,
+      "lipids": 6,
+      "carbs": 12
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "lait d’amande",
+        "quantity": 150,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes.",
+      "Mixer avec le lait d’amande.",
+      "Servir chaud ou tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  },
+  {
+    "name": "Purée de courgettes au poulet mixé",
+    "category": "plat",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté",
+      "hyperprotéiné"
+    ],
+    "pathologies": [
+      "hypertension",
+      "diabète"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 280,
+      "protein": 22,
+      "lipids": 6,
+      "carbs": 24
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 150,
+        "unit": "g"
+      },
+      {
+        "name": "blanc de poulet",
+        "quantity": 80,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes à la vapeur 10 min.",
+      "Mixer avec le poulet et l’huile jusqu’à texture homogène.",
+      "Servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite"
+    ]
+  },
+  {
+    "name": "Filet de colin vapeur et purée de carottes",
+    "category": "plat",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "hachée",
+    "diet": [
+      "sans sel ajouté",
+      "pauvre en graisse"
+    ],
+    "pathologies": [
+      "hypertension",
+      "cholestérol"
+    ],
+    "allergens": [
+      "poisson"
+    ],
+    "nutritionalProfile": {
+      "kcal": 250,
+      "protein": 20,
+      "lipids": 5,
+      "carbs": 25
+    },
+    "ingredients": [
+      {
+        "name": "colin",
+        "quantity": 100,
+        "unit": "g"
+      },
+      {
+        "name": "carottes",
+        "quantity": 120,
+        "unit": "g"
+      },
+      {
+        "name": "huile d’olive",
+        "quantity": 5,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire le colin à la vapeur.",
+      "Préparer une purée de carottes.",
+      "Assembler et servir chaud."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital"
+    ]
+  },
+  {
+    "name": "Compote de pommes maison sans sucre ajouté",
+    "category": "dessert",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sucre ajouté"
+    ],
+    "pathologies": [
+      "diabète"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 90,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 22
+    },
+    "ingredients": [
+      {
+        "name": "pommes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "eau",
+        "quantity": 50,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Éplucher et couper les pommes.",
+      "Cuire à feu doux avec un peu d’eau 15 minutes.",
+      "Mixer et servir froid."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Crème de semoule au lait végétal",
+    "category": "dessert",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "lisse",
+    "diet": [
+      "sans lactose"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "gluten"
+    ],
+    "nutritionalProfile": {
+      "kcal": 160,
+      "protein": 4,
+      "lipids": 4,
+      "carbs": 28
+    },
+    "ingredients": [
+      {
+        "name": "semoule fine",
+        "quantity": 40,
+        "unit": "g"
+      },
+      {
+        "name": "lait de soja",
+        "quantity": 200,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Chauffer le lait de soja.",
+      "Ajouter la semoule et remuer jusqu’à épaississement.",
+      "Laisser refroidir avant de servir."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  },
+  {
+    "name": "Soupe de potiron douce (variation 1)",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté"
+    ],
+    "pathologies": [
+      "hypertension"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 120,
+      "protein": 2,
+      "lipids": 3,
+      "carbs": 20
+    },
+    "ingredients": [
+      {
+        "name": "potiron",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      },
+      {
+        "name": "eau",
+        "quantity": 300,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Couper le potiron en cubes.",
+      "Cuire à la vapeur 20 min.",
+      "Mixer avec un filet d’huile et servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Velouté de courgettes au lait d’amande (variation 1)",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans lactose",
+      "végétalien"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "amande"
+    ],
+    "nutritionalProfile": {
+      "kcal": 130,
+      "protein": 3,
+      "lipids": 6,
+      "carbs": 12
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "lait d’amande",
+        "quantity": 150,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes.",
+      "Mixer avec le lait d’amande.",
+      "Servir chaud ou tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  },
+  {
+    "name": "Purée de courgettes au poulet mixé (variation 1)",
+    "category": "plat",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté",
+      "hyperprotéiné"
+    ],
+    "pathologies": [
+      "hypertension",
+      "diabète"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 280,
+      "protein": 22,
+      "lipids": 6,
+      "carbs": 24
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 150,
+        "unit": "g"
+      },
+      {
+        "name": "blanc de poulet",
+        "quantity": 80,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes à la vapeur 10 min.",
+      "Mixer avec le poulet et l’huile jusqu’à texture homogène.",
+      "Servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite"
+    ]
+  },
+  {
+    "name": "Filet de colin vapeur et purée de carottes (variation 1)",
+    "category": "plat",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "hachée",
+    "diet": [
+      "sans sel ajouté",
+      "pauvre en graisse"
+    ],
+    "pathologies": [
+      "hypertension",
+      "cholestérol"
+    ],
+    "allergens": [
+      "poisson"
+    ],
+    "nutritionalProfile": {
+      "kcal": 250,
+      "protein": 20,
+      "lipids": 5,
+      "carbs": 25
+    },
+    "ingredients": [
+      {
+        "name": "colin",
+        "quantity": 100,
+        "unit": "g"
+      },
+      {
+        "name": "carottes",
+        "quantity": 120,
+        "unit": "g"
+      },
+      {
+        "name": "huile d’olive",
+        "quantity": 5,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire le colin à la vapeur.",
+      "Préparer une purée de carottes.",
+      "Assembler et servir chaud."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital"
+    ]
+  },
+  {
+    "name": "Compote de pommes maison sans sucre ajouté (variation 1)",
+    "category": "dessert",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sucre ajouté"
+    ],
+    "pathologies": [
+      "diabète"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 90,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 22
+    },
+    "ingredients": [
+      {
+        "name": "pommes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "eau",
+        "quantity": 50,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Éplucher et couper les pommes.",
+      "Cuire à feu doux avec un peu d’eau 15 minutes.",
+      "Mixer et servir froid."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Crème de semoule au lait végétal (variation 1)",
+    "category": "dessert",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "lisse",
+    "diet": [
+      "sans lactose"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "gluten"
+    ],
+    "nutritionalProfile": {
+      "kcal": 160,
+      "protein": 4,
+      "lipids": 4,
+      "carbs": 28
+    },
+    "ingredients": [
+      {
+        "name": "semoule fine",
+        "quantity": 40,
+        "unit": "g"
+      },
+      {
+        "name": "lait de soja",
+        "quantity": 200,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Chauffer le lait de soja.",
+      "Ajouter la semoule et remuer jusqu’à épaississement.",
+      "Laisser refroidir avant de servir."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  },
+  {
+    "name": "Soupe de potiron douce (variation 2)",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté"
+    ],
+    "pathologies": [
+      "hypertension"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 120,
+      "protein": 2,
+      "lipids": 3,
+      "carbs": 20
+    },
+    "ingredients": [
+      {
+        "name": "potiron",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      },
+      {
+        "name": "eau",
+        "quantity": 300,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Couper le potiron en cubes.",
+      "Cuire à la vapeur 20 min.",
+      "Mixer avec un filet d’huile et servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Velouté de courgettes au lait d’amande (variation 2)",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans lactose",
+      "végétalien"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "amande"
+    ],
+    "nutritionalProfile": {
+      "kcal": 130,
+      "protein": 3,
+      "lipids": 6,
+      "carbs": 12
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "lait d’amande",
+        "quantity": 150,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes.",
+      "Mixer avec le lait d’amande.",
+      "Servir chaud ou tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  },
+  {
+    "name": "Purée de courgettes au poulet mixé (variation 2)",
+    "category": "plat",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté",
+      "hyperprotéiné"
+    ],
+    "pathologies": [
+      "hypertension",
+      "diabète"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 280,
+      "protein": 22,
+      "lipids": 6,
+      "carbs": 24
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 150,
+        "unit": "g"
+      },
+      {
+        "name": "blanc de poulet",
+        "quantity": 80,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes à la vapeur 10 min.",
+      "Mixer avec le poulet et l’huile jusqu’à texture homogène.",
+      "Servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite"
+    ]
+  },
+  {
+    "name": "Filet de colin vapeur et purée de carottes (variation 2)",
+    "category": "plat",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "hachée",
+    "diet": [
+      "sans sel ajouté",
+      "pauvre en graisse"
+    ],
+    "pathologies": [
+      "hypertension",
+      "cholestérol"
+    ],
+    "allergens": [
+      "poisson"
+    ],
+    "nutritionalProfile": {
+      "kcal": 250,
+      "protein": 20,
+      "lipids": 5,
+      "carbs": 25
+    },
+    "ingredients": [
+      {
+        "name": "colin",
+        "quantity": 100,
+        "unit": "g"
+      },
+      {
+        "name": "carottes",
+        "quantity": 120,
+        "unit": "g"
+      },
+      {
+        "name": "huile d’olive",
+        "quantity": 5,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire le colin à la vapeur.",
+      "Préparer une purée de carottes.",
+      "Assembler et servir chaud."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital"
+    ]
+  },
+  {
+    "name": "Compote de pommes maison sans sucre ajouté (variation 2)",
+    "category": "dessert",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sucre ajouté"
+    ],
+    "pathologies": [
+      "diabète"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 90,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 22
+    },
+    "ingredients": [
+      {
+        "name": "pommes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "eau",
+        "quantity": 50,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Éplucher et couper les pommes.",
+      "Cuire à feu doux avec un peu d’eau 15 minutes.",
+      "Mixer et servir froid."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Crème de semoule au lait végétal (variation 2)",
+    "category": "dessert",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "lisse",
+    "diet": [
+      "sans lactose"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "gluten"
+    ],
+    "nutritionalProfile": {
+      "kcal": 160,
+      "protein": 4,
+      "lipids": 4,
+      "carbs": 28
+    },
+    "ingredients": [
+      {
+        "name": "semoule fine",
+        "quantity": 40,
+        "unit": "g"
+      },
+      {
+        "name": "lait de soja",
+        "quantity": 200,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Chauffer le lait de soja.",
+      "Ajouter la semoule et remuer jusqu’à épaississement.",
+      "Laisser refroidir avant de servir."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  },
+  {
+    "name": "Soupe de potiron douce (variation 3)",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté"
+    ],
+    "pathologies": [
+      "hypertension"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 120,
+      "protein": 2,
+      "lipids": 3,
+      "carbs": 20
+    },
+    "ingredients": [
+      {
+        "name": "potiron",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      },
+      {
+        "name": "eau",
+        "quantity": 300,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Couper le potiron en cubes.",
+      "Cuire à la vapeur 20 min.",
+      "Mixer avec un filet d’huile et servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Velouté de courgettes au lait d’amande (variation 3)",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans lactose",
+      "végétalien"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "amande"
+    ],
+    "nutritionalProfile": {
+      "kcal": 130,
+      "protein": 3,
+      "lipids": 6,
+      "carbs": 12
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "lait d’amande",
+        "quantity": 150,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes.",
+      "Mixer avec le lait d’amande.",
+      "Servir chaud ou tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  },
+  {
+    "name": "Purée de courgettes au poulet mixé (variation 3)",
+    "category": "plat",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté",
+      "hyperprotéiné"
+    ],
+    "pathologies": [
+      "hypertension",
+      "diabète"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 280,
+      "protein": 22,
+      "lipids": 6,
+      "carbs": 24
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 150,
+        "unit": "g"
+      },
+      {
+        "name": "blanc de poulet",
+        "quantity": 80,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes à la vapeur 10 min.",
+      "Mixer avec le poulet et l’huile jusqu’à texture homogène.",
+      "Servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite"
+    ]
+  },
+  {
+    "name": "Filet de colin vapeur et purée de carottes (variation 3)",
+    "category": "plat",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "hachée",
+    "diet": [
+      "sans sel ajouté",
+      "pauvre en graisse"
+    ],
+    "pathologies": [
+      "hypertension",
+      "cholestérol"
+    ],
+    "allergens": [
+      "poisson"
+    ],
+    "nutritionalProfile": {
+      "kcal": 250,
+      "protein": 20,
+      "lipids": 5,
+      "carbs": 25
+    },
+    "ingredients": [
+      {
+        "name": "colin",
+        "quantity": 100,
+        "unit": "g"
+      },
+      {
+        "name": "carottes",
+        "quantity": 120,
+        "unit": "g"
+      },
+      {
+        "name": "huile d’olive",
+        "quantity": 5,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire le colin à la vapeur.",
+      "Préparer une purée de carottes.",
+      "Assembler et servir chaud."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital"
+    ]
+  },
+  {
+    "name": "Compote de pommes maison sans sucre ajouté (variation 3)",
+    "category": "dessert",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sucre ajouté"
+    ],
+    "pathologies": [
+      "diabète"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 90,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 22
+    },
+    "ingredients": [
+      {
+        "name": "pommes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "eau",
+        "quantity": 50,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Éplucher et couper les pommes.",
+      "Cuire à feu doux avec un peu d’eau 15 minutes.",
+      "Mixer et servir froid."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Crème de semoule au lait végétal (variation 3)",
+    "category": "dessert",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "lisse",
+    "diet": [
+      "sans lactose"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "gluten"
+    ],
+    "nutritionalProfile": {
+      "kcal": 160,
+      "protein": 4,
+      "lipids": 4,
+      "carbs": 28
+    },
+    "ingredients": [
+      {
+        "name": "semoule fine",
+        "quantity": 40,
+        "unit": "g"
+      },
+      {
+        "name": "lait de soja",
+        "quantity": 200,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Chauffer le lait de soja.",
+      "Ajouter la semoule et remuer jusqu’à épaississement.",
+      "Laisser refroidir avant de servir."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  },
+  {
+    "name": "Soupe de potiron douce (variation 4)",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté"
+    ],
+    "pathologies": [
+      "hypertension"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 120,
+      "protein": 2,
+      "lipids": 3,
+      "carbs": 20
+    },
+    "ingredients": [
+      {
+        "name": "potiron",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      },
+      {
+        "name": "eau",
+        "quantity": 300,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Couper le potiron en cubes.",
+      "Cuire à la vapeur 20 min.",
+      "Mixer avec un filet d’huile et servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Velouté de courgettes au lait d’amande (variation 4)",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans lactose",
+      "végétalien"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "amande"
+    ],
+    "nutritionalProfile": {
+      "kcal": 130,
+      "protein": 3,
+      "lipids": 6,
+      "carbs": 12
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "lait d’amande",
+        "quantity": 150,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes.",
+      "Mixer avec le lait d’amande.",
+      "Servir chaud ou tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  },
+  {
+    "name": "Purée de courgettes au poulet mixé (variation 4)",
+    "category": "plat",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté",
+      "hyperprotéiné"
+    ],
+    "pathologies": [
+      "hypertension",
+      "diabète"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 280,
+      "protein": 22,
+      "lipids": 6,
+      "carbs": 24
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 150,
+        "unit": "g"
+      },
+      {
+        "name": "blanc de poulet",
+        "quantity": 80,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes à la vapeur 10 min.",
+      "Mixer avec le poulet et l’huile jusqu’à texture homogène.",
+      "Servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite"
+    ]
+  },
+  {
+    "name": "Filet de colin vapeur et purée de carottes (variation 4)",
+    "category": "plat",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "hachée",
+    "diet": [
+      "sans sel ajouté",
+      "pauvre en graisse"
+    ],
+    "pathologies": [
+      "hypertension",
+      "cholestérol"
+    ],
+    "allergens": [
+      "poisson"
+    ],
+    "nutritionalProfile": {
+      "kcal": 250,
+      "protein": 20,
+      "lipids": 5,
+      "carbs": 25
+    },
+    "ingredients": [
+      {
+        "name": "colin",
+        "quantity": 100,
+        "unit": "g"
+      },
+      {
+        "name": "carottes",
+        "quantity": 120,
+        "unit": "g"
+      },
+      {
+        "name": "huile d’olive",
+        "quantity": 5,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire le colin à la vapeur.",
+      "Préparer une purée de carottes.",
+      "Assembler et servir chaud."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital"
+    ]
+  },
+  {
+    "name": "Compote de pommes maison sans sucre ajouté (variation 4)",
+    "category": "dessert",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sucre ajouté"
+    ],
+    "pathologies": [
+      "diabète"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 90,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 22
+    },
+    "ingredients": [
+      {
+        "name": "pommes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "eau",
+        "quantity": 50,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Éplucher et couper les pommes.",
+      "Cuire à feu doux avec un peu d’eau 15 minutes.",
+      "Mixer et servir froid."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Crème de semoule au lait végétal (variation 4)",
+    "category": "dessert",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "lisse",
+    "diet": [
+      "sans lactose"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "gluten"
+    ],
+    "nutritionalProfile": {
+      "kcal": 160,
+      "protein": 4,
+      "lipids": 4,
+      "carbs": 28
+    },
+    "ingredients": [
+      {
+        "name": "semoule fine",
+        "quantity": 40,
+        "unit": "g"
+      },
+      {
+        "name": "lait de soja",
+        "quantity": 200,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Chauffer le lait de soja.",
+      "Ajouter la semoule et remuer jusqu’à épaississement.",
+      "Laisser refroidir avant de servir."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  },
+  {
+    "name": "Soupe de potiron douce (variation 5)",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté"
+    ],
+    "pathologies": [
+      "hypertension"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 120,
+      "protein": 2,
+      "lipids": 3,
+      "carbs": 20
+    },
+    "ingredients": [
+      {
+        "name": "potiron",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      },
+      {
+        "name": "eau",
+        "quantity": 300,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Couper le potiron en cubes.",
+      "Cuire à la vapeur 20 min.",
+      "Mixer avec un filet d’huile et servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Velouté de courgettes au lait d’amande (variation 5)",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans lactose",
+      "végétalien"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "amande"
+    ],
+    "nutritionalProfile": {
+      "kcal": 130,
+      "protein": 3,
+      "lipids": 6,
+      "carbs": 12
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "lait d’amande",
+        "quantity": 150,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes.",
+      "Mixer avec le lait d’amande.",
+      "Servir chaud ou tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  },
+  {
+    "name": "Purée de courgettes au poulet mixé (variation 5)",
+    "category": "plat",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté",
+      "hyperprotéiné"
+    ],
+    "pathologies": [
+      "hypertension",
+      "diabète"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 280,
+      "protein": 22,
+      "lipids": 6,
+      "carbs": 24
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 150,
+        "unit": "g"
+      },
+      {
+        "name": "blanc de poulet",
+        "quantity": 80,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes à la vapeur 10 min.",
+      "Mixer avec le poulet et l’huile jusqu’à texture homogène.",
+      "Servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite"
+    ]
+  },
+  {
+    "name": "Filet de colin vapeur et purée de carottes (variation 5)",
+    "category": "plat",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "hachée",
+    "diet": [
+      "sans sel ajouté",
+      "pauvre en graisse"
+    ],
+    "pathologies": [
+      "hypertension",
+      "cholestérol"
+    ],
+    "allergens": [
+      "poisson"
+    ],
+    "nutritionalProfile": {
+      "kcal": 250,
+      "protein": 20,
+      "lipids": 5,
+      "carbs": 25
+    },
+    "ingredients": [
+      {
+        "name": "colin",
+        "quantity": 100,
+        "unit": "g"
+      },
+      {
+        "name": "carottes",
+        "quantity": 120,
+        "unit": "g"
+      },
+      {
+        "name": "huile d’olive",
+        "quantity": 5,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire le colin à la vapeur.",
+      "Préparer une purée de carottes.",
+      "Assembler et servir chaud."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital"
+    ]
+  },
+  {
+    "name": "Compote de pommes maison sans sucre ajouté (variation 5)",
+    "category": "dessert",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sucre ajouté"
+    ],
+    "pathologies": [
+      "diabète"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 90,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 22
+    },
+    "ingredients": [
+      {
+        "name": "pommes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "eau",
+        "quantity": 50,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Éplucher et couper les pommes.",
+      "Cuire à feu doux avec un peu d’eau 15 minutes.",
+      "Mixer et servir froid."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Crème de semoule au lait végétal (variation 5)",
+    "category": "dessert",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "lisse",
+    "diet": [
+      "sans lactose"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "gluten"
+    ],
+    "nutritionalProfile": {
+      "kcal": 160,
+      "protein": 4,
+      "lipids": 4,
+      "carbs": 28
+    },
+    "ingredients": [
+      {
+        "name": "semoule fine",
+        "quantity": 40,
+        "unit": "g"
+      },
+      {
+        "name": "lait de soja",
+        "quantity": 200,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Chauffer le lait de soja.",
+      "Ajouter la semoule et remuer jusqu’à épaississement.",
+      "Laisser refroidir avant de servir."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  },
+  {
+    "name": "Soupe de potiron douce (variation 6)",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté"
+    ],
+    "pathologies": [
+      "hypertension"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 120,
+      "protein": 2,
+      "lipids": 3,
+      "carbs": 20
+    },
+    "ingredients": [
+      {
+        "name": "potiron",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      },
+      {
+        "name": "eau",
+        "quantity": 300,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Couper le potiron en cubes.",
+      "Cuire à la vapeur 20 min.",
+      "Mixer avec un filet d’huile et servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Velouté de courgettes au lait d’amande (variation 6)",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans lactose",
+      "végétalien"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "amande"
+    ],
+    "nutritionalProfile": {
+      "kcal": 130,
+      "protein": 3,
+      "lipids": 6,
+      "carbs": 12
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "lait d’amande",
+        "quantity": 150,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes.",
+      "Mixer avec le lait d’amande.",
+      "Servir chaud ou tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  },
+  {
+    "name": "Purée de courgettes au poulet mixé (variation 6)",
+    "category": "plat",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté",
+      "hyperprotéiné"
+    ],
+    "pathologies": [
+      "hypertension",
+      "diabète"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 280,
+      "protein": 22,
+      "lipids": 6,
+      "carbs": 24
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 150,
+        "unit": "g"
+      },
+      {
+        "name": "blanc de poulet",
+        "quantity": 80,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes à la vapeur 10 min.",
+      "Mixer avec le poulet et l’huile jusqu’à texture homogène.",
+      "Servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite"
+    ]
+  },
+  {
+    "name": "Filet de colin vapeur et purée de carottes (variation 6)",
+    "category": "plat",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "hachée",
+    "diet": [
+      "sans sel ajouté",
+      "pauvre en graisse"
+    ],
+    "pathologies": [
+      "hypertension",
+      "cholestérol"
+    ],
+    "allergens": [
+      "poisson"
+    ],
+    "nutritionalProfile": {
+      "kcal": 250,
+      "protein": 20,
+      "lipids": 5,
+      "carbs": 25
+    },
+    "ingredients": [
+      {
+        "name": "colin",
+        "quantity": 100,
+        "unit": "g"
+      },
+      {
+        "name": "carottes",
+        "quantity": 120,
+        "unit": "g"
+      },
+      {
+        "name": "huile d’olive",
+        "quantity": 5,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire le colin à la vapeur.",
+      "Préparer une purée de carottes.",
+      "Assembler et servir chaud."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital"
+    ]
+  },
+  {
+    "name": "Compote de pommes maison sans sucre ajouté (variation 6)",
+    "category": "dessert",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sucre ajouté"
+    ],
+    "pathologies": [
+      "diabète"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 90,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 22
+    },
+    "ingredients": [
+      {
+        "name": "pommes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "eau",
+        "quantity": 50,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Éplucher et couper les pommes.",
+      "Cuire à feu doux avec un peu d’eau 15 minutes.",
+      "Mixer et servir froid."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Crème de semoule au lait végétal (variation 6)",
+    "category": "dessert",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "lisse",
+    "diet": [
+      "sans lactose"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "gluten"
+    ],
+    "nutritionalProfile": {
+      "kcal": 160,
+      "protein": 4,
+      "lipids": 4,
+      "carbs": 28
+    },
+    "ingredients": [
+      {
+        "name": "semoule fine",
+        "quantity": 40,
+        "unit": "g"
+      },
+      {
+        "name": "lait de soja",
+        "quantity": 200,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Chauffer le lait de soja.",
+      "Ajouter la semoule et remuer jusqu’à épaississement.",
+      "Laisser refroidir avant de servir."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  },
+  {
+    "name": "Soupe de potiron douce (variation 7)",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté"
+    ],
+    "pathologies": [
+      "hypertension"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 120,
+      "protein": 2,
+      "lipids": 3,
+      "carbs": 20
+    },
+    "ingredients": [
+      {
+        "name": "potiron",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      },
+      {
+        "name": "eau",
+        "quantity": 300,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Couper le potiron en cubes.",
+      "Cuire à la vapeur 20 min.",
+      "Mixer avec un filet d’huile et servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Velouté de courgettes au lait d’amande (variation 7)",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans lactose",
+      "végétalien"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "amande"
+    ],
+    "nutritionalProfile": {
+      "kcal": 130,
+      "protein": 3,
+      "lipids": 6,
+      "carbs": 12
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "lait d’amande",
+        "quantity": 150,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes.",
+      "Mixer avec le lait d’amande.",
+      "Servir chaud ou tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  },
+  {
+    "name": "Purée de courgettes au poulet mixé (variation 7)",
+    "category": "plat",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté",
+      "hyperprotéiné"
+    ],
+    "pathologies": [
+      "hypertension",
+      "diabète"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 280,
+      "protein": 22,
+      "lipids": 6,
+      "carbs": 24
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 150,
+        "unit": "g"
+      },
+      {
+        "name": "blanc de poulet",
+        "quantity": 80,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes à la vapeur 10 min.",
+      "Mixer avec le poulet et l’huile jusqu’à texture homogène.",
+      "Servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite"
+    ]
+  },
+  {
+    "name": "Filet de colin vapeur et purée de carottes (variation 7)",
+    "category": "plat",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "hachée",
+    "diet": [
+      "sans sel ajouté",
+      "pauvre en graisse"
+    ],
+    "pathologies": [
+      "hypertension",
+      "cholestérol"
+    ],
+    "allergens": [
+      "poisson"
+    ],
+    "nutritionalProfile": {
+      "kcal": 250,
+      "protein": 20,
+      "lipids": 5,
+      "carbs": 25
+    },
+    "ingredients": [
+      {
+        "name": "colin",
+        "quantity": 100,
+        "unit": "g"
+      },
+      {
+        "name": "carottes",
+        "quantity": 120,
+        "unit": "g"
+      },
+      {
+        "name": "huile d’olive",
+        "quantity": 5,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire le colin à la vapeur.",
+      "Préparer une purée de carottes.",
+      "Assembler et servir chaud."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital"
+    ]
+  },
+  {
+    "name": "Compote de pommes maison sans sucre ajouté (variation 7)",
+    "category": "dessert",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sucre ajouté"
+    ],
+    "pathologies": [
+      "diabète"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 90,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 22
+    },
+    "ingredients": [
+      {
+        "name": "pommes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "eau",
+        "quantity": 50,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Éplucher et couper les pommes.",
+      "Cuire à feu doux avec un peu d’eau 15 minutes.",
+      "Mixer et servir froid."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Crème de semoule au lait végétal (variation 7)",
+    "category": "dessert",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ],
+    "texture": "lisse",
+    "diet": [
+      "sans lactose"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "gluten"
+    ],
+    "nutritionalProfile": {
+      "kcal": 160,
+      "protein": 4,
+      "lipids": 4,
+      "carbs": 28
+    },
+    "ingredients": [
+      {
+        "name": "semoule fine",
+        "quantity": 40,
+        "unit": "g"
+      },
+      {
+        "name": "lait de soja",
+        "quantity": 200,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Chauffer le lait de soja.",
+      "Ajouter la semoule et remuer jusqu’à épaississement.",
+      "Laisser refroidir avant de servir."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  },
+  {
+    "name": "Soupe de potiron douce (variation 8)",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole",
+      "resto"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans sel ajouté"
+    ],
+    "pathologies": [
+      "hypertension"
+    ],
+    "allergens": [],
+    "nutritionalProfile": {
+      "kcal": 120,
+      "protein": 2,
+      "lipids": 3,
+      "carbs": 20
+    },
+    "ingredients": [
+      {
+        "name": "potiron",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "huile de colza",
+        "quantity": 5,
+        "unit": "ml"
+      },
+      {
+        "name": "eau",
+        "quantity": 300,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Couper le potiron en cubes.",
+      "Cuire à la vapeur 20 min.",
+      "Mixer avec un filet d’huile et servir tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "collectivite",
+      "ecole"
+    ]
+  },
+  {
+    "name": "Velouté de courgettes au lait d’amande (variation 8)",
+    "category": "soupe",
+    "establishmentType": [
+      "ehpad",
+      "hopital",
+      "ecole"
+    ],
+    "texture": "mixée",
+    "diet": [
+      "sans lactose",
+      "végétalien"
+    ],
+    "pathologies": [
+      "intolérance au lactose"
+    ],
+    "allergens": [
+      "amande"
+    ],
+    "nutritionalProfile": {
+      "kcal": 130,
+      "protein": 3,
+      "lipids": 6,
+      "carbs": 12
+    },
+    "ingredients": [
+      {
+        "name": "courgettes",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "lait d’amande",
+        "quantity": 150,
+        "unit": "ml"
+      }
+    ],
+    "preparationSteps": [
+      "Cuire les courgettes.",
+      "Mixer avec le lait d’amande.",
+      "Servir chaud ou tiède."
+    ],
+    "compatibleFor": [
+      "ehpad",
+      "hopital",
+      "végétalien"
+    ]
+  }
+]
