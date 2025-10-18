@@ -153,6 +153,18 @@ mongoose.connect(mongoUri)
 // --- Gestionnaire d'Erreurs Global ---
 app.use(errorHandler);
 
+// --- Route principale pour test Preview ---
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "client", "index.html"));
+});
+
+
 // --- Démarrage du Serveur ---
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(
