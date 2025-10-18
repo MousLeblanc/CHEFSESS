@@ -1,74 +1,207 @@
-// models/Order.js
-import mongoose from 'mongoose'; // Changé de require à import
-
-const orderItemSchema = new mongoose.Schema({
-    product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
-        required: true
-    },
-    quantity: {
-        type: Number,
-        required: true,
-        min: [1, 'La quantité minimum est de 1']
-    },
-    price: { // Prix au moment de la commande
-        type: Number,
-        required: true
-    },
-    unit: {
-        type: String,
-        required: true
-    }
-});
+import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema({
-    client: { // Utilisateur (restaurant) qui passe la commande
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: [true, 'Le client est requis']
+  // Architecture multi-sites
+  groupId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Group" 
+  },
+  siteId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Site" 
+  },
+  
+  // Informations sur la commande
+  orderNumber: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  
+  // Informations sur le client (cuisinier/établissement)
+  customer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  
+  // Informations sur le fournisseur
+  supplier: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  
+  // Produits commandés
+  items: [{
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
+      required: true
     },
-    supplier: { // Utilisateur (fournisseur) qui reçoit la commande
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: [true, 'Le fournisseur est requis']
+    productName: {
+      type: String,
+      required: true
     },
-    items: [orderItemSchema],
-    status: {
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1
+    },
+    unit: {
+      type: String,
+      required: true
+    },
+    unitPrice: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+    totalPrice: {
+      type: Number,
+      required: true,
+      min: 0
+    }
+  }],
+  
+  // Informations de livraison
+  delivery: {
+    requestedDate: {
+      type: Date,
+      required: true
+    },
+    confirmedDate: {
+      type: Date
+    },
+    address: {
+      street: String,
+      city: String,
+      zipCode: String,
+      country: {
         type: String,
-        enum: ['pending', 'accepted', 'rejected', 'shipped', 'delivered', 'cancelled'], // 'shipped' ajouté
-        default: 'pending'
+        default: 'France'
+      }
     },
-    total: { // Le total sera calculé par le hook pre-save
-        type: Number,
-        required: true,
-        default: 0
+    notes: String
+  },
+  
+  // Statut de la commande
+  status: {
+    type: String,
+    enum: ['pending', 'confirmed', 'preparing', 'ready', 'shipped', 'delivered', 'issue', 'cancelled'],
+    default: 'pending'
+  },
+  
+  // Informations financières
+  pricing: {
+    subtotal: {
+      type: Number,
+      required: true,
+      min: 0
     },
-    deliveryDate: { // Date de livraison souhaitée par le client
-        type: Date,
-        required: true
+    tax: {
+      type: Number,
+      default: 0,
+      min: 0
     },
-    notes: {
-        type: String
+    total: {
+      type: Number,
+      required: true,
+      min: 0
     }
+  },
+  
+  // Notes et communications
+  notes: {
+    customer: String, // Notes du client
+    supplier: String, // Notes du fournisseur
+    internal: String  // Notes internes
+  },
+  
+  // Dates importantes
+  dates: {
+    ordered: {
+      type: Date,
+      default: Date.now
+    },
+    confirmed: Date,
+    prepared: Date,
+    shipped: Date,
+    delivered: Date,
+    issue: Date,
+    cancelled: Date
+  },
+  
+  // Type d'établissement pour le suivi
+  establishmentType: {
+    type: String,
+    enum: ['cantine_scolaire', 'hopital', 'ehpad', 'maison_de_retraite', 'cantine_entreprise', 'restaurant', 'resto', 'autre'],
+    required: true
+  }
 }, {
-    timestamps: true // Ajoute createdAt et updatedAt
+  timestamps: true
 });
 
-// Calculer le total automatiquement avant de sauvegarder
-orderSchema.pre('save', function(next) {
-    if (this.isModified('items') || this.isNew) { // Recalculer si les items changent ou si c'est une nouvelle commande
-        this.total = this.items.reduce((sum, item) => {
-            return sum + (item.price * item.quantity);
-        }, 0);
-    }
-    next();
+// Index pour optimiser les recherches
+orderSchema.index({ orderNumber: 1 });
+orderSchema.index({ customer: 1 });
+orderSchema.index({ supplier: 1 });
+orderSchema.index({ status: 1 });
+orderSchema.index({ 'delivery.requestedDate': 1 });
+orderSchema.index({ establishmentType: 1 });
+
+// Middleware pour générer automatiquement le numéro de commande
+orderSchema.pre('save', async function(next) {
+  if (this.isNew && !this.orderNumber) {
+    const count = await mongoose.model('Order').countDocuments();
+    this.orderNumber = `CMD-${Date.now()}-${(count + 1).toString().padStart(4, '0')}`;
+  }
+  next();
 });
 
-// Index pour améliorer les performances
-orderSchema.index({ client: 1, status: 1 });
-orderSchema.index({ supplier: 1, status: 1 });
-orderSchema.index({ deliveryDate: 1 });
+// Méthode pour calculer le total
+orderSchema.methods.calculateTotal = function() {
+  this.pricing.subtotal = this.items.reduce((sum, item) => sum + item.totalPrice, 0);
+  this.pricing.total = this.pricing.subtotal + this.pricing.tax;
+  return this.pricing.total;
+};
 
-const Order = mongoose.model('Order', orderSchema); // Changé pour définir Order avant d'exporter
-export default Order; // Changé de module.exports
+// Méthode pour mettre à jour le statut avec timestamp
+orderSchema.methods.updateStatus = function(newStatus) {
+  this.status = newStatus;
+  const now = new Date();
+  
+  switch (newStatus) {
+    case 'confirmed':
+      this.dates.confirmed = now;
+      break;
+    case 'preparing':
+      this.dates.prepared = now;
+      break;
+    case 'shipped':
+      this.dates.shipped = now;
+      break;
+    case 'delivered':
+      this.dates.delivered = now;
+      break;
+    case 'issue':
+      this.dates.issue = now;
+      break;
+    case 'cancelled':
+      this.dates.cancelled = now;
+      break;
+  }
+  
+  return this.save();
+};
+
+// Index pour optimiser les recherches multi-sites
+orderSchema.index({ groupId: 1 });
+orderSchema.index({ siteId: 1 });
+orderSchema.index({ groupId: 1, siteId: 1 });
+orderSchema.index({ customer: 1 });
+orderSchema.index({ supplier: 1 });
+orderSchema.index({ status: 1 });
+orderSchema.index({ createdAt: -1 });
+
+export default mongoose.model('Order', orderSchema);

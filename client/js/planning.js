@@ -62,11 +62,14 @@ menuList.appendChild(div);
 
 async function generateWeekPlanning(startDate) {
   try {
-    const res = await fetch('localhost:5000/api/menus/generate', {
+    const res = await fetch('/api/menus/generate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
       },
       body: JSON.stringify({ startDate }) 
     });
@@ -129,11 +132,14 @@ document.getElementById('generate-week-plan').addEventListener('click', () => {
 document.querySelectorAll('.add-menu-btn').forEach(btn => {
 btn.addEventListener('click', async () => {
 const date = btn.dataset.date;
-const res = await fetch('localhost:5000/api/menus', {
+const res = await fetch('/api/menus', {
 method: 'POST',
 headers: {
 'Content-Type': 'application/json',
-'Authorization': `Bearer ${localStorage.getItem('token')}`
+'Authorization': `Bearer ${localStorage.getItem('token')}`,
+'Cache-Control': 'no-cache, no-store, must-revalidate',
+'Pragma': 'no-cache',
+'Expires': '0'
 },
 body: JSON.stringify({ date })
 });

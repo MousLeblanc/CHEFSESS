@@ -158,7 +158,7 @@ export const getStats = async (req, res) => {
             Order.aggregate([
                 { 
                     $match: { 
-                        client: req.user._id, // Assurez-vous que req.user._id est bien un ObjectId si vous matchez directement
+                        client: req.user.id, // Assurez-vous que req.user.id est bien un ObjectId si vous matchez directement
                         status: { $in: ['delivered', 'accepted'] } // Statuts pour lesquels la dépense est comptée
                     }
                 },

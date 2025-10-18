@@ -2,7 +2,7 @@ import Product from '../models/Product.js';
 
 // ✅ Créer un produit (fournisseur)
 export const createProduct = async (req, res) => {
-  const product = new Product({ ...req.body, supplier: req.user._id });
+  const product = new Product({ ...req.body, supplier: req.user.id });
   await product.save();
   res.status(201).json(product);
 };
@@ -15,7 +15,7 @@ export const getAllProducts = async (req, res) => {
 
 // ✅ Voir les produits du fournisseur connecté
 export const getProductsBySupplier = async (req, res) => {
-  const supplierId = req.params.supplierId || req.user._id;
+  const supplierId = req.params.supplierId || req.user.id;
   const products = await Product.find({ supplier: supplierId });
   res.json(products);
 };
@@ -23,7 +23,7 @@ export const getProductsBySupplier = async (req, res) => {
 // ✅ Modifier un produit (fournisseur)
 export const updateProduct = async (req, res) => {
   const product = await Product.findById(req.params.id);
-  if (!product || product.supplier.toString() !== req.user._id.toString()) {
+  if (!product || product.supplier.toString() !== req.user.id.toString()) {
     return res.status(403).json({ message: "Non autorisé" });
   }
   Object.assign(product, req.body);
@@ -34,7 +34,7 @@ export const updateProduct = async (req, res) => {
 // ✅ Supprimer un produit (fournisseur)
 export const deleteProduct = async (req, res) => {
   const product = await Product.findById(req.params.id);
-  if (!product || product.supplier.toString() !== req.user._id.toString()) {
+  if (!product || product.supplier.toString() !== req.user.id.toString()) {
     return res.status(403).json({ message: "Non autorisé" });
   }
   await product.deleteOne();

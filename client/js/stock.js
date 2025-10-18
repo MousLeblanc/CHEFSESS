@@ -332,13 +332,47 @@ const elements = {
 };
 
 // --- FONCTIONS DE GESTION DU STOCK (localStorage pour l'instant) ---
+async function loadStockFromAPI() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.warn('❌ Pas de token - Utilisation du localStorage');
+            return JSON.parse(localStorage.getItem('stock') || "[]");
+        }
+
+        const response = await fetch('/api/stock', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            console.log('✅ Stock chargé depuis l\'API:', result.data);
+            return result.data || [];
+        } else {
+            console.warn('❌ Erreur API - Utilisation du localStorage');
+            return JSON.parse(localStorage.getItem('stock') || "[]");
+        }
+    } catch (error) {
+        console.error('❌ Erreur lors du chargement:', error);
+        return JSON.parse(localStorage.getItem('stock') || "[]");
+    }
+}
+
+// Fonction synchrone pour compatibilité (utilise le cache)
 function loadStockFromLocalStorage() {
-    // TODO: Migrer vers API backend /api/stock
+    // Cette fonction est toujours appelée, mais on préfère l'API
     return JSON.parse(localStorage.getItem('stock') || "[]");
 }
 
 function saveStockToLocalStorage(stockArray) {
-    // TODO: Migrer vers API backend /api/stock
+    // Sauvegarder aussi en local pour le cache
     localStorage.setItem('stock', JSON.stringify(stockArray));
 }
 
@@ -520,34 +554,38 @@ function formatDate(dateString) {
     return `${day}/${month}/${year}`;
 }
 
-function refreshTable() {
+async function refreshTable() {
     if (!elements.ingredientListBody || !elements.emptyStockMessage) {
         console.error("Éléments du tableau de stock pour refreshTable non trouvés.");
         return;
     }
-    const data = loadStockFromLocalStorage();
+    
+    console.log('🔄 Chargement du stock...');
+    const data = await loadStockFromAPI();
+    console.log('📦 Données du stock:', data);
+    
     elements.ingredientListBody.innerHTML = "";
 
- if (!data || !data.length) {
-            elements.emptyStockMessage.style.display = "block";
+    if (!data || !data.length) {
+        elements.emptyStockMessage.style.display = "block";
     } else {
         elements.emptyStockMessage.style.display = "none";
         data.forEach(ing => {
             const tr = document.createElement('tr');
             // Adaptez les noms de propriété si nécessaire (ex: ing.dateExpiration)
             tr.innerHTML = `
-              <td>${ing.nom || '-'}</td>
-              <td>${ing.categorie || '-'}</td>
-              <td>${ing.qte !== undefined ? ing.qte : '-'}</td>
-              <td>${ing.unite || '-'}</td>
+              <td>${ing.name || ing.nom || '-'}</td>
+              <td>${ing.category || ing.categorie || '-'}</td>
+              <td>${ing.quantity || ing.qte || '-'}</td>
+              <td>${ing.unit || ing.unite || '-'}</td>
               <td>${ing.seuilAlerte !== undefined && ing.seuilAlerte > 0 ? ing.seuilAlerte : '-'}</td> 
-              <td>${ing.dateExpiration ? formatDate(ing.dateExpiration) : "-"}</td> 
+              <td>${ing.expirationDate || ing.dateExpiration ? formatDate(ing.expirationDate || ing.dateExpiration) : "-"}</td> 
               <td>
-                <button class="btn-icon" onclick="window.editStockItem('${ing.id}')">✏️</button>
-                <button class="btn-icon" onclick="window.deleteStockItem('${ing.id}')">🗑️</button>
+                <button class="btn-icon" onclick="window.editStockItem('${ing._id || ing.id}')">✏️</button>
+                <button class="btn-icon" onclick="window.deleteStockItem('${ing._id || ing.id}')">🗑️</button>
               </td>
             `;
-                        elements.ingredientListBody.appendChild(tr);
+            elements.ingredientListBody.appendChild(tr);
         });
     }
 }

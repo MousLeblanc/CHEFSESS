@@ -1,101 +1,124 @@
 import express from 'express';
+import multer from 'multer'; // Importation de multer pour la gestion des fichiers
 import { protect } from '../middleware/authMiddleware.js';
-import { getUserStock, updateUserStock } from '../controllers/stockController.js';
+import {
+  getUserStock,
+  updateUserStock,
+  getStockByCategory,
+  getExpiringItems,
+  getStockValue,
+  addItemToStock,
+  updateStockItem,
+  deductStockItems 
+} from '../controllers/stockController.js';
+import { processOcrDeliveryNote } from '../controllers/ocrController.js';
 import Stock from '../models/Stock.js';
 import mongoose from 'mongoose';
 
+// --- Configuration de multer ---
+// On uniformise pour utiliser memoryStorage pour toutes les opérations de fichier
+// Cela rendra le buffer (req.file.buffer) disponible dans les contrôleurs
+const upload = multer({ storage: multer.memoryStorage() });
+
+
 const router = express.Router();
 
+// Routes de base
 router.get('/', protect, getUserStock);
-router.put('/', protect, updateUserStock);
+router.put('/', protect, updateUserStock); // Pour les mises à jour en masse du stock
+router.post('/', protect, addItemToStock); // Pour ajouter un seul nouvel ingrédient
 
-// Données de démonstration
-  const stockItems = [
-    {
-      _id: '1',
-      name: 'Tomate',
-      quantity: 5,
-      unit: 'kg',
-      category: 'légume',
-      alertThreshold: 2,
-      isLow: false
-    },
-    {
-      _id: '2',
-      name: 'Farine',
-      quantity: 1,
-      unit: 'kg',
-      category: 'céréale',
-      alertThreshold: 2,
-      isLow: true
+// Route OCR
+router.post('/ocr', protect, upload.single('file'), processOcrDeliveryNote); // Utilise 'upload' avec memoryStorage
+
+// Routes pour les fonctionnalités avancées
+router.get('/category/:category', protect, getStockByCategory);
+router.get('/expiring/:days?', protect, getExpiringItems);
+router.get('/value', protect, getStockValue);
+
+// Route pour récupérer un ingrédient spécifique par ID
+router.get('/:id', protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const itemId = req.params.id;
+
+    const userStock = await Stock.findOne({ createdBy: userId });
+
+    if (!userStock) {
+      return res.status(404).json({ success: false, message: 'Stock utilisateur non trouvé.' });
     }
-  ];
-  
 
-router.post('/', (req, res) => {
-  const { name, quantity, unit, category, alertThreshold } = req.body;
-  
-  // Validation
-  if (!name || quantity === undefined) {
-    return res.status(400).json({ 
-      success: false, 
-      error: 'Le nom et la quantité sont requis' 
-    });
+    const item = userStock.items.id(itemId); // Find by subdocument ID
+
+    if (!item) {
+      return res.status(404).json({ success: false, message: 'Ingrédient non trouvé dans le stock.' });
+    }
+
+    res.status(200).json({ success: true, data: item });
+  } catch (error) {
+    console.error('Erreur lors de la récupération de l\'ingrédient:', error);
+    res.status(500).json({ success: false, error: error.message });
   }
-  
-  // Simuler la création d'un élément
-  const newItem = {
-    _id: Date.now().toString(),
-    name,
-    quantity,
-    unit: unit || '',
-    category: category || 'autre',
-    alertThreshold: alertThreshold || 0,
-    isLow: quantity <= (alertThreshold || 0)
-  };
-  
 });
 
-router.put('/:id', (req, res) => {
-  const id = req.params.id;
-  const { name, quantity, unit, category, alertThreshold } = req.body;
-  
-  // Simuler la mise à jour
-  const updatedItem = {
-    _id: id,
-    name: name || 'Item',
-    quantity: quantity || 0,
-    unit: unit || '',
-    category: category || 'autre',
-    alertThreshold: alertThreshold || 0,
-    isLow: (quantity || 0) <= (alertThreshold || 0)
-  };
+// Route pour mettre à jour un ingrédient spécifique par ID
+router.put('/:id', protect, updateStockItem);
 
-  // You may want to send a response, e.g.:
-  res.status(200).json({ success: true, updatedItem });
+// Route pour déduire des éléments du stock (utilisé après la génération de menu)
+router.put('/deduct', protect, deductStockItems); 
+
+// Route pour supprimer un ingrédient spécifique
+router.delete('/:id', protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const itemId = req.params.id;
+
+    const userStock = await Stock.findOne({ createdBy: userId });
+
+    if (!userStock) {
+      return res.status(404).json({ success: false, message: 'Stock utilisateur non trouvé.' });
+    }
+
+    const itemIndex = userStock.items.findIndex(item => item._id.toString() === itemId);
+
+    if (itemIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Ingrédient non trouvé dans le stock.' });
+    }
+
+    const deletedItem = userStock.items.splice(itemIndex, 1); // Remove the item
+    await userStock.save();
+
+    res.status(200).json({ success: true, message: 'Item deleted successfully', deletedItem });
+  } catch (error) {
+    console.error('Error deleting item:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
 
-
+// Route pour le seeding du stock (ajout de données de démonstration)
 router.post('/seed', protect, async (req, res) => {
   const stock = await Stock.findOneAndUpdate(
-    { user: new mongoose.Types.ObjectId(req.user.id) },
+    { createdBy: req.user._id },
     {
-      user: new mongoose.Types.ObjectId(req.user.id),
+      createdBy: req.user._id,
+      establishmentType: req.user.establishmentType || 'autre',
       items: [
-        { name: 'Tomates', quantity: 10, unit: 'kg', category: 'fruits-legumes' },
-        { name: 'Poulet', quantity: 5, unit: 'kg', category: 'viandes' },
-        { name: 'Farine', quantity: 20, unit: 'kg', category: 'epicerie' },
-        { name: 'Pommes', quantity: 15, unit: 'kg', category: 'fruits-legumes' },
-        { name: 'Lait', quantity: 8, unit: 'l', category: 'boissons' },
-        { name: 'Oeufs', quantity: 30, unit: 'piece', category: 'epicerie' }
+        { name: 'Tomates', quantity: 10, unit: 'kg', category: 'legumes', price: 2.5, alertThreshold: 3 },
+        { name: 'Poulet', quantity: 5, unit: 'kg', category: 'viandes', price: 8.9, alertThreshold: 2 },
+        { name: 'Farine', quantity: 20, unit: 'kg', category: 'cereales', price: 1.2, alertThreshold: 5 },
+        { name: 'Pommes', quantity: 15, unit: 'kg', category: 'fruits', price: 1.8, alertThreshold: 4 },
+        { name: 'Lait', quantity: 8, unit: 'l', category: 'boissons', price: 1.1, alertThreshold: 3 },
+        { name: 'Oeufs', quantity: 30, unit: 'pièce', category: 'produits-laitiers', price: 0.2, alertThreshold: 10 },
+        { name: 'Pâtes', quantity: 10, unit: 'kg', category: 'cereales', price: 1.5, alertThreshold: 3 },
+        { name: 'Riz', quantity: 15, unit: 'kg', category: 'cereales', price: 1.8, alertThreshold: 4 },
+        { name: 'Thon en conserve', quantity: 12, unit: 'boîte', category: 'autres', price: 1.0, alertThreshold: 5 },
+        { name: 'Huile d\'olive', quantity: 5, unit: 'l', category: 'autres', price: 6.0, alertThreshold: 1 }
       ]
     },
-    { new: true, upsert: true }
+    { upsert: true, new: true, setDefaultsOnInsert: true }
   );
-
-  res.json({ success: true, stock });
+  res.status(200).json({ success: true, message: 'Stock seeded/updated successfully', data: stock.items });
 });
 
+
 export default router;
-
-

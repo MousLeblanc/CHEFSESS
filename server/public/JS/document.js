@@ -14,6 +14,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   ingredientForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    // Check authorization before proceeding
+    if (!await checkAuthorization()) {
+      showMessage('Non autorisé', 'error');
+      return;
+    }
+    
     const name = document.getElementById('ingredient-name').value.trim();
     const quantity = document.getElementById('ingredient-quantity').value.trim();
     const unit = document.getElementById('ingredient-unit').value;
@@ -71,12 +77,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Fonction d'affichage
   function renderIngredients(ingredients) {
-    ingredientList.innerHTML = ingredients.map(ing => `
+    const sanitizedHtml = DOMPurify.sanitize(ingredients.map(ing => `
       <div class="ingredient-item">
         <span>${ing.name} - ${ing.quantity}</span>
         <button class="delete-btn" data-id="${ing._id}">Supprimer</button>
       </div>
-    `).join('');
+    `).join(''));
+
+    ingredientList.innerHTML = sanitizedHtml;
 
     // Gestion des boutons de suppression
     document.querySelectorAll('.delete-btn').forEach(btn => {
@@ -106,5 +114,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     messageDiv.textContent = msg;
     messageDiv.className = `message ${type}`;
     setTimeout(() => messageDiv.textContent = '', 3000);
+  }
+
+  // Function to check authorization
+  async function checkAuthorization() {
+    try {
+      const response = await fetch('/api/check-auth', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Authorization check failed:', error);
+      return false;
+    }
   }
 });

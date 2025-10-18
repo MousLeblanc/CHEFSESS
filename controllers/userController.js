@@ -65,3 +65,28 @@ export const updateUserProfile = async (req, res) => {
         res.status(404).json({ message: 'User not found' });
     }
 };
+
+/**
+ * @desc    Get all suppliers (users with role 'fournisseur')
+ * @route   GET /api/users/suppliers
+ * @access  Private
+ */
+export const getSuppliers = async (req, res) => {
+    try {
+        const suppliers = await User.find({ role: 'fournisseur' })
+            .select('_id name email businessName phone establishmentType createdAt')
+            .sort({ createdAt: -1 });
+
+        res.json({
+            success: true,
+            count: suppliers.length,
+            data: suppliers
+        });
+    } catch (error) {
+        console.error('Error fetching suppliers:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des fournisseurs'
+        });
+    }
+};

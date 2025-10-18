@@ -1,5 +1,10 @@
+// Import the 'fs' module with promises at the top of the file
 const fs = require('fs').promises;
+
+// Import the 'path' module at the top of the file
 const path = require('path');
+
+// Rest of the code...
 
 class I18nService {
     constructor() {

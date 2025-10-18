@@ -1,7 +1,7 @@
 // client/js/apiHelper.js
 
 // client/js/apiHelper.js
-import { getToken, logout, redirectToLogin } from './auth.js'; // Importer les fonctions nécessaires
+import { logout, redirectToLogin } from './auth.js';
 
 /**
  * Helper universel pour tous les appels API protégés (JWT).
@@ -10,24 +10,13 @@ import { getToken, logout, redirectToLogin } from './auth.js'; // Importer les f
  * @returns {Promise<Response>} - L'objet Response (à .json() par l'appelant).
  */
 export async function fetchProtectedAPI(url, options = {}) {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        auth.redirectToLogin();
-        throw new Error('Session expirée : connectez-vous.');
-    }
-
-    // Ajoute les headers nécessaires
-    options.headers = {
-        ...(options.headers || {}),
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-    };
-
+options.headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+   options.credentials = 'include';
     const response = await fetch(url, options);
 
     if (response.status === 401) {
         // Token invalide ou expiré
-        auth.logout();
+        logout();
         throw new Error('Session expirée : veuillez vous reconnecter.');
     }
 

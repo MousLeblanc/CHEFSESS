@@ -1,9 +1,14 @@
+// Import required modules at the beginning of the file
+const main = require('./lib/main');
+const envOptions = require('./lib/env-options');
+const cliOptions = require('./lib/cli-options');
+
 (function () {
-  require('./lib/main').config(
+  main.config(
     Object.assign(
       {},
-      require('./lib/env-options'),
-      require('./lib/cli-options')(process.argv)
+      envOptions,
+      cliOptions(process.argv)
     )
   )
 })()

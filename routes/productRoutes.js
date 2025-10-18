@@ -18,6 +18,6 @@ router.delete('/:id', protect, authorize('fournisseur'), deleteProduct);
 
 // --- Acheteur / Resto : voir tous les produits par fournisseur ---
 router.get('/', protect, getAllProducts); // optionnel (si tu veux montrer tous les produits)
-router.get('/supplier/:supplierId', protect, getProductsBySupplier); // produits d'un fournisseur
+router.get('/supplier/:supplierId', protect, authorize('restaurant', 'resto', 'collectivite', 'fournisseur'), getProductsBySupplier); // produits d'un fournisseur
 
 export default router;

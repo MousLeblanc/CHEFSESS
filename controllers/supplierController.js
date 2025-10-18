@@ -1,138 +1,223 @@
-// controllers/supplierController.js
-import Product from '../models/Product.js'; // Assurez-vous que le chemin est correct et que Product.js utilise 'export default' ou des exports nommés
-import Order from '../models/Order.js';   // Assurez-vous que le chemin est correct et que Order.js utilise 'export default' ou des exports nommés
-import User from '../models/User.js';     // Assurez-vous que le chemin est correct et que User.js utilise 'export default'
+import asyncHandler from 'express-async-handler';
+import Supplier from '../models/Supplier.js';
 
-// Obtenir les statistiques du fournisseur
-export const getStats = async (req, res) => {
-    try {
-        const [activeProducts, pendingOrders, activeClients] = await Promise.all([
-            Product.countDocuments({ supplier: req.user.id, active: true }),
-            Order.countDocuments({ supplier: req.user.id, status: 'pending' }),
-            Order.distinct('client', { supplier: req.user.id }).then(clients => clients.length)
-        ]);
+// @desc    Récupérer tous les fournisseurs
+// @route   GET /api/suppliers
+// @access  Private
+const getSuppliers = asyncHandler(async (req, res) => {
+  const { search, category, status, establishmentType } = req.query;
+  
+  // Construction du filtre
+  let filter = {};
+  
+  // Filtre par type d'établissement
+  if (establishmentType) {
+    filter.establishmentType = establishmentType;
+  }
+  
+  // Filtre par statut
+  if (status) {
+    filter.status = status;
+  }
+  
+  // Filtre par catégorie
+  if (category) {
+    filter.categories = { $in: [category] };
+  }
+  
+  // Recherche textuelle
+  if (search) {
+    filter.$text = { $search: search };
+  }
+  
+  const suppliers = await Supplier.find(filter)
+    .populate('createdBy', 'name email')
+    .sort({ createdAt: -1 });
+  
+  res.json({
+            success: true,
+    count: suppliers.length,
+    data: suppliers
+  });
+});
+
+// @desc    Récupérer un fournisseur par ID
+// @route   GET /api/suppliers/:id
+// @access  Private
+const getSupplier = asyncHandler(async (req, res) => {
+  const supplier = await Supplier.findById(req.params.id)
+    .populate('createdBy', 'name email');
+  
+  if (!supplier) {
+    res.status(404);
+    throw new Error('Fournisseur non trouvé');
+  }
 
         res.json({
-            activeProducts,
-            pendingOrders,
-            activeClients
-        });
-    } catch (error) {
-        console.error("Erreur getStats supplierController:", error);
-        res.status(500).json({ message: 'Erreur lors de la récupération des statistiques du fournisseur.' });
+    success: true,
+    data: supplier
+  });
+});
+
+// @desc    Créer un nouveau fournisseur
+// @route   POST /api/suppliers
+// @access  Private
+const createSupplier = asyncHandler(async (req, res) => {
+  const {
+    name,
+    contact,
+    email,
+    phone,
+    address,
+    categories,
+    status,
+    rating,
+    notes,
+    establishmentType
+  } = req.body;
+  
+  // Vérifier si le fournisseur existe déjà
+  const existingSupplier = await Supplier.findOne({ 
+    email,
+    createdBy: req.user.id 
+  });
+  
+  if (existingSupplier) {
+        res.status(400);
+    throw new Error('Un fournisseur avec cet email existe déjà');
     }
-};
 
-// Obtenir tous les produits du fournisseur
-export const getProducts = async (req, res) => {
-    try {
-        const products = await Product.find({ supplier: req.user.id })
-            .sort({ createdAt: -1 });
-        res.json(products);
-    } catch (error) {
-        console.error("Erreur getProducts supplierController:", error);
-        res.status(500).json({ message: 'Erreur lors de la récupération des produits du fournisseur.' });
+  const supplier = await Supplier.create({
+        name,
+    contact,
+    email,
+    phone,
+    address: address || {},
+    categories: categories || [],
+    status: status || 'active',
+    rating: rating || 3,
+    notes,
+    createdBy: req.user.id,
+    establishmentType: establishmentType || req.user.establishmentType
+  });
+  
+  res.status(201).json({
+    success: true,
+    data: supplier
+  });
+});
+
+// @desc    Mettre à jour un fournisseur
+// @route   PUT /api/suppliers/:id
+// @access  Private
+const updateSupplier = asyncHandler(async (req, res) => {
+  const supplier = await Supplier.findById(req.params.id);
+  
+  if (!supplier) {
+        res.status(404);
+    throw new Error('Fournisseur non trouvé');
+  }
+  
+  // Vérifier que l'utilisateur est le créateur du fournisseur
+  if (supplier.createdBy.toString() !== req.user.id) {
+    res.status(403);
+    throw new Error('Non autorisé à modifier ce fournisseur');
+  }
+  
+  const updatedSupplier = await Supplier.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true, runValidators: true }
+  ).populate('createdBy', 'name email');
+  
+  res.json({
+    success: true,
+    data: updatedSupplier
+  });
+});
+
+// @desc    Supprimer un fournisseur
+// @route   DELETE /api/suppliers/:id
+// @access  Private
+const deleteSupplier = asyncHandler(async (req, res) => {
+  const supplier = await Supplier.findById(req.params.id);
+  
+    if (!supplier) {
+        res.status(404);
+    throw new Error('Fournisseur non trouvé');
+  }
+  
+  // Vérifier que l'utilisateur est le créateur du fournisseur
+  if (supplier.createdBy.toString() !== req.user.id) {
+    res.status(403);
+    throw new Error('Non autorisé à supprimer ce fournisseur');
+  }
+  
+  await Supplier.findByIdAndDelete(req.params.id);
+  
+  res.json({
+    success: true,
+    message: 'Fournisseur supprimé avec succès'
+  });
+});
+
+// @desc    Obtenir les statistiques des fournisseurs
+// @route   GET /api/suppliers/stats
+// @access  Private
+const getSupplierStats = asyncHandler(async (req, res) => {
+  const { establishmentType } = req.query;
+  
+  let filter = { createdBy: req.user.id };
+  if (establishmentType) {
+    filter.establishmentType = establishmentType;
+  }
+  
+  const stats = await Supplier.aggregate([
+    { $match: filter },
+    {
+      $group: {
+        _id: null,
+        total: { $sum: 1 },
+        active: {
+          $sum: { $cond: [{ $eq: ['$status', 'active'] }, 1, 0] }
+        },
+        inactive: {
+          $sum: { $cond: [{ $eq: ['$status', 'inactive'] }, 1, 0] }
+        },
+        suspended: {
+          $sum: { $cond: [{ $eq: ['$status', 'suspended'] }, 1, 0] }
+        },
+        avgRating: { $avg: '$rating' }
+      }
     }
-};
-
-// Ajouter un nouveau produit
-export const addProduct = async (req, res) => {
-    try {
-        const product = new Product({
-            ...req.body,
-            supplier: req.user.id // req.user.id est fourni par le middleware 'protect'
-        });
-
-        await product.save();
-        res.status(201).json(product);
-    } catch (error) {
-        console.error("Erreur addProduct supplierController:", error);
-        if (error.name === 'ValidationError') {
-            return res.status(400).json({ message: error.message });
-        }
-        res.status(500).json({ message: 'Erreur lors de l\'ajout du produit.' });
+  ]);
+  
+  const categoryStats = await Supplier.aggregate([
+    { $match: filter },
+    { $unwind: '$categories' },
+    {
+      $group: {
+        _id: '$categories',
+        count: { $sum: 1 }
+      }
+    },
+    { $sort: { count: -1 } }
+  ]);
+  
+  res.json({
+    success: true,
+    data: {
+      overview: stats[0] || { total: 0, active: 0, inactive: 0, suspended: 0, avgRating: 0 },
+      categories: categoryStats
     }
-};
+  });
+});
 
-// Mettre à jour un produit
-export const updateProduct = async (req, res) => {
-    try {
-        const product = await Product.findOneAndUpdate(
-            { _id: req.params.id, supplier: req.user.id }, // S'assurer que le produit appartient au fournisseur connecté
-            req.body,
-            { new: true, runValidators: true }
-        );
-
-        if (!product) {
-            return res.status(404).json({ message: 'Produit non trouvé ou non autorisé à modifier.' });
-        }
-
-        res.json(product);
-    } catch (error) {
-        console.error("Erreur updateProduct supplierController:", error);
-        if (error.name === 'ValidationError') {
-            return res.status(400).json({ message: error.message });
-        }
-        res.status(500).json({ message: 'Erreur lors de la mise à jour du produit.' });
-    }
-};
-
-// Supprimer un produit
-export const deleteProduct = async (req, res) => {
-    try {
-        const product = await Product.findOneAndDelete({
-            _id: req.params.id,
-            supplier: req.user.id // S'assurer que le produit appartient au fournisseur connecté
-        });
-
-        if (!product) {
-            return res.status(404).json({ message: 'Produit non trouvé ou non autorisé à supprimer.' });
-        }
-
-        res.json({ message: 'Produit supprimé avec succès.' });
-    } catch (error) {
-        console.error("Erreur deleteProduct supplierController:", error);
-        res.status(500).json({ message: 'Erreur lors de la suppression du produit.' });
-    }
-};
-
-// Obtenir les commandes du fournisseur
-export const getOrders = async (req, res) => {
-    try {
-        const orders = await Order.find({ supplier: req.user.id }) // Uniquement les commandes destinées à ce fournisseur
-            .populate('client', 'name email businessName') // Pour afficher les infos du client
-            .populate('items.product', 'name') // Pour afficher le nom du produit dans la commande
-            .sort({ createdAt: -1 });
-
-        res.json(orders);
-    } catch (error) {
-        console.error("Erreur getOrders supplierController:", error);
-        res.status(500).json({ message: 'Erreur lors de la récupération des commandes.' });
-    }
-};
-
-// Mettre à jour le statut d'une commande
-export const updateOrderStatus = async (req, res) => {
-    try {
-        const { status } = req.body;
-        // Valider les statuts possibles pour un fournisseur
-        if (!['accepted', 'rejected', 'delivered', 'shipped'].includes(status)) { // 'shipped' ajouté comme exemple
-            return res.status(400).json({ message: 'Statut de commande invalide.' });
-        }
-
-        const order = await Order.findOneAndUpdate(
-            { _id: req.params.id, supplier: req.user.id }, // S'assurer que la commande appartient à ce fournisseur
-            { status },
-            { new: true }
-        ).populate('client', 'name email businessName');
-
-        if (!order) {
-            return res.status(404).json({ message: 'Commande non trouvée ou non modifiable par ce fournisseur.' });
-        }
-
-        res.json(order);
-    } catch (error) {
-        console.error("Erreur updateOrderStatus supplierController:", error);
-        res.status(500).json({ message: 'Erreur lors de la mise à jour du statut de la commande.' });
-    }
+export {
+  getSuppliers,
+  getSupplier,
+  createSupplier,
+  updateSupplier,
+  deleteSupplier,
+  getSupplierStats
 };

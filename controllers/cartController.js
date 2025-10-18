@@ -9,8 +9,8 @@ import Product from '../models/Product.js'; // <-- 1. IMPORT LE MODÈLE PRODUCT
  * @access  Private
  */
 export const getCart = async (req, res) => {
-  const cart = await Cart.findOne({ user: req.user._id }).populate('items.productId', 'name price unit');
-  res.json(cart || { user: req.user._id, items: [] });
+  const cart = await Cart.findOne({ user: req.user.id }).populate('items.productId', 'name price unit');
+  res.json(cart || { user: req.user.id, items: [] });
 };
 
 /**
@@ -47,7 +47,7 @@ export const updateCart = async (req, res) => {
 
     // 4. Mettre à jour le panier uniquement avec des données validées et nettoyées
     const cart = await Cart.findOneAndUpdate(
-      { user: req.user._id },
+      { user: req.user.id },
       { items: sanitizedItems },
       { new: true, upsert: true, runValidators: true }
     ).populate('items.productId', 'name price unit');
@@ -65,6 +65,6 @@ export const updateCart = async (req, res) => {
  * @access  Private
  */
 export const clearCart = async (req, res) => {
-  await Cart.findOneAndDelete({ user: req.user._id });
+  await Cart.findOneAndDelete({ user: req.user.id });
   res.json({ success: true, message: "Panier vidé avec succès." });
 };

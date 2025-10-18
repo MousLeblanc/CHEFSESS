@@ -115,6 +115,8 @@ function showToast(message, type = 'success') {
   return toast;
 }
 
+const API_BASE = (window.API_BASE || 'http://localhost:5000');
+
 async function fetchMenuFromBackend(servings = 4) {
   // 1. Vérification du token
   const token = localStorage.getItem('token');
@@ -127,11 +129,14 @@ async function fetchMenuFromBackend(servings = 4) {
 
   // 2. Requête API avec gestion améliorée des erreurs
   try {
-    const res = await fetch('http://localhost:5000/api/menus/generate', {
+    const res = await fetch(`${API_BASE}/api/menus/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
       },
       body: JSON.stringify({
         mode: 'stock-only',
