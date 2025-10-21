@@ -58,7 +58,8 @@ app.use((req, res, next) => {
 });
 
 // === CLIENT STATIC FILES ===
-const clientPath = path.join(__dirname, "client");
+const clientPath = path.join(process.cwd(), 'client');
+
 app.use(express.static(clientPath, {
   etag: false,
   lastModified: false,
