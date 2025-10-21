@@ -1,4 +1,4 @@
-// server.js (Version Finale Stable pour Render)
+// server.js (Version Finale Stable pour Render + Local)
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -57,7 +57,8 @@ app.use((req, res, next) => {
 });
 
 // === SERVIR LES FICHIERS STATIQUES ===
-const clientPath = path.resolve("client"); // ✅ fonctionne sur Render et local
+const clientPath = path.resolve("client"); // compatible local & Render
+
 app.use(express.static(clientPath, {
   etag: false,
   lastModified: false,
@@ -65,6 +66,11 @@ app.use(express.static(clientPath, {
     res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
   },
 }));
+
+// ✅ Servir correctement les sous-dossiers statiques JS / CSS / IMG
+app.use('/js', express.static(path.join(clientPath, 'js')));
+app.use('/css', express.static(path.join(clientPath, 'css')));
+app.use('/img', express.static(path.join(clientPath, 'img')));
 
 // === ROUTES API ===
 app.use("/api/auth", authRoutes);
