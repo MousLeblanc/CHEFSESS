@@ -1,4 +1,4 @@
-// server.js (Version Finale Stable)
+// server.js (Version Finale Stable pour Render)
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -9,11 +9,10 @@ import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-// Middlewares
 import { errorHandler } from "./middleware/errorHandler.js";
 import { protect as authMiddleware } from "./middleware/authMiddleware.js";
 
-// Routes
+// --- Import Routes ---
 import authRoutes from "./routes/authRoutes.js";
 import menuRoutes from "./routes/menuRoutes.js";
 import stockRoutes from "./routes/stockRoutes.js";
@@ -33,7 +32,7 @@ import groupRoutes from "./routes/groupRoutes.js";
 import menuSyncRoutes from "./routes/menuSyncRoutes.js";
 import siteRoutes from "./routes/siteRoutes.js";
 
-// OpenAI client
+// --- OpenAI client ---
 import openai from "./services/openaiClient.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -43,7 +42,7 @@ const app = express();
 
 // === CONFIG GLOBALE ===
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5000",
+  origin: process.env.FRONTEND_URL || "*",
   credentials: true,
 }));
 app.use(express.json());
@@ -57,9 +56,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// === CLIENT STATIC FILES ===
-const clientPath = path.join(process.cwd(), 'client');
-
+// === SERVIR LES FICHIERS STATIQUES ===
+const clientPath = path.resolve("client"); // ✅ fonctionne sur Render et local
 app.use(express.static(clientPath, {
   etag: false,
   lastModified: false,
@@ -93,18 +91,6 @@ app.get("/api/health", (req, res) => {
   res.status(200).json({ status: "ok", message: "Server is running" });
 });
 
-// === ROUTES PROTÉGÉES ===
-const protectedRoutes = [
-  "/accueil.html", "/menu.html", "/planning.html", "/stock.html",
-  "/suppliers.html", "/profile.html", "/settings.html",
-];
-app.use((req, res, next) => {
-  if (protectedRoutes.includes(req.path)) {
-    return authMiddleware(req, res, next);
-  }
-  next();
-});
-
 // === ROUTES HTML ===
 app.get("/*.html", (req, res) => {
   const filePath = path.join(clientPath, req.path);
@@ -128,8 +114,8 @@ mongoose.connect(mongoUri, {
   useUnifiedTopology: true,
   serverSelectionTimeoutMS: 10000,
 })
-.then(() => console.log("✅ Connecté à MongoDB"))
-.catch((err) => console.error("❌ Erreur MongoDB:", err.message));
+  .then(() => console.log("✅ Connecté à MongoDB"))
+  .catch((err) => console.error("❌ Erreur MongoDB:", err.message));
 
 // === GESTIONNAIRE D’ERREURS ===
 app.use(errorHandler);
@@ -137,5 +123,5 @@ app.use(errorHandler);
 // === SERVEUR ===
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () =>
-  console.log(`🚀 Chef SES en ligne sur le port ${PORT} (${process.env.NODE_ENV || "dev"})`)
+  console.log(`🚀 Chef SES prêt sur le port ${PORT} (${process.env.NODE_ENV || "dev"})`)
 );
