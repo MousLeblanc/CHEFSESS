@@ -71,6 +71,22 @@ app.use(express.static(clientPath, {
   }
 }));
 
+// ✅ Route de secours universelle pour les fichiers HTML
+app.get('/*.html', (req, res) => {
+  const filePath = path.join(clientPath, req.path);
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error(`❌ Fichier introuvable : ${filePath}`);
+      res.status(404).send('Page non trouvée');
+    }
+  });
+});
+
+// ✅ Route par défaut (ex: / -> accueil.html ou index.html)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(clientPath, 'index.html'));
+});
+
 // --- Monter les Routes API ---
 app.use('/api/auth', authRoutes);
 app.use('/api/menus', menuRoutes);
