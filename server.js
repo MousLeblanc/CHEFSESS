@@ -1,4 +1,4 @@
-// server.js (Version Finale Intégrée)
+// server.js (Version Finale Intégrée) - updated to fix static route ordering for Render
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -36,13 +36,10 @@ import menuSyncRoutes from './routes/menuSyncRoutes.js';
 import siteRoutes from './routes/siteRoutes.js';
 import openai from './services/openaiClient.js'; // Importer le client OpenAI
 
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-
-// Le client OpenAI est maintenant importé depuis services/openaiClient.js
 
 // --- Middlewares Globaux ---
 app.use(cors({ 
@@ -61,6 +58,25 @@ app.use((req, res, next) => {
   next();
 });
 
+// Définit les routes client à protéger (doivent être appliquées AVANT express.static)
+const protectedRoutes = [
+  '/accueil.html',
+  '/menu.html',
+  '/planning.html',
+  '/stock.html',
+  '/suppliers.html',
+  '/profile.html',
+  '/settings.html'
+];
+
+// Middleware pour protéger certaines routes (doit être appliqué avant la livraison des fichiers statiques)
+app.use((req, res, next) => {
+  if (protectedRoutes.some(route => req.path === route)) {
+    return authMiddleware(req, res, next);
+  }
+  next();
+});
+
 // Servir les fichiers statiques du dossier "client"
 const clientPath = path.join(__dirname, 'client');
 app.use(express.static(clientPath, {
@@ -70,22 +86,6 @@ app.use(express.static(clientPath, {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   }
 }));
-
-// ✅ Route de secours universelle pour les fichiers HTML
-app.get('/*.html', (req, res) => {
-  const filePath = path.join(clientPath, req.path);
-  res.sendFile(filePath, (err) => {
-    if (err) {
-      console.error(`❌ Fichier introuvable : ${filePath}`);
-      res.status(404).send('Page non trouvée');
-    }
-  });
-});
-
-// ✅ Route par défaut (ex: / -> accueil.html ou index.html)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(clientPath, 'index.html'));
-});
 
 // --- Monter les Routes API ---
 app.use('/api/auth', authRoutes);
@@ -108,53 +108,34 @@ app.use('/api/menus', menuSyncRoutes); // Routes pour la synchronisation des men
 app.use('/api/sites', siteRoutes); // Routes pour la gestion des sites individuels
 app.use('/api/residents', residentRoutes); // Routes pour la gestion des résidents
 
-
 // Route de vérification de santé du serveur
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Server is running' });
 });
 
-// --- Gestion des Routes Non-API et Page d'Accueil ---
-// Doit être après les routes API pour ne pas les intercepter
-
-// Route pour les API non trouvées
+// Route pour les API non trouvées (doit être après le montage des routes API)
 app.all('/api/*', (req, res, next) => {
   const error = new Error(`API endpoint not found: ${req.method} ${req.originalUrl}`);
   error.statusCode = 404;
   return next(error); // Passe à errorHandler
 });
 
-// Routes protégées nécessitant une authentification
-const protectedRoutes = [
-  '/accueil.html',
-  '/menu.html',
-  '/planning.html',
-  '/stock.html',
-  '/suppliers.html',
-  '/profile.html',
-  '/settings.html'
-];
-
-// Middleware pour protéger certaines routes
-app.use((req, res, next) => {
-  // Si c'est une route protégée, appliquer le middleware d'authentification
-  if (protectedRoutes.some(route => req.path === route)) {
-    return authMiddleware(req, res, next);
-  }
-  // Sinon, continuer sans authentification
-  next();
+// Route pour servir directement les fichiers HTML (si demandés explicitement)
+app.get('/*.html', (req, res) => {
+  const filePath = path.join(clientPath, req.path);
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error(`❌ Fichier introuvable : ${filePath}`);
+      res.status(404).send('Page non trouvée');
+    }
+  });
 });
 
-// Route par défaut pour servir la page d'accueil
+// Catch-all pour les routes client (SPA) — doit être après express.static et après les routes API
 app.get('*', (req, res) => {
-  // Si c'est une route API non gérée, elle aurait déjà été traitée par le middleware précédent
-  // Pour toutes les autres routes, servir la page d'accueil
-  res.sendFile(path.join(__dirname, 'client', 'choisir-profil.html'));
-});
-
-// --- Route principale pour Bolt ---
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "client", "index.html")); // ou accueil.html selon ton fichier principal
+  // Si la requête est pour une API, laisser la route API gérer (les /api/* auraient déjà répondu ou renvoyé 404).
+  // Pour toutes les autres routes, servir la page d'accueil du client SPA.
+  res.sendFile(path.join(clientPath, 'index.html'));
 });
 
 // --- Connexion à MongoDB ---
@@ -165,18 +146,11 @@ mongoose.connect(mongoUri)
     console.error('MongoDB connection error:', err.message);
   });
 
-
-// --- Gestionnaire d'Erreurs Global ---
+// --- Gestionnaire d'Erreurs Global (dernière couche) ---
 app.use(errorHandler);
-
-// --- Route principale pour test Preview ---
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "client", "index.html"));
-});
-
 
 // --- Démarrage du Serveur ---
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(
+applisten(PORT, () => console.log(
   `ChAIf SES server started in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}.`
 ));
