@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChAIf SES - Génération de Menus</title>
+    
+    <!-- Charger auth.js en premier -->
+    <script type="module" src="js/auth.js"></script>
+    
+    <!-- Autres scripts -->
+    <script type="module" src="js/menu-stock.js"></script>
+    <script type="module" src="js/init.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+
+        :root {
+            --primary: #2c3e50;
+            --secondary: #e67e22;
+            --accent: #27ae60;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --success: #2ecc71;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: var(--dark);
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 1.5rem;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        nav ul li a:hover {
+            color: var(--secondary);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        h1, h2, h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .filter-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        button {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #d35400;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: #1a252f;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+        }
+        
+        .btn-success:hover {
+            background-color: #25a25a;
+        }
+        
+        .menu-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .menu-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .menu-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .menu-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .menu-content {
+            padding: 1rem;
+        }
+        
+        .menu-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .menu-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .menu-ingredients {
+            margin-bottom: 1rem;
+        }
+        
+        .menu-ingredients h4 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .ingredients-list {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .ingredient-tag {
+            background-color: var(--light);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        
+        .menu-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+        
+        .expiring-alert {
+            background-color: #fff3cd;
+            border-left: 4px solid var(--warning);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .supplier-comparison {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+        }
+        
+        .supplier-comparison th, .supplier-comparison td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .supplier-comparison th {
+            background-color: var(--light);
+        }
+        
+        .best-value {
+            background-color: rgba(46, 204, 113, 0.1);
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: var(--secondary);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom-color: var(--secondary);
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    
+.ingredients-detail, .ingredient-row {
+    display: flex;
+    margin-bottom: 0.5rem;
+}
+
+.ingredient-name {
+    flex: 2;
+}
+
+.ingredient-quantity {
+    flex: 1;
+    text-align: right;
+}
+
+.ingredient-stock {
+    flex: 1;
+    text-align: right;
+    margin-left: 1rem;
+    font-weight: 600;
+}
+
+.stock-available {
+    color: var(--success);
+}
+
+.stock-low {
+    color: var(--warning);
+}
+
+.stock-unavailable {
+    color: var(--danger);
+}
+
+.preparation-steps {
+    margin-top: 1rem;
+}
+
+.step {
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: flex-start;
+}
+
+.step-number {
+    background-color: var(--secondary);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.8rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.ingredients-to-use {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .modal-title {
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        /* Génération options */
+        .generation-options {
+            display: flex;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+        
+        .generation-option {
+            flex: 1;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .generation-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .generation-option.active {
+            border-color: var(--secondary);
+            background-color: rgba(230, 126, 34, 0.05);
+        }
+        
+        .generation-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .toast {
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: toast-in 0.3s forwards;
+        }
+        
+        .toast-success {
+            background-color: #d4edda;
+            border-left: 4px solid var(--success);
+            color: #155724;
+        }
+        
+        .toast-error {
+            background-color: #f8d7da;
+            border-left: 4px solid var(--danger);
+            color: #721c24;
+        }
+
+        .toast-icon {
+            margin-right: 0.75rem;
+        }
+        
+        @keyframes toast-in {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">ChAIf SES</div>
+        <nav>
+            <ul>
+                <li><a href="accueil.html" onclick="return handleNavigation(event)">Accueil</a></li>
+                <li><a href="stock.html" onclick="return handleNavigation(event)">Inventaire</a></li>
+                <li><a href="menu.html" class="active" onclick="return handleNavigation(event)">Menus</a></li>
+                <li><a href="planning.html" onclick="return handleNavigation(event)">Planning</a></li>
+                <li><a href="suppliers.html" onclick="return handleNavigation(event)">Fournisseurs</a></li>
+                <li><a href="settings.html" onclick="return handleNavigation(event)">Paramètres</a></li>
+                <li><a href="#" class="logout-btn" onclick="event.preventDefault(); window.auth.logout();">Déconnexion</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <h1>Générateur de Menus Intelligent</h1>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="generation">Génération de Menus</div>
+            <div class="tab" data-tab="inventory">État des Stocks</div>
+            <div class="tab" data-tab="suppliers">Comparaison Fournisseurs</div>
+        </div>
+        
+        <div id="generation-tab" class="tab-content active">
+            <div class="card">
+                <h2>Méthode de Génération</h2>
+                <div class="generation-options">
+                    <div class="generation-option active" data-method="stock">
+                        <div class="generation-icon">📦</div>
+                        <h3>Utiliser le Stock Actuel</h3>
+                        <p>Générer des menus en utilisant uniquement les ingrédients actuellement en stock.</p>
+                    </div>
+                    <div class="generation-option" data-method="ai">
+                        <div class="generation-icon">🤖</div>
+                        <h3>ChAIf IA</h3>
+                        <p>Utiliser l'intelligence artificielle pour proposer des menus innovants et optimisés.</p>
+                    </div>
+                </div>
+                
+                <h2>Filtres et Préférences</h2>
+                <div class="filter-section">
+                    <div>
+                        <div class="form-group">
+                            <label for="cuisine-type">Type de Cuisine</label>
+                            <select id="cuisine-type">
+                                <option value="">Tous les types</option>
+                                <option value="italian">Italienne</option>
+                                <option value="french">Française</option>
+                                <option value="mediterranean">Méditerranéenne</option>
+                                <option value="asian">Asiatique</option>
+                                <option value="mexican">Mexicaine</option>
+                                <option value="american">Américaine</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="meal-type">Type de Repas</label>
+                            <select id="meal-type">
+                                <option value="">Tous les repas</option>
+                                <option value="main course">Plat principal</option>
+                                <option value="appetizer">Entrée</option>
+                                <option value="dessert">Dessert</option>
+                                <option value="breakfast">Petit-déjeuner</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="form-group">
+                            <label for="diet">Régime Alimentaire</label>
+                            <select id="diet">
+                                <option value="">Aucun régime spécifique</option>
+                                <option value="vegetarian">Végétarien</option>
+                                <option value="vegan">Végétalien</option>
+                                <option value="gluten free">Sans Gluten</option>
+                                <option value="dairy free">Sans Produits Laitiers</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="guests">Nombre de Convives</label>
+                            <input type="number" id="guests" min="1" value="4">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="form-group">
+                            <label for="occasion">Occasion Spéciale</label>
+                            <select id="occasion">
+                                <option value="">Aucune occasion spéciale</option>
+                                <option value="valentine">Saint-Valentin</option>
+                                <option value="christmas">Noël</option>
+                                <option value="easter">Pâques</option>
+                                <option value="birthday">Anniversaire</option>
+                                <option value="wedding">Mariage</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="optimize">Optimiser pour</label>
+                            <select id="optimize">
+                                <option value="expiry">Péremption imminente</option>
+                                <option value="cost">Coût minimal</option>
+                                <option value="balance">Menu équilibré</option>
+                                <option value="profit">Rentabilité maximale</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button id="generate-btn" class="btn-primary">Générer des Menus</button>
+                </div>
+            </div>
+            
+            <div id="menus-container">
+                <div id="loading" class="loading" style="display:none;">
+                    <div class="spinner"></div>
+                </div>
+                
+                <div id="menus-results">
+                    <!-- Les menus générés seront affichés ici -->
+                </div>
+            </div>
+        </div>
+        
+        <div id="inventory-tab" class="tab-content">
+            <div class="card">
+                <h2>État des Stocks</h2>
+                <div class="expiring-alert">
+                    <h3>⚠️ Produits proches de la péremption</h3>
+                    <p>3 produits expirent dans les 7 prochains jours. <a href="#" id="show-expiring">Voir les détails</a></p>
+                </div>
+                
+                <div id="inventory-stats">
+                    <h3>Statistiques d'Inventaire</h3>
+                    <div class="filter-section">
+                        <div>
+                            <h4>Valeur Totale de l'Inventaire</h4>
+                            <p class="stat">2 845,67 €</p>
+                        </div>
+                        <div>
+                            <h4>Nombre de Produits</h4>
+                            <p class="stat">127</p>
+                        </div>
+                        <div>
+                            <h4>Produits Sous Seuil</h4>
+                            <p class="stat">12</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="suppliers-tab" class="tab-content">
+            <div class="card">
+                <h2>Comparaison des Fournisseurs</h2>
+                <p>Comparez les prix et les délais des différents fournisseurs pour optimiser vos achats.</p>
+                
+                <div class="form-group">
+                    <label for="ingredient-search">Rechercher un ingrédient</label>
+                    <input type="text" id="ingredient-search" placeholder="ex: tomates, farine, bœuf...">
+                </div>
+                
+                <table class="supplier-comparison">
+                    <thead>
+                        <tr>
+                            <th>Fournisseur</th>
+                            <th>Prix/kg</th>
+                            <th>Délai de livraison</th>
+                            <th>Quantité min.</th>
+                            <th>Note qualité</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="best-value">
+                            <td>Metro Cash & Carry</td>
+                            <td>3,45 €</td>
+                            <td>1 jour</td>
+                            <td>5 kg</td>
+                            <td>4.2/5</td>
+                            <td><button class="order-btn" data-supplier-id="123">Commander</button>
+</td>
+                        </tr>
+                        <tr>
+                            <td>Transgourmet</td>
+                            <td>3,75 €</td>
+                            <td>2 jours</td>
+                            <td>3 kg</td>
+                            <td>4.5/5</td>
+                            <td><button class="order-btn" data-supplier-id="123">Commander</button>
+</td>
+                        </tr>
+                        <tr>
+                            <td>Davigel</td>
+                            <td>3,60 €</td>
+                            <td>3 jours</td>
+                            <td>2 kg</td>
+                            <td>3.8/5</td>
+                            <td><button class="btn-success">Commander</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Commande Fournisseur -->
+<div id="order-modal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <span class="close-btn" onclick="document.getElementById('order-modal').style.display='none'">&times;</span>
+    <h2>Passer une commande</h2>
+    <div id="order-modal-body">
+      <!-- Le formulaire sera injecté ici dynamiquement par openOrderModal() -->
+    </div>
+  </div>
+</div>
+
+
+    <!-- Modal de génération IA -->
+    <div id="ai-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Génération avec ChAIf IA</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>ChAIf IA va générer des menus optimisés en fonction de vos préférences et contraintes.</p>
+                <div class="form-group">
+                    <label for="ai-instructions">Instructions supplémentaires pour l'IA</label>
+                    <textarea id="ai-instructions" class="form-control" rows="3" placeholder="Ex: Menus adaptés pour le service du midi, privilégier les plats rapides à préparer..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-primary" id="cancel-ai-btn">Annuler</button>
+                    <button type="button" class="btn-success" id="confirm-ai-btn">Générer avec IA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Modal détail recette -->
+<div id="recipe-modal" class="modal">
+
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="recipe-title">Détail de la recette</h3>
+            <button class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body" id="recipe-details">
+            <!-- Contenu dynamique de la recette -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal confirmation utilisation menu -->
+<div id="use-menu-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Utiliser ce menu</h3>
+            <button class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Vous allez utiliser ce menu pour <span id="guest-count">0</span> personnes. Les ingrédients suivants seront déduits du stock :</p>
+            
+            <div class="ingredients-to-use" id="ingredients-list">
+                <!-- Liste dynamique des ingrédients -->
+            </div>
+            
+            <div class="form-group">
+                <label for="menu-date">Date d'utilisation</label>
+                <input type="date" id="menu-date" class="form-control" value="">
+            </div>
+            
+            <div class="form-group">
+                <label for="menu-time">Heure de service</label>
+                <select id="menu-time" class="form-control">
+                    <option value="12:00">Déjeuner (12:00)</option>
+                    <option value="19:00">Dîner (19:00)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="menu-adjust-guests">Ajuster le nombre de personnes</label>
+                <input type="number" id="menu-adjust-guests" class="form-control" min="1" value="4">
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn-primary" id="cancel-use-menu-btn">Annuler</button>
+                <button type="button" class="btn-success" id="confirm-use-menu-btn">Confirmer</button>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    <script>
+        // Simulation des appels API pour la démo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion des onglets
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Activer l'onglet sélectionné
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Afficher le contenu de l'onglet sélectionné
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tabId + '-tab').classList.add('active');
+                });
+            });
+
+            // Gestion des options de génération
+            const generationOptions = document.querySelectorAll('.generation-option');
+            generationOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    generationOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Simuler la génération de menus
+            const generateBtn = document.getElementById('generate-btn');
+            generateBtn.addEventListener('click', function() {
+                const activeOption = document.querySelector('.generation-option.active');
+                const generationMethod = activeOption.getAttribute('data-method');
+                
+                if (generationMethod === 'ai') {
+                    // Afficher le modal IA pour des instructions supplémentaires
+                    document.getElementById('ai-modal').classList.add('show');
+                } else {
+                    // Génération directe basée sur le stock
+                    generateMenus();
+                }
+            });
+
+            // Gestion du modal IA
+            document.getElementById('confirm-ai-btn').addEventListener('click', function() {
+                // Fermer le modal
+                document.getElementById('ai-modal').classList.remove('show');
+                // Générer les menus avec l'IA
+                generateMenus(true);
+            });
+
+            document.getElementById('cancel-ai-btn').addEventListener('click', function() {
+                document.getElementById('ai-modal').classList.remove('show');
+            });
+
+            
+            // Fermer les modals avec le bouton X
+            document.querySelectorAll('.close-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.classList.remove('show');
+                    });
+                });
+            });
+            
+            function generateMenus(useAI = false) {
+                const loading = document.getElementById('loading');
+                const menusResults = document.getElementById('menus-results');
+                
+                // Afficher le spinner de chargement
+                loading.style.display = 'flex';
+                menusResults.innerHTML = '';
+                
+                // Récupérer les valeurs des filtres
+                const cuisineType = document.getElementById('cuisine-type').value;
+                const mealType = document.getElementById('meal-type').value;
+                const diet = document.getElementById('diet').value;
+                const guests = document.getElementById('guests').value;
+                const occasion = document.getElementById('occasion').value;
+                const optimize = document.getElementById('optimize').value;
+                
+                // Simuler un délai réseau différent selon le mode (IA plus long)
+                const delay = useAI ? 2500 : 1200;
+                
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    
+                    // Afficher un toast pour indiquer le mode de génération
+                    if (useAI) {
+                        showToast('Menus générés avec ChAIf IA', 'success');
+                    } else {
+                        showToast('Menus générés à partir du stock', 'success');
+                    }
+                    
+                    // Générer les résultats de menus
+                    displayMenuResults(useAI, guests);
+                }, delay);
+            }
+            
+            function displayMenuResults(useAI, guests) {
+                const menusResults = document.getElementById('menus-results');
+                
+                // Simuler des données de menu
+                // Si IA, proposer des menus plus innovants
+                const menuData = useAI ? [
+                    {
+                        id: 1,
+                        title: "Risotto aux Champignons & Truffe",
+                        image: "/api/placeholder/400/200",
+                        readyInMinutes: 45,
+                        servings: guests,
+                        ingredients: ["Riz arborio", "Champignons", "Truffe", "Oignon", "Ail", "Parmesan", "Bouillon de légumes", "Vin blanc"],
+                        usedIngredientCount: 7,
+                        missedIngredientCount: 1,
+                        likes: 142
+                    },
+                    {
+                        id: 2,
+                        title: "Magret de Canard aux Airelles",
+                        image: "/api/placeholder/400/200",
+                        readyInMinutes: 60,
+                        servings: guests,
+                        ingredients: ["Magret de canard", "Airelles", "Miel", "Vinaigre balsamique", "Échalote", "Fond de volaille", "Pommes de terre"],
+                        usedIngredientCount: 5,
+                        missedIngredientCount: 2,
+                        likes: 118
+                    },
+                    {
+                        id: 3,
+                        title: "Tarte Fine aux Légumes du Marché & Chèvre",
+                        image: "/api/placeholder/400/200",
+                        readyInMinutes: 55,
+                        servings: guests,
+                        ingredients: ["Pâte feuilletée", "Courgettes", "Tomates", "Fromage de chèvre", "Herbes de Provence", "Huile d'olive"],
+                        usedIngredientCount: 6,
+                        missedIngredientCount: 0,
+                        likes: 95
+                    }
+                ] : [
+                    {
+                        id: 1,
+                        title: "Risotto aux Champignons",
+                        image: "/api/placeholder/400/200",
+                        readyInMinutes: 45,
+                        servings: guests,
+                        ingredients: ["Riz arborio", "Champignons", "Oignon", "Ail", "Parmesan", "Bouillon de légumes", "Vin blanc"],
+                        usedIngredientCount: 7,
+                        missedIngredientCount: 0,
+                        likes: 120
+                    },
+                    {
+                        id: 2,
+                        title: "Poulet Rôti aux Herbes",
+                        image: "/api/placeholder/400/200",
+                        readyInMinutes: 75,
+                        servings: guests,
+                        ingredients: ["Poulet entier", "Romarin", "Thym", "Ail", "Citron", "Pommes de terre", "Carottes"],
+                        usedIngredientCount: 6,
+                        missedIngredientCount: 1,
+                        likes: 98
+                    },
+                    {
+                        id: 3,
+                        title: "Pâtes à la Carbonara",
+                        image: "/api/placeholder/400/200",
+                        readyInMinutes: 30,
+                        servings: guests,
+                        ingredients: ["Spaghetti", "Lardons", "Œufs", "Parmesan", "Poivre noir"],
+                        usedIngredientCount: 5,
+                        missedIngredientCount: 0,
+                        likes: 145
+                    }
+                ];
+                
+                // Créer et afficher les cartes de menu
+                let menusHTML = '<div class="menu-list">';
+                
+                menuData.forEach(menu => {
+                    menusHTML += `
+                        <div class="menu-card">
+                            <img src="${menu.image}" alt="${menu.title}" class="menu-image">
+                            <div class="menu-content">
+                                <h3 class="menu-title">${menu.title}</h3>
+                                <div class="menu-info">
+                                    <span>⏱️ ${menu.readyInMinutes} min</span>
+                                    <span>👤 ${menu.servings} personnes</span>
+                                    <span>❤️ ${menu.likes}</span>
+                                </div>
+                                <div class="menu-ingredients">
+                                    <h4>Ingrédients disponibles (${menu.usedIngredientCount}/${menu.usedIngredientCount + menu.missedIngredientCount})</h4>
+                                    <div class="ingredients-list">
+                                        ${menu.ingredients.map(ing => `<span class="ingredient-tag">${ing}</span>`).join('')}
+                                    </div>
+                                </div>
+                                <div class="menu-actions">
+                                    <button class="btn-primary view-recipe" data-id="${menu.id}">vieuw-recipe</button>
+                                    <button class="btn-success use-menu" data-id="${menu.id}">Utiliser ce menu</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                menusHTML += '</div>';
+                menusResults.innerHTML = menusHTML;
+                
+                // Ajouter des écouteurs d'événements pour les boutons
+                document.querySelectorAll('.view-recipe').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const menuId = parseInt(this.getAttribute('data-id'));
+                        const selectedMenu = menuData.find(menu => menu.id === menuId);
+            if (selectedMenu) {
+              showRecipeModal(selectedMenu);
+
+              const logoutBtn = document.querySelector('.logout-btn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = 'index.html';
+    });
+}
+
+            }
+          });
+        });
+    }
+            
+            // Fonction pour afficher un toast
+            function showToast(message, type = 'success') {
+                const container = document.getElementById('toast-container');
+                
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                
+                toast.innerHTML = `
+                    <div class="toast-icon">${type === 'success' ? '✅' : '❌'}</div>
+                    <div class="toast-message">${message}</div>
+                `;
+                
+                container.appendChild(toast);
+                
+                // Auto-destruction après 3 secondes
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(20px)';
+                    
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            container.removeChild(toast);
+                        }
+                    }, 300);
+                }, 3000);
+            }
+        });
+        
+    </script>
+   
+   
+
+    <!-- Modal IA -->
+<div id="ai-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Générer avec IA</h3>
+      <button class="close-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Souhaitez-vous générer ce menu avec l'IA ?</p>
+      <div class="form-actions">
+        <button class="btn-primary" id="cancel-ai-btn">Non</button>
+        <button class="btn-success" id="confirm-ai-btn">Oui</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container" class="toast-container"></div>
+    <script type="module" src="js/menu-stock.js"></script>
+    <script type="module" src="js/init.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    
+    <script>
+    function handleNavigation(event) {
+        // Empêcher la navigation par défaut
+        event.preventDefault();
+        
+        // Récupérer l'URL cible
+        const targetUrl = event.target.href;
+        console.log('Navigation vers:', targetUrl);
+        
+        // Vérifier l'authentification avant la navigation
+        if (window.auth && window.auth.isAuthenticated()) {
+            console.log('Authentifié, navigation autorisée');
+            window.location.href = targetUrl;
+        } else {
+            console.log('Non authentifié, redirection vers login');
+            localStorage.setItem('redirect-after-login', targetUrl.split('/').pop());
+            window.location.href = 'index.html';
+        }
+        
+        return false;
+    }
+    </script>
+</body>
+</html>

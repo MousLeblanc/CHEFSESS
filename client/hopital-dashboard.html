@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hôpital - ChAIf SES</title>
+  <link rel="stylesheet" href="CSS/main.css">
+  <link rel="stylesheet" href="CSS/components/modal.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Poppins', sans-serif; background-color: #e3f2fd; color: #333; line-height: 1.6; margin: 0; padding: 0; }
+    .page-container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+    header { background: linear-gradient(135deg, #2196f3 0%, #64b5f6 100%); color: #fff; padding: 1.5rem 2rem; border-radius: 12px; margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+    header h1 { margin: 0; font-size: 1.8em; font-weight: 600; }
+    .card { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); margin-bottom: 2rem; }
+    .card h2 { margin-top: 0; margin-bottom: 1.5rem; color: #2196f3; font-weight: 600; font-size: 1.4em; display: flex; align-items: center; }
+    .card h2 i { margin-right: 0.75rem; color: #2196f3; }
+    label { display: block; margin-bottom: 0.6rem; font-weight: 500; color: #495057; font-size: 0.9rem; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.8rem 1rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box; font-family: 'Poppins', sans-serif; font-size: 0.95rem; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #2196f3; box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, 0.25); outline: none; }
+    button { background-color: #2196f3; color: white; border: none; padding: 0.9rem 1.8rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: background-color 0.3s ease, transform 0.1s ease; }
+    button:hover { background-color: #1976d2; transform: translateY(-2px); }
+    #logout-btn { background-color: #c0392b; font-size: 0.9rem; padding: 0.7rem 1.2rem; }
+    
+    .tab-navigation { display: flex; background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); margin-bottom: 2rem; overflow: hidden; }
+    .tab-btn { flex: 1; background: #f8f9fa; border: none; padding: 1rem 1.5rem; cursor: pointer; font-weight: 500; color: #6c757d; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .tab-btn:hover { background: #e9ecef; color: #495057; }
+    .tab-btn.active { background: #2196f3; color: white; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <header>
+      <h1><i class="fas fa-hospital"></i> Hôpital</h1>
+      <div style="display: flex; align-items: center; gap: 1.5rem;">
+        <button onclick="showMyOrders()" style="background-color: #3498db; padding: 0.7rem 1.2rem; font-size: 0.9rem;">
+          <i class="fas fa-receipt"></i> Mes Commandes
+        </button>
+        <div id="cart-badge" onclick="showCart()" style="position: relative; cursor: pointer; background: #27ae60; padding: 0.7rem 1rem; border-radius: 8px; display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fas fa-shopping-cart" style="font-size: 1.2rem;"></i>
+          <span style="font-weight: 600;">Panier</span>
+          <span id="cart-count" style="position: absolute; top: -8px; right: -8px; background: #e74c3c; color: white; border-radius: 50%; width: 24px; height: 24px; display: none; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold;">0</span>
+        </div>
+        <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+      </div>
+    </header>
+
+    <div class="tab-navigation">
+      <button class="tab-btn active" data-tab="menus"><i class="fas fa-utensils"></i> Menus</button>
+      <button class="tab-btn" data-tab="patients"><i class="fas fa-user-injured"></i> Patients</button>
+      <button class="tab-btn" data-tab="recipe-generator"><i class="fas fa-magic"></i> Générateur IA</button>
+      <button class="tab-btn" data-tab="stock"><i class="fas fa-boxes"></i> Stock</button>
+      <button class="tab-btn" data-tab="suppliers"><i class="fas fa-truck"></i> Fournisseurs</button>
+    </div>
+
+    <!-- Onglet Menus -->
+    <div id="menus-tab" class="tab-content active">
+      <div class="card">
+        <h2><i class="fas fa-magic"></i> Générateur de Menus AI - Hôpital</h2>
+        <form id="menu-form">
+          <input type="hidden" id="establishment-type" value="hopital">
+          
+          <div class="form-group">
+            <label for="num-days">Nombre de jours :</label>
+            <input type="number" id="num-days" name="numDays" min="1" max="14" value="7" required>
+          </div>
+
+          <h3 style="color: #2196f3; margin-top: 2rem;"><i class="fas fa-stethoscope"></i> Groupes de patients et besoins médicaux</h3>
+          
+          <div id="patient-groups-container">
+            <!-- Les groupes seront ajoutés dynamiquement ici -->
+          </div>
+          
+          <button type="button" id="add-group-btn" style="width: 100%; margin-top: 1rem; background: #2196f3;">
+            <i class="fas fa-plus"></i> Ajouter un groupe de patients
+          </button>
+
+          <div class="form-group">
+            <label for="specific-needs">Autres besoins alimentaires :</label>
+            <textarea id="specific-needs" name="specificNeeds" rows="3" placeholder="Ex: Enrichissement protéique, hydratation..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="priority-ingredients">Ingrédients à utiliser en priorité :</label>
+            <textarea id="priority-ingredients" name="priorityIngredients" rows="3" placeholder="Ex: Aliments faciles à digérer..."></textarea>
+          </div>
+
+          <button type="submit" style="width: 100%; margin-top: 1.5rem; padding: 1.2rem; font-size: 1.1rem;">
+            <i class="fas fa-wand-magic-sparkles"></i> Générer les menus
+          </button>
+        </form>
+        <div id="menu-results" class="results" style="display: none;"></div>
+      </div>
+    </div>
+
+    <!-- Onglet Stock -->
+    <div id="stock-tab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-boxes"></i> Gestion du Stock - Hôpital</h2>
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+          <button id="add-stock-item-btn"><i class="fas fa-plus"></i> Ajouter un article</button>
+          <button id="refresh-stock-btn" style="background-color: #3498db;"><i class="fas fa-sync"></i> Actualiser</button>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+          <input type="text" id="stock-search" placeholder="Rechercher..." style="flex: 1; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+          <select id="stock-category-filter" style="padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+            <option value="">Toutes les catégories</option>
+            <option value="legumes">Légumes</option>
+            <option value="viandes">Viandes</option>
+            <option value="poissons">Poissons</option>
+            <option value="produits-laitiers">Produits laitiers</option>
+            <option value="cereales">Céréales</option>
+            <option value="fruits">Fruits</option>
+            <option value="epices">Épices</option>
+            <option value="boissons">Boissons</option>
+            <option value="autres">Autres</option>
+          </select>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+              <th style="padding: 1rem; text-align: left;">Nom</th>
+              <th style="padding: 1rem; text-align: left;">Catégorie</th>
+              <th style="padding: 1rem; text-align: center;">Quantité</th>
+              <th style="padding: 1rem; text-align: center;">Expiration</th>
+              <th style="padding: 1rem; text-align: center;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="stock-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Onglet Fournisseurs -->
+    <div id="suppliers-tab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-truck"></i> Gestion des Fournisseurs</h2>
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+          <button id="add-supplier-btn"><i class="fas fa-plus"></i> Ajouter un fournisseur</button>
+          <button id="refresh-suppliers-btn" style="background-color: #3498db;"><i class="fas fa-sync"></i> Actualiser</button>
+        </div>
+        <div id="suppliers-list"></div>
+      </div>
+    </div>
+
+    <!-- Onglet Patients -->
+    <div id="patients-tab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-user-injured"></i> Gestion des Patients</h2>
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+          <button id="add-patient-btn" style="background-color: #4caf50;">
+            <i class="fas fa-user-plus"></i> Ajouter un patient
+          </button>
+          <button id="refresh-patients-btn" style="background-color: #3498db;">
+            <i class="fas fa-sync"></i> Actualiser
+          </button>
+          <button id="generate-menu-patients-btn" style="background-color: #2196f3;">
+            <i class="fas fa-magic"></i> Générer menu pour sélection
+          </button>
+        </div>
+        
+        <!-- Filtres -->
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+          <input type="text" id="patient-search" placeholder="Rechercher un patient..." style="flex: 1; min-width: 200px; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+          <select id="medical-filter" style="padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+            <option value="">Toutes les conditions médicales</option>
+            <option value="diabete_type1">Diabète type 1</option>
+            <option value="diabete_type2">Diabète type 2</option>
+            <option value="hypertension">Hypertension</option>
+            <option value="insuffisance_renale">Insuffisance rénale</option>
+            <option value="dysphagie">Dysphagie</option>
+            <option value="post_operatoire">Post-opératoire</option>
+            <option value="soins_palliatifs">Soins palliatifs</option>
+          </select>
+          <select id="texture-filter" style="padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+            <option value="">Toutes les textures</option>
+            <option value="normale">Normale</option>
+            <option value="hachée">Hachée</option>
+            <option value="mixée">Mixée</option>
+            <option value="lisse">Lisse</option>
+            <option value="liquide">Liquide</option>
+            <option value="iddsi_0">IDDSI 0</option>
+            <option value="iddsi_1">IDDSI 1</option>
+            <option value="iddsi_2">IDDSI 2</option>
+            <option value="iddsi_3">IDDSI 3</option>
+          </select>
+        </div>
+        
+        <!-- Liste des patients -->
+        <div id="patients-list">
+          <!-- Les patients seront chargés dynamiquement -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Onglet Générateur de Recettes IA -->
+    <div id="recipe-generator-tab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-magic"></i> Générateur de Recettes par IA</h2>
+        <p style="color: #666; margin-bottom: 2rem;">
+          Générez de nouvelles recettes adaptées aux besoins spécifiques de votre hôpital
+        </p>
+        
+        <!-- Formulaire de génération -->
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+          <h3 style="margin-bottom: 1rem; color: #2c3e50;">Configuration de la génération</h3>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+            <!-- Contexte fixe pour hôpital -->
+            <div>
+              <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Contexte d'établissement</label>
+              <div style="padding: 0.8rem; background: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; color: #2c3e50; font-weight: 600;">
+                <i class="fas fa-hospital"></i> Hôpital
+              </div>
+              <input type="hidden" id="generator-context" value="hopital">
+            </div>
+            
+            <!-- Nombre de recettes -->
+            <div>
+              <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nombre de recettes</label>
+              <input type="number" id="generator-count" value="5" min="1" max="20" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+            </div>
+          </div>
+          
+          <!-- Filtres -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+            <!-- Texture -->
+            <div>
+              <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Texture</label>
+              <select id="generator-texture" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+                <option value="normale">Normale</option>
+                <option value="hachée">Hachée</option>
+                <option value="mixée">Mixée</option>
+                <option value="lisse">Lisse</option>
+                <option value="liquide">Liquide</option>
+              </select>
+            </div>
+            
+            <!-- Pathologies -->
+            <div>
+              <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Pathologies</label>
+              <select id="generator-pathologies" multiple style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; height: 100px;">
+                <option value="diabète">Diabète</option>
+                <option value="hypertension">Hypertension</option>
+                <option value="insuffisance_rénale">Insuffisance rénale</option>
+                <option value="dysphagie">Dysphagie</option>
+                <option value="post_operatoire">Post-opératoire</option>
+                <option value="soins_palliatifs">Soins palliatifs</option>
+                <option value="denutrition">Dénutrition</option>
+              </select>
+            </div>
+            
+            <!-- Régimes alimentaires -->
+            <div>
+              <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Régimes alimentaires</label>
+              <select id="generator-diet" multiple style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; height: 100px;">
+                <option value="sans_sel">Sans sel ajouté</option>
+                <option value="hyperprotéiné">Hyperprotéiné</option>
+                <option value="hypocalorique">Hypocalorique</option>
+                <option value="végétarien">Végétarien</option>
+                <option value="sans_gluten">Sans gluten</option>
+                <option value="sans_lactose">Sans lactose</option>
+                <option value="pauvre_residus">Pauvre en résidus</option>
+              </select>
+            </div>
+            
+            <!-- Allergènes -->
+            <div>
+              <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Allergènes à éviter</label>
+              <select id="generator-allergens" multiple style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; height: 100px;">
+                <option value="gluten">Gluten</option>
+                <option value="lactose">Lactose</option>
+                <option value="oeufs">Œufs</option>
+                <option value="arachides">Arachides</option>
+                <option value="fruits_coque">Fruits à coque</option>
+                <option value="poisson">Poisson</option>
+                <option value="crustacés">Crustacés</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Bouton de génération -->
+          <button id="generate-recipes-btn" style="width: 100%; padding: 1rem; background: #2196f3; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background-color 0.3s;">
+            <i class="fas fa-magic"></i> Générer des recettes
+          </button>
+        </div>
+        
+        <!-- Résultats -->
+        <div id="generated-recipes-results" style="display: none;">
+          <h3 style="color: #2c3e50; margin-bottom: 1rem;">Recettes générées</h3>
+          <div id="generated-recipes-list"></div>
+        </div>
+        
+        <!-- Statistiques -->
+        <div class="card" style="margin-top: 2rem;">
+          <h3 style="color: #2c3e50; margin-bottom: 1rem;">Statistiques des recettes générées</h3>
+          <div id="stats-content">
+            <p>Chargement des statistiques...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="JS/supplier-common.js"></script>
+  <script type="module" src="JS/hopital-dashboard.js"></script>
+  <script type="module" src="JS/resident-management.js"></script>
+  <script src="js/recipe-generator.js"></script>
+  <script src="js/init.js"></script>
+  <!-- Système de génération intelligente de menus -->
+  <script src="js/intelligent-menu-generator.js"></script>
+  <script src="js/dashboard-menu-integration.js"></script>
+  <script>
+    // Initialiser le système de génération de menus
+    initDashboardMenuGenerator('hopital');
+  </script>
+
+</body>
+</html>

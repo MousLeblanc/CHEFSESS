@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tableau de Bord Collectivités - ChAIf SES</title>
+  <link rel="stylesheet" href="CSS/main.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    /* Styles repris de maison-dashboard.html et adaptés */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Poppins', sans-serif; background-color: #f0f2f5; color: #333; line-height: 1.6; margin: 0; padding: 0; }
+    .page-container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+    header { background: linear-gradient(135deg, #2c3e50 0%, #16a085 100%); color: #fff; padding: 1.5rem 2rem; border-radius: 12px; margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+    header h1 { margin: 0; font-size: 1.8em; font-weight: 600; }
+    header h1 i { margin-right: 10px; }
+    .card { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); margin-bottom: 2rem; }
+    .card h2 { margin-top: 0; margin-bottom: 1.5rem; color: #2c3e50; font-weight: 600; font-size: 1.4em; display: flex; align-items: center; }
+    .card h2 i { margin-right: 0.75rem; color: #16a085; }
+    label, .label-text { display: block; margin-bottom: 0.6rem; font-weight: 500; color: #495057; font-size: 0.9rem; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.8rem 1rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box; font-family: 'Poppins', sans-serif; font-size: 0.95rem; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #16a085; box-shadow: 0 0 0 0.2rem rgba(22, 160, 133, 0.25); outline: none; }
+    .restriction-item { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+    .restriction-item input[type="text"] { flex: 2; }
+    .restriction-item input[type="number"] { flex: 1; min-width: 80px; }
+    .restriction-item input[type="number"]:focus { outline: 2px solid #16a085; outline-offset: 2px; }
+    button { background-color: #16a085; color: white; border: none; padding: 0.9rem 1.8rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: background-color 0.3s ease, transform 0.1s ease; }
+    button:hover { background-color: #117a65; transform: translateY(-2px); }
+    #logout-btn { background-color: #c0392b; font-size: 0.9rem; padding: 0.7rem 1.2rem; }
+    .results { margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px; min-height: 100px; }
+    .menu-suggestion-card { background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .menu-suggestion-card h4 { color: #2c3e50; }
+    .menu-suggestion-card h5 { color: #16a085; }
+    .menu-suggestion-card ul, .menu-suggestion-card ol { padding-left: 20px; }
+    
+    /* Styles pour les onglets */
+    .tab-navigation {
+      display: flex;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+    
+    .tab-btn {
+      flex: 1;
+      background: #f8f9fa;
+      border: none;
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      font-weight: 500;
+      color: #6c757d;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .tab-btn:hover {
+      background: #e9ecef;
+      color: #495057;
+    }
+    
+    .tab-btn.active {
+      background: #16a085;
+      color: white;
+    }
+    
+    .tab-btn i {
+      font-size: 1.1em;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* Styles pour les groupes d'âges */
+    .age-group {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      background: #f8f9fa;
+      position: relative;
+    }
+    
+    .group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .group-header h4 {
+      color: #16a085;
+      margin: 0;
+      font-size: 1.1em;
+      font-weight: 600;
+    }
+    
+    .remove-group-btn {
+      background: none;
+      color: #e74c3c;
+      border: none;
+      padding: 0 5px;
+      cursor: pointer;
+      font-size: 1.2em;
+    }
+    
+    .remove-group-btn:hover {
+      color: #c0392b;
+    }
+    
+    .group-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    
+    .restrictions-list {
+      grid-column: 1 / -1;
+    }
+    
+    .restriction-item {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    
+    .restriction-item select {
+      flex: 1;
+    }
+    
+    .restriction-item input[type="number"] {
+      width: 80px;
+    }
+    
+    .add-restriction-btn {
+      font-size: 0.8em;
+      padding: 5px 10px;
+      margin-top: 5px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    
+    .add-restriction-btn:hover {
+      background-color: #2980b9;
+    }
+    
+    .remove-restriction-btn {
+      background: none;
+      color: #e74c3c;
+      border: none;
+      padding: 0 5px;
+      cursor: pointer;
+      font-size: 1.2em;
+    }
+    
+    .remove-restriction-btn:hover {
+      color: #c0392b;
+    }
+    
+    .add-group-btn {
+      background: #16a085;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      width: 100%;
+      margin-top: 1rem;
+    }
+    
+    .add-group-btn:hover {
+      background: #117a65;
+      transform: translateY(-2px);
+    }
+    
+    .add-group-btn i {
+      margin-right: 0.5rem;
+    }
+    
+    /* Styles pour la gestion du stock */
+    .stock-management {
+      padding: 1rem 0;
+    }
+    
+    .stock-actions {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .btn-primary {
+      background: #16a085;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      background: #117a65;
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+      background: #5a6268;
+      transform: translateY(-2px);
+    }
+    
+    .stock-filters {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .stock-filters input,
+    .stock-filters select {
+      flex: 1;
+    }
+    
+    .stock-table-container {
+      overflow-x: auto;
+    }
+    
+    .stock-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stock-table th,
+    .stock-table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .stock-table th {
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+    
+    .stock-table tr:hover {
+      background: #f8f9fa;
+    }
+    
+    /* Styles pour les fournisseurs */
+    .suppliers-actions {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .suppliers-list {
+      display: block !important;
+      overflow: visible !important;
+      max-height: none !important;
+      height: auto !important;
+      margin-top: 1.5rem;
+      width: 100% !important;
+    }
+    
+    .supplier-card {
+      background: #f8f9fa !important;
+      border: 1px solid #e0e0e0 !important;
+      border-radius: 8px !important;
+      padding: 2rem !important;
+      margin-bottom: 1.5rem !important;
+      display: flex !important;
+      flex-direction: column !important;
+      transition: all 0.2s ease !important;
+      width: 100% !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+      position: relative !important;
+    }
+    
+    .supplier-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .supplier-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .supplier-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #2c3e50;
+      margin: 0;
+    }
+    
+    .supplier-status {
+      display: flex;
+      align-items: center;
+    }
+    
+    .status-badge {
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .status-badge.active {
+      background: #e8f5e8;
+      color: #2e7d32;
+    }
+    
+    .supplier-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    @media (max-width: 768px) {
+      .supplier-info {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .supplier-info {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    }
+    
+    .supplier-detail {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      min-height: 2rem;
+    }
+    
+    .supplier-detail i {
+      color: #16a085;
+      width: 16px;
+    }
+    
+    .supplier-detail .label {
+      color: #666;
+      font-weight: 500;
+      margin-right: 0.5rem;
+    }
+    
+    .supplier-detail .value {
+      color: #2c3e50;
+    }
+    
+    .category-badges {
+      display: flex;
+      gap: 0.25rem;
+      flex-wrap: wrap;
+      margin-top: 0.25rem;
+    }
+    
+    .category-badge {
+      background: #e3f2fd;
+      color: #1976d2;
+      padding: 0.15rem 0.5rem;
+      border-radius: 8px;
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+    
+    .supplier-actions {
+      display: flex !important;
+      gap: 1rem !important;
+      justify-content: space-between !important;
+      padding-top: 1.5rem !important;
+      border-top: 1px solid #e0e0e0 !important;
+      margin-top: auto !important;
+      width: 100% !important;
+    }
+    
+    .btn-action {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      min-width: 120px;
+      justify-content: center;
+      flex: 1;
+    }
+    
+    .btn-action.btn-primary {
+      background: #16a085;
+      color: white;
+    }
+    
+    .btn-action.btn-primary:hover {
+      background: #138d75;
+    }
+    
+    .btn-action.btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .btn-action.btn-secondary:hover {
+      background: #5a6268;
+    }
+    
+    .btn-action.btn-danger {
+      background: #e74c3c;
+      color: white;
+    }
+    
+    .btn-action.btn-danger:hover {
+      background: #c0392b;
+    }
+    
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #666;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+    }
+    
+    .empty-state i {
+      font-size: 2.5rem;
+      color: #ccc;
+      margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+      margin: 0.5rem 0;
+      color: #999;
+      font-size: 1.1rem;
+    }
+    
+    .empty-state p {
+      margin: 0.25rem 0;
+      font-size: 0.9rem;
+      color: #777;
+    }
+
+    /* Styles pour le catalogue de produits */
+    .catalog-modal {
+      max-width: 1200px;
+      width: 95%;
+    }
+    
+    .catalog-filters {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .products-catalog {
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .product-card {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 1.5rem;
+      background: #fff;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .product-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .product-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+    
+    .product-header h3 {
+      margin: 0;
+      color: #2c3e50;
+      flex: 1;
+    }
+    
+    .product-badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .promo-badge {
+      background: #e74c3c;
+      color: white;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8em;
+      font-weight: bold;
+    }
+    
+    .save-badge {
+      background: #27ae60;
+      color: white;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8em;
+    }
+    
+    .product-info {
+      margin-bottom: 1rem;
+    }
+    
+    .product-info p {
+      margin: 0.5rem 0;
+      font-size: 0.9em;
+    }
+    
+    .product-actions {
+      text-align: center;
+    }
+    
+    .original-price {
+      text-decoration: line-through;
+      color: #999;
+      margin-right: 0.5rem;
+    }
+    
+    .promo-price {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+    
+    .empty-catalog {
+      text-align: center;
+      padding: 3rem;
+      color: #666;
+    }
+    
+    .empty-catalog i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: #ddd;
+    }
+
+    /* Styles pour la modal de commande */
+    .order-modal {
+      max-width: 600px;
+      width: 95%;
+    }
+    
+    .order-summary {
+      background: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+    }
+    
+    .order-summary h3 {
+      margin-top: 0;
+      color: #2c3e50;
+    }
+    
+    .order-summary p {
+      margin: 0.5rem 0;
+    }
+    
+    .order-summary strong {
+      color: #2c3e50;
+    }
+
+    /* Responsive pour les fournisseurs */
+    @media (max-width: 768px) {
+      .supplier-actions {
+        flex-direction: column;
+      }
+      
+      .btn-action {
+        justify-content: center;
+      }
+      
+      .catalog-filters {
+        grid-template-columns: 1fr;
+      }
+      
+      .products-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-container">
+    <header>
+      <h1><i class="fas fa-users"></i> Espace Collectivités</h1>
+      <div style="display: flex; align-items: center; gap: 1.5rem;">
+        <button onclick="showMyOrders()" style="background-color: #3498db; padding: 0.7rem 1.2rem; font-size: 0.9rem;">
+          <i class="fas fa-receipt"></i> Mes Commandes
+        </button>
+        <div id="cart-badge" onclick="showCart()" style="position: relative; cursor: pointer; background: #27ae60; padding: 0.7rem 1rem; border-radius: 8px; display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fas fa-shopping-cart" style="font-size: 1.2rem;"></i>
+          <span style="font-weight: 600;">Panier</span>
+          <span id="cart-count" style="position: absolute; top: -8px; right: -8px; background: #e74c3c; color: white; border-radius: 50%; width: 24px; height: 24px; display: none; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold;">0</span>
+        </div>
+        <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+      </div>
+    </header>
+
+    <!-- Navigation par onglets -->
+    <div class="tab-navigation">
+      <button class="tab-btn active" data-tab="menus">
+        <i class="fas fa-utensils"></i> Menus
+      </button>
+      <button class="tab-btn" data-tab="stock">
+        <i class="fas fa-boxes"></i> Stock
+      </button>
+      <button class="tab-btn" data-tab="suppliers">
+        <i class="fas fa-truck"></i> Fournisseurs
+      </button>
+    </div>
+
+    <!-- Onglet Menus -->
+    <div id="menus-tab" class="tab-content active">
+      <div class="card">
+      <h2><i class="fas fa-utensil-spoon"></i> Générateur de Menus pour Collectivités</h2>
+      <form id="collectivite-menu-form">
+        <div class="form-grid">
+          
+          <div class="form-group">
+            <label for="establishment-type-select">Type d'établissement</label>
+            <select id="establishment-type-select" name="establishment-type" class="form-control" aria-label="Type d'établissement">
+              <option value="cantine_scolaire">Cantine Scolaire</option>
+              <option value="maison_de_retraite">Maison de Retraite</option>
+              <option value="ehpad">EHPAD (Établissement d'Hébergement pour Personnes Âgées Dépendantes)</option>
+              <option value="cantine_entreprise">Cantine d'Entreprise</option>
+              <option value="hopital">Hôpital</option>
+              <option value="autre">Autre</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Groupes d'âge et restrictions :</label>
+            
+            <!-- Groupe 1 -->
+            <div class="age-group" id="group-1">
+              <div class="group-header">
+                <h4>Groupe 1</h4>
+                <button type="button" class="remove-group-btn" onclick="removeGroup(1)" style="background:none; color:#e74c3c; padding:0 5px;">&times;</button>
+              </div>
+              
+              <div class="group-content">
+                <div class="form-group">
+                  <label>Tranche d'âge :</label>
+                  <select name="group-1-age-range" class="form-control">
+                    <option value="2.5-5">Maternelle (2,5-5 ans)</option>
+                    <option value="6-10">Primaire (6-10 ans)</option>
+                    <option value="11-15">Collège (11-15 ans)</option>
+                    <option value="16-18">Lycée (16-18 ans)</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label>Nombre de personnes :</label>
+                  <input type="number" name="group-1-count" class="form-control" min="1" placeholder="Ex: 100" value="100">
+                </div>
+                
+                <div class="form-group">
+                  <label>Allergies ou régimes :</label>
+                  <div class="restrictions-list" id="group-1-restrictions">
+                    <div class="restriction-item">
+                      <select name="group-1-restriction-type" class="form-control">
+                        <option value="">-- Sélectionnez --</option>
+                        <option value="vegetarian">Végétarien</option>
+                        <option value="vegan">Végétalien</option>
+                        <option value="gluten-free">Sans gluten</option>
+                        <option value="lactose-free">Sans lactose</option>
+                        <option value="nuts-free">Sans fruits à coque</option>
+                        <option value="peanuts-free">Sans arachides</option>
+                        <option value="eggs-free">Sans œufs</option>
+                        <option value="fish-free">Sans poisson</option>
+                        <option value="shellfish-free">Sans crustacés</option>
+                        <option value="soy-free">Sans soja</option>
+                        <option value="halal">Halal</option>
+                        <option value="kosher">Kosher</option>
+                      </select>
+                      <input type="number" name="group-1-restriction-count" class="form-control" min="0" placeholder="Nb." style="width: 80px;">
+                      <button type="button" class="remove-restriction-btn" onclick="removeRestriction(this)" style="background:none; color:#e74c3c; padding:0 5px;">&times;</button>
+                    </div>
+                  </div>
+                  <button type="button" class="add-restriction-btn" onclick="addRestriction(1)" style="font-size:0.8em; padding: 5px 10px; margin-top:5px; background-color:#3498db; color: white; border: none; border-radius: 4px;">+ Ajouter une restriction</button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Bouton pour ajouter un nouveau groupe -->
+            <button type="button" id="add-group-btn" class="add-group-btn">
+              <i class="fas fa-plus"></i> Ajouter un groupe
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label for="total-servings">Nombre total de personnes</label>
+            <input type="number" id="total-servings" name="total-servings" class="form-control" value="50" min="1" aria-label="Nombre total de personnes">
+          </div>
+
+          <div class="form-group">
+            <label for="dishes-to-prepare">Nombre de plats à préparer</label>
+            <input type="number" id="dishes-to-prepare" name="dishes-to-prepare" class="form-control" value="3" min="1" max="5" aria-label="Nombre de plats à préparer">
+          </div>
+
+          <!-- Besoins alimentaires spécifiques -->
+          <div class="form-group">
+            <label for="special-needs">Besoins alimentaires spécifiques (optionnel)</label>
+            <textarea id="special-needs" name="special-needs" class="form-control" rows="3" placeholder="Décrivez les besoins alimentaires spécifiques de votre établissement..."></textarea>
+          </div>
+
+          <!-- Ingrédients à utiliser en priorité -->
+          <div class="form-group">
+            <label for="priority-ingredients">Ingrédients à utiliser en priorité (optionnel)</label>
+            <textarea id="priority-ingredients" name="priority-ingredients" class="form-control" rows="3" placeholder="Listez les ingrédients que vous souhaitez utiliser en priorité..."></textarea>
+          </div>
+
+          <!-- Filtres spécialisés pour maisons de retraite -->
+          <div id="elderly-care-filters" class="form-group" style="display: none;">
+            <h3 style="color: #2c3e50; margin-bottom: 1rem; font-size: 1.1em;">Filtres spécialisés pour personnes âgées</h3>
+            
+            <!-- Texture (IDDSI) -->
+            <div class="form-group">
+              <label>Texture des aliments (IDDSI)</label>
+              <div id="texture-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="texture-level" aria-label="Niveau de texture">
+                    <option value="TX_SOLID_7">Normal [TX_SOLID_7]</option>
+                    <option value="TX_SOLID_6A">Tendre / Facile à mâcher [TX_SOLID_6A]</option>
+                    <option value="TX_SOLID_6">Haché & Humide (≤ 1 cm) [TX_SOLID_6]</option>
+                    <option value="TX_SOLID_5A">Mouliné / Émincé fin (≤ 4 mm) [TX_SOLID_5A]</option>
+                    <option value="TX_SOLID_5B">Haché très fin & Lié (≤ 2 mm) [TX_SOLID_5B]</option>
+                    <option value="TX_SOLID_4">Mixé lisse / Purée [TX_SOLID_4]</option>
+                  </select>
+                  <input type="number" class="form-control" name="texture-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour cette texture">
+                  <button type="button" class="remove-texture-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cette texture">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-texture-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter une texture</button>
+            </div>
+
+            <!-- Mastication -->
+            <div class="form-group">
+              <label>Mastication / Dentition</label>
+              <div id="mastication-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="mastication-level" aria-label="Niveau de mastication">
+                    <option value="MAST_FULL">Aucune difficulté [MAST_FULL]</option>
+                    <option value="MAST_PARTIAL">Partielle / Prothèse stable [MAST_PARTIAL]</option>
+                    <option value="MAST_UNSTABLE">Prothèse instable / Douleurs [MAST_UNSTABLE]</option>
+                    <option value="MAST_NONE">Édentation / Incapacité à mâcher [MAST_NONE]</option>
+                  </select>
+                  <input type="number" class="form-control" name="mastication-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour ce niveau de mastication">
+                  <button type="button" class="remove-mastication-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer ce niveau de mastication">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-mastication-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter un niveau</button>
+            </div>
+
+            <!-- Déglutition -->
+            <div class="form-group">
+              <label>Déglutition (liquides) - IDDSI</label>
+              <div id="deglutition-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="deglutition-level" aria-label="Niveau de déglutition">
+                    <option value="IDL_0">Liquide mince (eau, café) [IDL_0]</option>
+                    <option value="IDL_1">Légèrement épaissi (nectar) [IDL_1]</option>
+                    <option value="IDL_2">Modérément épaissi (miel) [IDL_2]</option>
+                    <option value="IDL_3">Fortement épaissi (pudding) [IDL_3]</option>
+                    <option value="IDL_GEL">Eau gélifiée [IDL_GEL]</option>
+                  </select>
+                  <input type="number" class="form-control" name="deglutition-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour ce niveau de déglutition">
+                  <button type="button" class="remove-deglutition-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer ce niveau de déglutition">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-deglutition-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter un niveau</button>
+            </div>
+
+            <!-- Pathologies -->
+            <div class="form-group">
+              <label>Pathologies liées à l'âge</label>
+              <div id="pathology-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="pathology-type" aria-label="Type de pathologie">
+                    <option value="PATH_DM">Diabète</option>
+                    <option value="PATH_HTA">HTA / Insuffisance cardiaque</option>
+                    <option value="PATH_CKD">Insuffisance rénale</option>
+                    <option value="PATH_HYPERLIP">Dyslipidémie</option>
+                    <option value="PATH_GOUT">Goutte / Hyperuricémie</option>
+                    <option value="PATH_CONST">Constipation</option>
+                    <option value="PATH_MALNUT">Dénutrition / Risque</option>
+                  </select>
+                  <input type="number" class="form-control" name="pathology-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes avec cette pathologie">
+                  <button type="button" class="remove-pathology-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cette pathologie">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-pathology-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter une pathologie</button>
+            </div>
+
+            <!-- Options spécifiques pour diabète -->
+            <div id="diabetes-options" class="form-group" style="display: none;">
+              <label for="diabetes-carbs">Glucides par repas (si diabète)</label>
+              <select id="diabetes-carbs" name="diabetes-carbs" class="form-control" aria-label="Glucides par repas">
+                <option value="DM_CHO_45">45g par repas</option>
+                <option value="DM_CHO_60">60g par repas</option>
+                <option value="DM_CHO_75">75g par repas</option>
+              </select>
+              <label style="display: flex; align-items: center; margin-top: 0.5rem;">
+                <input type="checkbox" id="diabetes-no-sugar" name="diabetes-no-sugar" style="margin-right: 0.5rem;" aria-label="Desserts sans sucres ajoutés"> Desserts sans sucres ajoutés
+              </label>
+            </div>
+
+            <!-- Options spécifiques pour HTA -->
+            <div id="hta-options" class="form-group" style="display: none;">
+              <label for="salt-restriction">Restriction en sel</label>
+              <select id="salt-restriction" name="salt-restriction" class="form-control" aria-label="Restriction en sel">
+                <option value="SALT_NORM">Normal</option>
+                <option value="SALT_LOW">↓ sel (≤ 5 g/j)</option>
+                <option value="SALT_VLOW">Très ↓ sel (≤ 2 g/j)</option>
+              </select>
+              <label for="fluid-restriction">Restriction hydrique</label>
+              <select id="fluid-restriction" name="fluid-restriction" class="form-control" aria-label="Restriction hydrique">
+                <option value="FLUID_FREE">Libre</option>
+                <option value="FLUID_1_5">< 1,5 L/j</option>
+                <option value="FLUID_1_0">< 1,0 L/j</option>
+              </select>
+            </div>
+
+            <!-- Enrichissement protéique -->
+            <div class="form-group">
+              <label>Enrichissement protéique</label>
+              <div id="protein-enrichment-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="protein-enrichment-level" aria-label="Niveau d'enrichissement protéique">
+                    <option value="PROT_STD">Standard</option>
+                    <option value="PROT_P10">+ 10g/repas (poudre lait, fromage, œufs)</option>
+                    <option value="PROT_P20D">+ 20g/jour (collations HP)</option>
+                    <option value="PROT_HIGH">Hyperprotéiné (≥ 1.2 g/kg/j)</option>
+                  </select>
+                  <input type="number" class="form-control" name="protein-enrichment-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour cet enrichissement protéique">
+                  <button type="button" class="remove-protein-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cet enrichissement protéique">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-protein-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter un enrichissement</button>
+            </div>
+
+            <!-- Enrichissement calorique -->
+            <div class="form-group">
+              <label>Enrichissement calorique</label>
+              <div id="calorie-enrichment-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="calorie-enrichment-level" aria-label="Niveau d'enrichissement calorique">
+                    <option value="CAL_STD">Standard</option>
+                    <option value="CAL_P150">+ 150 kcal/j</option>
+                    <option value="CAL_P300">+ 300 kcal/j</option>
+                    <option value="CAL_DENSE">Densité calorique ↑ (crème, huile, lait entier)</option>
+                  </select>
+                  <input type="number" class="form-control" name="calorie-enrichment-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour cet enrichissement calorique">
+                  <button type="button" class="remove-calorie-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cet enrichissement calorique">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-calorie-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter un enrichissement</button>
+            </div>
+
+            <!-- Hydratation -->
+            <div class="form-group">
+              <label>Hydratation</label>
+              <div id="hydration-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="hydration-target" aria-label="Cible hydratation journalière">
+                    <option value="HYD_1_2">1.2 L</option>
+                    <option value="HYD_1_5">1.5 L</option>
+                    <option value="HYD_FREE">Libre</option>
+                  </select>
+                  <select class="form-control" name="hydration-form" aria-label="Forme d'hydratation">
+                    <option value="HYD_STD">Standard (eau, tisanes)</option>
+                    <option value="HYD_THICK">Épaissie (selon IDL_1/2/3)</option>
+                    <option value="HYD_GEL">Eau gélifiée / gelées hydratantes</option>
+                    <option value="HYD_ENR">Boissons enrichies (lait enrichi, ONS)</option>
+                    <option value="HYD_NOCAF">Sans caféine (si sommeil/HTA)</option>
+                  </select>
+                  <input type="number" class="form-control" name="hydration-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour cette hydratation">
+                  <button type="button" class="remove-hydration-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cette hydratation">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-hydration-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter une hydratation</button>
+            </div>
+          </div>
+
+          <!-- Filtres spécialisés pour EHPAD -->
+          <div id="ehpad-filters" class="form-group" style="display: none;">
+            <h3 style="color: #2c3e50; margin-bottom: 1rem; font-size: 1.1em;">🦷 Filtres spécialisés pour EHPAD</h3>
+            
+            <!-- 1. Texture (solides) - IDDSI -->
+            <div class="form-group">
+              <label>🦷 Texture (solides) - IDDSI</label>
+              <div id="ehpad-texture-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="ehpad-texture-level" aria-label="Niveau de texture IDDSI">
+                    <option value="TX_SOLID_7">Normal [TX_SOLID_7]</option>
+                    <option value="TX_SOLID_6A">Tendre / Facile à mâcher (viandes/garni très tendres) [TX_SOLID_6A]</option>
+                    <option value="TX_SOLID_6">Haché & Humide (morceaux ≤ 1 cm, liés avec sauce) [TX_SOLID_6]</option>
+                    <option value="TX_SOLID_5A">Mouliné / Émincé fin (morceaux ≤ 4 mm, pas secs, sans fils ni peau) [TX_SOLID_5A]</option>
+                    <option value="TX_SOLID_5B">Haché très fin & Lié (≤ 2 mm, forme pâteuse) [TX_SOLID_5B]</option>
+                    <option value="TX_SOLID_4">Mixé lisse / Purée (texture homogène, tient sur la cuillère) [TX_SOLID_4]</option>
+                  </select>
+                  <input type="number" class="form-control" name="ehpad-texture-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour cette texture">
+                  <button type="button" class="remove-ehpad-texture-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cette texture">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-ehpad-texture-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter une texture</button>
+            </div>
+
+            <!-- 2. Mastication / Dentition -->
+            <div class="form-group">
+              <label>🦷 Mastication / Dentition</label>
+              <div id="ehpad-mastication-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="ehpad-mastication-level" aria-label="Niveau de mastication">
+                    <option value="MAST_FULL">Aucune difficulté [MAST_FULL]</option>
+                    <option value="MAST_PARTIAL">Partielle / Prothèse stable (éviter croûtes dures) [MAST_PARTIAL]</option>
+                    <option value="MAST_UNSTABLE">Prothèse instable / Douleurs (tendre, haché) [MAST_UNSTABLE]</option>
+                    <option value="MAST_NONE">Édentation / Incapacité à mâcher (mouliné/mixé) [MAST_NONE]</option>
+                  </select>
+                  <input type="number" class="form-control" name="ehpad-mastication-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour cette mastication">
+                  <button type="button" class="remove-ehpad-mastication-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cette mastication">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-ehpad-mastication-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter une mastication</button>
+            </div>
+
+            <!-- 3. Déglutition (liquides) - IDDSI -->
+            <div class="form-group">
+              <label>🥤 Déglutition (liquides) - IDDSI</label>
+              <div id="ehpad-deglutition-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="ehpad-deglutition-level" aria-label="Niveau de déglutition IDDSI">
+                    <option value="IDL_0">Liquide mince (eau, café…) [IDL_0]</option>
+                    <option value="IDL_1">Légèrement épaissi (nectar) [IDL_1]</option>
+                    <option value="IDL_2">Modérément épaissi (miel) [IDL_2]</option>
+                    <option value="IDL_3">Fortement épaissi (pudding) [IDL_3]</option>
+                    <option value="IDL_GEL">Eau gélifiée [IDL_GEL]</option>
+                  </select>
+                  <input type="number" class="form-control" name="ehpad-deglutition-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour cette déglutition">
+                  <button type="button" class="remove-ehpad-deglutition-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cette déglutition">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-ehpad-deglutition-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter une déglutition</button>
+            </div>
+
+            <!-- 4. Pathologies liées à l'âge -->
+            <div class="form-group">
+              <label>💊 Pathologies liées à l'âge</label>
+              <div id="ehpad-pathology-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="ehpad-pathology-type" aria-label="Type de pathologie">
+                    <option value="PATH_DM">Diabète [PATH_DM]</option>
+                    <option value="PATH_HTA">HTA / Insuffisance cardiaque [PATH_HTA]</option>
+                    <option value="PATH_CKD">Insuffisance rénale [PATH_CKD]</option>
+                    <option value="PATH_HYPERLIP">Dyslipidémie [PATH_HYPERLIP]</option>
+                    <option value="PATH_GOUT">Goutte / Hyperuricémie [PATH_GOUT]</option>
+                    <option value="PATH_CONST">Constipation [PATH_CONST]</option>
+                    <option value="PATH_MALNUT">Dénutrition / Risque [PATH_MALNUT]</option>
+                  </select>
+                  <select class="form-control" name="ehpad-pathology-severity" aria-label="Sévérité de la pathologie">
+                    <option value="LIGHT">Léger</option>
+                    <option value="MODERATE">Modéré</option>
+                    <option value="SEVERE">Sévère</option>
+                  </select>
+                  <input type="number" class="form-control" name="ehpad-pathology-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour cette pathologie">
+                  <button type="button" class="remove-ehpad-pathology-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cette pathologie">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-ehpad-pathology-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter une pathologie</button>
+            </div>
+
+            <!-- 5. Apports protéiques (enrichissement) -->
+            <div class="form-group">
+              <label>🍖 Apports protéiques (enrichissement)</label>
+              <div id="ehpad-protein-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="ehpad-protein-level" aria-label="Niveau d'enrichissement protéique">
+                    <option value="PROT_STD">Standard [PROT_STD]</option>
+                    <option value="PROT_P10">+ 10 g/repas (ex : poudre de lait, fromage, œufs) [PROT_P10]</option>
+                    <option value="PROT_P20D">+ 20 g/jour (collations HP) [PROT_P20D]</option>
+                    <option value="PROT_HIGH">Hyperprotéiné (≥ 1.2 g/kg/j) [PROT_HIGH]</option>
+                  </select>
+                  <input type="number" class="form-control" name="ehpad-protein-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour cet enrichissement protéique">
+                  <button type="button" class="remove-ehpad-protein-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cet enrichissement protéique">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-ehpad-protein-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter un enrichissement protéique</button>
+            </div>
+
+            <!-- 6. Apport énergétique (enrichissement) -->
+            <div class="form-group">
+              <label>⚡ Apport énergétique (enrichissement)</label>
+              <div id="ehpad-calorie-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="ehpad-calorie-level" aria-label="Niveau d'enrichissement calorique">
+                    <option value="CAL_STD">Standard [CAL_STD]</option>
+                    <option value="CAL_P150">+ 150 kcal/j [CAL_P150]</option>
+                    <option value="CAL_P300">+ 300 kcal/j [CAL_P300]</option>
+                    <option value="CAL_DENSE">Densité calorique ↑ (crème, huile, lait entier) [CAL_DENSE]</option>
+                  </select>
+                  <input type="number" class="form-control" name="ehpad-calorie-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour cet enrichissement calorique">
+                  <button type="button" class="remove-ehpad-calorie-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cet enrichissement calorique">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-ehpad-calorie-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter un enrichissement calorique</button>
+            </div>
+
+            <!-- 7. Hydratation & formes -->
+            <div class="form-group">
+              <label>💧 Hydratation & formes</label>
+              <div id="ehpad-hydration-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="ehpad-hydration-target" aria-label="Cible hydratation journalière">
+                    <option value="HYD_1_2">1.2 L [HYD_1_2]</option>
+                    <option value="HYD_1_5">1.5 L [HYD_1_5]</option>
+                    <option value="HYD_FREE">Libre [HYD_FREE]</option>
+                  </select>
+                  <select class="form-control" name="ehpad-hydration-form" aria-label="Forme d'hydratation">
+                    <option value="HYD_STD">Standard (eau, tisanes) [HYD_STD]</option>
+                    <option value="HYD_THICK">Épaissie (selon IDL_1/2/3) [HYD_THICK]</option>
+                    <option value="HYD_GEL">Eau gélifiée / gelées hydratantes [HYD_GEL]</option>
+                    <option value="HYD_ENR">Boissons enrichies (lait enrichi, ONS) [HYD_ENR]</option>
+                    <option value="HYD_NOCAF">Sans caféine (si sommeil/HTA) [HYD_NOCAF]</option>
+                  </select>
+                  <input type="number" class="form-control" name="ehpad-hydration-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour cette hydratation">
+                  <button type="button" class="remove-ehpad-hydration-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cette hydratation">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-ehpad-hydration-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter une hydratation</button>
+            </div>
+
+            <!-- 8. Allergies et intolérances -->
+            <div class="form-group">
+              <label>🚫 Allergies et intolérances</label>
+              <div id="ehpad-allergy-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="ehpad-allergy-type" aria-label="Type d'allergie ou intolérance">
+                    <option value="ALLERGY_GLUTEN">Gluten</option>
+                    <option value="ALLERGY_LACTOSE">Lactose</option>
+                    <option value="ALLERGY_NUTS">Fruits à coque</option>
+                    <option value="ALLERGY_EGGS">Œufs</option>
+                    <option value="ALLERGY_FISH">Poisson</option>
+                    <option value="ALLERGY_SHELLFISH">Crustacés</option>
+                    <option value="ALLERGY_SOY">Soja</option>
+                    <option value="INTOLERANCE_LACTOSE_PARTIAL">Intolérance lactose partielle</option>
+                  </select>
+                  <input type="number" class="form-control" name="ehpad-allergy-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour cette allergie">
+                  <button type="button" class="remove-ehpad-allergy-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cette allergie">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-ehpad-allergy-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter une allergie</button>
+            </div>
+
+            <!-- 9. Aspects sensoriels et psychologiques -->
+            <div class="form-group">
+              <label>🍽️ Aspects sensoriels et psychologiques</label>
+              <div id="ehpad-sensory-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="ehpad-sensory-issue" aria-label="Problème sensoriel ou psychologique">
+                    <option value="SENSORY_TASTE_LOSS">Perte de goût/odorat</option>
+                    <option value="SENSORY_APPETITE_REDUCED">Appétit réduit</option>
+                    <option value="SENSORY_PRESENTATION">Présentation appétissante (purées/mixés colorés, moulés)</option>
+                    <option value="PSYCHOLOGICAL_TRADITIONAL">Plats traditionnels/rassurants</option>
+                    <option value="PSYCHOLOGICAL_SIMPLE">Menus simplifiés (peu d'ingrédients)</option>
+                  </select>
+                  <input type="number" class="form-control" name="ehpad-sensory-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour cet aspect sensoriel">
+                  <button type="button" class="remove-ehpad-sensory-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cet aspect sensoriel">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-ehpad-sensory-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter un aspect sensoriel</button>
+            </div>
+
+            <!-- 10. Déficiences cognitives -->
+            <div class="form-group">
+              <label>🧠 Déficiences cognitives (Alzheimer, démence)</label>
+              <div id="ehpad-cognitive-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="ehpad-cognitive-level" aria-label="Niveau de déficience cognitive">
+                    <option value="COGNITIVE_MILD">Légère (menus simplifiés)</option>
+                    <option value="COGNITIVE_MODERATE">Modérée (plats rassurants/traditionnels)</option>
+                    <option value="COGNITIVE_SEVERE">Sévère (assistance complète)</option>
+                  </select>
+                  <input type="number" class="form-control" name="ehpad-cognitive-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour cette déficience cognitive">
+                  <button type="button" class="remove-ehpad-cognitive-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cette déficience cognitive">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-ehpad-cognitive-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter une déficience cognitive</button>
+            </div>
+          </div>
+
+          <!-- Filtres spécialisés pour hôpitaux -->
+          <div id="hospital-filters" class="form-group" style="display: none;">
+            <h3 style="color: #2c3e50; margin-bottom: 1rem; font-size: 1.1em;">Filtres spécialisés pour hôpitaux</h3>
+            
+            <!-- Textures & Capacités orales -->
+            <div class="form-group">
+              <label>Texture & Capacités orales</label>
+              <div id="hospital-texture-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="hospital-texture-level" aria-label="Niveau de texture">
+                    <option value="TEXTURE_NORMAL">Normal</option>
+                    <option value="TEXTURE_TENDER">Tendre / Facile à mâcher</option>
+                    <option value="TEXTURE_CHOPPED">Haché & Humide</option>
+                    <option value="TEXTURE_PUREED">Mixé homogène</option>
+                    <option value="TEXTURE_LIQUID_THICK">Liquide épaissi (nectar, miel, pudding)</option>
+                  </select>
+                  <input type="number" class="form-control" name="hospital-texture-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour cette texture">
+                  <button type="button" class="remove-hospital-texture-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cette texture">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-hospital-texture-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter une texture</button>
+            </div>
+
+            <!-- Déglutition (Dysphagie) -->
+            <div class="form-group">
+              <label>Déglutition (Dysphagie) - IDDSI</label>
+              <div id="hospital-deglutition-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="hospital-deglutition-level" aria-label="Niveau de déglutition">
+                    <option value="IDDSI_0">IDDSI 0 - Liquide mince</option>
+                    <option value="IDDSI_1">IDDSI 1 - Légèrement épaissi (nectar)</option>
+                    <option value="IDDSI_2">IDDSI 2 - Modérément épaissi (miel)</option>
+                    <option value="IDDSI_3">IDDSI 3 - Fortement épaissi (pudding)</option>
+                    <option value="IDDSI_GEL">Eau gélifiée</option>
+                  </select>
+                  <input type="number" class="form-control" name="hospital-deglutition-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour ce niveau de déglutition">
+                  <button type="button" class="remove-hospital-deglutition-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer ce niveau de déglutition">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-hospital-deglutition-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter un niveau</button>
+            </div>
+
+            <!-- Régimes thérapeutiques -->
+            <div class="form-group">
+              <label>Régimes thérapeutiques</label>
+              <div id="hospital-diet-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="hospital-diet-type" aria-label="Type de régime thérapeutique">
+                    <option value="DIABETIC_45">Diabétique (45g glucides/repas)</option>
+                    <option value="DIABETIC_60">Diabétique (60g glucides/repas)</option>
+                    <option value="DIABETIC_75">Diabétique (75g glucides/repas)</option>
+                    <option value="HYPOSODIC_5G">Hyposodé (5g sel/j)</option>
+                    <option value="HYPOSODIC_2G">Hyposodé (2g sel/j)</option>
+                    <option value="HYPOSODIC_NONE">Sans sel ajouté</option>
+                    <option value="RENAL_LOW_K">IRC - Pauvre en potassium</option>
+                    <option value="RENAL_LOW_P">IRC - Pauvre en phosphore</option>
+                    <option value="RENAL_LOW_PROT">IRC - Pauvre en protéines</option>
+                    <option value="LIVER_LOW_PROT">Hépatique - Restriction protéique</option>
+                    <option value="LIVER_LOW_NA">Hépatique - Pauvre en sodium</option>
+                    <option value="LIVER_LOW_FAT">Hépatique - Limitation graisses</option>
+                    <option value="CANCER_HIGH_CAL">Cancer - Hypercalorique</option>
+                    <option value="CANCER_HIGH_PROT">Cancer - Hyperprotéiné</option>
+                    <option value="POST_SURG_LIQUID">Post-chirurgie - Liquide clair</option>
+                    <option value="POST_SURG_FULL_LIQUID">Post-chirurgie - Liquide complet</option>
+                    <option value="POST_SURG_PUREED">Post-chirurgie - Mixé</option>
+                    <option value="NO_RESIDUE">Sans résidu (pré-examens)</option>
+                    <option value="HIGH_FIBER">Riche en fibres</option>
+                    <option value="HYPOCALORIC">Hypocalorique</option>
+                    <option value="HYPERPROTEIN">Hyperprotéiné</option>
+                    <option value="HYPERCALORIC">Hypercalorique</option>
+                    <option value="NO_ADDED_SUGAR">Sans sucres ajoutés</option>
+                  </select>
+                  <input type="number" class="form-control" name="hospital-diet-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour ce régime">
+                  <button type="button" class="remove-hospital-diet-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer ce régime">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-hospital-diet-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter un régime</button>
+            </div>
+
+            <!-- Allergies & Intolérances -->
+            <div class="form-group">
+              <label>Allergies & Intolérances</label>
+              <div id="hospital-allergy-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="hospital-allergy-type" aria-label="Type d'allergie ou intolérance">
+                    <option value="GLUTEN_FREE">Sans gluten</option>
+                    <option value="LACTOSE_FREE">Sans lactose</option>
+                    <option value="NUT_FREE">Sans fruits à coque</option>
+                    <option value="PEANUT_FREE">Sans arachides</option>
+                    <option value="FISH_FREE">Sans poisson</option>
+                    <option value="EGG_FREE">Sans œufs</option>
+                    <option value="SHELLFISH_FREE">Sans crustacés</option>
+                    <option value="SOY_FREE">Sans soja</option>
+                    <option value="SESAME_FREE">Sans sésame</option>
+                    <option value="MUSTARD_FREE">Sans moutarde</option>
+                    <option value="CELERY_FREE">Sans céleri</option>
+                    <option value="LUPIN_FREE">Sans lupin</option>
+                    <option value="PORK_FREE">Sans porc</option>
+                    <option value="KOSHER">Kosher</option>
+                    <option value="HALAL">Halal</option>
+                    <option value="VEGETARIAN">Végétarien</option>
+                    <option value="VEGAN">Végétalien</option>
+                  </select>
+                  <input type="number" class="form-control" name="hospital-allergy-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes avec cette allergie">
+                  <button type="button" class="remove-hospital-allergy-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cette allergie">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-hospital-allergy-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter une allergie</button>
+            </div>
+
+            <!-- Contraintes médicales spécifiques -->
+            <div class="form-group">
+              <label>Contraintes médicales spécifiques</label>
+              <div id="hospital-medical-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="hospital-medical-type" aria-label="Type de contrainte médicale">
+                    <option value="IMMUNO_SUPPRESSED">Immunodépression - Sans germes</option>
+                    <option value="PREGNANCY">Obstétrique - Régime grossesse</option>
+                    <option value="POSTPARTUM">Post-partum</option>
+                    <option value="PEDIATRIC_0_2">Pédiatrie 0-2 ans</option>
+                    <option value="PEDIATRIC_2_6">Pédiatrie 2-6 ans</option>
+                    <option value="PEDIATRIC_6_12">Pédiatrie 6-12 ans</option>
+                    <option value="PEDIATRIC_12_18">Pédiatrie 12-18 ans</option>
+                    <option value="BURNS">Brûlés - Hypercalorique</option>
+                    <option value="TRAUMA">Traumatisme - Hyperprotéiné</option>
+                    <option value="STROKE">AVC - Texture adaptée</option>
+                    <option value="CANCER_ORL">Cancer ORL - Texture adaptée</option>
+                  </select>
+                  <input type="number" class="form-control" name="hospital-medical-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes avec cette contrainte">
+                  <button type="button" class="remove-hospital-medical-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cette contrainte">&times;</button>
+                </div>
+
+              </div>
+              <button type="button" id="add-hospital-medical-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter une contrainte</button>
+            </div>
+
+            <!-- Hydratation hospitalière -->
+            <div class="form-group">
+              <label>Hydratation hospitalière</label>
+              <div id="hospital-hydration-container">
+                <div class="restriction-item">
+                  <select class="form-control" name="hospital-hydration-type" aria-label="Type d'hydratation">
+                    <option value="HYDRATION_FREE">Libre</option>
+                    <option value="HYDRATION_1_5L">Restriction 1,5 L/j</option>
+                    <option value="HYDRATION_1L">Restriction 1 L/j</option>
+                    <option value="HYDRATION_0_8L">Restriction 0,8 L/j</option>
+                    <option value="HYDRATION_THICK">Boissons épaissies</option>
+                    <option value="HYDRATION_GEL">Eau gélifiée</option>
+                    <option value="HYDRATION_ONS">Boissons enrichies (ONS)</option>
+                    <option value="HYDRATION_ENTERIC">Nutrition entérale</option>
+                  </select>
+                  <input type="number" class="form-control" name="hospital-hydration-count" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes pour cette hydratation">
+                  <button type="button" class="remove-hospital-hydration-btn" style="background:none; color:#e74c3c; padding:0 5px;" aria-label="Supprimer cette hydratation">&times;</button>
+                </div>
+              </div>
+              <button type="button" id="add-hospital-hydration-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter une hydratation</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="total-servings">Nombre total de personnes</label>
+            <input type="number" id="total-servings" name="total-servings" class="form-control" value="50" min="1" aria-label="Nombre total de personnes">
+          </div>
+
+          <div class="form-group">
+            <label for="dishes-to-prepare">Nombre de plats à préparer</label>
+            <input type="number" id="dishes-to-prepare" name="dishes-to-prepare" class="form-control" value="3" min="1" max="5" aria-label="Nombre de plats à préparer">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 1.5rem;">
+            <label>Besoins alimentaires spécifiques (optionnel)</label>
+            <div id="restrictions-container">
+                <div class="restriction-item">
+                    <input type="text" name="restriction-type" class="form-control" placeholder="Ex: Végétarien, Sans gluten, Allergie aux arachides..." aria-label="Type de restriction alimentaire">
+                    <input type="number" name="restriction-count" class="form-control" min="1" placeholder="Nb. de pers." aria-label="Nombre de personnes avec cette restriction">
+                    <button type="button" class="remove-restriction-btn" style="background:none; color:#e74c3c; padding:0 5px;">&times;</button>
+                </div>
+            </div>
+            <button type="button" id="add-restriction-btn" style="font-size:0.8em; padding: 5px 10px; margin-top:10px; background-color:#3498db;">+ Ajouter une restriction</button>
+        </div>
+
+        <div class="form-group" style="margin-top: 1.5rem;">
+            <label for="ingredients">Ingrédients à utiliser en priorité (optionnel)</label>
+            <textarea id="ingredients" name="ingredients" class="form-control" rows="3" placeholder="Ex: carottes, poulet, stock de pain..." aria-label="Ingrédients à utiliser en priorité"></textarea>
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <button type="submit"><i class="fas fa-magic"></i> Générer le Menu</button>
+        </div>
+      </form>
+    </div>
+
+      <div class="card">
+        <h2><i class="fas fa-clipboard-list"></i> Suggestions de Menus pour votre Collectivité</h2>
+        <div class="results" id="resultat-menu" aria-live="polite">
+          <p class="placeholder-text">Les suggestions de menus adaptées apparaîtront ici.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Onglet Stock -->
+    <div id="stock-tab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-boxes"></i> Gestion du Stock</h2>
+        <div class="stock-management">
+          <div class="stock-actions">
+            <button id="add-stock-item-btn" class="btn-primary">
+              <i class="fas fa-plus"></i> Ajouter un article
+            </button>
+            <button id="refresh-stock-btn" class="btn-secondary">
+              <i class="fas fa-sync"></i> Actualiser
+            </button>
+          </div>
+          
+          <div class="stock-filters">
+            <input type="text" id="stock-search" placeholder="Rechercher un article..." class="form-control">
+            <select id="stock-category-filter" class="form-control">
+              <option value="">Toutes les catégories</option>
+              <option value="legumes">Légumes</option>
+              <option value="fruits">Fruits</option>
+              <option value="viandes">Viandes</option>
+              <option value="poissons">Poissons</option>
+              <option value="produits-laitiers">Produits laitiers</option>
+              <option value="cereales">Céréales</option>
+              <option value="epices">Épices</option>
+              <option value="boissons">Boissons</option>
+              <option value="autres">Autres</option>
+            </select>
+          </div>
+          
+          <div class="stock-table-container">
+            <table class="stock-table">
+              <thead>
+                <tr>
+                  <th>Article</th>
+                  <th>Catégorie</th>
+                  <th>Quantité</th>
+                  <th>Unité</th>
+                  <th>Date d'expiration</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="stock-table-body">
+                <!-- Les articles de stock seront chargés ici -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Onglet Fournisseurs -->
+    <div id="suppliers-tab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-truck"></i> Gestion des Fournisseurs</h2>
+        
+        <div class="suppliers-actions">
+          <button id="add-supplier-btn" class="btn-primary">
+            <i class="fas fa-plus"></i> Ajouter un fournisseur
+          </button>
+          <button id="refresh-suppliers-btn" class="btn-secondary">
+            <i class="fas fa-sync"></i> Actualiser
+          </button>
+        </div>
+        
+        <div class="suppliers-list" id="suppliers-list">
+          <!-- Les fournisseurs seront chargés ici -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module" src="JS/collectivite-dashboard.js?v=3"></script>
+    <script src="js/init.js"></script>
+  <!-- Système de génération intelligente de menus -->
+  <script src="js/intelligent-menu-generator.js"></script>
+  <script src="js/dashboard-menu-integration.js"></script>
+  <script>
+    // Initialiser le système de génération de menus
+    initDashboardMenuGenerator('collectivite');
+  </script>
+
+</body>
+</html>

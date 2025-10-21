@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChAIf SES - Gestion des Stocks</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f5f5; color: #2c3e50; margin: 0; padding: 0;}
+    header { background: #2c3e50; color: #fff; padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center;}
+    .logo { font-size: 1.7rem; font-weight: bold; }
+    nav ul { list-style: none; display: flex; gap: 1.5rem; margin:0; padding:0; }
+    nav li a { color: #fff; text-decoration: none; transition: color .2s;}
+    nav li a.active, nav li a:hover { color: #e67e22; }
+    .container { max-width: 900px; margin: 2.5rem auto; background: #fff; border-radius: 12px; box-shadow: 0 3px 18px rgba(0,0,0,0.1); padding: 2rem; } /* Correction de #0001 en rgba */
+    h1 { margin-bottom: 1.4rem; color: #2c3e50; }
+    .inventory-header { text-align: right; margin-bottom: 1.2rem; }
+    .btn, button { border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 0.95rem;} /* Police de base pour les boutons */
+    .btn-primary, .btn-success { background: #e67e22; color: #fff; }
+    .btn-primary:hover, .btn-success:hover { background: #cf7712;}
+    .stock-table { width: 100%; border-collapse: collapse; margin: 18px 0 8px 0;}
+    .stock-table th, .stock-table td { padding: 10px 13px; border-bottom: 1px solid #eee; text-align: left;}
+    .stock-table th { background: #f7f7f7; font-size: 1rem;}
+    .stock-table tr:hover { background: #fcf4e7;}
+    .btn-icon { background: none; border: none; cursor: pointer; color: #444; font-size: 1.05em; margin: 0 2px; padding: 5px;} /* Ajout padding pour clic facile */
+    .btn-icon:hover { color: #e67e22;}
+    #empty-stock-message { color: #aaa; text-align:center; padding: 32px 0;}
+    
+    /* Styles pour le Modal */
+    .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: rgba(44,62,80,0.35); justify-content: center; align-items: center;} /* Fond légèrement plus opaque */
+    .modal.show { display: flex;}
+    .modal-content { 
+      background: #fff; 
+      border-radius: 10px; 
+      min-width: 320px; 
+      max-width: 500px; /* Largeur max pour le contenu du modal */
+      width: 90%;
+      box-shadow: 0 6px 22px rgba(0,0,0,0.2); /* Correction de #0002 en rgba */
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh; /* Hauteur max pour éviter qu'il soit trop long */
+    }
+    .modal-header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      padding: 1rem 1.5rem; /* Padding standardisé */
+      border-bottom: 1px solid #eee;
+      flex-shrink: 0;
+    }
+    .modal-title { font-weight: 600; font-size: 1.2rem; margin:0;} /* Taille de police ajustée */
+    .close-btn { background: none; border: none; font-size: 1.8rem; color: #aaa; cursor: pointer; line-height: 1;} /* Taille et alignement ajustés */
+    .close-btn:hover { color: #e67e22;}
+    
+    .modal-body { 
+      padding: 1.5rem; 
+      overflow-y: auto; /* Permet le défilement si le contenu est trop long */
+      flex-grow: 1;
+    }
+    .form-group { margin-bottom: 1.2rem;} /* Espacement légèrement augmenté */
+    .form-control { width: 100%; padding: 10px 12px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; font-size: 0.95rem;}
+    .form-actions { 
+      display: flex; 
+      justify-content: flex-end; 
+      gap: 0.75rem; /* Espacement entre boutons réduit */
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #eee;
+      background-color: #f9f9f9; /* Fond léger pour distinguer le footer */
+      border-bottom-left-radius: 10px; /* Pour correspondre au modal-content */
+      border-bottom-right-radius: 10px;
+      flex-shrink: 0;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 0.4rem; 
+        font-weight: 500; 
+        color: #495057;
+        font-size: 0.9rem;
+    }
+     .form-group input[type="checkbox"] { 
+        width: auto;
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+    .form-group label span { 
+        vertical-align: middle;
+        font-weight: normal; 
+    }
+    
+    /* Styles pour l'Autocomplétion */
+    .autocomplete-list { 
+      position: absolute; 
+      top:100%;
+      left:0; 
+      right: 0;
+      background:white; 
+      border:1px solid #ccc; 
+      border-top: none; 
+      z-index:10000; 
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08); 
+      display:none; 
+      max-height: 160px; /* Hauteur max avant défilement */
+      overflow-y: auto;
+      border-bottom-left-radius: 4px; /* Esthétique */
+      border-bottom-right-radius: 4px;
+    }
+    .autocomplete-item { padding: 10px 15px; cursor: pointer; font-size: 0.9rem;} /* Font-size ajustée */
+    .autocomplete-item:hover { background: #f0f0f0;} /* Hover plus subtil */
+    
+    /* Styles pour les Toasts (Notifications) */
+    #toast-container { position:fixed; bottom:20px; right:20px; z-index:20000; width: auto; max-width: 350px;} /* Largeur max pour les toasts */
+    .toast { 
+      background: #333; /* Couleur de fond par défaut */
+      color:#fff; 
+      padding: 12px 18px; /* Padding ajusté */
+      border-radius:6px; /* Coins plus arrondis */
+      margin-bottom:10px; /* Espacement entre toasts */
+      opacity:0; 
+      transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out; 
+      display: flex; 
+      align-items: center; 
+      transform: translateX(100%); /* Animation d'arrivée depuis la droite */
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      font-size: 0.9rem;
+    }
+    .toast.show { opacity:1; transform: translateX(0); }
+    .toast-success { background: #2ecc71; border-left: 5px solid #27ae60;}
+    .toast-error { background: #e74c3c; border-left: 5px solid #c0392b;}
+    .toast-warning { background: #f39c12; border-left: 5px solid #d35400; color: #fff;} /* Couleur texte pour warning */
+    .toast-info { background: #3498db; border-left: 5px solid #2980b9;}
+    .toast-icon { margin-right: 10px; font-size: 1.3em; } /* Icône légèrement plus grande */
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">ChAIf SES</div>
+    <nav>
+      <ul>
+        <li><a href="accueil.html">Accueil</a></li>
+        <li><a href="stock.html" class="active">Inventaire</a></li>
+        <li><a href="menu.html">Menus</a></li>
+        <li><a href="planning.html">Planning</a></li>
+        <li><a href="suppliers.html">Fournisseurs</a></li>
+        <li><a href="settings.html">Paramètres</a></li>
+        <li><a href="#" id="logout-btn-nav">Déconnexion</a></li> 
+      </ul>
+    </nav>
+  </header>
+  <div class="container">
+    <h1>Gestion des Stocks</h1>
+    <div class="inventory-header">
+      <button id="add-item-btn" class="btn btn-primary">+ Ajouter un ingrédient</button>
+    </div>
+    <table class="stock-table">
+      <thead>
+        <tr>
+          <th>Ingrédient</th>
+          <th>Catégorie</th>
+          <th>Quantité</th>
+          <th>Unité</th>
+          <th>Seuil Alerte</th>
+          <th>Date d'expiration</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="ingredient-list">
+        </tbody>
+    </table>
+    <div id="empty-stock-message" style="display:none;">
+      Aucun ingrédient enregistré. Cliquez sur "+ Ajouter un ingrédient" pour commencer.
+    </div>
+  </div>
+
+  <div id="item-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title">Ajouter un ingrédient</h2> 
+        <button class="close-btn" id="close-modal-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="item-form" autocomplete="off">
+          <input type="hidden" id="item-id" />
+          <div class="form-group" style="position:relative;">
+            <label for="item-name">Nom de l'ingrédient *</label>
+            <input type="text" id="item-name" class="form-control" required autocomplete="off">
+            <div class="autocomplete-list" id="modal-autocomplete"></div>
+          </div>
+          <div class="form-group">
+            <label for="item-category">Catégorie *</label>
+            <select id="item-category" class="form-control" required>
+              <option value="">Sélectionnez une catégorie...</option>
+              <option value="Fruits">Fruits</option>
+              <option value="Légumes">Légumes</option>
+              <option value="Viandes et Poissons">Viandes et Poissons</option>
+              <option value="Produits Laitiers">Produits Laitiers</option>
+              <option value="Céréales et Féculents">Céréales et Féculents</option>
+              <option value="Épices et Condiments">Épices et Condiments</option>
+              <option value="Épicerie et Condiments">Épicerie et Condiments</option>
+              <option value="Boissons">Boissons</option>
+              <option value="Autres">Autres</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="item-quantity">Quantité *</label>
+            <input type="number" id="item-quantity" class="form-control" min="0" step="any" required> 
+          </div>
+          <div class="form-group">
+            <label for="item-unit">Unité *</label>
+            <select id="item-unit" class="form-control" required>
+              <option value="kg">kg</option>
+              <option value="g">g</option>
+              <option value="L">L</option>
+              <option value="ml">ml</option>
+              <option value="unité">unité</option>
+              <option value="botte">botte</option>
+              <option value="boite">boîte</option>
+              <option value="conserve">conserve</option>
+              <option value="sachet">sachet</option>
+              <option value="bouteille">bouteille</option>
+            </select>
+          </div>
+           <div class="form-group">
+            <label for="item-threshold">Seuil d'alerte (quantité minimale)</label>
+            <input type="number" id="item-threshold" class="form-control" min="0" step="any" placeholder="Ex: 5 (optionnel)">
+          </div>
+          <div class="form-group">
+            <label for="item-alert-active">
+                <input type="checkbox" id="item-alert-active">
+                <span>Activer l'alerte de stock bas</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="item-expiry">Date d'expiration</label>
+            <input type="date" id="item-expiry" class="form-control">
+          </div>
+        </form>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-primary" id="cancel-item-btn" style="background-color: #7f8c8d;">Annuler</button> 
+        <button type="submit" form="item-form" class="btn-success">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div> 
+
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/apiHelper.js"></script> 
+  <script type="module" src="js/utils.js"></script>   
+  <script type="module" src="js/stock.js"></script>    
+    <script src="js/init.js"></script>`r`n</body>
+</html>

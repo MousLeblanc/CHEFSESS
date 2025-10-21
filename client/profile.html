@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon Profil - ChAIf SES</title>
+  <link rel="stylesheet" href="css/main.css">
+ <!-- ✅ Local -->
+<link rel="stylesheet" href="./css/all.min.css">
+
+</head>
+<body>
+  <!-- Le header sera inséré par common.js -->
+  
+  <div class="container">
+    <div class="page-header">
+      <h1><i class="fas fa-user-circle"></i> Mon Profil</h1>
+    </div>
+    
+    <div class="card">
+      <div class="card-body">
+        <form id="profile-form">
+          <div class="form-group">
+            <label for="name">Nom complet</label>
+            <input type="text" id="name" placeholder="Votre nom et prénom" required />
+          </div>
+          
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" readonly />
+            <small>L'email ne peut pas être modifié</small>
+          </div>
+          
+          <div class="form-group">
+            <label for="businessName">Nom de l'établissement</label>
+            <input type="text" id="businessName" placeholder="Restaurant, entreprise..." />
+          </div>
+          
+          <div class="form-group">
+            <label for="role">Rôle</label>
+            <input type="text" id="role" readonly />
+            <small>Le rôle ne peut pas être modifié</small>
+          </div>
+          
+          <div class="form-group">
+            <label for="current-password">Mot de passe actuel</label>
+            <input type="password" id="current-password" placeholder="Nécessaire pour modifier le mot de passe" />
+          </div>
+          
+          <div class="form-group">
+            <label for="new-password">Nouveau mot de passe (optionnel)</label>
+            <input type="password" id="new-password" placeholder="Laisser vide pour ne pas changer" />
+          </div>
+          
+          <div class="form-group">
+            <label for="confirm-password">Confirmer le nouveau mot de passe</label>
+            <input type="password" id="confirm-password" placeholder="Laisser vide pour ne pas changer" />
+          </div>
+          
+          <button type="submit" class="btn">Enregistrer les modifications</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Le footer sera inséré par common.js -->
+  
+  <script src="js/common.js"></script>
+  <script type="module" src="js/init.js"></script>
+  <script type="module" src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Charger les informations du profil
+      loadProfileInfo();
+      
+      // Gérer la soumission du formulaire
+      document.getElementById('profile-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        updateProfile();
+      });
+    });
+    
+    function loadProfileInfo() {
+      // Récupérer les informations de l'utilisateur du localStorage
+      const userName = localStorage.getItem('userName') || '';
+      const userEmail = localStorage.getItem('userEmail') || '';
+      const userRole = localStorage.getItem('userRole') || '';
+      const businessName = localStorage.getItem('businessName') || '';
+      
+      // Remplir le formulaire
+      document.getElementById('name').value = userName;
+      document.getElementById('email').value = userEmail;
+      document.getElementById('role').value = userRole === 'chef' ? 'Chef' : 'Fournisseur';
+      document.getElementById('businessName').value = businessName;
+    }
+    
+    function updateProfile() {
+      // Récupérer les valeurs du formulaire
+      const name = document.getElementById('name').value.trim();
+      const businessName = document.getElementById('businessName').value.trim();
+      const currentPassword = document.getElementById('current-password').value.trim();
+      const newPassword = document.getElementById('new-password').value.trim();
+      const confirmPassword = document.getElementById('confirm-password').value.trim();
+      
+      // Validation du mot de passe si modification
+      if (newPassword) {
+        if (!currentPassword) {
+          showAlert('Veuillez saisir votre mot de passe actuel pour le modifier.', 'error');
+          return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+          showAlert('Les mots de passe ne correspondent pas.', 'error');
+          return;
+        }
+        
+        if (newPassword.length < 6) {
+          showAlert('Le nouveau mot de passe doit contenir au moins 6 caractères.', 'error');
+          return;
+        }
+      }
+      
+      // Simuler une mise à jour du profil (normalement, cela serait une requête API)
+      try {
+        // Sauvegarder les nouvelles valeurs
+        localStorage.setItem('userName', name);
+        localStorage.setItem('businessName', businessName);
+        
+        // Simuler une mise à jour réussie
+        showAlert('Profil mis à jour avec succès.', 'success');
+        
+        // Mettre à jour le nom dans le header
+        updateUserInfo();
+        
+        // Réinitialiser les champs de mot de passe
+        document.getElementById('current-password').value = '';
+        document.getElementById('new-password').value = '';
+        document.getElementById('confirm-password').value = '';
+      } catch (error) {
+        showAlert('Une erreur est survenue lors de la mise à jour du profil.', 'error');
+      }
+    }
+  </script>
+<script type="module" src="js/auth.js"></script>
+</body>
+</html>

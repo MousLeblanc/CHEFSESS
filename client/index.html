@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connexion - CHaiF SES</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <style>
+    .container {
+      max-width: 400px;
+      margin: 3rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    form input {
+      width: 100%;
+      padding: 0.75rem;
+      margin: 0.5rem 0 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 0.75rem 2rem;
+      background: #e67300;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #cc6600;
+    }
+
+    .link {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+    }
+
+    .link a {
+      color: #3366cc;
+      text-decoration: none;
+    }
+
+    .link a:hover {
+      text-decoration: underline;
+    }
+    .container { max-width: 400px; margin: 3rem auto; padding: 2rem; background: white; border-radius: 16px; box-shadow: 0 0 12px rgba(0,0,0,0.1); text-align: center; }
+    form input { width: 100%; padding: 0.75rem; margin: 0.5rem 0 1rem; border: 1px solid #ccc; border-radius: 8px; }
+    button { padding: 0.75rem 2rem; background: #e67300; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    button:hover { background: #cc6600; }
+    .link { margin-top: 1rem; font-size: 0.95rem; }
+    .link a { color: #3366cc; text-decoration: none; }
+    .link a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  
+  <div class="container">
+    <h1>Connexion ChAIf SES</h1>
+
+    <form id="login-form">
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Mot de passe" required />
+      <button type="submit">Se connecter</button>
+    </form>
+    
+
+    <div class="link">
+      Pas encore de compte ? <a href="choisir-profil.html">S'inscrire</a>
+    </div>
+  </div>
+<script src="js/init.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const token = localStorage.getItem('token');
+  if (token && user) {
+    // Redirection intelligente
+    switch (user.role) {
+      case 'maison': window.location.href = 'maison-dashboard.html'; break;
+      case 'resto': window.location.href = 'accueil.html'; break;
+      case 'fournisseur': window.location.href = 'supplier-dashboard.html'; break;
+      case 'groupe': window.location.href = 'group-dashboard.html'; break;
+    }
+  }
+});
+</script>
+<script type="module" src="js/index.js"></script>
+<script type="module" src="js/login.js"></script>
+</body>
+</html>

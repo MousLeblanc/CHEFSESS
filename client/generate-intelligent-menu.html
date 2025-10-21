@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Génération Intelligente de Menus - ChAIf SES</title>
+    <link rel="stylesheet" href="CSS/reset.css">
+    <link rel="stylesheet" href="CSS/intelligent-menu.css">
+    <style>
+        .menu-generator-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .form-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #34495e;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .age-group-entry {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: end;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: normal;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+
+        .btn-add {
+            background: #2ecc71;
+            color: white;
+            padding: 8px 16px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .success-message {
+            background: #2ecc71;
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .generated-menu {
+            margin-top: 30px;
+        }
+
+        .dish-card {
+            background: #f8f9fa;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+
+        .dish-card h4 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .dish-nutrition {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .dish-nutrition span {
+            background: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        details {
+            margin-top: 10px;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: 600;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .ingredients-list,
+        .instructions-list {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        .shopping-list table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .shopping-list th,
+        .shopping-list td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .shopping-list th {
+            background: #3498db;
+            color: white;
+        }
+
+        .shopping-list tr:hover {
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-generator-container">
+        <h1>🍽️ Génération Intelligente de Menus</h1>
+        <p>Générez des menus personnalisés basés sur notre base de recettes, adaptés aux besoins de vos convives.</p>
+
+        <div id="messageContainer"></div>
+
+        <form id="menuGeneratorForm">
+            <!-- Section 1: Informations Établissement -->
+            <div class="form-section">
+                <h3>📋 Informations de l'établissement</h3>
+                
+                <div class="form-group">
+                    <label for="establishmentType">Type d'établissement *</label>
+                    <select id="establishmentType" required>
+                        <option value="">-- Sélectionnez --</option>
+                        <option value="cantine_scolaire">Cantine scolaire</option>
+                        <option value="hopital">Hôpital</option>
+                        <option value="ehpad">EHPAD</option>
+                        <option value="maison_de_retraite">Maison de retraite</option>
+                        <option value="cantine_entreprise">Cantine d'entreprise</option>
+                        <option value="restaurant">Restaurant</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="theme">Thème du menu (optionnel)</label>
+                    <input type="text" id="theme" placeholder="Ex: Menu Printemps, Menu Méditerranéen...">
+                </div>
+
+                <div class="form-group">
+                    <label for="numDishes">Nombre de plats *</label>
+                    <input type="number" id="numDishes" min="2" max="6" value="3" required>
+                    <small>Nombre de plats dans le menu (ex: entrée, plat, dessert = 3)</small>
+                </div>
+            </div>
+
+            <!-- Section 2: Groupes d'âge -->
+            <div class="form-section">
+                <h3>👥 Groupes d'âge des convives</h3>
+                
+                <div id="ageGroupsContainer">
+                    <div class="age-group-entry">
+                        <div class="form-group">
+                            <label>Tranche d'âge</label>
+                            <select class="ageRange" required>
+                                <option value="2.5-6">2.5 - 6 ans (Maternelle)</option>
+                                <option value="6-12" selected>6 - 12 ans (Primaire)</option>
+                                <option value="12-18">12 - 18 ans (Secondaire)</option>
+                                <option value="adulte">Adultes</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nombre de personnes</label>
+                            <input type="number" class="ageCount" min="1" value="30" required>
+                        </div>
+                        <button type="button" class="btn btn-danger remove-age-group" style="display:none;">✕</button>
+                    </div>
+                </div>
+                
+                <button type="button" id="addAgeGroup" class="btn btn-add">➕ Ajouter un groupe d'âge</button>
+            </div>
+
+            <!-- Section 3: Allergènes à exclure -->
+            <div class="form-section">
+                <h3>⚠️ Allergènes à exclure</h3>
+                <div class="checkbox-group" id="allergensContainer">
+                    <label><input type="checkbox" value="gluten"> Gluten</label>
+                    <label><input type="checkbox" value="lactose"> Lactose</label>
+                    <label><input type="checkbox" value="oeufs"> Œufs</label>
+                    <label><input type="checkbox" value="arachides"> Arachides</label>
+                    <label><input type="checkbox" value="fruits_a_coque"> Fruits à coque</label>
+                    <label><input type="checkbox" value="soja"> Soja</label>
+                    <label><input type="checkbox" value="poisson"> Poisson</label>
+                    <label><input type="checkbox" value="crustaces"> Crustacés</label>
+                    <label><input type="checkbox" value="mollusques"> Mollusques</label>
+                    <label><input type="checkbox" value="celeri"> Céleri</label>
+                    <label><input type="checkbox" value="moutarde"> Moutarde</label>
+                    <label><input type="checkbox" value="sesame"> Sésame</label>
+                    <label><input type="checkbox" value="sulfites"> Sulfites</label>
+                    <label><input type="checkbox" value="lupin"> Lupin</label>
+                </div>
+            </div>
+
+            <!-- Section 4: Restrictions alimentaires -->
+            <div class="form-section">
+                <h3>🥗 Restrictions alimentaires</h3>
+                <div class="checkbox-group" id="dietaryRestrictionsContainer">
+                    <label><input type="checkbox" value="vegetarien"> Végétarien</label>
+                    <label><input type="checkbox" value="vegan"> Végan</label>
+                    <label><input type="checkbox" value="sans_gluten"> Sans gluten</label>
+                    <label><input type="checkbox" value="sans_lactose"> Sans lactose</label>
+                    <label><input type="checkbox" value="halal"> Halal</label>
+                    <label><input type="checkbox" value="casher"> Casher</label>
+                    <label><input type="checkbox" value="sans_porc"> Sans porc</label>
+                    <label><input type="checkbox" value="sans_viande_rouge"> Sans viande rouge</label>
+                </div>
+            </div>
+
+            <!-- Section 5: Pathologies -->
+            <div class="form-section">
+                <h3>🏥 Pathologies à prendre en compte</h3>
+                <div class="checkbox-group" id="medicalConditionsContainer">
+                    <label><input type="checkbox" value="diabete"> Diabète</label>
+                    <label><input type="checkbox" value="hypertension"> Hypertension</label>
+                    <label><input type="checkbox" value="cholesterol"> Cholestérol</label>
+                    <label><input type="checkbox" value="maladie_renale"> Maladie rénale</label>
+                    <label><input type="checkbox" value="maladie_coeliaque"> Maladie cœliaque</label>
+                    <label><input type="checkbox" value="dysphagie"> Dysphagie</label>
+                    <label><input type="checkbox" value="insuffisance_cardiaque"> Insuffisance cardiaque</label>
+                    <label><input type="checkbox" value="obesite"> Obésité</label>
+                    <label><input type="checkbox" value="denutrition"> Dénutrition</label>
+                </div>
+            </div>
+
+            <!-- Section 6: Texture et options -->
+            <div class="form-section">
+                <h3>🍴 Options supplémentaires</h3>
+                
+                <div class="form-group">
+                    <label for="texture">Texture des plats</label>
+                    <select id="texture">
+                        <option value="normale" selected>Normale</option>
+                        <option value="hachee">Hachée</option>
+                        <option value="mixee">Mixée</option>
+                        <option value="moulinee">Moulinée</option>
+                        <option value="liquide">Liquide</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="useStockOnly">
+                        Utiliser uniquement les ingrédients en stock
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                🎯 Générer le menu intelligent
+            </button>
+        </form>
+
+        <!-- Zone d'affichage du menu généré -->
+        <div id="generatedMenuContainer"></div>
+    </div>
+
+    <script src="js/intelligent-menu-generator.js"></script>
+    <script>
+        const menuGenerator = new IntelligentMenuGenerator();
+
+        // Gestion de l'ajout de groupes d'âge
+        document.getElementById('addAgeGroup').addEventListener('click', () => {
+            const container = document.getElementById('ageGroupsContainer');
+            const newEntry = document.createElement('div');
+            newEntry.className = 'age-group-entry';
+            newEntry.innerHTML = `
+                <div class="form-group">
+                    <label>Tranche d'âge</label>
+                    <select class="ageRange" required>
+                        <option value="2.5-6">2.5 - 6 ans (Maternelle)</option>
+                        <option value="6-12">6 - 12 ans (Primaire)</option>
+                        <option value="12-18">12 - 18 ans (Secondaire)</option>
+                        <option value="adulte">Adultes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nombre de personnes</label>
+                    <input type="number" class="ageCount" min="1" value="30" required>
+                </div>
+                <button type="button" class="btn btn-danger remove-age-group">✕</button>
+            `;
+            container.appendChild(newEntry);
+            updateRemoveButtons();
+        });
+
+        // Gestion de la suppression de groupes d'âge
+        document.getElementById('ageGroupsContainer').addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-age-group')) {
+                e.target.closest('.age-group-entry').remove();
+                updateRemoveButtons();
+            }
+        });
+
+        function updateRemoveButtons() {
+            const entries = document.querySelectorAll('.age-group-entry');
+            entries.forEach((entry, index) => {
+                const removeBtn = entry.querySelector('.remove-age-group');
+                if (removeBtn) {
+                    removeBtn.style.display = entries.length > 1 ? 'block' : 'none';
+                }
+            });
+        }
+
+        // Soumission du formulaire
+        document.getElementById('menuGeneratorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const messageContainer = document.getElementById('messageContainer');
+            const generatedMenuContainer = document.getElementById('generatedMenuContainer');
+            
+            // Réinitialiser les messages
+            messageContainer.innerHTML = '';
+            generatedMenuContainer.innerHTML = '<div class="loading"><div class="spinner"></div><p>Génération du menu en cours...</p></div>';
+
+            try {
+                // Récupérer les groupes d'âge
+                const ageGroups = [];
+                document.querySelectorAll('.age-group-entry').forEach(entry => {
+                    const ageRange = entry.querySelector('.ageRange').value;
+                    const count = parseInt(entry.querySelector('.ageCount').value);
+                    if (ageRange && count > 0) {
+                        ageGroups.push({ ageRange, count });
+                    }
+                });
+
+                // Récupérer les allergènes sélectionnés
+                const allergens = Array.from(
+                    document.querySelectorAll('#allergensContainer input:checked')
+                ).map(cb => cb.value);
+
+                // Récupérer les restrictions alimentaires
+                const dietaryRestrictions = Array.from(
+                    document.querySelectorAll('#dietaryRestrictionsContainer input:checked')
+                ).map(cb => cb.value);
+
+                // Récupérer les pathologies
+                const medicalConditions = Array.from(
+                    document.querySelectorAll('#medicalConditionsContainer input:checked')
+                ).map(cb => cb.value);
+
+                // Configuration du menu
+                const config = {
+                    establishmentType: document.getElementById('establishmentType').value,
+                    ageGroups: ageGroups,
+                    numDishes: parseInt(document.getElementById('numDishes').value),
+                    allergens: allergens,
+                    dietaryRestrictions: dietaryRestrictions,
+                    medicalConditions: medicalConditions,
+                    texture: document.getElementById('texture').value,
+                    useStockOnly: document.getElementById('useStockOnly').checked,
+                    theme: document.getElementById('theme').value || null
+                };
+
+                console.log('Configuration envoyée:', config);
+
+                // Générer le menu
+                const menu = await menuGenerator.generateMenu(config);
+
+                // Afficher le message de succès
+                messageContainer.innerHTML = '<div class="success-message">✅ Menu généré avec succès!</div>';
+
+                // Afficher le menu
+                menuGenerator.displayMenu(menu, 'generatedMenuContainer');
+
+                // Scroll vers le résultat
+                generatedMenuContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                messageContainer.innerHTML = `<div class="error-message">❌ ${error.message}</div>`;
+                generatedMenuContainer.innerHTML = '';
+            }
+        });
+
+        // Initialiser
+        updateRemoveButtons();
+    </script>
+</body>
+</html>
+

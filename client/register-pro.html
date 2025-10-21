@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inscription Professionnelle - ChAIf SES</title>
+    <link rel="stylesheet" href="CSS/main.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-header h1 {
+            color: #2c3e50;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-header .subtitle {
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .role-badge.resto { background: #e74c3c; color: white; }
+        .role-badge.collectivite { background: #3498db; color: white; }
+        .role-badge.fournisseur { background: #16a085; color: white; }
+        .role-badge.groupe { background: #9b59b6; color: white; }
+
+        .section-title {
+            color: #2c3e50;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #ecf0f1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title i {
+            color: #3498db;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group label .required {
+            color: #e74c3c;
+            margin-left: 0.25rem;
+        }
+
+        .form-group label .optional {
+            color: #95a5a6;
+            font-weight: 400;
+            font-size: 0.85rem;
+            margin-left: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.9rem;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        .form-group input[type="number"]::-webkit-outer-spin-button,
+        .form-group input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .input-hint {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-top: 0.25rem;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 2rem;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #7f8c8d;
+        }
+
+        .form-footer a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .toast.success { background: #27ae60; }
+        .toast.error { background: #e74c3c; }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-card">
+            <div class="form-header">
+                <h1><i class="fas fa-building"></i> Inscription Professionnelle</h1>
+                <p class="subtitle">Créez votre compte professionnel ChAIf SES</p>
+                <div class="role-badge" id="role-badge"></div>
+            </div>
+
+            <form id="register-form">
+                <!-- SECTION 1: INFORMATIONS DE BASE -->
+                <div class="section-title">
+                    <i class="fas fa-user"></i> Informations de base
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Nom et Prénom<span class="required">*</span></label>
+                        <input type="text" id="name" name="name" placeholder="Jean Dupont" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Adresse Email<span class="required">*</span></label>
+                        <input type="email" id="email" name="email" placeholder="contact@entreprise.fr" required />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password">Mot de passe<span class="required">*</span></label>
+                        <input type="password" id="password" name="password" placeholder="Min. 8 caractères" required />
+                        <div class="input-hint">Au moins 8 caractères</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Téléphone<span class="required">*</span></label>
+                        <input type="tel" id="phone" name="phone" placeholder="06 12 34 56 78" required />
+                    </div>
+                </div>
+
+                <!-- SECTION 2: ÉTABLISSEMENT -->
+                <div class="section-title">
+                    <i class="fas fa-briefcase"></i> Votre établissement
+                </div>
+
+                <div class="form-group">
+                    <label for="businessName">Nom de l'établissement<span class="required">*</span></label>
+                    <input type="text" id="businessName" name="businessName" placeholder="Restaurant Le Gourmet" required />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group" id="establishment-type-group">
+                        <label for="establishmentType">Type d'établissement<span class="required">*</span></label>
+                        <select id="establishmentType" name="establishmentType" required>
+                            <option value="">-- Sélectionnez --</option>
+                            <!-- Options dynamiques selon le rôle -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="capacity">Capacité journalière<span class="optional">(optionnel)</span></label>
+                        <input type="number" id="capacity" name="capacity" placeholder="100" min="1" />
+                        <div class="input-hint">Nombre de couverts/repas par jour</div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: INFORMATIONS LÉGALES -->
+                <div class="section-title">
+                    <i class="fas fa-file-contract"></i> Informations légales
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="siret">Numéro SIRET<span class="optional">(optionnel)</span></label>
+                        <input type="text" id="siret" name="siret" placeholder="123 456 789 00010" maxlength="17" />
+                        <div class="input-hint">14 chiffres (espace optionnel)</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vatNumber">N° TVA Intracommunautaire<span class="optional">(optionnel)</span></label>
+                        <input type="text" id="vatNumber" name="vatNumber" placeholder="FR 12 345678901" maxlength="15" />
+                        <div class="input-hint">Ex: FR 12 345678901</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="legalForm">Forme juridique<span class="optional">(optionnel)</span></label>
+                    <select id="legalForm" name="legalForm">
+                        <option value="">-- Sélectionnez --</option>
+                        <option value="SARL">SARL</option>
+                        <option value="SAS">SAS</option>
+                        <option value="SASU">SASU</option>
+                        <option value="EURL">EURL</option>
+                        <option value="SA">SA</option>
+                        <option value="SNC">SNC</option>
+                        <option value="EI">Entreprise Individuelle</option>
+                        <option value="Auto-entrepreneur">Auto-entrepreneur</option>
+                        <option value="Association">Association</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+
+                <!-- SECTION 4: ADRESSE -->
+                <div class="section-title">
+                    <i class="fas fa-map-marker-alt"></i> Adresse de l'établissement
+                </div>
+
+                <div class="form-group">
+                    <label for="street">Rue<span class="required">*</span></label>
+                    <input type="text" id="street" name="street" placeholder="123 Rue de la République" required />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="postalCode">Code Postal<span class="required">*</span></label>
+                        <input type="text" id="postalCode" name="postalCode" placeholder="75001" maxlength="5" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="city">Ville<span class="required">*</span></label>
+                        <input type="text" id="city" name="city" placeholder="Paris" required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="country">Pays<span class="required">*</span></label>
+                    <select id="country" name="country" required>
+                        <option value="France" selected>France</option>
+                        <option value="Belgique">Belgique</option>
+                        <option value="Suisse">Suisse</option>
+                        <option value="Luxembourg">Luxembourg</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+
+                <!-- SECTION 5: INFORMATIONS COMPLÉMENTAIRES -->
+                <div class="section-title">
+                    <i class="fas fa-info-circle"></i> Informations complémentaires
+                </div>
+
+                <div class="form-group">
+                    <label for="website">Site Web<span class="optional">(optionnel)</span></label>
+                    <input type="url" id="website" name="website" placeholder="https://www.monrestaurant.fr" />
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description de votre activité<span class="optional">(optionnel)</span></label>
+                    <textarea id="description" name="description" placeholder="Décrivez brièvement votre activité, spécialités, etc."></textarea>
+                    <div class="input-hint">Maximum 500 caractères</div>
+                </div>
+
+                <!-- Champ caché pour le rôle -->
+                <input type="hidden" id="role" name="role" value="" />
+
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-check-circle"></i> Créer mon compte professionnel
+                </button>
+            </form>
+
+            <div class="form-footer">
+                <p>Déjà inscrit ? <a href="index.html">Se connecter</a></p>
+                <p><a href="choisir-profil.html">← Changer de profil</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Configuration des types d'établissement selon le rôle
+        const establishmentTypes = {
+            resto: [
+                { value: 'restaurant_traditionnel', label: 'Restaurant Traditionnel' },
+                { value: 'traiteur', label: 'Traiteur' },
+                { value: 'autre', label: 'Autre' }
+            ],
+            collectivite: [
+                { value: 'cantine_scolaire', label: 'Cantine Scolaire' },
+                { value: 'cantine_entreprise', label: "Cantine d'Entreprise" },
+                { value: 'ehpad', label: 'EHPAD' },
+                { value: 'hopital', label: 'Hôpital' },
+                { value: 'maison_de_retraite', label: 'Maison de Retraite' },
+                { value: 'autre', label: 'Autre' }
+            ],
+            fournisseur: [],
+            groupe: [
+                { value: 'groupe_multi_sites', label: 'Groupe Multi-Sites' }
+            ]
+        };
+
+        const roleLabels = {
+            resto: '🍽️ Restaurant',
+            collectivite: '🏢 Collectivité',
+            fournisseur: '📦 Fournisseur',
+            groupe: '🏢 Groupe Multi-Sites'
+        };
+
+        // Récupérer le rôle depuis l'URL
+        const params = new URLSearchParams(window.location.search);
+        const role = params.get('role') || 'resto';
+
+        // Afficher le badge de rôle
+        const roleBadge = document.getElementById('role-badge');
+        roleBadge.textContent = roleLabels[role] || 'Restaurant';
+        roleBadge.className = `role-badge ${role}`;
+
+        // Définir le rôle dans le champ caché
+        document.getElementById('role').value = role;
+
+        // Remplir le select des types d'établissement
+        const establishmentTypeSelect = document.getElementById('establishmentType');
+        const types = establishmentTypes[role] || [];
+        
+        if (types.length > 0) {
+            types.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type.value;
+                option.textContent = type.label;
+                establishmentTypeSelect.appendChild(option);
+            });
+        } else {
+            // Pour les fournisseurs, cacher le champ ET retirer le required
+            document.getElementById('establishment-type-group').style.display = 'none';
+            establishmentTypeSelect.removeAttribute('required');
+        }
+
+        // Fonction pour afficher un toast
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Gestion du formulaire
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = e.target.querySelector('.submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Inscription en cours...';
+
+            const formData = new FormData(e.target);
+            const data = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                password: formData.get('password'),
+                role: formData.get('role'),
+                businessName: formData.get('businessName'),
+                establishmentType: formData.get('establishmentType') || null,
+                phone: formData.get('phone'),
+                vatNumber: formData.get('vatNumber') || null,
+                siret: formData.get('siret') || null,
+                legalForm: formData.get('legalForm') || null,
+                address: {
+                    street: formData.get('street'),
+                    city: formData.get('city'),
+                    postalCode: formData.get('postalCode'),
+                    country: formData.get('country')
+                },
+                website: formData.get('website') || null,
+                description: formData.get('description') || null,
+                capacity: formData.get('capacity') ? parseInt(formData.get('capacity')) : null
+            };
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showToast('✅ Inscription réussie ! Redirection...', 'success');
+                    
+                    // Sauvegarder les données utilisateur
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    
+                    // Rediriger vers le dashboard approprié après 2 secondes
+                    setTimeout(() => {
+                        if (result.user.role === 'fournisseur') {
+                            window.location.href = 'supplier-dashboard.html';
+                        } else if (result.user.role === 'collectivite') {
+                            if (result.user.establishmentType === 'cantine_scolaire') {
+                                window.location.href = 'ecole-dashboard.html';
+                            } else if (result.user.establishmentType === 'maison_de_retraite') {
+                                window.location.href = 'maison-retraite-dashboard.html';
+                            } else {
+                                window.location.href = 'collectivite-dashboard.html';
+                            }
+                        } else if (result.user.role === 'groupe') {
+                            window.location.href = 'group-dashboard.html';
+                        } else {
+                            window.location.href = 'accueil.html';
+                        }
+                    }, 2000);
+                } else {
+                    showToast('❌ ' + (result.message || 'Erreur lors de l\'inscription'), 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Créer mon compte professionnel';
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showToast('❌ Erreur de connexion au serveur', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Créer mon compte professionnel';
+            }
+        });
+
+        // Validation en temps réel du SIRET
+        document.getElementById('siret').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\s/g, '');
+            if (value.length > 14) {
+                value = value.substring(0, 14);
+            }
+            // Formater avec espaces
+            if (value.length > 0) {
+                value = value.match(/.{1,3}/g).join(' ');
+            }
+            e.target.value = value;
+        });
+
+        // Validation du code postal
+        document.getElementById('postalCode').addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '').substring(0, 5);
+        });
+
+        // Validation de la description (max 500 caractères)
+        document.getElementById('description').addEventListener('input', (e) => {
+            if (e.target.value.length > 500) {
+                e.target.value = e.target.value.substring(0, 500);
+            }
+        });
+    </script>
+
+    <style>
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
+        }
+    </style>
+</body>
+</html>
+

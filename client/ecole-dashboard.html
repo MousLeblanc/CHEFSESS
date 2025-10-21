@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cantine Scolaire - ChAIf SES</title>
+  <link rel="stylesheet" href="CSS/main.css">
+  <link rel="stylesheet" href="CSS/components/modal.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Poppins', sans-serif; background-color: #fff3e0; color: #333; line-height: 1.6; margin: 0; padding: 0; }
+    .page-container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+    header { background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%); color: #fff; padding: 1.5rem 2rem; border-radius: 12px; margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+    header h1 { margin: 0; font-size: 1.8em; font-weight: 600; }
+    header h1 i { margin-right: 10px; }
+    .card { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); margin-bottom: 2rem; }
+    .card h2 { margin-top: 0; margin-bottom: 1.5rem; color: #ff6b6b; font-weight: 600; font-size: 1.4em; display: flex; align-items: center; }
+    .card h2 i { margin-right: 0.75rem; color: #ff6b6b; }
+    label { display: block; margin-bottom: 0.6rem; font-weight: 500; color: #495057; font-size: 0.9rem; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.8rem 1rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box; font-family: 'Poppins', sans-serif; font-size: 0.95rem; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #ff6b6b; box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25); outline: none; }
+    button { background-color: #ff6b6b; color: white; border: none; padding: 0.9rem 1.8rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: background-color 0.3s ease, transform 0.1s ease; }
+    button:hover { background-color: #ee5a52; transform: translateY(-2px); }
+    #logout-btn { background-color: #c0392b; font-size: 0.9rem; padding: 0.7rem 1.2rem; }
+    
+    .tab-navigation { display: flex; background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); margin-bottom: 2rem; overflow: hidden; }
+    .tab-btn { flex: 1; background: #f8f9fa; border: none; padding: 1rem 1.5rem; cursor: pointer; font-weight: 500; color: #6c757d; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .tab-btn:hover { background: #e9ecef; color: #495057; }
+    .tab-btn.active { background: #ff6b6b; color: white; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    .age-group { border: 2px solid #ff6b6b; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; background: #fff8f0; }
+    .group-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #ffe0b2; }
+    .group-header h3 { margin: 0; color: #ff6b6b; font-size: 1.2em; }
+    .remove-group-btn { background-color: #e74c3c; padding: 0.5rem 1rem; font-size: 0.9rem; }
+    
+    .restrictions-list { margin-top: 1rem; }
+    .restriction-item { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; background: white; padding: 0.75rem; border-radius: 8px; }
+    .restriction-item select { flex: 2; }
+    .restriction-item input[type="number"] { flex: 1; min-width: 100px; }
+    
+    .add-restriction-btn, .add-group-btn { background-color: #4CAF50; margin-top: 1rem; }
+    .add-restriction-btn:hover, .add-group-btn:hover { background-color: #45a049; }
+    
+    /* Animations pour les toasts */
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(400px); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <header>
+      <h1><i class="fas fa-school"></i> Cantine Scolaire</h1>
+      <div style="display: flex; align-items: center; gap: 1.5rem;">
+        <button onclick="showMyOrders()" style="background-color: #3498db; padding: 0.7rem 1.2rem; font-size: 0.9rem;">
+          <i class="fas fa-receipt"></i> Mes Commandes
+        </button>
+        <div id="cart-badge" onclick="showCart()" style="position: relative; cursor: pointer; background: #27ae60; padding: 0.7rem 1rem; border-radius: 8px; display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fas fa-shopping-cart" style="font-size: 1.2rem;"></i>
+          <span style="font-weight: 600;">Panier</span>
+          <span id="cart-count" style="position: absolute; top: -8px; right: -8px; background: #e74c3c; color: white; border-radius: 50%; width: 24px; height: 24px; display: none; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold;">0</span>
+        </div>
+        <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+      </div>
+    </header>
+
+    <div class="tab-navigation">
+      <button class="tab-btn active" data-tab="menus"><i class="fas fa-utensils"></i> Menus</button>
+      <button class="tab-btn" data-tab="students"><i class="fas fa-graduation-cap"></i> Élèves</button>
+      <button class="tab-btn" data-tab="recipe-generator"><i class="fas fa-magic"></i> Générateur IA</button>
+      <button class="tab-btn" data-tab="stock"><i class="fas fa-boxes"></i> Stock</button>
+      <button class="tab-btn" data-tab="suppliers"><i class="fas fa-truck"></i> Fournisseurs</button>
+    </div>
+
+    <!-- Onglet Menus -->
+    <div id="menus-tab" class="tab-content active">
+      <div class="card">
+        <h2><i class="fas fa-magic"></i> Générateur de Menus AI - Cantine Scolaire</h2>
+        <form id="menu-form">
+          <input type="hidden" id="establishment-type" value="cantine_scolaire">
+          
+          <h3 style="color: #ff6b6b; margin-top: 1rem;"><i class="fas fa-users"></i> Groupes d'âge et restrictions</h3>
+          <div id="age-groups-container"></div>
+          <button type="button" id="add-group-btn" class="add-group-btn"><i class="fas fa-plus"></i> Ajouter un groupe</button>
+
+          <button type="submit" style="width: 100%; margin-top: 2rem; padding: 1.2rem; font-size: 1.1rem;">
+            <i class="fas fa-wand-magic-sparkles"></i> Générer les menus
+          </button>
+        </form>
+        <div id="menu-results" class="results" style="display: none;"></div>
+      </div>
+    </div>
+
+    <!-- Onglet Stock -->
+    <div id="stock-tab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-boxes"></i> Gestion du Stock - Cantine Scolaire</h2>
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+          <button id="add-stock-item-btn"><i class="fas fa-plus"></i> Ajouter un article</button>
+          <button id="refresh-stock-btn" style="background-color: #3498db;"><i class="fas fa-sync"></i> Actualiser</button>
+          <button id="consolidate-stock-btn" style="background-color: #9b59b6;"><i class="fas fa-layer-group"></i> Consolider le stock</button>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+          <input type="text" id="stock-search" placeholder="Rechercher..." style="flex: 1; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+          <select id="stock-category-filter" style="padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+            <option value="">Toutes les catégories</option>
+            <option value="legumes">Légumes</option>
+            <option value="viandes">Viandes</option>
+            <option value="poissons">Poissons</option>
+            <option value="produits-laitiers">Produits laitiers</option>
+            <option value="cereales">Céréales</option>
+            <option value="fruits">Fruits</option>
+            <option value="epices">Épices</option>
+            <option value="boissons">Boissons</option>
+            <option value="autres">Autres</option>
+          </select>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+              <th style="padding: 1rem; text-align: left;">Nom</th>
+              <th style="padding: 1rem; text-align: left;">Catégorie</th>
+              <th style="padding: 1rem; text-align: center;">Quantité</th>
+              <th style="padding: 1rem; text-align: center;">Expiration</th>
+              <th style="padding: 1rem; text-align: center;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="stock-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Onglet Fournisseurs -->
+    <div id="suppliers-tab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-truck"></i> Gestion des Fournisseurs</h2>
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+          <button id="add-supplier-btn"><i class="fas fa-plus"></i> Ajouter un fournisseur</button>
+          <button id="refresh-suppliers-btn" style="background-color: #3498db;"><i class="fas fa-sync"></i> Actualiser</button>
+        </div>
+        <div id="suppliers-list"></div>
+      </div>
+    </div>
+
+    <!-- Onglet Élèves -->
+    <div id="students-tab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-graduation-cap"></i> Gestion des Élèves</h2>
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+          <button id="add-student-btn" style="background-color: #4caf50;">
+            <i class="fas fa-user-plus"></i> Ajouter un élève
+          </button>
+          <button id="refresh-students-btn" style="background-color: #3498db;">
+            <i class="fas fa-sync"></i> Actualiser
+          </button>
+          <button id="generate-menu-students-btn" style="background-color: #f39c12;">
+            <i class="fas fa-magic"></i> Générer menu pour sélection
+          </button>
+        </div>
+        
+        <!-- Filtres -->
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+          <input type="text" id="student-search" placeholder="Rechercher un élève..." style="flex: 1; min-width: 200px; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+          <select id="age-filter" style="padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+            <option value="">Tous les âges</option>
+            <option value="3-5">3-5 ans (Maternelle)</option>
+            <option value="6-10">6-10 ans (Primaire)</option>
+            <option value="11-14">11-14 ans (Collège)</option>
+            <option value="15-18">15-18 ans (Lycée)</option>
+          </select>
+          <select id="allergy-filter" style="padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+            <option value="">Toutes les allergies</option>
+            <option value="gluten">Gluten</option>
+            <option value="lactose">Lactose</option>
+            <option value="oeufs">Œufs</option>
+            <option value="arachides">Arachides</option>
+            <option value="fruits_coque">Fruits à coque</option>
+          </select>
+        </div>
+        
+        <!-- Liste des élèves -->
+        <div id="students-list">
+          <!-- Les élèves seront chargés dynamiquement -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Onglet Générateur de Recettes IA -->
+    <div id="recipe-generator-tab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-magic"></i> Générateur de Recettes par IA</h2>
+        <p style="color: #666; margin-bottom: 2rem;">
+          Générez de nouvelles recettes adaptées aux besoins spécifiques de votre cantine scolaire
+        </p>
+        
+        <!-- Formulaire de génération -->
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+          <h3 style="margin-bottom: 1rem; color: #2c3e50;">Configuration de la génération</h3>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+            <!-- Contexte fixe pour école -->
+            <div>
+              <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Contexte d'établissement</label>
+              <div style="padding: 0.8rem; background: #fff3cd; border: 1px solid #f39c12; border-radius: 8px; color: #2c3e50; font-weight: 600;">
+                <i class="fas fa-school"></i> Cantine Scolaire
+              </div>
+              <input type="hidden" id="generator-context" value="ecole">
+            </div>
+            
+            <!-- Nombre de recettes -->
+            <div>
+              <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nombre de recettes</label>
+              <input type="number" id="generator-count" value="5" min="1" max="20" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+            </div>
+          </div>
+          
+          <!-- Filtres -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+            <!-- Texture -->
+            <div>
+              <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Texture</label>
+              <select id="generator-texture" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+                <option value="normale">Normale</option>
+                <option value="hachée">Hachée</option>
+                <option value="mixée">Mixée</option>
+              </select>
+            </div>
+            
+            <!-- Pathologies -->
+            <div>
+              <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Pathologies</label>
+              <select id="generator-pathologies" multiple style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; height: 100px;">
+                <option value="diabète">Diabète</option>
+                <option value="obésité">Obésité</option>
+                <option value="allergies_alimentaires">Allergies alimentaires</option>
+                <option value="intolérance_lactose">Intolérance lactose</option>
+              </select>
+            </div>
+            
+            <!-- Régimes alimentaires -->
+            <div>
+              <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Régimes alimentaires</label>
+              <select id="generator-diet" multiple style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; height: 100px;">
+                <option value="équilibré">Équilibré</option>
+                <option value="hypocalorique">Hypocalorique</option>
+                <option value="végétarien">Végétarien</option>
+                <option value="sans_gluten">Sans gluten</option>
+                <option value="sans_lactose">Sans lactose</option>
+              </select>
+            </div>
+            
+            <!-- Allergènes -->
+            <div>
+              <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Allergènes à éviter</label>
+              <select id="generator-allergens" multiple style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; height: 100px;">
+                <option value="gluten">Gluten</option>
+                <option value="lactose">Lactose</option>
+                <option value="oeufs">Œufs</option>
+                <option value="arachides">Arachides</option>
+                <option value="fruits_coque">Fruits à coque</option>
+                <option value="poisson">Poisson</option>
+                <option value="crustacés">Crustacés</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Bouton de génération -->
+          <button id="generate-recipes-btn" style="width: 100%; padding: 1rem; background: #f39c12; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background-color 0.3s;">
+            <i class="fas fa-magic"></i> Générer des recettes
+          </button>
+        </div>
+        
+        <!-- Résultats -->
+        <div id="generated-recipes-results" style="display: none;">
+          <h3 style="color: #2c3e50; margin-bottom: 1rem;">Recettes générées</h3>
+          <div id="generated-recipes-list"></div>
+        </div>
+        
+        <!-- Statistiques -->
+        <div class="card" style="margin-top: 2rem;">
+          <h3 style="color: #2c3e50; margin-bottom: 1rem;">Statistiques des recettes générées</h3>
+          <div id="stats-content">
+            <p>Chargement des statistiques...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Import des modules
+    import { loadSuppliersData, renderSuppliersList, updateCartCount, initSupplierTab } from './JS/supplier-common.js';
+    import { loadStockData, renderStockTable, initStockTab, showAddStockModal, filterStock, consolidateStock } from './JS/stock-common.js';
+    import { loadCustomerOrders } from './JS/order-tracking.js';
+    import { startAutoReloadCheck } from './JS/auto-reload.js';
+    
+    console.log('✅ Modules chargés');
+    
+    // Démarrer le système d'auto-reload
+    startAutoReloadCheck();
+    
+    // Rendre les fonctions accessibles globalement
+    window.testStock = {
+      loadStockData,
+      renderStockTable,
+      initStockTab,
+      showAddStockModal,
+      filterStock,
+      consolidateStock
+    };
+    
+    // Rendre loadCustomerOrders accessible globalement
+    window.loadCustomerOrders = loadCustomerOrders;
+    
+    // ========== SYSTÈME D'AUTO-REFRESH POUR LES COMMANDES CLIENT ==========
+    let lastCustomerOrdersCheck = null;
+    let customerAutoRefreshInterval = null;
+    
+    function showCustomerToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#27ae60' : '#3498db'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-weight: 500;
+        animation: slideIn 0.3s ease-out;
+      `;
+      toast.textContent = message;
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+    
+    async function checkCustomerOrdersUpdates() {
+      try {
+        // Déterminer l'endpoint selon le rôle de l'utilisateur
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const endpoint = user.role === 'fournisseur' ? '/api/orders/supplier' : '/api/orders';
+        
+        console.log(`🔍 [CLIENT] Vérification des commandes - Rôle: ${user.role}, Endpoint: ${endpoint}`);
+        
+        const response = await fetch(endpoint, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
+          },
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          const orders = result.data || [];
+          const currentOrdersMap = new Map(orders.map(o => [o._id, o.status]));
+          
+          console.log(`🔍 [CLIENT DEBUG] Vérification des commandes - ${orders.length} commande(s)`);
+          
+          // Si c'est la première vérification, enregistrer l'état
+          if (lastCustomerOrdersCheck === null) {
+            lastCustomerOrdersCheck = currentOrdersMap;
+            console.log(`🔄 [CLIENT] Première vérification - ${orders.length} commande(s) enregistrée(s)`);
+            return;
+          }
+          
+          // Détecter les changements de statut
+          let hasConfirmedOrder = false;
+          let hasPreparingOrder = false;
+          let hasReadyOrder = false;
+          let hasShippedOrder = false;
+          let hasDeliveredOrder = false;
+          let confirmedOrderIds = [];
+          let preparingOrderIds = [];
+          let readyOrderIds = [];
+          let shippedOrderIds = [];
+          let deliveredOrderIds = [];
+          
+          currentOrdersMap.forEach((status, orderId) => {
+            const oldStatus = lastCustomerOrdersCheck.get(orderId);
+            
+            console.log(`🔎 [CLIENT DEBUG] Commande ${orderId.substring(0, 8)}... : ${oldStatus} → ${status}`);
+            
+            // Commande acceptée par le fournisseur (pending → confirmed)
+            if (oldStatus === 'pending' && status === 'confirmed') {
+              hasConfirmedOrder = true;
+              confirmedOrderIds.push(orderId);
+              console.log(`✅ [CLIENT] ✨ CHANGEMENT DÉTECTÉ ! Commande acceptée: ${orderId}`);
+            }
+            
+            // Commande en préparation (confirmed → preparing)
+            if (oldStatus === 'confirmed' && status === 'preparing') {
+              hasPreparingOrder = true;
+              preparingOrderIds.push(orderId);
+              console.log(`👨‍🍳 [CLIENT] ✨ CHANGEMENT DÉTECTÉ ! Commande en préparation: ${orderId}`);
+            }
+            
+            // Commande prête (preparing → ready)
+            if (oldStatus === 'preparing' && status === 'ready') {
+              hasReadyOrder = true;
+              readyOrderIds.push(orderId);
+              console.log(`📦 [CLIENT] ✨ CHANGEMENT DÉTECTÉ ! Commande prête: ${orderId}`);
+            }
+            
+            // Commande expédiée par le fournisseur (ready → shipped)
+            if ((oldStatus === 'ready' || oldStatus === 'prepared') && status === 'shipped') {
+              hasShippedOrder = true;
+              shippedOrderIds.push(orderId);
+              console.log(`🚚 [CLIENT] ✨ CHANGEMENT DÉTECTÉ ! Commande expédiée: ${orderId}`);
+            }
+            
+            // Commande marquée comme livrée
+            if (oldStatus === 'shipped' && status === 'delivered') {
+              hasDeliveredOrder = true;
+              deliveredOrderIds.push(orderId);
+              console.log(`✅ [CLIENT] ✨ CHANGEMENT DÉTECTÉ ! Commande livrée: ${orderId}`);
+            }
+          });
+          
+          // TOUJOURS mettre à jour l'état AVANT d'afficher les toasts
+          lastCustomerOrdersCheck = currentOrdersMap;
+          
+          // Afficher les notifications (APRÈS mise à jour de l'état)
+          if (hasConfirmedOrder) {
+            console.log(`🎉 [CLIENT] AFFICHAGE DU TOAST "COMMANDE ACCEPTÉE" (${confirmedOrderIds.length} commande(s))`);
+            showCustomerToast('✅ Votre commande a été acceptée par le fournisseur !', 'success');
+          }
+          
+          if (hasPreparingOrder) {
+            console.log(`🎉 [CLIENT] AFFICHAGE DU TOAST "EN PRÉPARATION" (${preparingOrderIds.length} commande(s))`);
+            showCustomerToast('👨‍🍳 Votre commande est en cours de préparation !', 'info');
+          }
+          
+          if (hasReadyOrder) {
+            console.log(`🎉 [CLIENT] AFFICHAGE DU TOAST "COMMANDE PRÊTE" (${readyOrderIds.length} commande(s))`);
+            showCustomerToast('📦 Votre commande est prête pour l\'expédition !', 'info');
+          }
+          
+          if (hasShippedOrder) {
+            console.log(`🎉 [CLIENT] AFFICHAGE DU TOAST "COMMANDE EXPÉDIÉE" (${shippedOrderIds.length} commande(s))`);
+            showCustomerToast('🚚 Une commande a été expédiée par le fournisseur !', 'info');
+          }
+          
+          if (hasDeliveredOrder) {
+            console.log(`🎉 [CLIENT] AFFICHAGE DU TOAST "COMMANDE CONFIRMÉE" (${deliveredOrderIds.length} commande(s))`);
+            showCustomerToast('✅ Commande confirmée ! Vérifiez votre stock.', 'success');
+          }
+          
+          // Rafraîchir la modale si elle est ouverte
+          if ((hasConfirmedOrder || hasPreparingOrder || hasReadyOrder || hasShippedOrder || hasDeliveredOrder) && document.getElementById('orders-modal')) {
+            console.log('🔄 Rechargement des commandes dans la modale');
+            await window.loadCustomerOrders();
+          }
+          
+        } else if (response.status === 401) {
+          console.log('⚠️ [CLIENT] Session expirée, arrêt de l\'auto-refresh');
+          stopCustomerAutoRefresh();
+        }
+      } catch (error) {
+        console.error('❌ [CLIENT] Erreur lors de la vérification des commandes:', error);
+      }
+    }
+    
+    function startCustomerAutoRefresh(intervalSeconds = 5) {
+      console.log(`🔄 [CLIENT] Démarrage de l'auto-refresh (${intervalSeconds}s)`);
+      
+      if (customerAutoRefreshInterval) {
+        clearInterval(customerAutoRefreshInterval);
+      }
+      
+      customerAutoRefreshInterval = setInterval(checkCustomerOrdersUpdates, intervalSeconds * 1000);
+      checkCustomerOrdersUpdates(); // Premier appel immédiat
+    }
+    
+    function stopCustomerAutoRefresh() {
+      if (customerAutoRefreshInterval) {
+        clearInterval(customerAutoRefreshInterval);
+        customerAutoRefreshInterval = null;
+        console.log('⏹️ [CLIENT] Auto-refresh arrêté');
+      }
+    }
+    
+    // ========== FIN DU SYSTÈME D'AUTO-REFRESH ==========
+    // Note: L'auto-refresh sera démarré dans DOMContentLoaded pour garantir que le DOM est prêt
+    
+    // Fonction pour afficher les commandes
+    window.showMyOrders = function() {
+      console.log('📋 Ouverture de la modale Mes Commandes');
+      
+      // Créer la modale
+      const modal = document.createElement('div');
+      modal.id = 'orders-modal';
+      modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; overflow: auto;';
+      
+      modal.innerHTML = `
+        <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 1000px; width: 90%; max-height: 90vh; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="margin: 0; color: #ff6b6b;">
+              <i class="fas fa-receipt"></i> Mes Commandes
+            </h2>
+            <button onclick="window.closeOrdersModal()" style="background: #e74c3c; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; color: white;">
+              <i class="fas fa-times"></i> Fermer
+            </button>
+          </div>
+          
+          <div style="margin-bottom: 1rem;">
+            <button onclick="window.loadCustomerOrders()" style="background-color: #3498db; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; color: white;">
+              <i class="fas fa-sync"></i> Actualiser
+            </button>
+          </div>
+          
+          <div id="customer-orders-list" style="margin-top: 1rem;">
+            <p style="text-align: center; padding: 2rem; color: #666;">
+              <i class="fas fa-spinner fa-spin"></i> Chargement des commandes...
+            </p>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Charger les commandes
+      loadCustomerOrders();
+    };
+    
+    window.closeOrdersModal = function() {
+      const modal = document.getElementById('orders-modal');
+      if (modal) {
+        modal.remove();
+      }
+    };
+    
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('🚀 Ecole Dashboard - Initialisation');
+      
+      // Gestion des onglets
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tab = btn.dataset.tab;
+          tabBtns.forEach(b => b.classList.remove('active'));
+          tabContents.forEach(c => c.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById(`${tab}-tab`).classList.add('active');
+          
+          // Charger le stock quand l'onglet est activé
+          if (tab === 'stock') {
+            console.log('📦 Onglet Stock activé - Initialisation...');
+            initStockTab();
+          }
+          // Charger les fournisseurs quand l'onglet est activé
+          else if (tab === 'suppliers') {
+            console.log('🚛 Onglet Fournisseurs activé - Initialisation...');
+            initSupplierTab();
+          }
+        });
+      });
+      
+      // Bouton déconnexion
+      const logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = 'index.html';
+        });
+      }
+      
+      // 🔔 Démarrer l'auto-refresh des commandes (après que le DOM soit prêt)
+      startCustomerAutoRefresh(5);
+      console.log('🔔 Système de notifications en temps réel activé !');
+      
+      console.log('✅ Ecole Dashboard initialisé');
+    });
+  </script>
+  
+  <!-- Système de génération intelligente de menus -->
+  <script src="js/intelligent-menu-generator.js"></script>
+  <script src="js/dashboard-menu-integration.js"></script>
+  <script src="js/recipe-generator.js"></script>
+  <script>
+    // Initialiser le système de génération de menus
+    if (typeof initDashboardMenuGenerator !== 'undefined') {
+      initDashboardMenuGenerator('cantine_scolaire');
+    }
+  </script>
+
+</body>
+</html>

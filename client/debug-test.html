@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Test</title>
+    <style>
+        .hidden { display: none; }
+        .show { display: block; }
+        button { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; }
+    </style>
+</head>
+<body>
+    <h1>Debug Test - Supplier Dashboard</h1>
+    <button id="test-btn">Test Direct - Afficher Formulaire</button>
+    
+    <form id="add-product-form" class="hidden">
+        <h3>Ajouter un produit</h3>
+        <div>
+            <label>Nom du produit *</label>
+            <input type="text" id="product-name" required>
+        </div>
+        <div>
+            <label>Catégorie *</label>
+            <select id="product-category" required>
+                <option value="">Sélectionner une catégorie</option>
+                <option value="fruits-legumes">Fruits et Légumes</option>
+                <option value="viandes">Viandes</option>
+            </select>
+        </div>
+        <div>
+            <label>Prix (€) *</label>
+            <input type="number" id="product-price" step="0.01" min="0" required>
+        </div>
+        <div>
+            <label>Unité *</label>
+            <select id="product-unit" required>
+                <option value="">Sélectionner une unité</option>
+                <option value="kg">Kilogramme (kg)</option>
+                <option value="g">Gramme (g)</option>
+            </select>
+        </div>
+        <button type="submit">Ajouter le produit</button>
+        <button type="button" id="cancel-btn">Annuler</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        console.log('🚀 DEBUG: Script chargé');
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DEBUG: DOM chargé');
+            
+            const testBtn = document.getElementById('test-btn');
+            const form = document.getElementById('add-product-form');
+            const cancelBtn = document.getElementById('cancel-btn');
+            
+            console.log('🔍 DEBUG: Éléments trouvés:', {
+                testBtn: !!testBtn,
+                form: !!form,
+                cancelBtn: !!cancelBtn
+            });
+            
+            if (testBtn) {
+                testBtn.addEventListener('click', function() {
+                    console.log('🖱️ DEBUG: Clic sur bouton test');
+                    form.classList.remove('hidden');
+                    form.classList.add('show');
+                });
+            }
+            
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', function() {
+                    console.log('🖱️ DEBUG: Clic sur annuler');
+                    form.classList.add('hidden');
+                    form.classList.remove('show');
+                    form.reset();
+                });
+            }
+            
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('📝 DEBUG: Soumission du formulaire');
+                    
+                    const data = {
+                        name: document.getElementById('product-name').value,
+                        category: document.getElementById('product-category').value,
+                        price: document.getElementById('product-price').value,
+                        unit: document.getElementById('product-unit').value
+                    };
+                    
+                    console.log('📝 DEBUG: Données:', data);
+                    
+                    document.getElementById('result').innerHTML = `
+                        <h3>✅ SUCCÈS !</h3>
+                        <p>Nom: ${data.name}</p>
+                        <p>Catégorie: ${data.category}</p>
+                        <p>Prix: ${data.price}€</p>
+                        <p>Unité: ${data.unit}</p>
+                        <p style="color: green;">Le formulaire fonctionne parfaitement !</p>
+                    `;
+                });
+            }
+        });
+    </script>
+    <script src="js/init.js"></script>`r`n</body>
+</html>

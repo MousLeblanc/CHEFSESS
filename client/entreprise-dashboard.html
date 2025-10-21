@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cantine d'Entreprise - ChAIf SES</title>
+  <link rel="stylesheet" href="CSS/main.css">
+  <link rel="stylesheet" href="CSS/components/modal.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Poppins', sans-serif; background-color: #fafafa; color: #333; line-height: 1.6; margin: 0; padding: 0; }
+    .page-container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+    header { background: linear-gradient(135deg, #607d8b 0%, #90a4ae 100%); color: #fff; padding: 1.5rem 2rem; border-radius: 12px; margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+    header h1 { margin: 0; font-size: 1.8em; font-weight: 600; }
+    .card { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); margin-bottom: 2rem; }
+    .card h2 { margin-top: 0; margin-bottom: 1.5rem; color: #607d8b; font-weight: 600; font-size: 1.4em; display: flex; align-items: center; }
+    .card h2 i { margin-right: 0.75rem; color: #607d8b; }
+    label { display: block; margin-bottom: 0.6rem; font-weight: 500; color: #495057; font-size: 0.9rem; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.8rem 1rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box; font-family: 'Poppins', sans-serif; font-size: 0.95rem; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #607d8b; box-shadow: 0 0 0 0.2rem rgba(96, 125, 139, 0.25); outline: none; }
+    button { background-color: #607d8b; color: white; border: none; padding: 0.9rem 1.8rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: background-color 0.3s ease, transform 0.1s ease; }
+    button:hover { background-color: #455a64; transform: translateY(-2px); }
+    #logout-btn { background-color: #c0392b; font-size: 0.9rem; padding: 0.7rem 1.2rem; }
+    
+    .tab-navigation { display: flex; background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); margin-bottom: 2rem; overflow: hidden; }
+    .tab-btn { flex: 1; background: #f8f9fa; border: none; padding: 1rem 1.5rem; cursor: pointer; font-weight: 500; color: #6c757d; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .tab-btn:hover { background: #e9ecef; color: #495057; }
+    .tab-btn.active { background: #607d8b; color: white; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <header>
+      <h1><i class="fas fa-building"></i> Cantine d'Entreprise</h1>
+      <div style="display: flex; align-items: center; gap: 1.5rem;">
+        <button onclick="showMyOrders()" style="background-color: #3498db; padding: 0.7rem 1.2rem; font-size: 0.9rem;">
+          <i class="fas fa-receipt"></i> Mes Commandes
+        </button>
+        <div id="cart-badge" onclick="showCart()" style="position: relative; cursor: pointer; background: #27ae60; padding: 0.7rem 1rem; border-radius: 8px; display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fas fa-shopping-cart" style="font-size: 1.2rem;"></i>
+          <span style="font-weight: 600;">Panier</span>
+          <span id="cart-count" style="position: absolute; top: -8px; right: -8px; background: #e74c3c; color: white; border-radius: 50%; width: 24px; height: 24px; display: none; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold;">0</span>
+        </div>
+        <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+      </div>
+    </header>
+
+    <div class="tab-navigation">
+      <button class="tab-btn active" data-tab="menus"><i class="fas fa-utensils"></i> Menus</button>
+      <button class="tab-btn" data-tab="stock"><i class="fas fa-boxes"></i> Stock</button>
+      <button class="tab-btn" data-tab="suppliers"><i class="fas fa-truck"></i> Fournisseurs</button>
+    </div>
+
+    <!-- Onglet Menus -->
+    <div id="menus-tab" class="tab-content active">
+      <div class="card">
+        <h2><i class="fas fa-magic"></i> Générateur de Menus AI - Cantine d'Entreprise</h2>
+        <form id="menu-form">
+          <input type="hidden" id="establishment-type" value="cantine_entreprise">
+          
+          <div class="form-group">
+            <label for="num-meals"><i class="fas fa-utensils"></i> Nombre de repas à préparer :</label>
+            <input type="number" id="num-meals" name="numMeals" min="1" value="150" required style="padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; width: 100%;">
+            <small style="color: #666; font-size: 0.9rem; display: block; margin-top: 0.5rem;">
+              💡 Nombre total de repas à servir ce jour
+            </small>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label for="menu-structure"><i class="fas fa-list"></i> Formule du menu :</label>
+            <select id="menu-structure" name="menuStructure" style="padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; width: 100%;">
+              <option value="plat_seul">Plat principal uniquement</option>
+              <option value="entree_plat">Entrée + Plat principal</option>
+              <option value="soupe_plat">Soupe + Plat principal</option>
+              <option value="plat_dessert">Plat principal + Dessert</option>
+              <option value="entree_plat_dessert">Entrée + Plat + Dessert (complet)</option>
+            </select>
+            <small style="color: #666; font-size: 0.9rem; display: block; margin-top: 0.5rem;">
+              💡 Le plat principal sera composé automatiquement (protéine + féculent ou légumes + féculent)
+            </small>
+          </div>
+
+          <h3 style="color: #607d8b; margin-top: 2rem;"><i class="fas fa-briefcase"></i> Préférences de l'entreprise</h3>
+          
+          <div class="form-group">
+            <label for="meal-types"><i class="fas fa-apple-alt"></i> Types de repas :</label>
+            <select id="meal-types" name="mealTypes" multiple style="height: 100px; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; width: 100%;">
+              <option value="equilibre" selected>Équilibré</option>
+              <option value="rapide">Rapide</option>
+              <option value="leger">Léger</option>
+              <option value="copieux">Copieux</option>
+            </select>
+            <small style="color: #666; font-size: 0.9rem; display: block; margin-top: 0.5rem;">Maintenez Ctrl pour sélectionner plusieurs options</small>
+          </div>
+
+          <h3 style="color: #607d8b; margin-top: 2rem;"><i class="fas fa-leaf"></i> Régimes alimentaires particuliers</h3>
+          <div id="diet-restrictions-container">
+            <!-- Végétarien -->
+            <div class="form-group" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem;">
+                <input type="checkbox" id="diet-vegetarien" value="vegetarien" style="width: auto; margin: 0;">
+                <span><i class="fas fa-leaf" style="color: #27ae60;"></i> Végétarien</span>
+              </label>
+              <div id="vegetarien-count" style="display: none; margin-top: 0.5rem;">
+                <label for="count-vegetarien" style="font-size: 0.9rem; color: #666;">Nombre de personnes :</label>
+                <input type="number" id="count-vegetarien" min="0" value="0" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100px;">
+              </div>
+            </div>
+
+            <!-- Vegan -->
+            <div class="form-group" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem;">
+                <input type="checkbox" id="diet-vegan" value="vegan" style="width: auto; margin: 0;">
+                <span><i class="fas fa-seedling" style="color: #2ecc71;"></i> Vegan</span>
+              </label>
+              <div id="vegan-count" style="display: none; margin-top: 0.5rem;">
+                <label for="count-vegan" style="font-size: 0.9rem; color: #666;">Nombre de personnes :</label>
+                <input type="number" id="count-vegan" min="0" value="0" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100px;">
+              </div>
+            </div>
+
+            <!-- Sans gluten -->
+            <div class="form-group" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem;">
+                <input type="checkbox" id="diet-sans-gluten" value="sans_gluten" style="width: auto; margin: 0;">
+                <span><i class="fas fa-wheat" style="color: #e67e22;"></i> Sans gluten</span>
+              </label>
+              <div id="sans-gluten-count" style="display: none; margin-top: 0.5rem;">
+                <label for="count-sans-gluten" style="font-size: 0.9rem; color: #666;">Nombre de personnes :</label>
+                <input type="number" id="count-sans-gluten" min="0" value="0" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100px;">
+              </div>
+            </div>
+
+            <!-- Sans lactose -->
+            <div class="form-group" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem;">
+                <input type="checkbox" id="diet-sans-lactose" value="sans_lactose" style="width: auto; margin: 0;">
+                <span><i class="fas fa-cheese" style="color: #f39c12;"></i> Sans lactose</span>
+              </label>
+              <div id="sans-lactose-count" style="display: none; margin-top: 0.5rem;">
+                <label for="count-sans-lactose" style="font-size: 0.9rem; color: #666;">Nombre de personnes :</label>
+                <input type="number" id="count-sans-lactose" min="0" value="0" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100px;">
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" style="width: 100%; margin-top: 2rem; padding: 1.2rem; font-size: 1.1rem;">
+            <i class="fas fa-wand-magic-sparkles"></i> Générer le menu
+          </button>
+        </form>
+        
+        <script>
+          // Afficher/masquer les champs de quantité selon les checkbox
+          ['vegetarien', 'vegan', 'sans-gluten', 'sans-lactose'].forEach(diet => {
+            const checkbox = document.getElementById(`diet-${diet}`);
+            const countDiv = document.getElementById(`${diet}-count`);
+            if (checkbox && countDiv) {
+              checkbox.addEventListener('change', function() {
+                countDiv.style.display = this.checked ? 'block' : 'none';
+                if (!this.checked) {
+                  document.getElementById(`count-${diet}`).value = 0;
+                }
+              });
+            }
+          });
+        </script>
+        <div id="menu-results" class="results" style="display: none;"></div>
+      </div>
+    </div>
+
+    <!-- Onglet Stock -->
+    <div id="stock-tab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-boxes"></i> Gestion du Stock - Cantine d'Entreprise</h2>
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+          <button id="add-stock-item-btn"><i class="fas fa-plus"></i> Ajouter un article</button>
+          <button id="refresh-stock-btn" style="background-color: #3498db;"><i class="fas fa-sync"></i> Actualiser</button>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+          <input type="text" id="stock-search" placeholder="Rechercher..." style="flex: 1; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+          <select id="stock-category-filter" style="padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+            <option value="">Toutes les catégories</option>
+            <option value="legumes">Légumes</option>
+            <option value="viandes">Viandes</option>
+            <option value="poissons">Poissons</option>
+            <option value="produits-laitiers">Produits laitiers</option>
+            <option value="cereales">Céréales</option>
+            <option value="fruits">Fruits</option>
+            <option value="epices">Épices</option>
+            <option value="boissons">Boissons</option>
+            <option value="autres">Autres</option>
+          </select>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+              <th style="padding: 1rem; text-align: left;">Nom</th>
+              <th style="padding: 1rem; text-align: left;">Catégorie</th>
+              <th style="padding: 1rem; text-align: center;">Quantité</th>
+              <th style="padding: 1rem; text-align: center;">Expiration</th>
+              <th style="padding: 1rem; text-align: center;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="stock-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Onglet Fournisseurs -->
+    <div id="suppliers-tab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-truck"></i> Gestion des Fournisseurs</h2>
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+          <button id="add-supplier-btn"><i class="fas fa-plus"></i> Ajouter un fournisseur</button>
+          <button id="refresh-suppliers-btn" style="background-color: #3498db;"><i class="fas fa-sync"></i> Actualiser</button>
+        </div>
+        <div id="suppliers-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="JS/supplier-common.js"></script>
+  <script type="module" src="JS/entreprise-dashboard.js"></script>
+  <script src="js/init.js"></script>
+  <!-- Système de génération intelligente de menus pour entreprise -->
+  <script src="js/intelligent-menu-generator.js"></script>
+  <script src="js/entreprise-buffet-handler.js"></script>
+
+</body>
+</html>

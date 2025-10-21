@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon Assistant Culinaire Personnel - ChAIf SES</title>
+  <link rel="stylesheet" href="css/main.css"> 
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> 
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f0f2f5; 
+      color: #333;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0; 
+    }
+
+    .page-container {
+        max-width: 800px; 
+        margin: 2rem auto;
+        padding: 0 1rem; 
+    }
+
+    header {
+      background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); /* Dégradé pour le header */
+      color: #fff;
+      padding: 1.5rem 2rem; /* Plus de padding */
+      border-radius: 12px; /* Coins plus arrondis */
+      margin-bottom: 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2rem; /* Taille de police augmentée */
+      font-weight: 600;
+    }
+
+    .card {
+      background: #fff;
+      padding: 2.5rem; /* Plus de padding interne */
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* Ombre plus subtile */
+      margin-bottom: 2rem;
+    }
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 1.8rem;
+      color: #2c3e50;
+      font-weight: 600;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+    }
+    .card h2 i { /* Icône pour les titres de section */
+        margin-right: 0.75rem;
+        color: #e67300;
+    }
+
+    label, .label-text { /* .label-text pour les titres de groupes de champs */
+      display: block;
+      margin-bottom: 0.8rem;
+      font-weight: 500; /* Un peu moins gras */
+      color: #495057; /* Couleur de label plus douce */
+      font-size: 0.95rem;
+    }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      margin-bottom: 1.5rem;
+      padding: 0.9rem 1rem; /* Padding augmenté */
+      border: 1px solid #ced4da; /* Bordure plus claire */
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    textarea:focus, input[type="text"]:focus {
+        border-color: #e67300;
+        box-shadow: 0 0 0 0.2rem rgba(230, 115, 0, 0.25);
+        outline: none;
+    }
+
+    .checkbox-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        background-color: #f8f9fa;
+        padding: 0.8rem 1rem;
+        border-radius: 8px;
+    }
+    .checkbox-container input[type="checkbox"] {
+      margin-right: 0.8rem;
+      width: 1.1rem;
+      height: 1.1rem;
+      accent-color: #e67300; /* Couleur de la coche */
+    }
+    .checkbox-container label {
+        margin-bottom: 0; /* Pas de marge pour le label de la checkbox */
+        font-weight: normal;
+        color: #333;
+        font-size: 0.9rem;
+    }
+
+    .context-options {
+        margin-bottom: 2rem;
+        text-align: center; /* Centre les boutons de contexte */
+    }
+    .context-options .label-text {
+        text-align: left; /* Aligne le titre du groupe à gauche */
+    }
+    .context-options input[type="radio"] {
+      display: none;
+    }
+    .context-options label.context-label {
+      display: inline-block;
+      padding: 0.8rem 1.5rem;
+      margin: 0.3rem 0.5rem; /* Moins de marge verticale */
+      border: 1px solid #e0e0e0;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      font-size: 0.9rem;
+      background-color: #fff;
+      color: #555;
+    }
+    .context-options input[type="radio"]:checked + label.context-label {
+      background-color: #e67300;
+      color: white;
+      border-color: #e67300;
+      box-shadow: 0 2px 8px rgba(230, 115, 0, 0.3);
+    }
+    .context-options label.context-label:hover {
+      border-color: #e67300;
+      color: #e67300;
+    }
+     .context-options input[type="radio"]:checked + label.context-label:hover {
+        background-color: #cc6600;
+        color:white;
+     }
+
+
+    button, .button {
+      background-color: #e67300;
+      color: white;
+      border: none;
+      padding: 0.9rem 2rem; /* Padding ajusté */
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600; /* Plus gras */
+      text-decoration: none;
+      display: inline-flex; /* Pour aligner icône et texte */
+      align-items: center;
+      font-size: 1rem;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+    button i, .button i {
+        margin-right: 0.5rem;
+    }
+    button:hover, .button:hover {
+      background-color: #cc6600;
+      transform: translateY(-2px); /* Petit effet au survol */
+    }
+    button:disabled {
+      background-color: #bdc3c7; /* Gris pour désactivé */
+      cursor: not-allowed;
+      transform: translateY(0);
+    }
+    #logout-btn {
+      background-color: #c0392b; /* Rouge plus doux pour déconnexion */
+      font-size: 0.9rem;
+      padding: 0.7rem 1.2rem;
+    }
+    #logout-btn:hover {
+      background-color: #a93226;
+    }
+
+    .results {
+      margin-top: 2.5rem;
+      padding: 2rem;
+      border: none; /* Plus de bordure, on utilise la carte */
+      background: #f8f9fa; /* Fond léger pour les résultats */
+      border-radius: 8px;
+      min-height: 100px; /* Hauteur minimale pour voir le loader */
+    }
+    .results h3 {
+      margin-top: 0;
+      color: #e67300;
+      font-weight: 600;
+      font-size: 1.3rem;
+    }
+    .results ul {
+      list-style: none; /* Changé de list-style-type */
+      padding-left: 0;
+    }
+    .results ul li {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #e9ecef;
+      font-size: 0.95rem;
+    }
+    .results ul li:last-child {
+      border-bottom: none;
+    }
+    .results .loading-spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.5rem;
+        color: #e67300;
+    }
+    .results .loading-spinner i {
+        animation: fa-spin 1s linear infinite;
+    }
+    .results .placeholder-text {
+        color: #777;
+        text-align: center;
+        font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-container">
+    <header>
+      <h1><i class="fas fa-utensils"></i> Mon Assistant Culinaire</h1>
+      <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+    </header>
+
+    <div class="card">
+      <h2><i class="fas fa-sliders-h"></i> Paramètres de votre repas</h2>
+
+      <div class="context-options">
+        <span class="label-text"><i class="fas fa-calendar-check"></i> Pour quelle occasion ?</span>
+        <div> 
+            <input type="radio" name="cookingContext" value="romantique" id="ctx-romantique" checked>
+            <label class="context-label" for="ctx-romantique"><i class="fas fa-heart"></i> Tête-à-tête</label>
+
+            <input type="radio" name="cookingContext" value="famille" id="ctx-famille">
+            <label class="context-label" for="ctx-famille"><i class="fas fa-users"></i> Famille</label>
+
+            <input type="radio" name="cookingContext" value="solo" id="ctx-solo">
+            <label class="context-label" for="ctx-solo"><i class="fas fa-user"></i> Solo</label>
+
+            <input type="radio" name="cookingContext" value="amis" id="ctx-amis">
+            <label class="context-label" for="ctx-amis"><i class="fas fa-glass-cheers"></i> Amis</label>
+        </div>
+      </div>
+      <div class="form-group-servings" style="margin-bottom: 1.5rem;"> 
+        <label for="servings" class="label-text"><i class="fas fa-users"></i> Pour combien de personnes ?</label>
+        <input type="number" id="servings" name="servings" value="2" min="1" max="20" style="width: 100px; text-align: center; padding: 0.75rem; border: 1px solid #ced4da; border-radius: 8px;">
+      </div>
+
+      
+      <label for="ingredients"><i class="fas fa-carrot"></i> Ingrédients disponibles :</label>
+      <textarea id="ingredients" placeholder="Ex: tomates, poulet, riz, huile d'olive, oignon..." rows="5"></textarea>
+
+      <div class="checkbox-container">
+        <input type="checkbox" id="onlyAvailable">
+        <label for="onlyAvailable">Utiliser uniquement les ingrédients listés</label>
+      </div>
+
+      <button id="generer-menu-btn" onclick="genererMenu()"><i class="fas fa-magic"></i> Générer mon menu</button>
+    </div>
+
+    <div class="card">
+        <h2><i class="fas fa-clipboard-list"></i> Suggestions de Menus</h2>
+        <div class="results" id="resultat-menu" aria-live="polite">
+            <p class="placeholder-text">Vos suggestions de menus apparaîtront ici.</p>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+      
+      const user = JSON.parse(localStorage.getItem('user') || 'null');
+      const token = localStorage.getItem('token');
+
+      if (!token || !user) {
+        window.location.href = 'index.html';
+        return;
+      }
+      if (user.role !== 'maison') {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const logoutButton = document.getElementById('logout-btn');
+      if (logoutButton) {
+        logoutButton.addEventListener('click', () => {
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+          window.location.href = 'index.html';
+        });
+      }
+    });
+
+async function genererMenu() {
+      const ingredientsInput = document.getElementById('ingredients');
+      const ingredients = ingredientsInput.value.trim();
+      const onlyAvailable = document.getElementById('onlyAvailable').checked;
+      const selectedContextInput = document.querySelector('input[name="cookingContext"]:checked');
+      const context = selectedContextInput ? selectedContextInput.value : 'solo';
+      
+      // NOUVEAU : Récupérer le nombre de personnes
+      const servingsInput = document.getElementById('servings');
+      const servings = parseInt(servingsInput.value) || 1; // Valeur par défaut de 1 si invalide
+
+      const resultDiv = document.getElementById('resultat-menu');
+      const genererBtn = document.getElementById('generer-menu-btn');
+
+      // ... (votre validation d'ingrédients, si elle reste pertinente) ...
+       if (ingredients === "" && context !== 'solo' && context !== 'romantique') {
+           resultDiv.innerHTML = '<p style="color: red;">Veuillez entrer au moins un ingrédient pour ce contexte.</p>';
+           if (genererBtn) genererBtn.disabled = false;
+           return;
+      }
+
+      resultDiv.innerHTML = `<div class="loading-spinner"><i class="fas fa-spinner"></i>&nbsp;Génération en cours...</div>`;
+      if (genererBtn) genererBtn.disabled = true;
+
+      try {
+        const apiUrl = '/api/menus/generate-home-menu';
+        const token = localStorage.getItem('token');
+
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          // NOUVEAU : Envoyer 'servings' dans le corps de la requête
+          body: JSON.stringify({ ingredients, onlyAvailable, context, servings })
+        });
+
+        // ... (le reste de votre gestion de réponse et d'erreur est bon) ...
+        if (!res.ok) {
+            let errorMsg = `Erreur HTTP ${res.status}.`;
+            try {
+                const errorData = await res.json();
+                errorMsg = errorData.error || errorData.message || `Erreur ${res.status} du serveur.`;
+            } catch (e) {
+                const textError = await res.text();
+                console.error("Réponse non-JSON du serveur (status " + res.status + "):", textError.substring(0, 500));
+                errorMsg = `Erreur ${res.status}. Le serveur a renvoyé une réponse inattendue.`;
+                 if (res.status === 404) {
+                    errorMsg = `Service introuvable (Erreur 404). Vérifiez l'URL de l'API [${apiUrl}] et la configuration du serveur.`;
+                }
+            }
+            throw new Error(errorMsg);
+        }
+
+        const data = await res.json(); 
+
+        if (!data.success) { 
+          throw new Error(data.error || data.message || 'Une erreur applicative est survenue lors de la génération.');
+        }
+
+        if (data.menus && data.menus.length > 0) {
+          let htmlOutput = '<h3><i class="fas fa-concierge-bell"></i> Voici vos suggestions :</h3>';
+          data.menus.forEach((menu, index) => {
+            htmlOutput += `<div class="menu-suggestion-card">`;
+            // Utiliser menu.personnes qui vient de l'IA, ou 'servings' si l'IA ne le renvoie pas.
+            htmlOutput += `<h4>${menu.nom || 'Nom du plat non fourni'} (Pour ${menu.personnes || servings} pers.)</h4>`; 
+            htmlOutput += `<p><em>${menu.description || 'Pas de description.'}</em></p>`;
+            
+            if (menu.ingredients_necessaires && menu.ingredients_necessaires.length > 0) {
+                htmlOutput += `<h5>Ingrédients Nécéssaires :</h5><ul>`;
+                menu.ingredients_necessaires.forEach(ing => {
+                    htmlOutput += `<li>${ing.nom_ingredient || '?'} : ${ing.quantite_ingredient || '?'}</li>`;
+                });
+                htmlOutput += `</ul>`;
+            } else {
+                htmlOutput += `<p><small>Ingrédients non spécifiés par l'IA.</small></p>`;
+            }
+
+            if (menu.etapes_preparation && menu.etapes_preparation.length > 0) {
+                htmlOutput += `<h5>Étapes de Préparation :</h5><ol>`;
+                menu.etapes_preparation.forEach(etape => {
+                    htmlOutput += `<li>${etape}</li>`;
+                });
+                htmlOutput += `</ol>`;
+            } else {
+                htmlOutput += `<p><small>Étapes de préparation non spécifiées par l'IA.</small></p>`;
+            }
+            htmlOutput += `</div>`;
+            if (index < data.menus.length - 1) {
+                htmlOutput += '<hr style="margin: 1.5rem 0;">';
+            }
+          });
+          resultDiv.innerHTML = htmlOutput;
+        } else {
+          resultDiv.innerHTML = '<p class="placeholder-text">Aucun menu n\'a pu être généré...</p>';
+        }
+
+      } catch (err) {
+        console.error("Erreur dans la fonction genererMenu:", err);
+        resultDiv.innerHTML = `<p style="color: red;">${err.message}</p>`;
+      } finally {
+        if (genererBtn) genererBtn.disabled = false;
+      }
+    }
+    window.genererMenu = genererMenu;
+  </script>
+      <script src="js/init.js"></script>`r`n</body>
+</html>

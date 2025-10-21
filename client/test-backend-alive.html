@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Backend</title>
+</head>
+<body>
+  <h1>Test Backend</h1>
+  <button onclick="testBackend()">Tester Backend</button>
+  <pre id="result"></pre>
+
+  <script>
+    async function testBackend() {
+      const result = document.getElementById('result');
+      result.textContent = '🔄 Test en cours...\n';
+
+      try {
+        // Test 1: Serveur répond ?
+        result.textContent += '\n1️⃣ Test connexion serveur...\n';
+        const response = await fetch('/api/auth/check-token', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        result.textContent += `   Statut: ${response.status}\n`;
+        
+        if (response.ok) {
+          const data = await response.json();
+          result.textContent += `   ✅ Serveur OK ! User: ${data.user?.name || data.user?.email}\n`;
+        } else {
+          result.textContent += `   ❌ Erreur: ${response.status} ${response.statusText}\n`;
+        }
+
+        // Test 2: Récupérer les commandes
+        result.textContent += '\n2️⃣ Test récupération commandes...\n';
+        const ordersResponse = await fetch('/api/orders/customer-orders', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        result.textContent += `   Statut: ${ordersResponse.status}\n`;
+        
+        if (ordersResponse.ok) {
+          const ordersData = await ordersResponse.json();
+          result.textContent += `   ✅ ${ordersData.data?.length || 0} commande(s) trouvée(s)\n`;
+          
+          if (ordersData.data && ordersData.data.length > 0) {
+            const lastOrder = ordersData.data[0];
+            result.textContent += `   Dernière commande: ${lastOrder.orderNumber} (${lastOrder.status})\n`;
+          }
+        } else {
+          result.textContent += `   ❌ Erreur: ${ordersResponse.status}\n`;
+        }
+
+        // Test 3: Récupérer le stock
+        result.textContent += '\n3️⃣ Test récupération stock...\n';
+        const stockResponse = await fetch('/api/stock', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        result.textContent += `   Statut: ${stockResponse.status}\n`;
+        
+        if (stockResponse.ok) {
+          const stockData = await stockResponse.json();
+          result.textContent += `   ✅ ${stockData.data?.length || 0} article(s) dans le stock\n`;
+          
+          if (stockData.data && stockData.data.length > 0) {
+            result.textContent += `   Articles:\n`;
+            stockData.data.slice(0, 5).forEach(item => {
+              result.textContent += `      - ${item.name} (${item.quantity} ${item.unit})\n`;
+            });
+          }
+        } else {
+          result.textContent += `   ❌ Erreur: ${stockResponse.status}\n`;
+        }
+
+        result.textContent += '\n✅ Tests terminés !\n';
+
+      } catch (error) {
+        result.textContent += `\n❌ ERREUR CRITIQUE: ${error.message}\n`;
+        result.textContent += `Stack: ${error.stack}\n`;
+        result.textContent += '\n🔴 Le serveur ne répond pas ou n\'est pas démarré !\n';
+      }
+    }
+  </script>
+</body>
+</html>
+

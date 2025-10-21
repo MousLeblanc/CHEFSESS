@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChAIf SES - Paramètres</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #e67e22;
+            --accent: #27ae60;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --success: #2ecc71;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: var(--dark);
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 1.5rem;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        nav ul li a:hover {
+            color: var(--secondary);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        h1, h2, h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+        
+        .settings-sidebar {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .settings-nav {
+            list-style: none;
+        }
+        
+        .settings-nav-item {
+            border-bottom: 1px solid #eee;
+        }
+        
+        .settings-nav-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        
+        .settings-nav-link:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .settings-nav-link.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .settings-nav-icon {
+            margin-right: 0.75rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .settings-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+        
+        .settings-section {
+            margin-bottom: 2rem;
+        }
+        
+        .settings-section h2 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .settings-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .form-check {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .form-check input {
+            margin-right: 0.5rem;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .btn {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #d35400;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: #1a252f;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .color-preview {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+            border: 1px solid #ddd;
+        }
+        
+        .theme-options {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .theme-card {
+            flex: 1;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .theme-card.active {
+            border-color: var(--secondary);
+        }
+        
+        .theme-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .theme-preview {
+            height: 100px;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        .light-theme {
+            background-color: #ecf0f1;
+            border: 1px solid #ddd;
+        }
+        
+        .dark-theme {
+            background-color: #2c3e50;
+            border: 1px solid #111;
+        }
+        
+        .custom-theme {
+            background: linear-gradient(135deg, #e67e22, #2c3e50);
+        }
+        
+        .api-key {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .api-key input {
+            font-family: monospace;
+        }
+        
+        .api-key button {
+            flex-shrink: 0;
+        }
+        
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .toast {
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: toast-in 0.3s forwards;
+        }
+        
+        .toast-success {
+            background-color: #d4edda;
+            border-left: 4px solid var(--success);
+            color: #155724;
+        }
+        
+        .toast-error {
+            background-color: #f8d7da;
+            border-left: 4px solid var(--danger);
+            color: #721c24;
+        }
+        
+        .toast-icon {
+            margin-right: 0.75rem;
+        }
+        
+        @keyframes toast-in {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .theme-options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">ChAIf SES</div>
+        <nav>
+            <ul>
+                <li><a href="accueil.html">Accueil</a></li>
+                <li><a href="stock.html">Inventaire</a></li>
+                <li><a href="menu.html">Menus</a></li>
+                <li><a href="planning.html">Planning</a></li>
+                <li><a href="suppliers.html">Fournisseurs</a></li>
+                <li><a href="settings.html" class="active">Paramètres</a></li>
+                <li><a href="#" class="logout-btn">Déconnexion</a></li>
+
+                
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <h1>Paramètres du Système</h1>
+        
+        <div class="settings-grid">
+            <div class="settings-sidebar">
+                <ul class="settings-nav">
+                    <li class="settings-nav-item">
+                        <a href="#general" class="settings-nav-link active" data-section="general">
+                            <span class="settings-nav-icon">⚙️</span>
+                            Général
+                        </a>
+                    </li>
+                    <li class="settings-nav-item">
+                        <a href="#appearance" class="settings-nav-link" data-section="appearance">
+                            <span class="settings-nav-icon">🎨</span>
+                            Apparence
+                        </a>
+                    </li>
+                    <li class="settings-nav-item">
+                        <a href="#notifications" class="settings-nav-link" data-section="notifications">
+                            <span class="settings-nav-icon">🔔</span>
+                            Notifications
+                        </a>
+                    </li>
+                    <li class="settings-nav-item">
+                        <a href="#integrations" class="settings-nav-link" data-section="integrations">
+                            <span class="settings-nav-icon">🔌</span>
+                            Intégrations API
+                        </a>
+                    </li>
+                    <li class="settings-nav-item">
+                        <a href="#backup" class="settings-nav-link" data-section="backup">
+                            <span class="settings-nav-icon">💾</span>
+                            Sauvegarde
+                        </a>
+                    </li>
+                    <li class="settings-nav-item">
+                        <a href="#account" class="settings-nav-link" data-section="account">
+                            <span class="settings-nav-icon">👤</span>
+                            Compte
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="settings-content">
+                <div id="general" class="settings-section active">
+                    <h2>Paramètres Généraux</h2>
+                    
+                    <form id="general-form">
+                        <div class="form-group">
+                            <label for="restaurant-name">Nom du Restaurant</label>
+                            <input type="text" id="restaurant-name" class="form-control" value="Restaurant ChAIf SES">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="currency">Devise</label>
+                                <select id="currency" class="form-control">
+                                    <option value="EUR" selected>Euro (€)</option>
+                                    <option value="USD">Dollar US ($)</option>
+                                    <option value="GBP">Livre Sterling (£)</option>
+                                    <option value="CHF">Franc Suisse (CHF)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="language">Langue</label>
+                                <select id="language" class="form-control">
+                                    <option value="fr" selected>Français</option>
+                                    <option value="en">English</option>
+                                    <option value="es">Español</option>
+                                    <option value="de">Deutsch</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="items-per-page">Éléments par page</label>
+                            <select id="items-per-page" class="form-control">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Options d'affichage</label>
+                            <div class="form-check">
+                                <input type="checkbox" id="show-tutorials" checked>
+                                <label for="show-tutorials">Afficher les tutoriels pour les nouvelles fonctionnalités</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="confirm-delete" checked>
+                                <label for="confirm-delete">Demander confirmation avant de supprimer</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="auto-save">
+                                <label for="auto-save">Sauvegarder automatiquement les modifications</label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                    </form>
+                </div>
+                
+                <div id="appearance" class="settings-section">
+                    <h2>Apparence</h2>
+                    
+                    <form id="appearance-form">
+                        <div class="form-group">
+                            <label>Thème</label>
+                            <div class="theme-options">
+                                <div class="theme-card active" data-theme="light">
+                                    <div class="theme-preview light-theme"></div>
+                                    <div>Clair</div>
+                                </div>
+                                <div class="theme-card" data-theme="dark">
+                                    <div class="theme-preview dark-theme"></div>
+                                    <div>Sombre</div>
+                                </div>
+                                <div class="theme-card" data-theme="custom">
+                                    <div class="theme-preview custom-theme"></div>
+                                    <div>Personnalisé</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Couleurs Personnalisées</label>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="primary-color">
+                                        <span class="color-preview" style="background-color: #2c3e50;"></span>
+                                        Couleur Principale
+                                    </label>
+                                    <input type="color" id="primary-color" class="form-control" value="#2c3e50">
+                                </div>
+                                <div class="form-group">
+                                    <label for="secondary-color">
+                                        <span class="color-preview" style="background-color: #e67e22;"></span>
+                                        Couleur Secondaire
+                                    </label>
+                                    <input type="color" id="secondary-color" class="form-control" value="#e67e22">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="accent-color">
+                                        <span class="color-preview" style="background-color: #27ae60;"></span>
+                                        Couleur d'Accent
+                                    </label>
+                                    <input type="color" id="accent-color" class="form-control" value="#27ae60">
+                                </div>
+                                <div class="form-group">
+                                    <label for="text-color">
+                                        <span class="color-preview" style="background-color: #2c3e50;"></span>
+                                        Couleur de Texte
+                                    </label>
+                                    <input type="color" id="text-color" class="form-control" value="#2c3e50">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="font-size">Taille de Police</label>
+                            <select id="font-size" class="form-control">
+                                <option value="small">Petite</option>
+                                <option value="medium" selected>Moyenne</option>
+                                <option value="large">Grande</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Appliquer les Changements</button>
+                        <button type="button" class="btn" id="reset-appearance">Réinitialiser par Défaut</button>
+                    </form>
+                </div>
+                
+                <div id="notifications" class="settings-section">
+                    <h2>Notifications</h2>
+                    
+                    <form id="notifications-form">
+                        <div class="form-group">
+                            <label>Notifications Système</label>
+                            <div class="form-check">
+                                <input type="checkbox" id="stock-alerts" checked>
+                                <label for="stock-alerts">Alertes de niveau de stock bas</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="expiry-alerts" checked>
+                                <label for="expiry-alerts">Alertes d'expiration des produits</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="order-updates" checked>
+                                <label for="order-updates">Mises à jour des commandes</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="system-updates">
+                                <label for="system-updates">Mises à jour du système</label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="notification-frequency">Fréquence des alertes de stock</label>
+                            <select id="notification-frequency" class="form-control">
+                                <option value="daily">Quotidienne</option>
+                                <option value="weekly" selected>Hebdomadaire</option>
+                                <option value="never">Jamais</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="notification-days">Jours avant expiration pour alerte</label>
+                            <select id="notification-days" class="form-control">
+                                <option value="1">1 jour</option>
+                                <option value="3">3 jours</option>
+                                <option value="5" selected>5 jours</option>
+                                <option value="7">7 jours</option>
+                                <option value="14">14 jours</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Enregistrer les Préférences</button>
+                    </form>
+                </div>
+                
+                <div id="integrations" class="settings-section">
+                    <h2>Intégrations API</h2>
+                    
+                    <form id="integrations-form">
+                        <div class="form-group">
+                            <label>MarketMan API</label>
+                            <div class="form-check">
+                                <input type="checkbox" id="marketman-enabled">
+                                <label for="marketman-enabled">Activer l'intégration MarketMan</label>
+                            </div>
+                            <div class="api-key">
+                                <input type="text" id="marketman-api-key" class="form-control" placeholder="Clé API MarketMan" disabled>
+                                <button type="button" class="btn" disabled>Tester</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Spoonacular API</label>
+                            <div class="form-check">
+                                <input type="checkbox" id="spoonacular-enabled">
+                                <label for="spoonacular-enabled">Activer l'intégration Spoonacular</label>
+                            </div>
+                            <div class="api-key">
+                                <input type="text" id="spoonacular-api-key" class="form-control" placeholder="Clé API Spoonacular" disabled>
+                                <button type="button" class="btn" disabled>Tester</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Options d'Importation/Exportation</label>
+                            <div class="form-check">
+                                <input type="checkbox" id="import-csv" checked>
+                                <label for="import-csv">Permettre l'importation de CSV</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="export-csv" checked>
+                                <label for="export-csv">Permettre l'exportation de CSV</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="export-pdf">
+                                <label for="export-pdf">Permettre l'exportation de PDF</label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Enregistrer les Intégrations</button>
+                    </form>
+                </div>
+                
+                <div id="backup" class="settings-section">
+                    <h2>Sauvegarde et Restauration</h2>
+                    
+                    <div class="form-group">
+                        <label>Sauvegarde Manuelle</label>
+                        <p>Créez une sauvegarde complète de vos données pour les restaurer ultérieurement.</p>
+                        <button type="button" class="btn btn-primary" id="create-backup">Créer une Sauvegarde</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Sauvegardes Automatiques</label>
+                        <div class="form-check">
+                            <input type="checkbox" id="auto-backup" checked>
+                            <label for="auto-backup">Activer les sauvegardes automatiques</label>
+                        </div>
+                        <select id="backup-frequency" class="form-control">
+                            <option value="daily">Quotidienne</option>
+                            <option value="weekly" selected>Hebdomadaire</option>
+                            <option value="monthly">Mensuelle</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Restauration</label>
+                        <p>Importez un fichier de sauvegarde pour restaurer vos données.</p>
+                        <input type="file" id="import-backup" class="form-control">
+                        <button type="button" class="btn btn-primary" id="restore-backup" disabled>Restaurer</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Réinitialisation</label>
+                        <p>Attention: Cette action est irréversible et supprimera toutes vos données.</p>
+                        <button type="button" class="btn btn-danger" id="reset-data">Réinitialiser Toutes les Données</button>
+                    </div>
+                </div>
+                
+                <div id="account" class="settings-section">
+                    <h2>Paramètres du Compte</h2>
+                    
+                    <form id="account-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="account-name">Nom</label>
+                                <input type="text" id="account-name" class="form-control" value="Utilisateur ChAIf SES">
+                            </div>
+                            <div class="form-group">
+                                <label for="account-email">Email</label>
+                                <input type="email" id="account-email" class="form-control" value="utilisateur@chaifses.fr">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="account-role">Rôle</label>
+                            <select id="account-role" class="form-control" disabled>
+                                <option value="admin" selected>Administrateur</option>
+                                <option value="manager">Gestionnaire</option>
+                                <option value="user">Utilisateur</option>
+                            </select>
+                            <small>Seul un administrateur peut modifier les rôles des utilisateurs.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="button" class="btn" id="change-password">Changer le Mot de Passe</button>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Session</label>
+                            <p>Dernière connexion: 18/05/2025, 18:15</p>
+                            <button type="button" class="btn btn-danger" id="logout">Se Déconnecter</button>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Enregistrer les Modifications</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container"></div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Vérifier si l'utilisateur est authentifié
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            
+            if (!token || !user) {
+                // Rediriger vers la page de login
+                console.warn('❌ Non authentifié - Redirection vers login');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Vérifier que c'est bien un restaurant
+            if (user.role !== 'resto' && user.role !== 'collectivite') {
+                console.warn('❌ Rôle non autorisé:', user.role);
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            console.log('✅ Utilisateur authentifié:', user.email, '- Rôle:', user.role);
+            
+            // Navigation dans les paramètres
+            const navLinks = document.querySelectorAll('.settings-nav-link');
+            const sections = document.querySelectorAll('.settings-section');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const sectionId = this.getAttribute('data-section');
+                    
+                    // Mettre à jour les liens actifs
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Mettre à jour les sections actives
+                    sections.forEach(section => {
+                        if (section.id === sectionId) {
+                            section.classList.add('active');
+                        } else {
+                            section.classList.remove('active');
+                        }
+                    });
+                });
+            });
+            
+            // Gestion du thème
+            const themeCards = document.querySelectorAll('.theme-card');
+            
+            themeCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    themeCards.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Formulaires
+            document.getElementById('general-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                showToast('Paramètres généraux enregistrés', 'success');
+            });
+            
+            document.getElementById('appearance-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                showToast('Apparence mise à jour', 'success');
+            });
+            
+            document.getElementById('notifications-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                showToast('Préférences de notifications enregistrées', 'success');
+            });
+            
+            document.getElementById('integrations-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                showToast('Intégrations mises à jour', 'success');
+            });
+            
+            document.getElementById('account-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                showToast('Compte mis à jour', 'success');
+            });
+            
+            // Boutons d'action
+            document.getElementById('reset-appearance').addEventListener('click', function() {
+                showToast('Apparence réinitialisée', 'success');
+            });
+            
+            document.getElementById('create-backup').addEventListener('click', function() {
+                showToast('Sauvegarde créée avec succès', 'success');
+            });
+            
+            document.getElementById('reset-data').addEventListener('click', function() {
+                if (confirm('Êtes-vous sûr de vouloir réinitialiser toutes les données ? Cette action est irréversible.')) {
+                    showToast('Données réinitialisées', 'success');
+                }
+            });
+            
+            document.getElementById('change-password').addEventListener('click', function() {
+                alert('Fonctionnalité à implémenter: Changement de mot de passe');
+            });
+            
+            document.getElementById('logout').addEventListener('click', function() {
+                // Déconnecter l'utilisateur
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                
+                // Rediriger vers la page de login
+                console.log('🔓 Déconnexion');
+                window.location.href = 'index.html';
+            });
+            
+            // Gestion du fichier d'importation
+            document.getElementById('import-backup').addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    document.getElementById('restore-backup').removeAttribute('disabled');
+                } else {
+                    document.getElementById('restore-backup').setAttribute('disabled', 'disabled');
+                }
+            });
+            
+            document.getElementById('restore-backup').addEventListener('click', function() {
+                showToast('Restauration effectuée avec succès', 'success');
+                this.setAttribute('disabled', 'disabled');
+                document.getElementById('import-backup').value = '';
+            });
+            
+            // Fonction pour afficher un toast
+            function showToast(message, type = 'success') {
+                const container = document.getElementById('toast-container');
+                
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                
+                toast.innerHTML = `
+                    <div class="toast-icon">${type === 'success' ? '✅' : '❌'}</div>
+                    <div class="toast-message">${message}</div>
+                `;
+                
+                container.appendChild(toast);
+                
+                // Auto-destruction après 3 secondes
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(20px)';
+                    
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            container.removeChild(toast);
+                        }
+                    }, 300);
+                }, 3000);
+            }
+        });
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const logoutBtn = document.querySelector('.logout-btn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // Important !
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            console.log('🔓 Déconnexion depuis header');
+            window.location.href = 'index.html';
+          });
+        }
+      });
+    </script>
+<script type="module" src="js/auth.js"></script>
+    <script src="js/init.js"></script>`r`n</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Choisir un profil - ChAIf SES</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <style>
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .role-card {
+      border: 2px solid #ccc;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin: 1rem 0;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .role-card:hover {
+      background-color: #f9f9f9;
+      transform: scale(1.03);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Créer un compte ChAIf SES</h1>
+    <p>Choisissez votre profil</p>
+
+    <div class="role-card" data-role="resto">🍽️ <strong>Restaurant / Traiteur</strong><br>Pour les professionnels de la restauration</div>
+    <div class="role-card" data-role="collectivite">🏢 <strong>Collectivités</strong><br>Cantines scolaires, hôpitaux, maisons de retraite, EHPAD</div>
+    <div class="role-card" data-role="fournisseur">📦 <strong>Fournisseur</strong><br>Grossistes alimentaires, producteurs, distributeurs</div>
+    <div class="role-card" data-role="groupe">🏢 <strong>Groupe Multi-Sites</strong><br>Gestion centralisée de plusieurs établissements</div>
+</div>
+  <script type="module" src="js/choose-profile.js"></script>
+    <script src="js/init.js"></script>`r`n</body>
+</html>
