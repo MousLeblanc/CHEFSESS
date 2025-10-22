@@ -63,9 +63,17 @@
     .link { margin-top: 1rem; font-size: 0.95rem; }
     .link a { color: #3366cc; text-decoration: none; }
     .link a:hover { text-decoration: underline; }
+    
+    #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
+    .toast { background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 16px; min-width: 300px; max-width: 400px; display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s ease; }
+    .toast-success { border-left: 4px solid #28a745; }
+    .toast-error { border-left: 4px solid #dc3545; }
+    .toast-icon { font-size: 18px; font-weight: bold; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
   </style>
 </head>
 <body>
+  <div id="toast-container"></div>
   
   <div class="container">
     <h1>Connexion ChAIf SES</h1>
@@ -98,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 <script type="module" src="js/index.js"></script>
+<script type="module" src="js/login.js"></script>
 
 </body>
 </html>

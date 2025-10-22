@@ -1,0 +1,112 @@
+/* navigation.css */
+/* En-tête principal */
+.header {
+  background-color: var(--primary);
+  color: white;
+  padding: var(--spacing-4) 0;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  z-index: var(--z-index-fixed);
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-6);
+}
+
+.logo {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: white;
+  text-decoration: none;
+}
+
+.logo:hover {
+  color: var(--secondary);
+}
+
+/* Navigation principale */
+.nav-main {
+  display: flex;
+  align-items: center;
+}
+
+.nav-list {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-item {
+  margin-left: var(--spacing-6);
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  position: relative;
+  padding: var(--spacing-2) 0;
+  transition: color var(--transition-fast);
+}
+
+.nav-link:hover, .nav-link.active {
+  color: var(--secondary);
+}
+
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background-color: var(--secondary);
+}
+
+/* Menu mobile */
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  padding: var(--spacing-2);
+}
+
+@media (max-width: 768px) {
+  .nav-toggle {
+    display: block;
+  }
+  
+  .nav-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    background-color: var(--primary);
+    padding: var(--spacing-4);
+    box-shadow: var(--shadow-lg);
+    transform: scaleY(0);
+    transform-origin: top;
+    opacity: 0;
+    transition: transform var(--transition-normal), opacity var(--transition-normal);
+    z-index: var(--z-index-dropdown);
+  }
+  
+  .nav-list.active {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  
+  .nav-item {
+    margin: var(--spacing-3) 0;
+    margin-left: 0;
+  }
+}

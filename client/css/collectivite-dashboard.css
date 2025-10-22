@@ -1,0 +1,882 @@
+/* css/collectivite-dashboard.css */
+
+/* Styles généraux spécifiques au dashboard des collectivités */
+/* Ces styles devraient compléter ou surcharger ceux de main.css si main.css est inclus avant */
+
+/* Conteneur principal de la page */
+.page-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* En-tête de l'application (spécifique au dashboard) */
+.app-header {
+    background-color: #007bff; /* Bleu primaire */
+    color: #fff;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 5px solid #0056b3; /* Bordure plus foncée */
+}
+
+.app-title {
+    margin: 0;
+    font-size: 1.8em;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.app-title i {
+    margin-right: 10px;
+    font-size: 1.1em; /* Ajusté */
+}
+
+/* Boutons dans l'en-tête */
+.header-btn {
+    background-color: #dc3545; /* Rouge pour déconnexion */
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.header-btn:hover {
+    background-color: #c82333;
+}
+
+.header-btn i {
+    margin-right: 8px;
+}
+
+/* Navigation par onglets (Tabs) */
+.tabs {
+    display: flex;
+    background-color: #e9ecef; /* Fond plus clair pour la barre d'onglets */
+    border-bottom: 1px solid #dee2e6;
+}
+
+.tab-btn {
+    flex-grow: 1; /* Les onglets prennent tout l'espace disponible */
+    padding: 15px 20px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 500;
+    color: #495057; /* Couleur du texte des onglets inactifs */
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.tab-btn:hover {
+    background-color: #dee2e6;
+    color: #007bff; /* Couleur au survol */
+}
+
+.tab-btn.active {
+    background-color: #007bff; /* Fond bleu pour l'onglet actif */
+    color: #fff;
+    border-bottom: 3px solid #0056b3; /* Soulignement bleu foncé */
+    transform: translateY(1px); /* Petite translation pour l'effet */
+}
+
+.tab-btn i {
+    margin-right: 8px;
+}
+
+/* Contenu principal du tableau de bord */
+.dashboard-main {
+    padding: 30px; /* Padding généreux pour le contenu des onglets */
+}
+
+.tab-content {
+    display: none; /* Masqué par défaut */
+}
+
+.tab-content.active {
+    display: block; /* Affiché quand actif */
+}
+
+/* Cartes (cards) */
+.card {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.card h2 {
+    color: #007bff;
+    font-size: 1.6em;
+    margin-top: 0;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.card h2 i {
+    margin-right: 10px;
+    font-size: 1.1em;
+}
+
+/* Formulaires */
+.form-group {
+    margin-bottom: 18px;
+    position: relative; /* Pour l'autocomplete */
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+    font-size: 0.95em;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+    box-sizing: border-box; /* Inclut padding et border dans la largeur */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Boutons (généraux) */
+button[type="submit"],
+.btn { /* La classe .btn est déjà définie dans main.css ou utilisée */
+    background-color: #28a745; /* Vert succès par défaut */
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.05em;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+button[type="submit"]:hover,
+.btn:hover {
+    background-color: #218838;
+    transform: translateY(-1px);
+}
+
+.btn i { /* Icônes dans les boutons */
+    margin-right: 8px;
+}
+
+.btn-primary { /* Bouton bleu principal, surcharge le .btn si main.css est bien fait */
+    background-color: #007bff;
+}
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary { /* Bouton gris secondaire */
+    background-color: #6c757d;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: background-color 0.3s ease;
+}
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.btn-info { /* Bouton info (pour OCR/restriction) */
+    background-color: #17a2b8;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: background-color 0.3s ease;
+}
+.btn-info:hover {
+    background-color: #138496;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+
+/* Styles spécifiques aux restrictions (age-group-section et age-group-item) */
+#age-groups-form-section { /* L'ancienne #age-group-section est renommée pour éviter la confusion */
+    margin-bottom: 25px;
+}
+
+.age-group-item { /* Carte ou conteneur de chaque groupe d'âge individuel */
+    background-color: #f0f8ff; /* Couleur de fond plus claire pour les groupes */
+    border: 1px solid #d0e8ff; /* Bordure légère */
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px; /* Espacement entre les groupes d'âge */
+    position: relative; /* Pour le bouton supprimer absolu */
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05); /* Légère ombre */
+}
+
+.age-group-item h4 { /* Titre "Groupe X" */
+    color: #0056b3; /* Bleu foncé */
+    margin-top: 0;
+    margin-bottom: 15px;
+    border-bottom: 1px dashed #b3d9ff; /* Ligne de séparation légère */
+    padding-bottom: 8px;
+    font-size: 1.2em;
+}
+
+.age-group-item .remove-age-group-btn { /* Bouton "Supprimer" du groupe d'âge */
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #dc3545; /* Rouge danger */
+    font-size: 1.8em; /* Grande taille pour faciliter le clic */
+    cursor: pointer;
+    line-height: 1; /* Aligner le texte */
+}
+
+.age-group-item .remove-age-group-btn:hover {
+    color: #c82333;
+}
+
+/* Flexbox pour les lignes de formulaire (form-row) */
+/* Utilisé pour les champs "Tranche d'âge" / "Nombre de personnes" */
+.form-row {
+    display: flex;
+    flex-wrap: wrap; /* Permet aux éléments de passer à la ligne sur mobile */
+    gap: 15px; /* Espacement entre les colonnes */
+}
+
+.form-row .form-group {
+    flex: 1; /* Permet aux groupes de prendre de l'espace égal */
+    min-width: 120px; /* Taille minimale pour les champs */
+    margin-bottom: 0; /* Supprime la marge inférieure par défaut pour laisser le gap gérer */
+}
+
+.form-row .form-group:last-child { /* Ajustement pour le bouton "Supprimer" dans le form-row */
+    min-width: unset; /* La largeur minimale n'est pas appliquée ici */
+    flex: 0 0 auto; /* Ne pas grandir, garder sa taille */
+}
+
+.form-row .d-flex.align-items-end { /* Ajustement spécifique pour le bouton Supprimer dans la ligne */
+    align-items: flex-end; /* Aligner le bouton en bas du groupe */
+    padding-bottom: 8px; /* Pour aligner le bouton avec le bas des inputs */
+}
+
+
+/* Styles pour les restrictions spécifiques à un groupe d'âge (restrictions-container et restriction-item) */
+.restrictions-container {
+    margin-top: 15px; /* Espacement après le titre "Restrictions spécifiques" */
+    border: 1px dashed #e0e0e0; /* Bordure visuelle pour le conteneur de restrictions */
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #fcfcfc; /* Fond très léger */
+}
+
+.restriction-item { /* Chaque ligne de restriction individuelle */
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Espacement entre les champs de la restriction */
+    margin-bottom: 10px; /* Espacement entre les restrictions */
+    padding: 8px 10px;
+    border-radius: 5px;
+    background-color: #f0f8ff; /* Fond légèrement plus clair que le conteneur */
+    border: 1px solid #d0e8ff;
+}
+
+.restriction-item:last-child {
+    margin-bottom: 0; /* Pas de marge sous le dernier item */
+}
+
+.restriction-item select,
+.restriction-item input[type="number"] {
+    flex: 1; /* Permet aux selects/inputs de s'étirer */
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.remove-restriction-btn { /* Bouton "Supprimer" de la restriction */
+    background: none;
+    border: none;
+    color: #dc3545;
+    font-size: 1.5em;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 5px; /* Ajustement du padding */
+}
+.remove-restriction-btn:hover {
+    color: #c82333;
+}
+
+/* Ajustements pour les boutons d'ajout de restriction/groupe */
+.btn-info { /* Bouton "Ajouter une restriction pour ce groupe" */
+    background-color: #17a2b8; /* Bleu info */
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: background-color 0.3s ease;
+}
+.btn-info:hover {
+    background-color: #138496;
+}
+.btn-secondary { /* Bouton "Ajouter un nouveau Groupe d'Usagers" */
+    background-color: #6c757d; /* Gris secondaire */
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.05em;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+.btn-secondary:hover {
+    background-color: #5a6268;
+    transform: translateY(-1px);
+}
+
+
+/* Suggestions de menus (Résultat AI) */
+#resultat-menu {
+    background-color: #e9f7ef; /* Vert très clair */
+    border: 1px solid #d4edda;
+    border-radius: 8px;
+    padding: 20px;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column; /* Pour empiler le loader et le texte */
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #28a745;
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+#resultat-menu .placeholder-text {
+    color: #6c757d; /* Gris pour le placeholder */
+    margin-top: 10px; /* Espace si un spinner est au-dessus */
+}
+
+/* Pour le loader */
+.loading-spinner {
+    border: 4px solid rgba(0, 123, 255, 0.2); /* Light blue */
+    border-top: 4px solid #007bff; /* Blue */
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Message global de notifications */
+#global-notifications {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1001; /* Au-dessus de tout le reste */
+    max-width: 350px;
+}
+
+.notification-message {
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    opacity: 0; /* Pour l'animation d'entrée */
+    transform: translateY(-20px);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.notification-message.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.notification-message i {
+    margin-right: 10px;
+    font-size: 1.2em;
+}
+
+.notification-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.notification-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.notification-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Tableaux généraux */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.table th, .table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table th {
+    background-color: #007bff; /* Bleu d'en-tête de tableau */
+    color: #fff;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9em;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.table tbody tr:hover {
+    background-color: #f0f0f0;
+}
+
+/* Modales */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 600px;
+    position: relative;
+    transform: translateY(-50px);
+    transition: transform 0.3s ease;
+}
+
+.modal.show .modal-content {
+    transform: translateY(0);
+}
+
+.close-button {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    color: #aaa;
+    font-size: 2.5em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: #333;
+}
+
+.modal-content h3 { /* Titre dans la modale */
+    color: #007bff;
+    margin-top: 0;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    font-size: 1.5em;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+/* Styles pour les cartes de génération de menus */
+.generation-options {
+    display: flex;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+}
+
+.generation-option {
+    flex: 1;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.generation-option::after {
+    content: 'Cliquer pour générer';
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #e67e22;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.generation-option:hover::after {
+    opacity: 1;
+}
+
+.generation-option:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-color: #e67e22; /* --secondary */
+}
+
+.generation-option:active {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    background-color: rgba(230, 126, 34, 0.1); /* --secondary avec opacité */
+}
+
+.generation-option.active {
+    border-color: #e67e22; /* --secondary */
+    background-color: rgba(230, 126, 34, 0.05);
+}
+
+.generation-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+/* Alerte produits proches de péremption */
+.expiring-alert {
+    background-color: #fff3cd; /* Jaune très clair */
+    border-left: 4px solid #f39c12; /* Bordure orange */
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+}
+.expiring-alert h3 {
+    color: #856404; /* Couleur de texte associée au warning */
+    margin-top: 0;
+    font-size: 1.2em;
+    display: flex;
+    align-items: center;
+}
+.expiring-alert h3 i {
+    margin-right: 10px;
+    color: #f39c12; /* Icône orange */
+}
+.expiring-alert p {
+    margin: 0;
+    color: #333;
+}
+.expiring-alert p a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+.expiring-alert p a:hover {
+    text-decoration: underline;
+}
+
+/* Grille pour les statistiques d'inventaire */
+#inventory-stats .filter-section { /* Utilise la classe filter-section du dessus pour la grille */
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* 3 colonnes flexibles */
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+#inventory-stats .filter-section > div {
+    background-color: #f8f9fa; /* Fond légèrement gris pour chaque carte de stat */
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+#inventory-stats .filter-section h4 {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #555;
+}
+#inventory-stats .filter-section .stat {
+    font-size: 1.8rem; /* Grande taille pour la valeur */
+    font-weight: 600;
+    color: #e67e22; /* Couleur d'accentuation */
+    margin-top: 0.5rem;
+}
+/* Styles pour les listes de produits en alerte */
+.alert-ingredient-list {
+    list-style: none;
+    padding-left: 0;
+    font-size: 0.9em;
+    margin-top: 10px;
+    max-height: 150px; /* Limiter la hauteur et rendre défilable si besoin */
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    background-color: #fff;
+}
+.alert-ingredient-list li {
+    padding: 0.5rem 10px;
+    border-bottom: 1px dashed #eee;
+    display: flex;
+    justify-content: space-between; /* Nom à gauche, exp. à droite */
+    align-items: center;
+}
+.alert-ingredient-list li:last-child {
+    border-bottom: none;
+}
+.alert-ingredient-list .empty-list-placeholder {
+    color: #777;
+    font-style: italic;
+    text-align: center;
+    padding: 10px;
+    border-bottom: none;
+}
+/* Styles pour les menus générés et les détails */
+.menu-dishes-list .menu-dish-item {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.menu-dishes-list .menu-dish-item h4 {
+    color: #2c3e50;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+}
+.menu-dishes-list .dish-description {
+    font-size: 0.95em;
+    color: #555;
+    margin-bottom: 10px;
+}
+.menu-dishes-list ul, .menu-dishes-list ol {
+    padding-left: 20px;
+    margin-bottom: 1rem;
+}
+.menu-dishes-list ul li, .menu-dishes-list ol li {
+    margin-bottom: 0.3rem;
+    font-size: 0.9em;
+    color: #555;
+}
+
+/* Styles pour les toasts */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.toast {
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: toast-in 0.3s forwards;
+}
+
+.toast-success {
+    background-color: #d4edda;
+    border-left: 4px solid var(--success);
+    color: #155724;
+}
+
+.toast-error {
+    background-color: #f8d7da;
+    border-left: 4px solid var(--danger);
+    color: #721c24;
+}
+
+.toast-info {
+    background-color: #d1ecf1;
+    border-left: 4px solid var(--primary);
+    color: #0c5460;
+}
+
+.toast-warning {
+    background-color: #fff3cd;
+    border-left: 4px solid var(--warning);
+    color: #856404;
+}
+
+/* Styles pour le loader */
+.loading-spinner {
+    border: 4px solid rgba(0, 123, 255, 0.2);
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Styles responsifs (exemple depuis collectivite-dashboard.html) */
+@media (max-width: 768px) {
+    .page-container {
+        margin: 10px auto;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .app-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px;
+    }
+
+    .app-title {
+        margin-bottom: 10px;
+        font-size: 1.5em;
+    }
+
+    .header-btn {
+        width: 100%;
+    }
+
+    .tabs {
+        flex-direction: column;
+    }
+
+    .tab-btn {
+        padding: 12px;
+    }
+
+    .tab-btn.active {
+        border-bottom: none;
+        border-left: 3px solid #007bff;
+    }
+
+    .dashboard-main {
+        padding: 15px;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    .form-inline {
+        flex-direction: column;
+    }
+
+    .form-inline .form-control,
+    .form-inline .btn {
+        width: 100%;
+        margin-right: 0 !important;
+        margin-bottom: 10px;
+    }
+
+    .age-group-item, .restriction-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px; /* Ajusté */
+    }
+
+    .age-group-item select, .restriction-item select,
+    .age-group-item input[type="number"] {
+        width: 100%;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+}

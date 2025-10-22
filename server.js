@@ -109,7 +109,11 @@ app.get("/*.html", (req, res) => {
 });
 
 // === ROUTE PAR DÉFAUT ===
-app.get("*", (req, res) => {
+app.get("*", (req, res, next) => {
+  // Ne pas intercepter les requêtes vers les fichiers statiques
+  if (req.path.startsWith('/js/') || req.path.startsWith('/css/') || req.path.startsWith('/img/') || req.path.startsWith('/api/')) {
+    return next();
+  }
   res.sendFile(path.join(clientPath, "index.html"));
 });
 
