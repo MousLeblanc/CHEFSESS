@@ -61,10 +61,10 @@ export function redirectByRole(role, establishmentType) {
       window.location.href = 'group-dashboard.html';
       break;
     default: 
-      window.location.href = 'index.html';
+      window.location.href = '/';
   }
 }
-export function redirectToLogin() { window.location.href = 'index.html'; }
+export function redirectToLogin() { window.location.href = '/'; }
 export function getToken() {
   return localStorage.getItem('token');
 }
@@ -82,10 +82,11 @@ export async function logout() {
   
   // Nettoyer localStorage
   localStorage.removeItem('user');
+  localStorage.removeItem('token'); // Supprimer le token si utilisé
   localStorage.removeItem('cart'); // Supprimer aussi le panier
   
-  // Rediriger vers la page de connexion
-  window.location.href = 'index.html';
+  // Rediriger vers la page de connexion (chemin absolu)
+  window.location.href = '/';
 }
 
 
