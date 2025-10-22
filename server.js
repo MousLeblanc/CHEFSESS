@@ -31,6 +31,7 @@ import recipeGeneratorRoutes from "./routes/recipeGeneratorRoutes.js";
 import groupRoutes from "./routes/groupRoutes.js";
 import menuSyncRoutes from "./routes/menuSyncRoutes.js";
 import siteRoutes from "./routes/siteRoutes.js";
+import initRoutes from "./routes/initRoutes.js";
 
 // --- OpenAI client ---
 import openai from "./services/openaiClient.js";
@@ -91,6 +92,7 @@ app.use("/api/recipe-generator", recipeGeneratorRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/menus-sync", menuSyncRoutes);
 app.use("/api/sites", siteRoutes);
+app.use("/api/init", initRoutes);
 
 // === HEALTH CHECK ===
 app.get("/api/health", (req, res) => {

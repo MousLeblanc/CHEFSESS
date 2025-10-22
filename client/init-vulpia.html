@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Initialisation Vulpia Group - Chef SES</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 2rem;
+        }
+        
+        .init-container {
+            background: white;
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo i {
+            font-size: 4rem;
+            color: #667eea;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 2rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn-init {
+            width: 100%;
+            padding: 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .btn-init:hover {
+            background: #5a6fd8;
+        }
+        
+        .btn-init:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .status-box {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .status-box.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .status-box.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .status-box.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .results {
+            margin-top: 1rem;
+        }
+        
+        .results h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        .results ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .results li {
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .note strong {
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="init-container">
+        <div class="logo">
+            <i class="fas fa-rocket"></i>
+        </div>
+        
+        <h1>Initialisation Vulpia Group</h1>
+        <p class="subtitle">Créer le groupe et les 12 sites EHPAD</p>
+        
+        <div class="note">
+            <strong><i class="fas fa-info-circle"></i> Note :</strong> Cette action va créer :
+            <ul style="margin-top: 0.5rem;">
+                <li>✅ Le groupe "Vulpia Group"</li>
+                <li>✅ Un compte administrateur (admin@vulpiagroup.com)</li>
+                <li>✅ 12 sites EHPAD actifs</li>
+                <li>✅ Un compte responsable pour chaque site</li>
+            </ul>
+        </div>
+        
+        <form id="init-form">
+            <div class="form-group">
+                <label for="secret-key">
+                    <i class="fas fa-key"></i> Clé Secrète
+                </label>
+                <input 
+                    type="password" 
+                    id="secret-key" 
+                    name="secretKey" 
+                    class="form-control" 
+                    placeholder="Entrez la clé secrète d'initialisation"
+                    value="VulpiaInit2024!"
+                    required>
+                <small style="color: #666; font-size: 0.85rem;">
+                    Par défaut : VulpiaInit2024!
+                </small>
+            </div>
+            
+            <button type="submit" class="btn-init" id="init-btn">
+                <i class="fas fa-rocket"></i> Initialiser le Groupe Vulpia
+            </button>
+        </form>
+        
+        <div id="loading" class="loading">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #667eea;"></i>
+            <p>Initialisation en cours...</p>
+        </div>
+        
+        <div id="status-box" class="status-box">
+            <div id="status-message"></div>
+            <div id="results" class="results"></div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('init-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const secretKey = document.getElementById('secret-key').value;
+            const initBtn = document.getElementById('init-btn');
+            const loading = document.getElementById('loading');
+            const statusBox = document.getElementById('status-box');
+            const statusMessage = document.getElementById('status-message');
+            const resultsDiv = document.getElementById('results');
+            
+            // Afficher le loading
+            initBtn.disabled = true;
+            loading.style.display = 'block';
+            statusBox.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/init/vulpia', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ secretKey })
+                });
+                
+                const data = await response.json();
+                
+                loading.style.display = 'none';
+                statusBox.style.display = 'block';
+                
+                if (response.ok && data.success) {
+                    statusBox.className = 'status-box success';
+                    statusMessage.innerHTML = `
+                        <h2><i class="fas fa-check-circle"></i> Initialisation réussie !</h2>
+                        <p>${data.message}</p>
+                    `;
+                    
+                    // Afficher les résultats
+                    let resultsHTML = '';
+                    
+                    if (data.results.groupAdmin) {
+                        resultsHTML += `
+                            <h3><i class="fas fa-user-shield"></i> Compte Administrateur Groupe</h3>
+                            <ul>
+                                <li><strong>Email :</strong> ${data.results.groupAdmin.email}</li>
+                                ${data.results.groupAdmin.password ? `<li><strong>Mot de passe :</strong> ${data.results.groupAdmin.password}</li>` : ''}
+                                <li><strong>Statut :</strong> ${data.results.groupAdmin.status === 'created' ? '✅ Créé' : 'ℹ️ Déjà existant'}</li>
+                            </ul>
+                        `;
+                    }
+                    
+                    if (data.results.sites && data.results.sites.length > 0) {
+                        resultsHTML += `
+                            <h3><i class="fas fa-building"></i> Sites créés (${data.results.sites.length})</h3>
+                            <ul>
+                        `;
+                        
+                        data.results.sites.forEach(site => {
+                            resultsHTML += `
+                                <li>
+                                    <strong>${site.name}</strong> - ${site.email}
+                                    ${site.password ? `<br><small>Mot de passe: <code>${site.password}</code></small>` : ''}
+                                    ${site.userStatus === 'created' ? ' <span style="color: green;">✅ Nouveau</span>' : ' <span style="color: blue;">ℹ️ Existant</span>'}
+                                </li>
+                            `;
+                        });
+                        
+                        resultsHTML += '</ul>';
+                    }
+                    
+                    resultsHTML += `
+                        <div style="margin-top: 2rem; padding: 1rem; background: #e7f3ff; border-radius: 8px;">
+                            <h4><i class="fas fa-arrow-right"></i> Prochaines étapes :</h4>
+                            <ol style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                                <li>Connectez-vous en tant qu'administrateur : <a href="/">Page de connexion</a></li>
+                                <li>Ou connectez-vous en tant que site : <a href="/site-login.html">Connexion site</a></li>
+                                <li>Consultez le guide : <code>VULPIA-GUIDE.md</code></li>
+                            </ol>
+                        </div>
+                    `;
+                    
+                    resultsDiv.innerHTML = resultsHTML;
+                    
+                } else {
+                    statusBox.className = 'status-box error';
+                    statusMessage.innerHTML = `
+                        <h2><i class="fas fa-exclamation-circle"></i> Erreur</h2>
+                        <p>${data.message || 'Une erreur est survenue lors de l\'initialisation.'}</p>
+                    `;
+                    
+                    if (data.error) {
+                        resultsDiv.innerHTML = `<pre style="background: #f8f9fa; padding: 1rem; border-radius: 4px; overflow-x: auto;">${data.error}</pre>`;
+                    }
+                }
+                
+            } catch (error) {
+                loading.style.display = 'none';
+                statusBox.style.display = 'block';
+                statusBox.className = 'status-box error';
+                statusMessage.innerHTML = `
+                    <h2><i class="fas fa-exclamation-circle"></i> Erreur de connexion</h2>
+                    <p>${error.message}</p>
+                `;
+            } finally {
+                initBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
+
