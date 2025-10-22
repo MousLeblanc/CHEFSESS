@@ -183,6 +183,9 @@ router.post('/vulpia', async (req, res) => {
         });
 
         // Ajouter le manager au site
+        if (!site.managers) {
+          site.managers = [];
+        }
         if (!site.managers.includes(siteUser._id)) {
           site.managers.push(siteUser._id);
           await site.save();
