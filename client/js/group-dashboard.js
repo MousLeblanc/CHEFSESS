@@ -14,7 +14,7 @@ class GroupDashboard {
             const isAuthenticated = await this.checkAuthentication();
             if (!isAuthenticated) {
                 console.log('❌ Utilisateur non authentifié, redirection vers login');
-                window.location.href = '/login.html';
+                window.location.href = '/';
                 return;
             }
 
@@ -36,7 +36,7 @@ class GroupDashboard {
             this.showToast('Erreur lors du chargement du tableau de bord', 'error');
             // Rediriger vers login en cas d'erreur d'authentification
             if (error.message.includes('Non authentifié') || error.message.includes('401')) {
-                window.location.href = '/login.html';
+                window.location.href = '/';
             }
         }
     }
@@ -84,7 +84,7 @@ class GroupDashboard {
             console.log('👤 Utilisateur chargé:', user.name, 'GroupId:', this.currentGroup);
         } catch (error) {
             console.error('Erreur lors du chargement des informations utilisateur:', error);
-            window.location.href = '/login.html';
+            window.location.href = '/';
         }
     }
 
@@ -740,10 +740,10 @@ class GroupDashboard {
                 credentials: 'include'
             });
             
-            window.location.href = '/login.html';
+            window.location.href = '/';
         } catch (error) {
             console.error('Erreur lors de la déconnexion:', error);
-            window.location.href = '/login.html';
+            window.location.href = '/';
         }
     }
 }
