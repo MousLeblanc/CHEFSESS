@@ -157,7 +157,10 @@ export const login = asyncHandler(async (req, res) => {
         email: user.email,
         role: user.role,
         businessName: user.businessName,
-        establishmentType: user.establishmentType
+        establishmentType: user.establishmentType,
+        groupId: user.groupId,
+        siteId: user.siteId,
+        roles: user.roles
       },
       message: 'Connexion réussie'
     });

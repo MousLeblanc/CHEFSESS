@@ -28,7 +28,8 @@
     "create-fournisseur": "node scripts/create-fournisseur-test.js",
     "init-tanneurs-stock": "node scripts/init-tanneurs-stock.js",
     "migrate-multisite": "node scripts/migrate-to-multisite.js",
-    "test-multisite": "node scripts/test-multisite.js"
+    "test-multisite": "node scripts/test-multisite.js",
+    "init-vulpia": "node scripts/init-vulpia-group.js"
   },
   "keywords": [
     "chef",

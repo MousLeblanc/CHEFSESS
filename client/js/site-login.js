@@ -14,7 +14,7 @@ class SiteLogin {
         form.addEventListener('submit', (e) => this.handleLogin(e));
         
         // Auto-focus sur le premier champ
-        document.getElementById('site-code').focus();
+        document.getElementById('email').focus();
     }
 
     checkUrlParams() {
@@ -57,8 +57,7 @@ class SiteLogin {
         
         const formData = new FormData(e.target);
         const loginData = {
-            siteCode: formData.get('siteCode'),
-            username: formData.get('username'),
+            email: formData.get('email'),
             password: formData.get('password')
         };
         
@@ -66,7 +65,7 @@ class SiteLogin {
         this.hideError();
         
         try {
-            const response = await fetch('/api/sites/login', {
+            const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -83,8 +82,17 @@ class SiteLogin {
             const result = await response.json();
             console.log('✅ Connexion réussie:', result);
             
-            // Rediriger vers le tableau de bord du site
-            window.location.href = `site-dashboard.html?siteId=${result.siteId}`;
+            // Stocker les données utilisateur
+            localStorage.setItem('user', JSON.stringify(result.user));
+            localStorage.setItem('token', result.token || '');
+            
+            // Vérifier si c'est un utilisateur de site (avec siteId)
+            if (result.user.siteId) {
+                // Rediriger vers le tableau de bord du site
+                window.location.href = 'site-dashboard.html';
+            } else {
+                this.showError('Cet email n\'est pas associé à un site spécifique.');
+            }
             
         } catch (error) {
             console.error('❌ Erreur de connexion:', error);
