@@ -29,7 +29,8 @@
     "init-tanneurs-stock": "node scripts/init-tanneurs-stock.js",
     "migrate-multisite": "node scripts/migrate-to-multisite.js",
     "test-multisite": "node scripts/test-multisite.js",
-    "init-vulpia": "node scripts/init-vulpia-group.js"
+    "init-vulpia": "node scripts/init-vulpia-group.js",
+    "fix-residents": "node scripts/fix-residents-groupid.js"
   },
   "keywords": [
     "chef",

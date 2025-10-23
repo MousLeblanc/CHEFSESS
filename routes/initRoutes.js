@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import Group from '../models/Group.js';
 import Site from '../models/Site.js';
 import User from '../models/User.js';
+import Resident from '../models/Resident.js';
 
 const router = express.Router();
 
@@ -250,6 +251,121 @@ router.get('/vulpia/status', async (req, res) => {
       }
     });
   } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+/**
+ * Route pour corriger les résidents sans groupId
+ * POST /api/init/fix-residents
+ * Body: { secretKey: "votre-cle-secrete" }
+ */
+router.post('/fix-residents', async (req, res) => {
+  try {
+    const { secretKey } = req.body;
+    
+    // Vérifier la clé secrète
+    const expectedKey = process.env.INIT_SECRET_KEY || 'VulpiaInit2024!';
+    if (secretKey !== expectedKey) {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Clé secrète invalide' 
+      });
+    }
+
+    console.log('🔧 Début de la correction des résidents...');
+
+    // Récupérer tous les résidents sans groupId
+    const residentsWithoutGroup = await Resident.find({
+      $or: [
+        { groupId: null },
+        { groupId: { $exists: false } }
+      ]
+    });
+
+    console.log(`📊 ${residentsWithoutGroup.length} résidents sans groupId trouvés`);
+
+    const results = {
+      fixed: 0,
+      failed: 0,
+      details: []
+    };
+
+    for (const resident of residentsWithoutGroup) {
+      try {
+        // Récupérer le site associé
+        const site = await Site.findById(resident.siteId);
+        
+        if (!site) {
+          results.failed++;
+          results.details.push({
+            resident: `${resident.firstName} ${resident.lastName}`,
+            error: 'Site non trouvé'
+          });
+          continue;
+        }
+
+        if (!site.groupId) {
+          results.failed++;
+          results.details.push({
+            resident: `${resident.firstName} ${resident.lastName}`,
+            error: `Le site "${site.siteName}" n'a pas de groupId`
+          });
+          continue;
+        }
+
+        // Mettre à jour le résident avec le groupId du site
+        resident.groupId = site.groupId;
+        await resident.save();
+
+        results.fixed++;
+        results.details.push({
+          resident: `${resident.firstName} ${resident.lastName}`,
+          site: site.siteName,
+          groupId: site.groupId.toString(),
+          success: true
+        });
+
+      } catch (error) {
+        results.failed++;
+        results.details.push({
+          resident: `${resident.firstName} ${resident.lastName}`,
+          error: error.message
+        });
+      }
+    }
+
+    // Récupérer les statistiques finales
+    const allResidents = await Resident.find().populate('siteId');
+    const residentsByGroup = {};
+    
+    for (const resident of allResidents) {
+      const groupId = resident.groupId?.toString() || 'SANS_GROUPE';
+      if (!residentsByGroup[groupId]) {
+        residentsByGroup[groupId] = 0;
+      }
+      residentsByGroup[groupId]++;
+    }
+
+    console.log(`✅ Correction terminée: ${results.fixed} mis à jour, ${results.failed} échecs`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Correction des résidents terminée',
+      results: {
+        fixed: results.fixed,
+        failed: results.failed,
+        totalResidents: allResidents.length,
+        byGroup: residentsByGroup,
+        details: results.details
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Erreur:', error);
     res.status(500).json({
       success: false,
       message: error.message

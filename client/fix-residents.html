@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corriger les Résidents - ChAIf SES</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 3rem;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #result {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+
+        .result-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-stats {
+            background: rgba(255,255,255,0.5);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .details {
+            margin-top: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(255,255,255,0.5);
+            padding: 1rem;
+            border-radius: 6px;
+        }
+
+        .detail-item {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .detail-item.success {
+            border-left: 3px solid #4caf50;
+        }
+
+        .detail-item.failed {
+            border-left: 3px solid #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Correction des Résidents</h1>
+        <p>Assigner automatiquement le groupId aux résidents en fonction de leur site</p>
+
+        <form id="fix-form">
+            <div class="form-group">
+                <label for="secretKey">Clé Secrète</label>
+                <input 
+                    type="password" 
+                    id="secretKey" 
+                    name="secretKey" 
+                    placeholder="VulpiaInit2024!" 
+                    required
+                >
+                <small style="color: #666; font-size: 0.85rem;">
+                    Utilisez la même clé que pour l'initialisation Vulpia
+                </small>
+            </div>
+
+            <button type="submit" id="submit-btn">
+                🚀 Lancer la Correction
+            </button>
+        </form>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('fix-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const resultDiv = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const secretKey = document.getElementById('secretKey').value;
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Correction en cours...';
+            resultDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/init/fix-residents', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ secretKey })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showSuccess(data);
+                } else {
+                    showError(data.message || 'Erreur lors de la correction');
+                }
+
+            } catch (error) {
+                showError('Erreur de connexion: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Lancer la Correction';
+            }
+        });
+
+        function showSuccess(data) {
+            const results = data.results;
+            
+            let html = `
+                <div class="result-title">✅ Correction terminée avec succès!</div>
+                
+                <div class="result-stats">
+                    <div class="stat-item">
+                        <span>Total de résidents:</span>
+                        <strong>${results.totalResidents}</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>✅ Résidents corrigés:</span>
+                        <strong style="color: #4caf50;">${results.fixed}</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>❌ Échecs:</span>
+                        <strong style="color: #f44336;">${results.failed}</strong>
+                    </div>
+                </div>
+            `;
+
+            if (results.byGroup) {
+                html += '<div class="result-stats" style="margin-top: 1rem;">';
+                html += '<div style="font-weight: 600; margin-bottom: 0.5rem;">Répartition par groupe:</div>';
+                for (const [groupId, count] of Object.entries(results.byGroup)) {
+                    const label = groupId === 'SANS_GROUPE' ? '⚠️ Sans groupe' : `✅ GroupId: ${groupId}`;
+                    html += `<div class="stat-item"><span>${label}</span><strong>${count}</strong></div>`;
+                }
+                html += '</div>';
+            }
+
+            if (results.details && results.details.length > 0) {
+                html += '<div class="details">';
+                html += '<div style="font-weight: 600; margin-bottom: 0.5rem;">Détails:</div>';
+                results.details.forEach(detail => {
+                    if (detail.success) {
+                        html += `
+                            <div class="detail-item success">
+                                <strong>${detail.resident}</strong><br>
+                                Site: ${detail.site}<br>
+                                GroupId: ${detail.groupId}
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="detail-item failed">
+                                <strong>${detail.resident}</strong><br>
+                                ❌ ${detail.error}
+                            </div>
+                        `;
+                    }
+                });
+                html += '</div>';
+            }
+
+            resultDiv.className = 'success';
+            resultDiv.innerHTML = html;
+            resultDiv.style.display = 'block';
+        }
+
+        function showError(message) {
+            resultDiv.className = 'error';
+            resultDiv.innerHTML = `
+                <div class="result-title">❌ Erreur</div>
+                <p style="margin: 0;">${message}</p>
+            `;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+
