@@ -241,6 +241,37 @@ Pour toute question ou problème :
 
 ---
 
+## 🔧 Correction des Résidents (Si Nécessaire)
+
+Si vous avez créé des résidents **avant** d'initialiser Vulpia Group, ils n'auront pas de `groupId` et n'apparaîtront pas dans les statistiques du groupe.
+
+### Solution : Page de Correction Automatique
+
+1. **Accédez à la page de correction** :
+   ```
+   https://chefsess.onrender.com/fix-residents.html
+   ```
+
+2. **Entrez la clé secrète** : `VulpiaInit2024!`
+
+3. **Cliquez sur "Lancer la Correction"**
+
+4. **Vérifiez les résultats** :
+   - Nombre de résidents corrigés ✅
+   - Nombre d'échecs (s'il y en a) ❌
+   - Répartition par groupe
+   - Détails pour chaque résident
+
+Cette opération :
+- ✅ Trouve tous les résidents sans `groupId`
+- ✅ Récupère le site de chaque résident
+- ✅ Assigne automatiquement le `groupId` du site au résident
+- ✅ Affiche un rapport détaillé
+
+**Note** : Cette opération est **idempotente** (peut être lancée plusieurs fois sans problème).
+
+---
+
 ## 🎉 Prochaines Étapes
 
 1. ✅ Exécuter `npm run init-vulpia` pour initialiser le système
@@ -248,9 +279,10 @@ Pour toute question ou problème :
 3. ✅ Vérifier que les 12 sites sont bien créés
 4. ✅ Tester la connexion d'un site (ex: Arthur)
 5. ✅ Ajouter quelques résidents de test
-6. ✅ Vérifier que les résidents apparaissent sur le group dashboard
-7. ✅ Former les responsables de chaque site
-8. ✅ Déployer en production !
+6. ✅ **Si besoin** : Corriger les résidents existants via `/fix-residents.html`
+7. ✅ Vérifier que les résidents apparaissent sur le group dashboard
+8. ✅ Former les responsables de chaque site
+9. ✅ Déployer en production !
 
 ---
 
