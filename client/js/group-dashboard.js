@@ -775,18 +775,19 @@ class GroupDashboard {
         const residentsCounts = await this.loadResidentsCounts();
         const residentsCount = residentsCounts[siteId] || 0;
 
-        // Charger les managers du site
-        let managersHtml = 'Aucun responsable';
-        if (site.managers && site.managers.length > 0) {
-            const managers = this.users.filter(u => site.managers.includes(u._id));
-            if (managers.length > 0) {
-                managersHtml = managers.map(m => `
-                    <div style="margin-bottom: 0.5rem;">
-                        <strong>${m.name}</strong><br>
-                        <small>${m.email}</small>
+        // Charger les responsables du site
+        let responsablesHtml = 'Aucun responsable';
+        if (site.responsables && site.responsables.length > 0) {
+            responsablesHtml = site.responsables.map(r => `
+                <div style="background: white; padding: 0.75rem; border-radius: 6px; margin-bottom: 0.75rem; border-left: 3px solid #667eea;">
+                    <div style="font-weight: 600; color: #333; margin-bottom: 0.25rem;">${r.name}</div>
+                    ${r.position ? `<div style="color: #667eea; font-size: 0.9rem; margin-bottom: 0.5rem;">${r.position}</div>` : ''}
+                    <div style="display: grid; gap: 0.25rem; font-size: 0.9rem; color: #666;">
+                        ${r.phone ? `<div><i class="fas fa-phone" style="width: 16px;"></i> ${r.phone}</div>` : ''}
+                        ${r.email ? `<div><i class="fas fa-envelope" style="width: 16px;"></i> ${r.email}</div>` : ''}
                     </div>
-                `).join('');
-            }
+                </div>
+            `).join('');
         }
 
         // Créer la modal
@@ -833,7 +834,7 @@ class GroupDashboard {
                             <i class="fas fa-user-tie"></i> Responsables
                         </h3>
                         <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
-                            ${managersHtml}
+                            ${responsablesHtml}
                         </div>
                     </div>
 
@@ -1013,20 +1014,40 @@ class GroupDashboard {
                     <!-- Responsables -->
                     <div>
                         <h3 style="margin: 0 0 1rem 0; color: #333; font-size: 1.1rem; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
-                            <i class="fas fa-user-tie"></i> Responsables
+                            <i class="fas fa-user-tie"></i> Responsables du site
                         </h3>
-                        <div id="managers-list" style="display: grid; gap: 0.5rem; max-height: 200px; overflow-y: auto; padding: 0.5rem; background: #f8f9fa; border-radius: 6px;">
-                            ${this.users.filter(u => u.role === 'SITE_MANAGER' || (u.roles && u.roles.includes('SITE_MANAGER'))).map(user => `
-                                <label style="display: flex; align-items: center; padding: 0.5rem; background: white; border-radius: 4px; cursor: pointer; hover:background: #e3f2fd;">
-                                    <input type="checkbox" name="managers" value="${user._id}" ${site.managers && site.managers.includes(user._id) ? 'checked' : ''} style="margin-right: 0.75rem;">
-                                    <div>
-                                        <strong>${user.name}</strong><br>
-                                        <small style="color: #666;">${user.email}</small>
+                        <div id="responsables-container">
+                            ${(site.responsables && site.responsables.length > 0) ? site.responsables.map((resp, index) => `
+                                <div class="responsable-item" style="background: #f8f9fa; padding: 1rem; border-radius: 6px; margin-bottom: 0.75rem; position: relative;">
+                                    <button type="button" onclick="this.parentElement.remove()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div style="display: grid; gap: 0.75rem;">
+                                        <div>
+                                            <label style="display: block; margin-bottom: 0.25rem; font-weight: 600; font-size: 0.9rem;">Nom complet *</label>
+                                            <input type="text" name="responsable_name_${index}" value="${resp.name || ''}" required placeholder="Jean Dupont" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                                        </div>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                                            <div>
+                                                <label style="display: block; margin-bottom: 0.25rem; font-weight: 600; font-size: 0.9rem;">Téléphone</label>
+                                                <input type="tel" name="responsable_phone_${index}" value="${resp.phone || ''}" placeholder="+32 2 123 45 67" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                                            </div>
+                                            <div>
+                                                <label style="display: block; margin-bottom: 0.25rem; font-weight: 600; font-size: 0.9rem;">Email</label>
+                                                <input type="email" name="responsable_email_${index}" value="${resp.email || ''}" placeholder="jean@example.com" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label style="display: block; margin-bottom: 0.25rem; font-weight: 600; font-size: 0.9rem;">Fonction</label>
+                                            <input type="text" name="responsable_position_${index}" value="${resp.position || ''}" placeholder="Directeur, Responsable cuisine..." style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                                        </div>
                                     </div>
-                                </label>
-                            `).join('')}
-                            ${this.users.filter(u => u.role === 'SITE_MANAGER' || (u.roles && u.roles.includes('SITE_MANAGER'))).length === 0 ? '<p style="color: #666; text-align: center; margin: 1rem;">Aucun responsable disponible. Créez d\'abord des comptes avec le rôle SITE_MANAGER.</p>' : ''}
+                                </div>
+                            `).join('') : '<p id="no-responsables-message" style="color: #666; text-align: center; padding: 1rem; background: #f8f9fa; border-radius: 6px;">Aucun responsable ajouté</p>'}
                         </div>
+                        <button type="button" id="add-responsable-btn" style="width: 100%; padding: 0.75rem; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 0.75rem; font-weight: 600;">
+                            <i class="fas fa-plus-circle"></i> Ajouter un responsable
+                        </button>
                     </div>
 
                     <!-- Paramètres -->
@@ -1068,6 +1089,49 @@ class GroupDashboard {
             </div>
         `;
 
+        // Gérer le bouton "Ajouter un responsable"
+        const addResponsableBtn = modal.querySelector('#add-responsable-btn');
+        const responsablesContainer = modal.querySelector('#responsables-container');
+        let responsableCounter = (site.responsables?.length || 0);
+
+        addResponsableBtn.addEventListener('click', () => {
+            // Supprimer le message "Aucun responsable"
+            const noMessage = modal.querySelector('#no-responsables-message');
+            if (noMessage) noMessage.remove();
+
+            // Créer un nouveau responsable
+            const newResponsable = document.createElement('div');
+            newResponsable.className = 'responsable-item';
+            newResponsable.style.cssText = 'background: #f8f9fa; padding: 1rem; border-radius: 6px; margin-bottom: 0.75rem; position: relative;';
+            newResponsable.innerHTML = `
+                <button type="button" onclick="this.parentElement.remove()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div style="display: grid; gap: 0.75rem;">
+                    <div>
+                        <label style="display: block; margin-bottom: 0.25rem; font-weight: 600; font-size: 0.9rem;">Nom complet *</label>
+                        <input type="text" name="responsable_name_${responsableCounter}" required placeholder="Jean Dupont" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.25rem; font-weight: 600; font-size: 0.9rem;">Téléphone</label>
+                            <input type="tel" name="responsable_phone_${responsableCounter}" placeholder="+32 2 123 45 67" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.25rem; font-weight: 600; font-size: 0.9rem;">Email</label>
+                            <input type="email" name="responsable_email_${responsableCounter}" placeholder="jean@example.com" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.25rem; font-weight: 600; font-size: 0.9rem;">Fonction</label>
+                        <input type="text" name="responsable_position_${responsableCounter}" placeholder="Directeur, Responsable cuisine..." style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+            `;
+            responsablesContainer.appendChild(newResponsable);
+            responsableCounter++;
+        });
+
         // Gérer la soumission du formulaire
         const form = modal.querySelector('#edit-site-form');
         form.addEventListener('submit', async (e) => {
@@ -1088,8 +1152,33 @@ class GroupDashboard {
     async handleEditSite(e, siteId, modal) {
         const formData = new FormData(e.target);
         
-        // Récupérer les responsables sélectionnés
-        const managers = Array.from(formData.getAll('managers'));
+        // Récupérer tous les responsables du formulaire
+        const responsables = [];
+        const formEntries = Array.from(formData.entries());
+        
+        // Grouper les responsables par index
+        const responsableIndices = new Set();
+        formEntries.forEach(([key, value]) => {
+            if (key.startsWith('responsable_')) {
+                const match = key.match(/responsable_\w+_(\d+)/);
+                if (match) {
+                    responsableIndices.add(parseInt(match[1]));
+                }
+            }
+        });
+        
+        // Construire les objets responsables
+        responsableIndices.forEach(index => {
+            const name = formData.get(`responsable_name_${index}`);
+            if (name && name.trim()) {  // Seulement si le nom est renseigné
+                responsables.push({
+                    name: name.trim(),
+                    phone: formData.get(`responsable_phone_${index}`) || '',
+                    email: formData.get(`responsable_email_${index}`) || '',
+                    position: formData.get(`responsable_position_${index}`) || ''
+                });
+            }
+        });
         
         // Construire l'objet de données
         const siteData = {
@@ -1107,7 +1196,7 @@ class GroupDashboard {
                 email: formData.get('email'),
                 website: formData.get('website')
             },
-            managers: managers,
+            responsables: responsables,
             syncMode: formData.get('syncMode'),
             settings: {
                 capacity: {

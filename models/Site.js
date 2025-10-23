@@ -34,6 +34,12 @@ const siteSchema = new mongoose.Schema({
     email: String,
     website: String
   },
+  responsables: [{
+    name: { type: String, required: true },
+    phone: String,
+    email: String,
+    position: String  // Ex: "Directeur", "Responsable cuisine", etc.
+  }],
   managers: [{ 
     type: mongoose.Schema.Types.ObjectId, 
     ref: "User" 
