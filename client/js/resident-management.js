@@ -100,7 +100,7 @@ class ResidentManager {
 
   renderResidentCard(resident) {
     const age = this.calculateAge(resident.dateOfBirth);
-    const medicalSummary = this.getMedicalSummary(resident.medicalProfile);
+    const medicalSummary = this.getMedicalSummary(resident.nutritionalProfile);
     const isSelected = this.selectedResidents.has(resident._id);
 
     return `
@@ -172,34 +172,38 @@ class ResidentManager {
     return age;
   }
 
-  getMedicalSummary(medicalProfile) {
+  getMedicalSummary(nutritionalProfile) {
     const summary = [];
     
-    if (medicalProfile.medical && medicalProfile.medical.length > 0) {
-      summary.push(`Conditions: ${medicalProfile.medical.join(', ')}`);
+    if (!nutritionalProfile) {
+      return 'Aucune information';
     }
     
-    if (medicalProfile.texture && medicalProfile.texture !== 'normale') {
-      summary.push(`Texture: ${medicalProfile.texture}`);
+    // Conditions médicales
+    if (nutritionalProfile.medicalConditions && nutritionalProfile.medicalConditions.length > 0) {
+      const conditions = nutritionalProfile.medicalConditions.map(c => c.condition || c).join(', ');
+      summary.push(`Conditions: ${conditions}`);
     }
     
-    if (medicalProfile.swallowing && medicalProfile.swallowing !== 'normale') {
-      summary.push(`Déglutition: ${medicalProfile.swallowing}`);
+    // Texture
+    if (nutritionalProfile.texturePreferences?.consistency && 
+        nutritionalProfile.texturePreferences.consistency !== 'normale') {
+      summary.push(`Texture: ${nutritionalProfile.texturePreferences.consistency}`);
     }
     
-    if (medicalProfile.nutrition && medicalProfile.nutrition.length > 0) {
-      summary.push(`Nutrition: ${medicalProfile.nutrition.join(', ')}`);
+    // Allergies
+    if (nutritionalProfile.allergies && nutritionalProfile.allergies.length > 0) {
+      const allergies = nutritionalProfile.allergies.map(a => a.allergen || a).join(', ');
+      summary.push(`Allergies: ${allergies}`);
     }
     
-    if (medicalProfile.ethical && medicalProfile.ethical.length > 0) {
-      summary.push(`Éthique: ${medicalProfile.ethical.join(', ')}`);
+    // Restrictions alimentaires
+    if (nutritionalProfile.dietaryRestrictions && nutritionalProfile.dietaryRestrictions.length > 0) {
+      const restrictions = nutritionalProfile.dietaryRestrictions.map(r => r.restriction || r).join(', ');
+      summary.push(`Restrictions: ${restrictions}`);
     }
     
-    if (medicalProfile.allergens && medicalProfile.allergens.length > 0) {
-      summary.push(`Allergènes: ${medicalProfile.allergens.join(', ')}`);
-    }
-    
-    return summary.join(' | ');
+    return summary.length > 0 ? summary.join(' | ') : 'Aucune restriction';
   }
 
   toggleResidentSelection(residentId) {
@@ -232,10 +236,13 @@ class ResidentManager {
         (resident.roomNumber && resident.roomNumber.toLowerCase().includes(searchTerm));
 
       const matchesMedical = !medicalFilter || 
-        (resident.medicalProfile.medical && resident.medicalProfile.medical.includes(medicalFilter));
+        (resident.nutritionalProfile?.medicalConditions && 
+         resident.nutritionalProfile.medicalConditions.some(c => 
+           (typeof c === 'string' ? c : c.condition) === medicalFilter
+         ));
 
       const matchesTexture = !textureFilter || 
-        resident.medicalProfile.texture === textureFilter;
+        resident.nutritionalProfile?.texturePreferences?.consistency === textureFilter;
 
       return matchesSearch && matchesMedical && matchesTexture;
     });
