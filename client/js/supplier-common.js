@@ -664,6 +664,7 @@ async function showMyOrders() {
                   <th style="text-align: left; padding: 0.75rem;">Articles</th>
                   <th style="text-align: left; padding: 0.75rem;">Statut</th>
                   <th style="text-align: right; padding: 0.75rem;">Total</th>
+                  <th style="text-align: center; padding: 0.75rem;">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -693,6 +694,28 @@ async function showMyOrders() {
                     </td>
                     <td style="text-align: right; padding: 0.75rem; font-weight: bold; font-size: 1.1rem; color: #28a745;">
                       ${order.items.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0).toFixed(2)}€
+                    </td>
+                    <td style="text-align: center; padding: 0.75rem;">
+                      ${(order.status === 'shipped' || order.status === 'ready') ? `
+                        <button onclick="window.confirmDelivery('${order._id}')" style="background-color: #27ae60; color: white; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; margin: 0.25rem;">
+                          <i class="fas fa-check-circle"></i> Confirmer
+                        </button>
+                        <button onclick="window.reportIssue('${order._id}')" style="background-color: #e74c3c; color: white; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; margin: 0.25rem;">
+                          <i class="fas fa-exclamation-triangle"></i> Problème
+                        </button>
+                      ` : order.status === 'delivered' ? `
+                        <span style="color: #27ae60; font-weight: 600;">
+                          <i class="fas fa-check-circle"></i> Reçue
+                        </span>
+                      ` : order.status === 'cancelled' ? `
+                        <span style="color: #6c757d; font-weight: 600;">
+                          <i class="fas fa-times-circle"></i> Annulée
+                        </span>
+                      ` : `
+                        <span style="color: #6c757d;">
+                          En attente
+                        </span>
+                      `}
                     </td>
                   </tr>
                 `).join('')}
