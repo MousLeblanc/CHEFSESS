@@ -19,13 +19,31 @@ export const createOrder = asyncHandler(async (req, res) => {
     throw new Error('Fournisseur et articles requis');
   }
 
-  // Trouver l'ID du fournisseur à partir de son nom
-  const supplierUser = await User.findOne({ businessName: supplier });
-  if (!supplierUser) {
-    res.status(400);
-    throw new Error(`Fournisseur non trouvé: ${supplier}`);
+  // Déterminer si supplier est un ID ou un nom
+  let supplierId;
+  
+  // Vérifier si c'est un ID MongoDB valide (24 caractères hexadécimaux)
+  const isObjectId = /^[0-9a-fA-F]{24}$/.test(supplier);
+  
+  if (isObjectId) {
+    // C'est déjà un ID, vérifier qu'il existe
+    const supplierUser = await User.findById(supplier);
+    if (!supplierUser) {
+      res.status(400);
+      throw new Error(`Fournisseur non trouvé: ${supplier}`);
+    }
+    supplierId = supplierUser._id;
+    console.log(`✅ Fournisseur trouvé par ID: ${supplierUser.businessName || supplierUser.name}`);
+  } else {
+    // C'est un nom, chercher par businessName
+    const supplierUser = await User.findOne({ businessName: supplier });
+    if (!supplierUser) {
+      res.status(400);
+      throw new Error(`Fournisseur non trouvé: ${supplier}`);
+    }
+    supplierId = supplierUser._id;
+    console.log(`✅ Fournisseur trouvé par nom: ${supplier}`);
   }
-  const supplierId = supplierUser._id;
 
   // Vérifier que tous les produits existent et calculer les prix
   const orderItems = [];
