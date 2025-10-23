@@ -139,6 +139,25 @@ class GroupDashboard {
         document.getElementById('create-group-menu-btn')?.addEventListener('click', () => this.showCreateGroupMenuModal());
         document.getElementById('sync-all-btn')?.addEventListener('click', () => this.syncAllSites());
         document.getElementById('add-user-btn')?.addEventListener('click', () => this.showAddUserModal());
+        
+        // Résidents
+        document.getElementById('refresh-residents')?.addEventListener('click', () => this.loadResidentsGroups());
+        document.getElementById('export-residents-btn')?.addEventListener('click', () => this.exportResidentsGroups());
+        
+        // Filtres résidents
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.remove('active');
+                    b.style.background = 'white';
+                    b.style.color = '#333';
+                });
+                e.target.classList.add('active');
+                e.target.style.background = '#667eea';
+                e.target.style.color = 'white';
+                this.applyResidentsFilter();
+            });
+        });
 
         // Sélecteurs de semaine
         document.getElementById('week-selector')?.addEventListener('change', (e) => this.loadMenusForWeek(e.target.value));
@@ -172,6 +191,9 @@ class GroupDashboard {
                 break;
             case 'sites':
                 await this.loadSitesData();
+                break;
+            case 'residents':
+                await this.loadResidentsGroups();
                 break;
             case 'menus':
                 await this.loadMenusData();
@@ -902,6 +924,171 @@ class GroupDashboard {
             'info': 'info-circle'
         };
         return icons[type] || 'info-circle';
+    }
+
+    // ===== Gestion des résidents groupés =====
+    
+    async loadResidentsGroups() {
+        if (!this.currentGroup) {
+            console.error('Groupe non chargé');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/residents/group/${this.currentGroup._id}/grouped`, {
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors du chargement des groupes de résidents');
+            }
+
+            const result = await response.json();
+            this.displayResidentsGroups(result.data);
+        } catch (error) {
+            console.error('❌ Erreur:', error);
+            this.showToast('Erreur lors du chargement des résidents', 'error');
+        }
+    }
+
+    displayResidentsGroups(data) {
+        const content = document.getElementById('residents-groups-content');
+        
+        // Mettre à jour les statistiques
+        document.getElementById('total-residents-count').textContent = data.totalResidents;
+        document.getElementById('allergies-groups-count').textContent = data.groups.allergies.length;
+        document.getElementById('restrictions-groups-count').textContent = data.groups.restrictions.length;
+        document.getElementById('textures-groups-count').textContent = data.groups.textures.length;
+
+        // Créer l'affichage des groupes
+        let html = '';
+
+        // Afficher les allergies
+        if (data.groups.allergies.length > 0) {
+            html += this.createGroupSection('Allergies', data.groups.allergies, 'allergies', '#f8d7da');
+        }
+
+        // Afficher les intolérances
+        if (data.groups.intolerances.length > 0) {
+            html += this.createGroupSection('Intolérances', data.groups.intolerances, 'intolerances', '#fff3cd');
+        }
+
+        // Afficher les restrictions
+        if (data.groups.restrictions.length > 0) {
+            html += this.createGroupSection('Restrictions Alimentaires', data.groups.restrictions, 'restrictions', '#d1ecf1');
+        }
+
+        // Afficher les textures
+        if (data.groups.textures.length > 0) {
+            html += this.createGroupSection('Textures', data.groups.textures, 'textures', '#e3f2fd');
+        }
+
+        if (html === '') {
+            html = '<div style="text-align: center; padding: 3rem; color: #666;"><i class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: 1rem;"></i><p>Aucun profil nutritionnel spécifique détecté</p></div>';
+        }
+
+        content.innerHTML = html;
+        
+        // Appliquer le filtre actif
+        this.applyResidentsFilter();
+    }
+
+    createGroupSection(title, groups, category, bgColor) {
+        let html = `
+            <div class="residents-group-section" data-category="${category}" style="margin-bottom: 2rem;">
+                <h3 style="color: #333; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-layer-group"></i> ${title}
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1rem;">
+        `;
+
+        groups.forEach(group => {
+            const severityBadge = group.severity ? `<span style="background: ${this.getSeverityColor(group.severity)}; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem;">${group.severity}</span>` : '';
+            
+            html += `
+                <div style="background: white; border: 2px solid ${bgColor}; border-radius: 8px; padding: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid ${bgColor};">
+                        <h4 style="margin: 0; color: #333; font-size: 1.1rem;">${group.name}</h4>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            ${severityBadge}
+                            <span style="background: ${bgColor}; padding: 0.25rem 0.75rem; border-radius: 12px; font-weight: 600; font-size: 0.9rem;">
+                                ${group.residents.length} résident${group.residents.length > 1 ? 's' : ''}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="residents-list" style="max-height: 300px; overflow-y: auto;">
+            `;
+
+            group.residents.forEach(resident => {
+                html += `
+                    <div style="padding: 0.75rem; margin-bottom: 0.5rem; background: #f8f9fa; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 600; color: #333;">${resident.name}</div>
+                            <div style="font-size: 0.85rem; color: #666; margin-top: 0.25rem;">
+                                <i class="fas fa-building"></i> ${resident.site} 
+                                ${resident.room ? `<span style="margin-left: 0.5rem;"><i class="fas fa-door-open"></i> Ch. ${resident.room}</span>` : ''}
+                            </div>
+                        </div>
+                        <span style="background: #667eea; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
+                            ${this.getTypeLabel(resident.siteType)}
+                        </span>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `
+                </div>
+            </div>
+        `;
+
+        return html;
+    }
+
+    getSeverityColor(severity) {
+        const colors = {
+            'légère': '#ffa726',
+            'modérée': '#ff7043',
+            'sévère': '#f44336',
+            'critique': '#d32f2f'
+        };
+        return colors[severity] || '#666';
+    }
+
+    getTypeLabel(type) {
+        const labels = {
+            'ehpad': 'EHPAD',
+            'hopital': 'Hôpital',
+            'ecole': 'École',
+            'collectivite': 'Collectivité',
+            'resto': 'Restaurant',
+            'maison_retraite': 'Maison Retraite'
+        };
+        return labels[type] || type;
+    }
+
+    applyResidentsFilter() {
+        const activeFilter = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
+        const sections = document.querySelectorAll('.residents-group-section');
+        
+        sections.forEach(section => {
+            const category = section.dataset.category;
+            if (activeFilter === 'all' || category === activeFilter) {
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
+            }
+        });
+    }
+
+    exportResidentsGroups() {
+        this.showToast('Export en cours de développement', 'info');
+        // À implémenter: export CSV ou PDF des groupes
     }
 
     async logout() {

@@ -34,6 +34,9 @@
         <button class="tab-btn" data-tab="sites">
             <i class="fas fa-building"></i> Sites
         </button>
+        <button class="tab-btn" data-tab="residents">
+            <i class="fas fa-user-friends"></i> Résidents
+        </button>
         <button class="tab-btn" data-tab="menus">
             <i class="fas fa-utensils"></i> Menus
         </button>
@@ -140,6 +143,71 @@
                 <div class="card-body">
                     <div class="sites-grid" id="sites-grid">
                         <!-- Les sites seront chargés ici -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gestion des résidents -->
+        <div id="residents-tab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-friends"></i> Résidents - Regroupement par Profils Nutritionnels</h2>
+                    <div class="header-actions">
+                        <button id="refresh-residents" class="btn btn-primary">
+                            <i class="fas fa-sync"></i> Actualiser
+                        </button>
+                        <button id="export-residents-btn" class="btn btn-outline">
+                            <i class="fas fa-file-export"></i> Exporter
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Statistiques rapides -->
+                    <div class="residents-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                        <div class="mini-stat-card" style="background: #e3f2fd; padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #1976d2;" id="total-residents-count">-</div>
+                            <div style="color: #666; font-size: 0.9rem;">Total Résidents</div>
+                        </div>
+                        <div class="mini-stat-card" style="background: #fff3cd; padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #856404;" id="allergies-groups-count">-</div>
+                            <div style="color: #666; font-size: 0.9rem;">Groupes d'allergies</div>
+                        </div>
+                        <div class="mini-stat-card" style="background: #f8d7da; padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #721c24;" id="restrictions-groups-count">-</div>
+                            <div style="color: #666; font-size: 0.9rem;">Groupes de restrictions</div>
+                        </div>
+                        <div class="mini-stat-card" style="background: #d1ecf1; padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #0c5460;" id="textures-groups-count">-</div>
+                            <div style="color: #666; font-size: 0.9rem;">Types de textures</div>
+                        </div>
+                    </div>
+
+                    <!-- Filtres -->
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                        <button class="filter-btn active" data-filter="all" style="padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 6px; background: #667eea; color: white; cursor: pointer;">
+                            Tous les groupes
+                        </button>
+                        <button class="filter-btn" data-filter="allergies" style="padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer;">
+                            Allergies
+                        </button>
+                        <button class="filter-btn" data-filter="intolerances" style="padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer;">
+                            Intolérances
+                        </button>
+                        <button class="filter-btn" data-filter="restrictions" style="padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer;">
+                            Restrictions
+                        </button>
+                        <button class="filter-btn" data-filter="textures" style="padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer;">
+                            Textures
+                        </button>
+                    </div>
+
+                    <!-- Groupes de résidents -->
+                    <div id="residents-groups-content">
+                        <div class="loading-spinner" style="text-align: center; padding: 3rem; color: #667eea;">
+                            <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
+                            <p style="margin-top: 1rem;">Chargement des résidents...</p>
+                        </div>
                     </div>
                 </div>
             </div>

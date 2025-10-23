@@ -576,6 +576,154 @@ export async function getResidentsCountBySite(req, res) {
     }
 }
 
+/**
+ * Récupérer les résidents regroupés par profils nutritionnels pour un groupe
+ */
+export async function getResidentsGroupedByNutritionalProfile(req, res) {
+    try {
+        const { groupId } = req.params;
+        
+        // Vérifier que le groupe existe
+        const group = await Group.findById(groupId);
+        if (!group) {
+            return res.status(404).json({ message: 'Groupe non trouvé' });
+        }
+        
+        // Vérifier que l'utilisateur a accès à ce groupe
+        if (req.user.groupId && req.user.groupId.toString() !== groupId) {
+            return res.status(403).json({ message: 'Accès non autorisé à ce groupe' });
+        }
+        
+        // Récupérer tous les résidents actifs du groupe avec leurs infos
+        const residents = await Resident.find({ 
+            groupId: group._id, 
+            status: 'actif' 
+        })
+        .populate('siteId', 'siteName type')
+        .select('firstName lastName roomNumber nutritionalProfile siteId')
+        .sort({ lastName: 1, firstName: 1 });
+        
+        // Structures pour stocker les groupes
+        const allergiesGroups = {};
+        const intolerancesGroups = {};
+        const restrictionsGroups = {};
+        const texturesGroups = {};
+        
+        // Regrouper les résidents
+        residents.forEach(resident => {
+            // Grouper par allergies
+            const allergies = resident.nutritionalProfile?.allergies || [];
+            if (allergies.length > 0) {
+                allergies.forEach(allergy => {
+                    const key = allergy.allergen;
+                    if (!allergiesGroups[key]) {
+                        allergiesGroups[key] = {
+                            type: 'allergy',
+                            name: key,
+                            severity: allergy.severity || 'modérée',
+                            residents: []
+                        };
+                    }
+                    allergiesGroups[key].residents.push({
+                        _id: resident._id,
+                        name: `${resident.firstName} ${resident.lastName}`,
+                        room: resident.roomNumber,
+                        site: resident.siteId?.siteName || 'N/A',
+                        siteType: resident.siteId?.type || 'N/A'
+                    });
+                });
+            }
+            
+            // Grouper par intolérances
+            const intolerances = resident.nutritionalProfile?.intolerances || [];
+            if (intolerances.length > 0) {
+                intolerances.forEach(intolerance => {
+                    const key = intolerance.substance;
+                    if (!intolerancesGroups[key]) {
+                        intolerancesGroups[key] = {
+                            type: 'intolerance',
+                            name: key,
+                            residents: []
+                        };
+                    }
+                    intolerancesGroups[key].residents.push({
+                        _id: resident._id,
+                        name: `${resident.firstName} ${resident.lastName}`,
+                        room: resident.roomNumber,
+                        site: resident.siteId?.siteName || 'N/A',
+                        siteType: resident.siteId?.type || 'N/A'
+                    });
+                });
+            }
+            
+            // Grouper par restrictions alimentaires
+            const restrictions = resident.nutritionalProfile?.dietaryRestrictions || [];
+            if (restrictions.length > 0) {
+                restrictions.forEach(restriction => {
+                    const key = `${restriction.type}: ${restriction.restriction}`;
+                    if (!restrictionsGroups[key]) {
+                        restrictionsGroups[key] = {
+                            type: 'restriction',
+                            name: key,
+                            restrictionType: restriction.type,
+                            residents: []
+                        };
+                    }
+                    restrictionsGroups[key].residents.push({
+                        _id: resident._id,
+                        name: `${resident.firstName} ${resident.lastName}`,
+                        room: resident.roomNumber,
+                        site: resident.siteId?.siteName || 'N/A',
+                        siteType: resident.siteId?.type || 'N/A'
+                    });
+                });
+            }
+            
+            // Grouper par textures
+            const texture = resident.nutritionalProfile?.texturePreferences?.consistency;
+            if (texture) {
+                if (!texturesGroups[texture]) {
+                    texturesGroups[texture] = {
+                        type: 'texture',
+                        name: texture,
+                        residents: []
+                    };
+                }
+                texturesGroups[texture].residents.push({
+                    _id: resident._id,
+                    name: `${resident.firstName} ${resident.lastName}`,
+                    room: resident.roomNumber,
+                    site: resident.siteId?.siteName || 'N/A',
+                    siteType: resident.siteId?.type || 'N/A'
+                });
+            }
+        });
+        
+        // Convertir les objets en tableaux et trier par nombre de résidents
+        const sortByCount = (a, b) => b.residents.length - a.residents.length;
+        
+        res.status(200).json({
+            success: true,
+            data: {
+                totalResidents: residents.length,
+                groups: {
+                    allergies: Object.values(allergiesGroups).sort(sortByCount),
+                    intolerances: Object.values(intolerancesGroups).sort(sortByCount),
+                    restrictions: Object.values(restrictionsGroups).sort(sortByCount),
+                    textures: Object.values(texturesGroups).sort(sortByCount)
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Erreur:', error);
+        res.status(500).json({ 
+            success: false,
+            message: error.message 
+        });
+    }
+}
+
 export default {
     createResident,
     getResidents,
@@ -587,5 +735,6 @@ export default {
     getResidentsByGroup,
     getResidentStats,
     getResidentStatsDefault,
-    getResidentsCountBySite
+    getResidentsCountBySite,
+    getResidentsGroupedByNutritionalProfile
 };
