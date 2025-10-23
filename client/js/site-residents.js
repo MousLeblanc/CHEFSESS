@@ -29,6 +29,11 @@ class SiteResidents {
     }
 
     async loadSiteData() {
+        if (!this.siteId) {
+            console.error('❌ Impossible de charger les données: siteId manquant');
+            return;
+        }
+        
         try {
             const response = await fetch(`/api/sites/${this.siteId}`, {
                 credentials: 'include'
@@ -118,6 +123,12 @@ class SiteResidents {
     }
 
     async loadResidents() {
+        if (!this.siteId) {
+            console.error('❌ Impossible de charger les résidents: siteId manquant');
+            this.showError('ID du site manquant dans l\'URL');
+            return;
+        }
+        
         this.showLoading(true);
         
         try {
@@ -154,6 +165,11 @@ class SiteResidents {
     }
 
     async loadStats() {
+        if (!this.siteId) {
+            console.error('❌ Impossible de charger les statistiques: siteId manquant');
+            return;
+        }
+        
         try {
             const response = await fetch(`/api/residents/stats/${this.siteId}`, {
                 credentials: 'include'

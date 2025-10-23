@@ -26,6 +26,11 @@ class SiteDashboard {
     }
 
     async loadSiteData() {
+        if (!this.siteId) {
+            console.error('❌ Impossible de charger les données: siteId manquant');
+            return;
+        }
+        
         try {
             const response = await fetch(`/api/sites/${this.siteId}`, {
                 credentials: 'include'
@@ -165,6 +170,11 @@ class SiteDashboard {
     }
 
     async loadCurrentWeekMenus() {
+        if (!this.siteId) {
+            console.error('❌ Impossible de charger les menus: siteId manquant');
+            return;
+        }
+        
         if (!this.currentWeek) {
             this.currentWeek = this.getCurrentWeek();
         }
@@ -173,6 +183,11 @@ class SiteDashboard {
 
     async loadMenusForWeek(yearWeek) {
         if (!yearWeek) return;
+        
+        if (!this.siteId) {
+            this.showError('ID du site manquant dans l\'URL');
+            return;
+        }
         
         this.showLoading(true);
         
