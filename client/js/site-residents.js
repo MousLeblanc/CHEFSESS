@@ -151,7 +151,7 @@ class SiteResidents {
             }
             
             const data = await response.json();
-            this.residents = data.residents;
+            this.residents = data.data;  // L'API retourne les résidents dans data.data
             this.totalPages = data.pagination.pages;
             
             this.displayResidents();

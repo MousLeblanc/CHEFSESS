@@ -261,39 +261,30 @@ export async function getResidentStats(req, res) {
             return res.status(403).json({ message: 'Accès non autorisé à ce site' });
         }
         
-        // Statistiques générales
-        const totalResidents = await Resident.countDocuments({ siteId, status: 'actif' });
+        // Statistiques pour le dashboard
+        const total = await Resident.countDocuments({ siteId });
+        const actifs = await Resident.countDocuments({ siteId, status: 'actif' });
         
-        // Stats par texture
-        const textureStats = await Resident.aggregate([
-            { $match: { siteId: site._id, status: 'actif' } },
-            {
-                $group: {
-                    _id: '$nutritionalProfile.texturePreferences.consistency',
-                    count: { $sum: 1 }
-                }
-            }
-        ]);
+        // Résidents avec allergies
+        const avecAllergies = await Resident.countDocuments({
+            siteId,
+            status: 'actif',
+            'nutritionalProfile.allergies.0': { $exists: true }
+        });
         
-        // Stats par conditions médicales
-        const medicalStats = await Resident.aggregate([
-            { $match: { siteId: site._id, status: 'actif' } },
-            { $unwind: '$nutritionalProfile.medicalConditions' },
-            {
-                $group: {
-                    _id: '$nutritionalProfile.medicalConditions.condition',
-                    count: { $sum: 1 }
-                }
-            }
-        ]);
+        // Résidents avec intolérances
+        const avecIntolerances = await Resident.countDocuments({
+            siteId,
+            status: 'actif',
+            'nutritionalProfile.intolerances.0': { $exists: true }
+        });
         
         res.status(200).json({
             success: true,
-            data: {
-                totalResidents,
-                textureStats,
-                medicalStats
-            }
+            total,
+            actifs,
+            avecAllergies,
+            avecIntolerances
         });
         
     } catch (error) {
