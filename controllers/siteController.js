@@ -255,21 +255,35 @@ export async function updateSite(req, res) {
         const updates = req.body;
         
         console.log('📤 Mise à jour du site:', siteId);
-        console.log('📤 Données reçues:', updates);
+        console.log('📤 Données reçues:', JSON.stringify(updates, null, 2));
         
         // Vérifier que le site existe
         const site = await Site.findById(siteId);
         if (!site) {
+            console.log('❌ Site non trouvé:', siteId);
             return res.status(404).json({ message: 'Site non trouvé' });
         }
+        
+        console.log('✅ Site trouvé:', site.siteName);
+        console.log('👤 Utilisateur:', req.user.name, '- Rôles:', req.user.roles);
         
         // Vérifier que l'utilisateur a accès (GROUP_ADMIN ou SITE_MANAGER du site)
         const isGroupAdmin = req.user.roles && req.user.roles.includes('GROUP_ADMIN');
         const isSiteManager = site.managers && site.managers.some(m => m.toString() === req.user._id.toString());
         
+        console.log('🔐 Group Admin:', isGroupAdmin, '- Site Manager:', isSiteManager);
+        
         if (!isGroupAdmin && !isSiteManager) {
+            console.log('❌ Accès refusé');
             return res.status(403).json({ message: 'Accès non autorisé' });
         }
+        
+        // Nettoyer les responsables vides
+        if (updates.responsables) {
+            updates.responsables = updates.responsables.filter(r => r.name && r.name.trim());
+        }
+        
+        console.log('🔄 Début de la mise à jour...');
         
         // Mettre à jour le site
         const updatedSite = await Site.findByIdAndUpdate(
@@ -278,7 +292,12 @@ export async function updateSite(req, res) {
             { new: true, runValidators: true }
         ).populate('managers', 'name email roles');
         
-        console.log(`✅ Site mis à jour: ${updatedSite.siteName}`);
+        if (!updatedSite) {
+            console.log('❌ Échec de la mise à jour');
+            return res.status(500).json({ message: 'Échec de la mise à jour' });
+        }
+        
+        console.log(`✅ Site mis à jour avec succès: ${updatedSite.siteName}`);
         
         res.json({
             message: 'Site mis à jour avec succès',
@@ -286,7 +305,20 @@ export async function updateSite(req, res) {
         });
         
     } catch (error) {
-        console.error('❌ Erreur lors de la mise à jour du site:', error);
+        console.error('❌ ERREUR lors de la mise à jour du site:');
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
+        // Gérer les erreurs de validation Mongoose
+        if (error.name === 'ValidationError') {
+            const errors = Object.values(error.errors).map(e => e.message);
+            return res.status(400).json({ 
+                message: 'Erreur de validation',
+                errors: errors 
+            });
+        }
+        
         res.status(500).json({ 
             message: 'Erreur serveur',
             error: error.message 

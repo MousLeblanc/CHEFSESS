@@ -13,7 +13,7 @@ const siteSchema = new mongoose.Schema({
   },                 // "EHPAD Saint-Michel"
   type: { 
     type: String, 
-    enum: ["ehpad", "hopital", "ecole", "collectivite", "resto", "maison_retraite"], 
+    enum: ["EHPAD", "MRS", "RESIDENCE_SENIOR", "COLLECTIVITE", "ehpad", "hopital", "ecole", "collectivite", "resto", "maison_retraite"], 
     required: true 
   },
   address: {
