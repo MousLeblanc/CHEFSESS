@@ -5,7 +5,8 @@ import {
     getSiteData, 
     getSiteMenus,
     createSiteUser,
-    updateSiteUser
+    updateSiteUser,
+    updateSite
 } from '../controllers/siteController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -17,6 +18,7 @@ router.post('/logout', siteLogout);
 
 // Routes protégées
 router.get('/:siteId', protect, getSiteData);
+router.put('/:siteId', protect, updateSite);
 router.get('/:siteId/menus', protect, getSiteMenus);
 
 // Gestion des utilisateurs de site

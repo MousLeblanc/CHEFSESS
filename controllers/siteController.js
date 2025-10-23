@@ -247,6 +247,54 @@ export async function createSiteUser(req, res) {
 }
 
 /**
+ * Mettre à jour un site
+ */
+export async function updateSite(req, res) {
+    try {
+        const { siteId } = req.params;
+        const updates = req.body;
+        
+        console.log('📤 Mise à jour du site:', siteId);
+        console.log('📤 Données reçues:', updates);
+        
+        // Vérifier que le site existe
+        const site = await Site.findById(siteId);
+        if (!site) {
+            return res.status(404).json({ message: 'Site non trouvé' });
+        }
+        
+        // Vérifier que l'utilisateur a accès (GROUP_ADMIN ou SITE_MANAGER du site)
+        const isGroupAdmin = req.user.roles && req.user.roles.includes('GROUP_ADMIN');
+        const isSiteManager = site.managers && site.managers.some(m => m.toString() === req.user._id.toString());
+        
+        if (!isGroupAdmin && !isSiteManager) {
+            return res.status(403).json({ message: 'Accès non autorisé' });
+        }
+        
+        // Mettre à jour le site
+        const updatedSite = await Site.findByIdAndUpdate(
+            siteId,
+            updates,
+            { new: true, runValidators: true }
+        ).populate('managers', 'name email roles');
+        
+        console.log(`✅ Site mis à jour: ${updatedSite.siteName}`);
+        
+        res.json({
+            message: 'Site mis à jour avec succès',
+            site: updatedSite
+        });
+        
+    } catch (error) {
+        console.error('❌ Erreur lors de la mise à jour du site:', error);
+        res.status(500).json({ 
+            message: 'Erreur serveur',
+            error: error.message 
+        });
+    }
+}
+
+/**
  * Mettre à jour un utilisateur de site
  */
 export async function updateSiteUser(req, res) {
