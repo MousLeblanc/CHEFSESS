@@ -34,6 +34,9 @@ export async function loadCustomerOrders() {
       const orders = result.data || [];
       console.log(`✅ ${orders.length} commandes chargées`);
       displayCustomerOrders(orders);
+      
+      // Mettre à jour le badge des commandes en attente
+      updateOrdersBadge(orders);
     } else if (response.status === 401) {
       console.error('❌ Non autorisé (401)');
       const errorText = await response.text();
@@ -51,6 +54,72 @@ export async function loadCustomerOrders() {
     console.error('❌ Stack:', error.stack);
     ordersContainer.innerHTML = '<p style="color: #e74c3c; padding: 2rem; text-align: center;">Erreur réseau. Vérifiez que le serveur est démarré.</p>';
   }
+}
+
+// Mettre à jour le badge des commandes en attente
+function updateOrdersBadge(orders) {
+  // Compter les commandes qui nécessitent une action (ready ou shipped)
+  const pendingConfirmation = orders.filter(order => 
+    order.status === 'ready' || order.status === 'shipped'
+  ).length;
+  
+  // Trouver tous les boutons "Mes Commandes" (peut y en avoir plusieurs selon la page)
+  const orderButtons = document.querySelectorAll('[onclick*="showMyOrders"]');
+  
+  orderButtons.forEach(button => {
+    // Chercher ou créer le badge
+    let badge = button.querySelector('.orders-badge');
+    
+    if (pendingConfirmation > 0) {
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'orders-badge';
+        badge.style.cssText = `
+          position: absolute;
+          top: -8px;
+          right: -8px;
+          background: linear-gradient(135deg, #e74c3c, #c0392b);
+          color: white;
+          border-radius: 50%;
+          width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.75rem;
+          font-weight: bold;
+          box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4);
+          animation: pulse 2s ease-in-out infinite;
+        `;
+        
+        // Ajouter l'animation pulse si elle n'existe pas
+        if (!document.getElementById('orders-badge-animation')) {
+          const style = document.createElement('style');
+          style.id = 'orders-badge-animation';
+          style.textContent = `
+            @keyframes pulse {
+              0%, 100% { transform: scale(1); }
+              50% { transform: scale(1.1); }
+            }
+          `;
+          document.head.appendChild(style);
+        }
+        
+        // Ajouter position relative au bouton parent si nécessaire
+        if (getComputedStyle(button).position === 'static') {
+          button.style.position = 'relative';
+        }
+        
+        button.appendChild(badge);
+      }
+      badge.textContent = pendingConfirmation;
+      badge.style.display = 'flex';
+    } else if (badge) {
+      badge.style.display = 'none';
+    }
+  });
+  
+  console.log(`📊 Badge mis à jour: ${pendingConfirmation} commande(s) à confirmer`);
 }
 
 // Afficher les commandes
@@ -134,7 +203,7 @@ function displayCustomerOrders(orders) {
         ` : ''}
 
         <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
-          ${order.status === 'shipped' ? `
+          ${(order.status === 'shipped' || order.status === 'ready') ? `
             <button onclick="window.confirmDelivery('${order._id}')" style="background-color: #27ae60; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-size: 1em;">
               <i class="fas fa-check-circle"></i> Confirmer la réception
             </button>
@@ -214,6 +283,10 @@ function showToast(message, type = 'success') {
         from { transform: translateX(400px); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
       }
+      @keyframes slideInRight {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
       @keyframes fadeOut {
         from { opacity: 1; }
         to { opacity: 0; }
@@ -232,7 +305,9 @@ function showToast(message, type = 'success') {
 
 // Confirmer la réception d'une commande
 window.confirmDelivery = async function(orderId) {
-  if (!confirm('Confirmez-vous avoir bien reçu cette commande dans de bonnes conditions ?')) {
+  const confirmMessage = `✅ Confirmez-vous avoir bien reçu cette commande dans de bonnes conditions ?\n\n📦 Les articles seront automatiquement ajoutés à votre stock.\n💡 Consultez l'onglet "Stock" pour les voir.`;
+  
+  if (!confirm(confirmMessage)) {
     return;
   }
 
@@ -252,20 +327,45 @@ window.confirmDelivery = async function(orderId) {
       const result = await response.json();
       console.log('✅ Réception confirmée et articles ajoutés au stock');
       
-      // Afficher un toast avec un message complet
-      showToast('✅ Réception confirmée !<br>📦 Les articles ont été ajoutés à votre stock.<br>💡 Consultez l\'onglet "Stock" pour les voir.', 'success');
+      // Afficher un toast de succès amélioré
+      const successToast = document.createElement('div');
+      successToast.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: linear-gradient(135deg, #27ae60, #2ecc71);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(39, 174, 96, 0.4);
+        z-index: 10000;
+        max-width: 400px;
+        animation: slideInRight 0.5s ease, fadeOut 0.5s ease 5.5s;
+      `;
+      successToast.innerHTML = `
+        <div style="display: flex; align-items: start; gap: 1rem;">
+          <i class="fas fa-check-circle" style="font-size: 2rem; margin-top: 0.2rem;"></i>
+          <div>
+            <div style="font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem;">Réception confirmée !</div>
+            <div style="font-size: 0.95rem; line-height: 1.5; opacity: 0.95;">
+              📦 Les articles ont été ajoutés à votre stock<br>
+              💡 Consultez l'onglet "Stock" pour les voir
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(successToast);
+      setTimeout(() => successToast.remove(), 6000);
       
       // Recharger la liste des commandes
       loadCustomerOrders();
       
-      // Recharger le stock automatiquement (même si l'onglet n'est pas actif)
+      // Recharger le stock automatiquement si la fonction existe
       setTimeout(() => {
-        if (typeof window.testStock?.loadStockData === 'function') {
+        if (typeof window.loadStockData === 'function') {
           console.log('🔄 Rechargement du stock...');
-          window.testStock.loadStockData();
+          window.loadStockData();
           console.log('✅ Stock rechargé');
-        } else {
-          console.warn('⚠️ Fonction loadStockData non disponible');
         }
       }, 1000);
     } else {
@@ -344,6 +444,30 @@ window.cancelOrder = async function(orderId) {
   }
 };
 
+// Charger les commandes en arrière-plan pour le badge
+export async function loadOrdersBadgeOnly() {
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const endpoint = user.role === 'fournisseur' ? '/api/orders/supplier' : '/api/orders';
+    
+    const response = await fetch(endpoint, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      },
+      credentials: 'include'
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      const orders = result.data || [];
+      updateOrdersBadge(orders);
+    }
+  } catch (error) {
+    console.error('❌ Erreur lors du chargement du badge des commandes:', error);
+  }
+}
+
 // Initialiser le suivi des commandes
 export function initOrderTracking() {
   console.log('🔄 Initialisation du suivi des commandes');
@@ -352,6 +476,12 @@ export function initOrderTracking() {
   if (document.getElementById('customer-orders-list')) {
     loadCustomerOrders();
   }
+  
+  // Charger le badge immédiatement
+  loadOrdersBadgeOnly();
+  
+  // Actualiser le badge toutes les 30 secondes
+  setInterval(loadOrdersBadgeOnly, 30000);
   
   // Bouton de rafraîchissement
   const refreshBtn = document.getElementById('refresh-orders-btn');

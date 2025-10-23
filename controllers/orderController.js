@@ -267,11 +267,12 @@ export const updateCustomerOrderStatus = asyncHandler(async (req, res) => {
 
   console.log(`✅ Autorisation OK`);
 
-  // Vérifier que la commande a bien été envoyée avant de confirmer la réception
-  if (status === 'delivered' && order.status !== 'shipped' && order.status !== 'ready') {
-    console.log(`❌ Status invalide pour confirmation: ${order.status} (doit être 'shipped' ou 'ready')`);
+  // Vérifier que la commande a bien été confirmée/préparée avant de confirmer la réception
+  const validStatusForDelivery = ['confirmed', 'preparing', 'prepared', 'ready', 'shipped'];
+  if (status === 'delivered' && !validStatusForDelivery.includes(order.status)) {
+    console.log(`❌ Status invalide pour confirmation: ${order.status} (doit être l'un de: ${validStatusForDelivery.join(', ')})`);
     res.status(400);
-    throw new Error('La commande doit d\'abord être envoyée par le fournisseur');
+    throw new Error('La commande doit d\'abord être confirmée et préparée par le fournisseur');
   }
 
   console.log(`📝 Mise à jour du status vers: ${status}`);

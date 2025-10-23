@@ -515,7 +515,7 @@
         // Imports des modules ES6
         import { loadSuppliersData, renderSuppliersList, updateCartCount, initSupplierTab } from './JS/supplier-common.js';
         import { loadStockData, renderStockTable, initStockTab, showAddStockModal, filterStock, consolidateStock } from './JS/stock-common.js';
-        import { loadCustomerOrders } from './JS/order-tracking.js';
+        import { loadCustomerOrders, initOrderTracking, loadOrdersBadgeOnly } from './JS/order-tracking.js';
         
         // Rendre les fonctions accessibles globalement
         window.loadSuppliersData = loadSuppliersData;
@@ -531,6 +531,11 @@
         window.consolidateStock = consolidateStock;
         
         window.loadCustomerOrders = loadCustomerOrders;
+        window.initOrderTracking = initOrderTracking;
+        window.loadOrdersBadgeOnly = loadOrdersBadgeOnly;
+        
+        // Initialiser le système de commandes et le badge
+        initOrderTracking();
         
         console.log('✅ Modules supplier, stock et orders chargés');
     </script>
