@@ -19,6 +19,14 @@
             </div>
             <div class="user-info">
                 <span id="user-name">Chargement...</span>
+                <button onclick="showMyOrders()" class="btn btn-outline" style="background-color: #3498db;">
+                    <i class="fas fa-receipt"></i> Mes Commandes
+                </button>
+                <div id="cart-badge" onclick="showCart()" style="position: relative; cursor: pointer; background: #27ae60; padding: 0.7rem 1rem; border-radius: 8px; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-shopping-cart" style="font-size: 1.2rem;"></i>
+                    <span style="font-weight: 600;">Panier</span>
+                    <span id="cart-count" style="position: absolute; top: -8px; right: -8px; background: #e74c3c; color: white; border-radius: 50%; width: 24px; height: 24px; display: none; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold;">0</span>
+                </div>
                 <button id="logout-btn" class="btn btn-outline">
                     <i class="fas fa-sign-out-alt"></i> Déconnexion
                 </button>
@@ -39,6 +47,9 @@
         </button>
         <button class="tab-btn" data-tab="menus">
             <i class="fas fa-utensils"></i> Menus
+        </button>
+        <button class="tab-btn" data-tab="stock">
+            <i class="fas fa-boxes"></i> Stock
         </button>
         <button class="tab-btn" data-tab="suppliers">
             <i class="fas fa-truck"></i> Fournisseurs
@@ -234,6 +245,62 @@
                     <div id="menus-content">
                         <p class="text-center">Sélectionnez une semaine pour voir les menus</p>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gestion du stock -->
+        <div id="stock-tab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-boxes"></i> Gestion du Stock Multi-Sites</h2>
+                    <div class="header-actions">
+                        <button id="add-stock-item-btn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Ajouter un article
+                        </button>
+                        <button id="refresh-stock-btn" class="btn btn-outline">
+                            <i class="fas fa-sync"></i> Actualiser
+                        </button>
+                        <button id="consolidate-stock-btn" class="btn btn-outline">
+                            <i class="fas fa-layer-group"></i> Consolider le stock
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                        <input type="text" id="stock-search" placeholder="Rechercher..." style="flex: 1; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+                        <select id="stock-category-filter" style="padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+                            <option value="">Toutes les catégories</option>
+                            <option value="legumes">Légumes</option>
+                            <option value="viandes">Viandes</option>
+                            <option value="poissons">Poissons</option>
+                            <option value="produits-laitiers">Produits laitiers</option>
+                            <option value="cereales">Céréales</option>
+                            <option value="fruits">Fruits</option>
+                            <option value="epices">Épices</option>
+                            <option value="boissons">Boissons</option>
+                            <option value="autres">Autres</option>
+                        </select>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                <th style="padding: 1rem; text-align: left;">Nom</th>
+                                <th style="padding: 1rem; text-align: left;">Catégorie</th>
+                                <th style="padding: 1rem; text-align: center;">Quantité</th>
+                                <th style="padding: 1rem; text-align: center;">Expiration</th>
+                                <th style="padding: 1rem; text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stock-table-body">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 2rem; color: #666;">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i><br>
+                                    Chargement du stock...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -442,9 +509,93 @@
     <div id="toast-container" class="toast-container"></div>
 
     <!-- Scripts -->
+    <!-- Scripts principaux -->
+    <script type="module">
+        // Imports des modules ES6
+        import { loadSuppliersData, renderSuppliersList, updateCartCount, initSupplierTab } from './JS/supplier-common.js';
+        import { loadStockData, renderStockTable, initStockTab, showAddStockModal, filterStock, consolidateStock } from './JS/stock-common.js';
+        import { loadCustomerOrders } from './JS/order-tracking.js';
+        
+        // Rendre les fonctions accessibles globalement
+        window.loadSuppliersData = loadSuppliersData;
+        window.renderSuppliersList = renderSuppliersList;
+        window.updateCartCount = updateCartCount;
+        window.initSupplierTab = initSupplierTab;
+        
+        window.loadStockData = loadStockData;
+        window.renderStockTable = renderStockTable;
+        window.initStockTab = initStockTab;
+        window.showAddStockModal = showAddStockModal;
+        window.filterStock = filterStock;
+        window.consolidateStock = consolidateStock;
+        
+        window.loadCustomerOrders = loadCustomerOrders;
+        
+        console.log('✅ Modules supplier, stock et orders chargés');
+    </script>
+    
     <script src="js/group-dashboard.js"></script>
     <script src="js/modal.js"></script>
     <script src="js/toast.js"></script>
-    <script type="module" src="JS/supplier-common.js"></script>
+    
+    <!-- Gestion des commandes et du panier -->
+    <script>
+        window.showMyOrders = function() {
+            console.log('📋 Ouverture de la modale Mes Commandes');
+            
+            // Créer la modale
+            const modal = document.createElement('div');
+            modal.id = 'orders-modal';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; overflow: auto;';
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 1000px; width: 90%; max-height: 90vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0; color: #667eea;">
+                            <i class="fas fa-receipt"></i> Mes Commandes
+                        </h2>
+                        <button onclick="window.closeOrdersModal()" style="background: #e74c3c; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; color: white;">
+                            <i class="fas fa-times"></i> Fermer
+                        </button>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <button onclick="window.loadCustomerOrders()" style="background-color: #3498db; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; color: white;">
+                            <i class="fas fa-sync"></i> Actualiser
+                        </button>
+                    </div>
+                    
+                    <div id="customer-orders-list" style="margin-top: 1rem;">
+                        <p style="text-align: center; padding: 2rem; color: #666;">
+                            <i class="fas fa-spinner fa-spin"></i> Chargement des commandes...
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Charger les commandes
+            if (typeof window.loadCustomerOrders === 'function') {
+                window.loadCustomerOrders();
+            }
+        };
+        
+        window.closeOrdersModal = function() {
+            const modal = document.getElementById('orders-modal');
+            if (modal) {
+                modal.remove();
+            }
+        };
+        
+        window.showCart = function() {
+            // Importer et utiliser la fonction du module supplier-common
+            import('./JS/supplier-common.js').then(module => {
+                if (typeof module.showCart === 'function') {
+                    module.showCart();
+                }
+            });
+        };
+    </script>
 </body>
 </html>

@@ -159,14 +159,41 @@ class GroupDashboard {
             });
         });
         
+        // Stock
+        document.getElementById('add-stock-item-btn')?.addEventListener('click', () => {
+            if (typeof window.showAddStockModal === 'function') {
+                window.showAddStockModal();
+            }
+        });
+        
+        document.getElementById('refresh-stock-btn')?.addEventListener('click', () => {
+            if (typeof window.loadStockData === 'function') {
+                window.loadStockData();
+            }
+        });
+        
+        document.getElementById('consolidate-stock-btn')?.addEventListener('click', () => {
+            if (typeof window.consolidateStock === 'function') {
+                window.consolidateStock();
+            }
+        });
+        
+        document.getElementById('stock-search')?.addEventListener('input', (e) => {
+            if (typeof window.filterStock === 'function') {
+                window.filterStock();
+            }
+        });
+        
+        document.getElementById('stock-category-filter')?.addEventListener('change', () => {
+            if (typeof window.filterStock === 'function') {
+                window.filterStock();
+            }
+        });
+        
         // Fournisseurs
-        document.getElementById('refresh-suppliers-btn')?.addEventListener('click', async () => {
-            try {
-                const { loadSuppliersData } = await import('./JS/supplier-common.js');
-                await loadSuppliersData();
-            } catch (error) {
-                console.error('Erreur refresh fournisseurs:', error);
-                this.showToast('Erreur lors de l\'actualisation', 'error');
+        document.getElementById('refresh-suppliers-btn')?.addEventListener('click', () => {
+            if (typeof window.loadSuppliersData === 'function') {
+                window.loadSuppliersData();
             }
         });
 
@@ -208,6 +235,9 @@ class GroupDashboard {
                 break;
             case 'menus':
                 await this.loadMenusData();
+                break;
+            case 'stock':
+                await this.loadStockTab();
                 break;
             case 'suppliers':
                 await this.loadSuppliersTab();
@@ -1105,24 +1135,40 @@ class GroupDashboard {
         // À implémenter: export CSV ou PDF des groupes
     }
 
+    // ===== Gestion du stock =====
+    
+    async loadStockTab() {
+        console.log('📦 Chargement de l\'onglet Stock...');
+        
+        try {
+            // Utiliser les fonctions globales exposées
+            if (typeof window.initStockTab === 'function') {
+                await window.initStockTab();
+                console.log('✅ Onglet Stock initialisé');
+            } else {
+                console.error('❌ initStockTab non disponible');
+                this.showToast('Erreur lors du chargement du stock', 'error');
+            }
+        } catch (error) {
+            console.error('❌ Erreur lors du chargement de l\'onglet stock:', error);
+            this.showToast('Erreur lors du chargement du stock', 'error');
+        }
+    }
+    
     // ===== Gestion des fournisseurs =====
     
     async loadSuppliersTab() {
         console.log('🚛 Chargement de l\'onglet Fournisseurs...');
         
-        // Importer dynamiquement les fonctions de supplier-common.js
         try {
-            const { loadSuppliersData, initSupplierTab } = await import('./JS/supplier-common.js');
-            
-            // Initialiser l'onglet fournisseurs
-            if (typeof initSupplierTab === 'function') {
-                await initSupplierTab();
+            // Utiliser les fonctions globales exposées
+            if (typeof window.initSupplierTab === 'function') {
+                await window.initSupplierTab();
+                console.log('✅ Onglet Fournisseurs initialisé');
+            } else {
+                console.error('❌ initSupplierTab non disponible');
+                this.showToast('Erreur lors du chargement des fournisseurs', 'error');
             }
-            
-            // Charger les données des fournisseurs
-            await loadSuppliersData();
-            
-            console.log('✅ Onglet Fournisseurs initialisé');
         } catch (error) {
             console.error('❌ Erreur lors du chargement de l\'onglet fournisseurs:', error);
             this.showToast('Erreur lors du chargement des fournisseurs', 'error');
