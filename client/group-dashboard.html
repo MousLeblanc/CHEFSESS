@@ -552,10 +552,10 @@
             // Créer la modale
             const modal = document.createElement('div');
             modal.id = 'orders-modal';
-            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; overflow: auto;';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 2000; overflow: auto;';
             
             modal.innerHTML = `
-                <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 1000px; width: 90%; max-height: 90vh; overflow-y: auto;">
+                <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 1200px; width: 95%; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                         <h2 style="margin: 0; color: #667eea;">
                             <i class="fas fa-receipt"></i> Mes Commandes
@@ -565,13 +565,36 @@
                         </button>
                     </div>
                     
-                    <div style="margin-bottom: 1rem;">
-                        <button onclick="window.loadCustomerOrders()" style="background-color: #3498db; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; color: white;">
-                            <i class="fas fa-sync"></i> Actualiser
+                    <!-- Filtres -->
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; padding-bottom: 1rem; border-bottom: 2px solid #e0e0e0;">
+                        <button onclick="window.loadCustomerOrders('all')" data-filter="all" class="filter-btn active" style="padding: 0.5rem 1rem; border: 2px solid #667eea; background: #667eea; color: white; border-radius: 20px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
+                            Toutes <span class="filter-count" style="background: rgba(255,255,255,0.3); padding: 0.1rem 0.5rem; border-radius: 10px; font-size: 0.85em;">0</span>
+                        </button>
+                        <button onclick="window.loadCustomerOrders('pending')" data-filter="pending" class="filter-btn" style="padding: 0.5rem 1rem; border: 2px solid #f39c12; background: white; color: #f39c12; border-radius: 20px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
+                            ⏳ En attente <span class="filter-count" style="background: rgba(243,156,18,0.1); padding: 0.1rem 0.5rem; border-radius: 10px; font-size: 0.85em;">0</span>
+                        </button>
+                        <button onclick="window.loadCustomerOrders('confirmed')" data-filter="confirmed" class="filter-btn" style="padding: 0.5rem 1rem; border: 2px solid #3498db; background: white; color: #3498db; border-radius: 20px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
+                            🔨 En cours <span class="filter-count" style="background: rgba(52,152,219,0.1); padding: 0.1rem 0.5rem; border-radius: 10px; font-size: 0.85em;">0</span>
+                        </button>
+                        <button onclick="window.loadCustomerOrders('ready')" data-filter="ready" class="filter-btn" style="padding: 0.5rem 1rem; border: 2px solid #9b59b6; background: white; color: #9b59b6; border-radius: 20px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
+                            📦 Prêtes <span class="filter-count" style="background: rgba(155,89,182,0.1); padding: 0.1rem 0.5rem; border-radius: 10px; font-size: 0.85em;">0</span>
+                        </button>
+                        <button onclick="window.loadCustomerOrders('delivered')" data-filter="delivered" class="filter-btn" style="padding: 0.5rem 1rem; border: 2px solid #27ae60; background: white; color: #27ae60; border-radius: 20px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
+                            ✅ Livrées <span class="filter-count" style="background: rgba(39,174,96,0.1); padding: 0.1rem 0.5rem; border-radius: 10px; font-size: 0.85em;">0</span>
+                        </button>
+                        <button onclick="window.loadCustomerOrders('issue')" data-filter="issue" class="filter-btn" style="padding: 0.5rem 1rem; border: 2px solid #e74c3c; background: white; color: #e74c3c; border-radius: 20px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
+                            ⚠️ Problèmes <span class="filter-count" style="background: rgba(231,76,60,0.1); padding: 0.1rem 0.5rem; border-radius: 10px; font-size: 0.85em;">0</span>
                         </button>
                     </div>
                     
-                    <div id="customer-orders-list" style="margin-top: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <button onclick="window.loadCustomerOrders()" style="background-color: #3498db; padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; color: white; font-weight: 500;">
+                            <i class="fas fa-sync"></i> Actualiser
+                        </button>
+                        <span id="orders-count" style="color: #666; font-weight: 500;"></span>
+                    </div>
+                    
+                    <div id="customer-orders-list" style="margin-top: 1rem; overflow-y: auto; flex: 1;">
                         <p style="text-align: center; padding: 2rem; color: #666;">
                             <i class="fas fa-spinner fa-spin"></i> Chargement des commandes...
                         </p>
@@ -580,6 +603,25 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Ajouter le style pour les boutons actifs
+            const style = document.createElement('style');
+            style.textContent = `
+                .filter-btn.active {
+                    background: #667eea !important;
+                    color: white !important;
+                }
+                .filter-btn.active .filter-count {
+                    background: rgba(255,255,255,0.3) !important;
+                    color: white !important;
+                }
+                .filter-btn:hover {
+                    opacity: 0.8;
+                    transform: translateY(-1px);
+                    transition: all 0.2s;
+                }
+            `;
+            document.head.appendChild(style);
             
             // Charger les commandes
             if (typeof window.loadCustomerOrders === 'function') {

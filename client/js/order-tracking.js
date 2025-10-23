@@ -1,8 +1,15 @@
 // client/JS/order-tracking.js
 // Fonctions pour le suivi des commandes côté client
 
+// Variable globale pour stocker toutes les commandes
+let allOrders = [];
+let currentFilter = 'all';
+
 // Charger et afficher les commandes du client
-export async function loadCustomerOrders() {
+export async function loadCustomerOrders(filterStatus = null) {
+  if (filterStatus !== null) {
+    currentFilter = filterStatus;
+  }
   console.log('📋 Chargement des commandes client...');
   const ordersContainer = document.getElementById('customer-orders-list');
   if (!ordersContainer) {
@@ -31,12 +38,15 @@ export async function loadCustomerOrders() {
 
     if (response.ok) {
       const result = await response.json();
-      const orders = result.data || [];
-      console.log(`✅ ${orders.length} commandes chargées`);
-      displayCustomerOrders(orders);
+      allOrders = result.data || [];
+      console.log(`✅ ${allOrders.length} commandes chargées`);
+      displayCustomerOrders(allOrders, currentFilter);
       
       // Mettre à jour le badge des commandes en attente
-      updateOrdersBadge(orders);
+      updateOrdersBadge(allOrders);
+      
+      // Mettre à jour les compteurs de filtres
+      updateFilterCounts(allOrders);
     } else if (response.status === 401) {
       console.error('❌ Non autorisé (401)');
       const errorText = await response.text();
@@ -53,6 +63,45 @@ export async function loadCustomerOrders() {
     console.error('❌ Message:', error.message);
     console.error('❌ Stack:', error.stack);
     ordersContainer.innerHTML = '<p style="color: #e74c3c; padding: 2rem; text-align: center;">Erreur réseau. Vérifiez que le serveur est démarré.</p>';
+  }
+}
+
+// Mettre à jour les compteurs de filtres
+function updateFilterCounts(orders) {
+  const counts = {
+    all: orders.length,
+    pending: orders.filter(o => o.status === 'pending').length,
+    confirmed: orders.filter(o => o.status === 'confirmed' || o.status === 'preparing' || o.status === 'prepared').length,
+    ready: orders.filter(o => o.status === 'ready' || o.status === 'shipped').length,
+    delivered: orders.filter(o => o.status === 'delivered').length,
+    issue: orders.filter(o => o.status === 'issue').length,
+    cancelled: orders.filter(o => o.status === 'cancelled').length
+  };
+
+  // Mettre à jour les badges des filtres
+  Object.keys(counts).forEach(status => {
+    const badge = document.querySelector(`[data-filter="${status}"] .filter-count`);
+    if (badge) {
+      badge.textContent = counts[status];
+    }
+  });
+  
+  // Mettre à jour le bouton actif
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.filter === currentFilter) {
+      btn.classList.add('active');
+    }
+  });
+  
+  // Afficher le nombre de commandes filtrées
+  const ordersCount = document.getElementById('orders-count');
+  if (ordersCount) {
+    const filtered = currentFilter === 'all' ? orders.length : 
+                    currentFilter === 'confirmed' ? counts.confirmed :
+                    currentFilter === 'ready' ? counts.ready :
+                    counts[currentFilter] || 0;
+    ordersCount.textContent = `${filtered} commande(s) ${currentFilter !== 'all' ? 'dans ce filtre' : 'au total'}`;
   }
 }
 
@@ -123,12 +172,39 @@ function updateOrdersBadge(orders) {
 }
 
 // Afficher les commandes
-function displayCustomerOrders(orders) {
+function displayCustomerOrders(orders, filterStatus = 'all') {
   const ordersContainer = document.getElementById('customer-orders-list');
   if (!ordersContainer) return;
 
+  console.log(`📊 Affichage de ${orders.length} commande(s) - Filtre: ${filterStatus}`);
+
   if (orders.length === 0) {
     ordersContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: #666;">Aucune commande passée</p>';
+    return;
+  }
+
+  // Filtrer les commandes selon le statut sélectionné
+  let filteredOrders = orders;
+  if (filterStatus !== 'all') {
+    if (filterStatus === 'confirmed') {
+      // Grouper confirmed, preparing, prepared
+      filteredOrders = orders.filter(order => 
+        order.status === 'confirmed' || order.status === 'preparing' || order.status === 'prepared'
+      );
+    } else if (filterStatus === 'ready') {
+      // Grouper ready et shipped
+      filteredOrders = orders.filter(order => 
+        order.status === 'ready' || order.status === 'shipped'
+      );
+    } else {
+      filteredOrders = orders.filter(order => order.status === filterStatus);
+    }
+  }
+
+  console.log(`📊 ${filteredOrders.length} commande(s) après filtrage`);
+
+  if (filteredOrders.length === 0) {
+    ordersContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: #666;">Aucune commande trouvée avec ce filtre</p>';
     return;
   }
 
@@ -154,7 +230,7 @@ function displayCustomerOrders(orders) {
     'cancelled': '❌ Annulée'
   };
 
-  ordersContainer.innerHTML = orders.map(order => {
+  ordersContainer.innerHTML = filteredOrders.map(order => {
     const supplierName = order.supplier?.businessName || order.supplier?.name || 'Fournisseur inconnu';
     const orderDate = new Date(order.createdAt).toLocaleDateString('fr-FR');
     const deliveryDate = order.delivery?.requestedDate ?
