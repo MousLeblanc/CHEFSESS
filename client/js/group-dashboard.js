@@ -935,7 +935,7 @@ class GroupDashboard {
         }
 
         try {
-            const response = await fetch(`/api/residents/group/${this.currentGroup._id}/grouped`, {
+            const response = await fetch(`/api/residents/group/${this.currentGroup}/grouped`, {
                 credentials: 'include'
             });
 
