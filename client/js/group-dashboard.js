@@ -158,6 +158,17 @@ class GroupDashboard {
                 this.applyResidentsFilter();
             });
         });
+        
+        // Fournisseurs
+        document.getElementById('refresh-suppliers-btn')?.addEventListener('click', async () => {
+            try {
+                const { loadSuppliersData } = await import('./JS/supplier-common.js');
+                await loadSuppliersData();
+            } catch (error) {
+                console.error('Erreur refresh fournisseurs:', error);
+                this.showToast('Erreur lors de l\'actualisation', 'error');
+            }
+        });
 
         // Sélecteurs de semaine
         document.getElementById('week-selector')?.addEventListener('change', (e) => this.loadMenusForWeek(e.target.value));
@@ -197,6 +208,9 @@ class GroupDashboard {
                 break;
             case 'menus':
                 await this.loadMenusData();
+                break;
+            case 'suppliers':
+                await this.loadSuppliersTab();
                 break;
             case 'sync':
                 await this.loadSyncData();
@@ -1089,6 +1103,30 @@ class GroupDashboard {
     exportResidentsGroups() {
         this.showToast('Export en cours de développement', 'info');
         // À implémenter: export CSV ou PDF des groupes
+    }
+
+    // ===== Gestion des fournisseurs =====
+    
+    async loadSuppliersTab() {
+        console.log('🚛 Chargement de l\'onglet Fournisseurs...');
+        
+        // Importer dynamiquement les fonctions de supplier-common.js
+        try {
+            const { loadSuppliersData, initSupplierTab } = await import('./JS/supplier-common.js');
+            
+            // Initialiser l'onglet fournisseurs
+            if (typeof initSupplierTab === 'function') {
+                await initSupplierTab();
+            }
+            
+            // Charger les données des fournisseurs
+            await loadSuppliersData();
+            
+            console.log('✅ Onglet Fournisseurs initialisé');
+        } catch (error) {
+            console.error('❌ Erreur lors du chargement de l\'onglet fournisseurs:', error);
+            this.showToast('Erreur lors du chargement des fournisseurs', 'error');
+        }
     }
 
     async logout() {
