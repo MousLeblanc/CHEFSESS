@@ -196,9 +196,13 @@ class GroupDashboard {
             });
             const stats = await statsResponse.json();
             
+            // Charger le nombre total de résidents
+            const residentsCounts = await this.loadResidentsCounts();
+            const totalResidents = Object.values(residentsCounts).reduce((sum, count) => sum + count, 0);
+            
             // Mettre à jour les cartes de statistiques
             document.getElementById('total-sites').textContent = stats.sites || 0;
-            document.getElementById('total-users').textContent = stats.users || 0;
+            document.getElementById('total-residents').textContent = totalResidents;
             document.getElementById('total-menus').textContent = stats.menus || 0;
             document.getElementById('sync-rate').textContent = '95%'; // Placeholder
             
@@ -220,6 +224,9 @@ class GroupDashboard {
             return;
         }
         
+        // Charger le nombre de résidents par site
+        const residentsCounts = await this.loadResidentsCounts();
+        
         tbody.innerHTML = this.sites.map(site => `
             <tr>
                 <td>
@@ -230,7 +237,7 @@ class GroupDashboard {
                     <span class="status-badge status-synced">${this.getSiteTypeLabel(site.type)}</span>
                 </td>
                 <td>
-                    <span class="text-success">✓ 3/3</span>
+                    <strong style="color: #667eea; font-size: 1.1rem;">${residentsCounts[site._id] || 0}</strong>
                 </td>
                 <td>3,45 €/repas</td>
                 <td class="text-success">+2%</td>
@@ -269,6 +276,9 @@ class GroupDashboard {
             return;
         }
         
+        // Charger le nombre de résidents par site
+        const residentsCounts = await this.loadResidentsCounts();
+        
         sitesGrid.innerHTML = this.sites.map(site => `
             <div class="site-card">
                 <div class="site-header">
@@ -277,12 +287,16 @@ class GroupDashboard {
                 </div>
                 <div class="site-info">
                     <div class="site-info-item">
-                        <span class="site-info-label">Adresse:</span>
-                        <span class="site-info-value">${site.address?.city || 'N/A'}</span>
+                        <span class="site-info-label">👥 Résidents:</span>
+                        <span class="site-info-value"><strong>${residentsCounts[site._id] || 0}</strong></span>
                     </div>
                     <div class="site-info-item">
-                        <span class="site-info-label">Téléphone:</span>
-                        <span class="site-info-value">${site.contact?.phone || 'N/A'}</span>
+                        <span class="site-info-label">📍 Adresse:</span>
+                        <span class="site-info-value">${site.address?.city || 'À définir'}</span>
+                    </div>
+                    <div class="site-info-item">
+                        <span class="site-info-label">📞 Téléphone:</span>
+                        <span class="site-info-value">${site.contact?.phone || 'À définir'}</span>
                     </div>
                     <div class="site-info-item">
                         <span class="site-info-label">Synchronisation:</span>
@@ -292,7 +306,7 @@ class GroupDashboard {
                         <span class="site-info-label">Statut:</span>
                         <span class="site-info-value">
                             <span class="status-badge ${site.isActive ? 'status-synced' : 'status-error'}">
-                                ${site.isActive ? 'Actif' : 'Inactif'}
+                                ${site.isActive ? 'ACTIF' : 'INACTIF'}
                             </span>
                         </span>
                     </div>
@@ -307,6 +321,25 @@ class GroupDashboard {
                 </div>
             </div>
         `).join('');
+    }
+
+    async loadResidentsCounts() {
+        try {
+            const response = await fetch(`/api/residents/group/${this.currentGroup}/counts`, {
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                console.warn('Impossible de charger le nombre de résidents');
+                return {};
+            }
+            
+            const result = await response.json();
+            return result.data || {};
+        } catch (error) {
+            console.error('Erreur lors du chargement des résidents:', error);
+            return {};
+        }
     }
 
     async loadMenusData() {
@@ -665,9 +698,147 @@ class GroupDashboard {
         }
     }
 
-    viewSite(siteId) {
-        // À implémenter - rediriger vers le dashboard du site
-        this.showToast('Redirection vers le dashboard du site', 'info');
+    async viewSite(siteId) {
+        const site = this.sites.find(s => s._id === siteId);
+        if (!site) {
+            this.showToast('Site non trouvé', 'error');
+            return;
+        }
+
+        // Charger les détails supplémentaires
+        const residentsCounts = await this.loadResidentsCounts();
+        const residentsCount = residentsCounts[siteId] || 0;
+
+        // Charger les managers du site
+        let managersHtml = 'Aucun responsable';
+        if (site.managers && site.managers.length > 0) {
+            const managers = this.users.filter(u => site.managers.includes(u._id));
+            if (managers.length > 0) {
+                managersHtml = managers.map(m => `
+                    <div style="margin-bottom: 0.5rem;">
+                        <strong>${m.name}</strong><br>
+                        <small>${m.email}</small>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Créer la modal
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); z-index: 1000; display: flex; 
+            align-items: center; justify-content: center;
+        `;
+
+        modal.innerHTML = `
+            <div style="background: white; border-radius: 12px; padding: 2rem; max-width: 700px; width: 90%; max-height: 90vh; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 style="margin: 0; color: #667eea;">
+                        <i class="fas fa-building"></i> ${site.siteName}
+                    </h2>
+                    <button onclick="this.closest('div[style*=fixed]').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #999;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div style="display: grid; gap: 1.5rem;">
+                    <!-- Type et Statut -->
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span class="status-badge" style="background: #e3f2fd; color: #1976d2; padding: 0.5rem 1rem; border-radius: 6px;">
+                                ${this.getSiteTypeLabel(site.type)}
+                            </span>
+                            <span class="status-badge ${site.isActive ? 'status-synced' : 'status-error'}" style="padding: 0.5rem 1rem; border-radius: 6px;">
+                                ${site.isActive ? 'ACTIF' : 'INACTIF'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Statistiques -->
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 8px; text-align: center;">
+                        <h3 style="margin: 0 0 0.5rem 0; font-size: 2.5rem;">${residentsCount}</h3>
+                        <p style="margin: 0; opacity: 0.9;">Résidents actifs</p>
+                    </div>
+
+                    <!-- Responsables -->
+                    <div>
+                        <h3 style="margin: 0 0 1rem 0; color: #333; font-size: 1.1rem;">
+                            <i class="fas fa-user-tie"></i> Responsables
+                        </h3>
+                        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                            ${managersHtml}
+                        </div>
+                    </div>
+
+                    <!-- Coordonnées -->
+                    <div>
+                        <h3 style="margin: 0 0 1rem 0; color: #333; font-size: 1.1rem;">
+                            <i class="fas fa-address-card"></i> Coordonnées
+                        </h3>
+                        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                            <div style="margin-bottom: 0.75rem;">
+                                <strong>📍 Adresse:</strong><br>
+                                ${site.address?.street || 'Non renseignée'}<br>
+                                ${site.address?.postalCode || ''} ${site.address?.city || ''}<br>
+                                ${site.address?.country || 'Belgique'}
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <strong>📞 Téléphone:</strong> ${site.contact?.phone || 'Non renseigné'}
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <strong>📧 Email:</strong> ${site.contact?.email || 'Non renseigné'}
+                            </div>
+                            ${site.contact?.website ? `
+                                <div>
+                                    <strong>🌐 Site web:</strong> <a href="${site.contact.website}" target="_blank">${site.contact.website}</a>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Paramètres -->
+                    <div>
+                        <h3 style="margin: 0 0 1rem 0; color: #333; font-size: 1.1rem;">
+                            <i class="fas fa-cog"></i> Paramètres
+                        </h3>
+                        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                            <div style="margin-bottom: 0.75rem;">
+                                <strong>🔄 Synchronisation:</strong> ${site.syncMode === 'auto' ? 'Automatique' : 'Manuelle'}
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <strong>🕐 Fuseau horaire:</strong> ${site.settings?.timezone || 'Europe/Brussels'}
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <strong>🍽️ Capacité déjeuner:</strong> ${site.settings?.capacity?.lunch || 'N/A'} couverts
+                            </div>
+                            <div>
+                                <strong>🍷 Capacité dîner:</strong> ${site.settings?.capacity?.dinner || 'N/A'} couverts
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button onclick="window.open('/site-residents.html?siteId=${siteId}', '_blank')" style="flex: 1; padding: 0.75rem; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            <i class="fas fa-users"></i> Voir les résidents
+                        </button>
+                        <button onclick="groupDashboard.editSite('${siteId}'); this.closest('div[style*=fixed]').remove();" style="flex: 1; padding: 0.75rem; background: #ff9800; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            <i class="fas fa-edit"></i> Modifier
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Fermer en cliquant à l'extérieur
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+
+        document.body.appendChild(modal);
     }
 
     editSite(siteId) {

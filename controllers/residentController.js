@@ -528,6 +528,50 @@ export async function getResidentsByGroup(req, res) {
     }
 }
 
+/**
+ * Récupérer le nombre de résidents par site pour un groupe
+ */
+export async function getResidentsCountBySite(req, res) {
+    try {
+        const { groupId } = req.params;
+        
+        // Vérifier que le groupe existe
+        const group = await Group.findById(groupId);
+        if (!group) {
+            return res.status(404).json({ message: 'Groupe non trouvé' });
+        }
+        
+        // Compter les résidents par site
+        const residentsCounts = await Resident.aggregate([
+            { $match: { groupId: group._id, status: 'actif' } },
+            {
+                $group: {
+                    _id: '$siteId',
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+        
+        // Transformer en objet pour faciliter l'accès
+        const countsMap = {};
+        residentsCounts.forEach(item => {
+            countsMap[item._id.toString()] = item.count;
+        });
+        
+        res.status(200).json({
+            success: true,
+            data: countsMap
+        });
+        
+    } catch (error) {
+        console.error('❌ Erreur:', error);
+        res.status(500).json({ 
+            success: false,
+            message: error.message 
+        });
+    }
+}
+
 export default {
     createResident,
     getResidents,
@@ -538,5 +582,6 @@ export default {
     searchResidents,
     getResidentsByGroup,
     getResidentStats,
-    getResidentStatsDefault
+    getResidentStatsDefault,
+    getResidentsCountBySite
 };
