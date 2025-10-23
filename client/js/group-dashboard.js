@@ -907,9 +907,247 @@ class GroupDashboard {
         document.body.appendChild(modal);
     }
 
-    editSite(siteId) {
-        // À implémenter - ouvrir le modal d'édition
-        this.showToast('Édition du site - à implémenter', 'info');
+    async editSite(siteId) {
+        const site = this.sites.find(s => s._id === siteId);
+        if (!site) {
+            this.showToast('Site non trouvé', 'error');
+            return;
+        }
+
+        // Créer la modal d'édition
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); z-index: 1000; display: flex; 
+            align-items: center; justify-content: center; overflow: auto;
+        `;
+
+        modal.innerHTML = `
+            <div style="background: white; border-radius: 12px; padding: 2rem; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; margin: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 style="margin: 0; color: #667eea;">
+                        <i class="fas fa-edit"></i> Modifier ${site.siteName}
+                    </h2>
+                    <button onclick="this.closest('div[style*=fixed]').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #999;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <form id="edit-site-form" style="display: grid; gap: 1.5rem;">
+                    <!-- Informations de base -->
+                    <div>
+                        <h3 style="margin: 0 0 1rem 0; color: #333; font-size: 1.1rem; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                            <i class="fas fa-info-circle"></i> Informations de base
+                        </h3>
+                        <div style="display: grid; gap: 1rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nom du site *</label>
+                                <input type="text" name="siteName" value="${site.siteName}" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Type *</label>
+                                <select name="type" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                                    <option value="EHPAD" ${site.type === 'EHPAD' ? 'selected' : ''}>EHPAD</option>
+                                    <option value="MRS" ${site.type === 'MRS' ? 'selected' : ''}>MRS</option>
+                                    <option value="RESIDENCE_SENIOR" ${site.type === 'RESIDENCE_SENIOR' ? 'selected' : ''}>Résidence Senior</option>
+                                    <option value="COLLECTIVITE" ${site.type === 'COLLECTIVITE' ? 'selected' : ''}>Collectivité</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                                    <input type="checkbox" name="isActive" ${site.isActive ? 'checked' : ''} style="margin-right: 0.5rem;">
+                                    Site actif
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Adresse -->
+                    <div>
+                        <h3 style="margin: 0 0 1rem 0; color: #333; font-size: 1.1rem; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                            <i class="fas fa-map-marker-alt"></i> Adresse
+                        </h3>
+                        <div style="display: grid; gap: 1rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Rue</label>
+                                <input type="text" name="street" value="${site.address?.street || ''}" placeholder="Rue de la Paix, 123" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Code postal</label>
+                                    <input type="text" name="postalCode" value="${site.address?.postalCode || ''}" placeholder="1000" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Ville</label>
+                                    <input type="text" name="city" value="${site.address?.city || ''}" placeholder="Bruxelles" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                                </div>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Pays</label>
+                                <input type="text" name="country" value="${site.address?.country || 'Belgique'}" placeholder="Belgique" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coordonnées de contact -->
+                    <div>
+                        <h3 style="margin: 0 0 1rem 0; color: #333; font-size: 1.1rem; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                            <i class="fas fa-phone"></i> Coordonnées de contact
+                        </h3>
+                        <div style="display: grid; gap: 1rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Téléphone</label>
+                                <input type="tel" name="phone" value="${site.contact?.phone || ''}" placeholder="+32 2 123 45 67" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Email</label>
+                                <input type="email" name="email" value="${site.contact?.email || ''}" placeholder="contact@site.com" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Site web</label>
+                                <input type="url" name="website" value="${site.contact?.website || ''}" placeholder="https://www.site.com" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Responsables -->
+                    <div>
+                        <h3 style="margin: 0 0 1rem 0; color: #333; font-size: 1.1rem; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                            <i class="fas fa-user-tie"></i> Responsables
+                        </h3>
+                        <div id="managers-list" style="display: grid; gap: 0.5rem; max-height: 200px; overflow-y: auto; padding: 0.5rem; background: #f8f9fa; border-radius: 6px;">
+                            ${this.users.filter(u => u.role === 'SITE_MANAGER' || (u.roles && u.roles.includes('SITE_MANAGER'))).map(user => `
+                                <label style="display: flex; align-items: center; padding: 0.5rem; background: white; border-radius: 4px; cursor: pointer; hover:background: #e3f2fd;">
+                                    <input type="checkbox" name="managers" value="${user._id}" ${site.managers && site.managers.includes(user._id) ? 'checked' : ''} style="margin-right: 0.75rem;">
+                                    <div>
+                                        <strong>${user.name}</strong><br>
+                                        <small style="color: #666;">${user.email}</small>
+                                    </div>
+                                </label>
+                            `).join('')}
+                            ${this.users.filter(u => u.role === 'SITE_MANAGER' || (u.roles && u.roles.includes('SITE_MANAGER'))).length === 0 ? '<p style="color: #666; text-align: center; margin: 1rem;">Aucun responsable disponible. Créez d\'abord des comptes avec le rôle SITE_MANAGER.</p>' : ''}
+                        </div>
+                    </div>
+
+                    <!-- Paramètres -->
+                    <div>
+                        <h3 style="margin: 0 0 1rem 0; color: #333; font-size: 1.1rem; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                            <i class="fas fa-cog"></i> Paramètres
+                        </h3>
+                        <div style="display: grid; gap: 1rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Mode de synchronisation</label>
+                                <select name="syncMode" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                                    <option value="auto" ${site.syncMode === 'auto' ? 'selected' : ''}>Automatique</option>
+                                    <option value="manual" ${site.syncMode === 'manual' ? 'selected' : ''}>Manuelle</option>
+                                </select>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Capacité déjeuner</label>
+                                    <input type="number" name="capacityLunch" value="${site.settings?.capacity?.lunch || ''}" placeholder="50" min="0" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Capacité dîner</label>
+                                    <input type="number" name="capacityDinner" value="${site.settings?.capacity?.dinner || ''}" placeholder="50" min="0" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 2px solid #eee;">
+                        <button type="button" onclick="this.closest('div[style*=fixed]').remove()" style="flex: 1; padding: 0.75rem; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem;">
+                            <i class="fas fa-times"></i> Annuler
+                        </button>
+                        <button type="submit" style="flex: 2; padding: 0.75rem; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600;">
+                            <i class="fas fa-save"></i> Enregistrer les modifications
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+
+        // Gérer la soumission du formulaire
+        const form = modal.querySelector('#edit-site-form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleEditSite(e, siteId, modal);
+        });
+
+        // Fermer en cliquant à l'extérieur
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+
+        document.body.appendChild(modal);
+    }
+
+    async handleEditSite(e, siteId, modal) {
+        const formData = new FormData(e.target);
+        
+        // Récupérer les responsables sélectionnés
+        const managers = Array.from(formData.getAll('managers'));
+        
+        // Construire l'objet de données
+        const siteData = {
+            siteName: formData.get('siteName'),
+            type: formData.get('type'),
+            isActive: formData.get('isActive') === 'on',
+            address: {
+                street: formData.get('street'),
+                postalCode: formData.get('postalCode'),
+                city: formData.get('city'),
+                country: formData.get('country')
+            },
+            contact: {
+                phone: formData.get('phone'),
+                email: formData.get('email'),
+                website: formData.get('website')
+            },
+            managers: managers,
+            syncMode: formData.get('syncMode'),
+            settings: {
+                capacity: {
+                    lunch: parseInt(formData.get('capacityLunch')) || 0,
+                    dinner: parseInt(formData.get('capacityDinner')) || 0
+                }
+            }
+        };
+
+        try {
+            console.log('📤 Mise à jour du site:', siteData);
+            
+            const response = await fetch(`/api/sites/${siteId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify(siteData)
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Erreur lors de la mise à jour');
+            }
+
+            const result = await response.json();
+            console.log('✅ Site mis à jour:', result);
+
+            this.showToast('Site mis à jour avec succès !', 'success');
+            modal.remove();
+            
+            // Recharger les données
+            await this.loadGroupData();
+            await this.loadSitesData();
+            await this.loadSitesTable();
+        } catch (error) {
+            console.error('❌ Erreur lors de la mise à jour:', error);
+            this.showToast(`Erreur: ${error.message}`, 'error');
+        }
     }
 
     viewSiteMenu(siteId) {
