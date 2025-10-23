@@ -119,7 +119,11 @@ export async function getSiteData(req, res) {
         }
         
         // Vérifier que l'utilisateur a accès à ce site
-        if (req.user.siteId && req.user.siteId.toString() !== siteId) {
+        // Les admins de groupe peuvent voir tous les sites de leur groupe
+        const isGroupAdmin = req.user.groupId && req.user.groupId.toString() === site.groupId?._id?.toString();
+        const isSiteManager = req.user.siteId && req.user.siteId.toString() === siteId;
+        
+        if (!isGroupAdmin && !isSiteManager && req.user.siteId) {
             return res.status(403).json({ message: 'Accès non autorisé à ce site' });
         }
         
@@ -143,8 +147,18 @@ export async function getSiteMenus(req, res) {
             return res.status(400).json({ message: 'Paramètre yearWeek requis' });
         }
         
+        // Récupérer le site pour vérifier l'accès
+        const site = await Site.findById(siteId);
+        if (!site) {
+            return res.status(404).json({ message: 'Site non trouvé' });
+        }
+        
         // Vérifier que l'utilisateur a accès à ce site
-        if (req.user.siteId && req.user.siteId.toString() !== siteId) {
+        // Les admins de groupe peuvent voir tous les sites de leur groupe
+        const isGroupAdmin = req.user.groupId && req.user.groupId.toString() === site.groupId?.toString();
+        const isSiteManager = req.user.siteId && req.user.siteId.toString() === siteId;
+        
+        if (!isGroupAdmin && !isSiteManager && req.user.siteId) {
             return res.status(403).json({ message: 'Accès non autorisé à ce site' });
         }
         

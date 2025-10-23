@@ -128,7 +128,11 @@ export async function getResidentsBySite(req, res) {
         }
         
         // Vérifier que l'utilisateur a accès à ce site
-        if (req.user.siteId && req.user.siteId.toString() !== siteId) {
+        // Les admins de groupe peuvent voir tous les sites de leur groupe
+        const isGroupAdmin = req.user.groupId && req.user.groupId.toString() === site.groupId?.toString();
+        const isSiteManager = req.user.siteId && req.user.siteId.toString() === siteId;
+        
+        if (!isGroupAdmin && !isSiteManager && req.user.siteId) {
             return res.status(403).json({ message: 'Accès non autorisé à ce site' });
         }
         
@@ -246,6 +250,15 @@ export async function getResidentStats(req, res) {
         const site = await Site.findById(siteId);
         if (!site) {
             return res.status(404).json({ message: 'Site non trouvé' });
+        }
+        
+        // Vérifier que l'utilisateur a accès à ce site
+        // Les admins de groupe peuvent voir tous les sites de leur groupe
+        const isGroupAdmin = req.user.groupId && req.user.groupId.toString() === site.groupId?.toString();
+        const isSiteManager = req.user.siteId && req.user.siteId.toString() === siteId;
+        
+        if (!isGroupAdmin && !isSiteManager && req.user.siteId) {
+            return res.status(403).json({ message: 'Accès non autorisé à ce site' });
         }
         
         // Statistiques générales
