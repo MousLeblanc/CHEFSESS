@@ -9,35 +9,31 @@ import {
 
 const router = express.Router();
 
+// Middleware pour vérifier si l'utilisateur peut accéder aux catalogues
+const canAccessCatalog = (req, res, next) => {
+  const allowedRoles = ['resto', 'collectivite'];
+  const allowedUserRoles = ['GROUP_ADMIN', 'SITE_MANAGER'];
+  
+  if (allowedRoles.includes(req.user.role) || 
+      (req.user.roles && req.user.roles.some(r => allowedUserRoles.includes(r)))) {
+    next();
+  } else {
+    res.status(403).json({ 
+      message: 'Accès refusé. Seuls les restaurants, collectivités et administrateurs peuvent accéder au catalogue.' 
+    });
+  }
+};
+
 // Toutes les routes nécessitent une authentification
 router.use(protect);
 
-// Route pour obtenir le catalogue des fournisseurs (restaurants et collectivités)
-router.get('/suppliers', (req, res, next) => {
-  // Vérifier que l'utilisateur est un restaurant ou une collectivité
-  if (req.user.role === 'resto' || req.user.role === 'collectivite') {
-    next();
-  } else {
-    res.status(403).json({ message: 'Accès refusé. Seuls les restaurants et collectivités peuvent accéder au catalogue.' });
-  }
-}, getSuppliersCatalog);
+// Route pour obtenir le catalogue des fournisseurs
+router.get('/suppliers', canAccessCatalog, getSuppliersCatalog);
 
-// Route pour passer une commande (restaurants et collectivités)
-router.post('/orders', (req, res, next) => {
-  if (req.user.role === 'resto' || req.user.role === 'collectivite') {
-    next();
-  } else {
-    res.status(403).json({ message: 'Accès refusé. Seuls les restaurants et collectivités peuvent passer des commandes.' });
-  }
-}, placeOrder);
+// Route pour passer une commande
+router.post('/orders', canAccessCatalog, placeOrder);
 
-// Route pour obtenir les commandes d'un client (restaurants et collectivités)
-router.get('/orders', (req, res, next) => {
-  if (req.user.role === 'resto' || req.user.role === 'collectivite') {
-    next();
-  } else {
-    res.status(403).json({ message: 'Accès refusé. Seuls les restaurants et collectivités peuvent voir leurs commandes.' });
-  }
-}, getClientOrders);
+// Route pour obtenir les commandes d'un client
+router.get('/orders', canAccessCatalog, getClientOrders);
 
 export default router;
