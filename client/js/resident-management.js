@@ -285,9 +285,19 @@ class ResidentManager {
               <input type="date" id="resident-birthdate" required style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
             </div>
             <div>
-              <label>Numéro de chambre</label>
-              <input type="text" id="resident-room" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+              <label>Genre *</label>
+              <select id="resident-gender" required style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+                <option value="">Sélectionner...</option>
+                <option value="homme">Homme</option>
+                <option value="femme">Femme</option>
+                <option value="autre">Autre</option>
+              </select>
             </div>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <label>Numéro de chambre</label>
+            <input type="text" id="resident-room" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
           </div>
 
           <div style="margin-bottom: 1rem;">
@@ -371,19 +381,48 @@ class ResidentManager {
 
   async saveResident(modal) {
     try {
+      // Récupérer les conditions médicales cochées
+      const medicalConditions = Array.from(modal.querySelectorAll('.medical-condition:checked'))
+        .map(cb => ({
+          condition: cb.value,
+          severity: 'modérée',
+          notes: ''
+        }));
+
+      // Récupérer les allergènes cochés
+      const allergies = Array.from(modal.querySelectorAll('.allergen:checked'))
+        .map(cb => ({
+          allergen: cb.value,
+          severity: 'modérée',
+          symptoms: [],
+          notes: ''
+        }));
+
       const formData = {
         firstName: document.getElementById('resident-firstname').value,
         lastName: document.getElementById('resident-lastname').value,
         dateOfBirth: document.getElementById('resident-birthdate').value,
+        gender: document.getElementById('resident-gender').value,
         roomNumber: document.getElementById('resident-room').value,
-        medicalProfile: {
-          medical: Array.from(modal.querySelectorAll('.medical-condition:checked')).map(cb => cb.value),
-          texture: document.getElementById('resident-texture').value,
-          swallowing: document.getElementById('resident-swallowing').value,
-          allergens: Array.from(modal.querySelectorAll('.allergen:checked')).map(cb => cb.value)
+        nutritionalProfile: {
+          medicalConditions: medicalConditions,
+          allergies: allergies,
+          intolerances: [],
+          dietaryRestrictions: [],
+          texturePreferences: {
+            consistency: document.getElementById('resident-texture').value,
+            difficulty: 'aucune',
+            notes: document.getElementById('resident-swallowing')?.value || ''
+          },
+          nutritionalNeeds: {},
+          hydration: {},
+          foodPreferences: {}
         },
-        medicalNotes: document.getElementById('resident-notes').value
+        generalNotes: document.getElementById('resident-notes').value,
+        status: 'actif'
       };
+
+      console.log('Envoi des données:', formData);
 
       const response = await fetch('/api/residents', {
         method: 'POST',
@@ -395,8 +434,13 @@ class ResidentManager {
       });
 
       if (!response.ok) {
-        throw new Error('Erreur lors de la création du résident');
+        const errorData = await response.json();
+        console.error('Erreur serveur:', errorData);
+        throw new Error(errorData.message || 'Erreur lors de la création du résident');
       }
+
+      const result = await response.json();
+      console.log('Résident créé:', result);
 
       this.showToast('Résident créé avec succès', 'success');
       modal.remove();
@@ -404,7 +448,7 @@ class ResidentManager {
       this.loadStats();
     } catch (error) {
       console.error('Erreur:', error);
-      this.showToast('Erreur lors de la création du résident', 'error');
+      this.showToast(error.message || 'Erreur lors de la création du résident', 'error');
     }
   }
 
