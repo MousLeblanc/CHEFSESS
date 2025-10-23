@@ -82,6 +82,12 @@ class SiteDashboard {
         });
         
         // Navigation rapide
+        document.getElementById('dashboard-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            // Déjà sur le dashboard, recharger les menus
+            this.loadCurrentWeekMenus();
+        });
+        
         document.getElementById('residents-link').addEventListener('click', (e) => {
             e.preventDefault();
             window.location.href = `site-residents.html?siteId=${this.siteId}`;

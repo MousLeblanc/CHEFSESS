@@ -73,6 +73,29 @@ class SiteResidents {
             window.location.href = `site-dashboard.html?siteId=${this.siteId}`;
         });
         
+        // Déconnexion
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.logout();
+        });
+        
+        // Navigation rapide
+        document.getElementById('dashboard-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = `site-dashboard.html?siteId=${this.siteId}`;
+        });
+        
+        document.getElementById('menus-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = `site-dashboard.html?siteId=${this.siteId}`;
+        });
+        
+        document.getElementById('residents-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            // Déjà sur la page résidents, recharger les données
+            this.loadResidents();
+        });
+        
         // Recherche
         document.getElementById('search-btn').addEventListener('click', () => {
             this.searchQuery = document.getElementById('search-input').value;
@@ -403,6 +426,22 @@ class SiteResidents {
         setTimeout(() => {
             document.body.removeChild(toast);
         }, 3000);
+    }
+
+    async logout() {
+        try {
+            const response = await fetch('/api/sites/logout', {
+                method: 'POST',
+                credentials: 'include'
+            });
+            
+            // Rediriger vers la page de connexion même en cas d'erreur
+            window.location.href = 'site-login.html';
+            
+        } catch (error) {
+            console.error('❌ Erreur lors de la déconnexion:', error);
+            window.location.href = 'site-login.html';
+        }
     }
 }
 
