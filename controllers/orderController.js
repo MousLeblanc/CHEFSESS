@@ -3,6 +3,7 @@ import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import Stock from '../models/Stock.js';
 import User from '../models/User.js';
+import notificationService from '../services/notificationService.js';
 
 // @desc    Créer une nouvelle commande
 // @route   POST /api/orders
@@ -104,6 +105,16 @@ export const createOrder = asyncHandler(async (req, res) => {
 
   await order.save();
   console.log(`✅ Commande ${orderNumber} créée avec succès`);
+  
+  // 🔔 NOTIFIER LE FOURNISSEUR DE LA NOUVELLE COMMANDE
+  try {
+    await order.populate('customer', 'businessName name');
+    notificationService.notifyNewOrder(supplierId, order);
+    console.log(`📬 Notification envoyée au fournisseur ${supplierId}`);
+  } catch (notifError) {
+    console.error('❌ Erreur lors de l\'envoi de la notification:', notifError);
+    // Ne pas bloquer la création de commande si la notification échoue
+  }
 
   // 🎯 DÉDUIRE LE STOCK DU FOURNISSEUR
   console.log(`📉 Déduction du stock fournisseur pour ${orderItems.length} produit(s)...`);
@@ -219,7 +230,18 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     throw new Error('Non autorisé à modifier cette commande');
   }
 
+  const oldStatus = order.status;
   await order.updateStatus(status);
+  
+  // 🔔 NOTIFIER LE CLIENT DU CHANGEMENT DE STATUT
+  try {
+    await order.populate('supplier', 'businessName name');
+    await order.populate('customer', 'businessName name');
+    notificationService.notifyOrderStatusChange(order.customer._id, order, oldStatus, status);
+    console.log(`📬 Notification de changement de statut envoyée au client ${order.customer._id}`);
+  } catch (notifError) {
+    console.error('❌ Erreur lors de l\'envoi de la notification:', notifError);
+  }
 
   res.json({ success: true, data: order });
 });
@@ -283,6 +305,16 @@ export const updateCustomerOrderStatus = asyncHandler(async (req, res) => {
   if (notes) {
     order.notes.customer = notes;
     await order.save();
+  }
+  
+  // 🔔 NOTIFIER LE FOURNISSEUR SI UN PROBLÈME EST SIGNALÉ
+  if (status === 'issue') {
+    try {
+      notificationService.notifyOrderIssue(order.supplier._id, order);
+      console.log(`📬 Notification de problème envoyée au fournisseur ${order.supplier._id}`);
+    } catch (notifError) {
+      console.error('❌ Erreur lors de l\'envoi de la notification:', notifError);
+    }
   }
 
   // 🎯 AJOUT AUTOMATIQUE AU STOCK quand la commande est confirmée

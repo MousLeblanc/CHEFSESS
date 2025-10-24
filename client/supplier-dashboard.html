@@ -1727,6 +1727,58 @@
             startSupplierAutoRefresh(5);
         });
     </script>
+    
+    <!-- 🔔 Système de notifications en temps réel -->
+    <script src="js/notification-client.js"></script>
+    <script>
+        // Initialiser les notifications dès le chargement
+        document.addEventListener('DOMContentLoaded', () => {
+            // Le client se connecte automatiquement si un token est présent
+            
+            // Écouter les événements de notification
+            if (window.notificationClient) {
+                // Nouvelle commande reçue
+                window.notificationClient.on('new_order', (notification) => {
+                    console.log('🛒 Nouvelle commande reçue!', notification);
+                    
+                    // Recharger les commandes
+                    if (window.dashboard && typeof window.dashboard.loadOrders === 'function') {
+                        window.dashboard.loadOrders();
+                    }
+                    
+                    // Recharger les stats
+                    if (window.dashboard && typeof window.dashboard.loadStats === 'function') {
+                        window.dashboard.loadStats();
+                    }
+                    
+                    // Faire vibrer l'onglet Commandes
+                    const ordersTab = document.querySelector('[data-tab="orders"]');
+                    if (ordersTab && !ordersTab.classList.contains('active')) {
+                        ordersTab.style.animation = 'pulse 1s 3';
+                        setTimeout(() => {
+                            ordersTab.style.animation = '';
+                        }, 3000);
+                    }
+                });
+                
+                // Problème signalé sur une commande
+                window.notificationClient.on('order_issue', (notification) => {
+                    console.log('⚠️ Problème signalé!', notification);
+                    
+                    // Recharger les commandes
+                    if (window.dashboard && typeof window.dashboard.loadOrders === 'function') {
+                        window.dashboard.loadOrders();
+                    }
+                });
+                
+                // Connexion établie
+                window.notificationClient.on('connected', () => {
+                    console.log('✅ Service de notifications en temps réel actif');
+                });
+            }
+        });
+    </script>
+    
     <script src="js/init.js"></script>
 </body>
 </html>

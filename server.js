@@ -133,7 +133,15 @@ mongoose.connect(mongoUri, {
 app.use(errorHandler);
 
 // === SERVEUR ===
+import http from 'http';
+import notificationService from './services/notificationService.js';
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, "0.0.0.0", () =>
+const server = http.createServer(app);
+
+// Initialiser le service de notifications WebSocket
+notificationService.initialize(server);
+
+server.listen(PORT, "0.0.0.0", () =>
   console.log(`🚀 Chef SES prêt sur le port ${PORT} (${process.env.NODE_ENV || "dev"})`)
 );
