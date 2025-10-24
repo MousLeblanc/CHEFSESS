@@ -1,5 +1,5 @@
 // Service de notifications en temps réel
-import WebSocket from 'ws';
+import { WebSocketServer } from 'ws';
 import jwt from 'jsonwebtoken';
 
 class NotificationService {
@@ -11,7 +11,7 @@ class NotificationService {
   initialize(server) {
     console.log('🔔 Initialisation du service de notifications WebSocket');
     
-    this.wss = new WebSocket.Server({ 
+    this.wss = new WebSocketServer({ 
       server,
       path: '/ws/notifications'
     });
@@ -91,7 +91,7 @@ class NotificationService {
     let sent = 0;
     
     userConnections.forEach((ws) => {
-      if (ws.readyState === WebSocket.OPEN) {
+      if (ws.readyState === 1) { // 1 = OPEN
         ws.send(message);
         sent++;
       }
@@ -111,7 +111,7 @@ class NotificationService {
     
     this.clients.forEach((connections) => {
       connections.forEach((ws) => {
-        if (ws.readyState === WebSocket.OPEN) {
+        if (ws.readyState === 1) { // 1 = OPEN
           ws.send(message);
           sent++;
         }
