@@ -9,12 +9,13 @@ class NotificationService {
   }
 
   initialize(server) {
-    console.log('🔔 Initialisation du service de notifications WebSocket');
-    
-    this.wss = new WebSocketServer({ 
-      server,
-      path: '/ws/notifications'
-    });
+    try {
+      console.log('🔔 Initialisation du service de notifications WebSocket');
+      
+      this.wss = new WebSocketServer({ 
+        server,
+        path: '/ws/notifications'
+      });
 
     this.wss.on('connection', (ws, req) => {
       console.log('🔌 Nouvelle connexion WebSocket');
@@ -73,7 +74,12 @@ class NotificationService {
       }
     });
 
-    console.log('✅ Service de notifications WebSocket démarré');
+      console.log('✅ Service de notifications WebSocket démarré');
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'initialisation du WebSocket:', error);
+      console.log('⚠️ Le service de notifications ne sera pas disponible (mode dégradé)');
+      this.wss = null;
+    }
   }
 
   /**
@@ -82,6 +88,12 @@ class NotificationService {
    * @param {object} notification - Objet de notification
    */
   sendToUser(userId, notification) {
+    // Si le WebSocket n'est pas initialisé, ne rien faire
+    if (!this.wss) {
+      console.log('⚠️ WebSocket non disponible, notification ignorée');
+      return false;
+    }
+    
     const userIdStr = userId.toString();
     const userConnections = this.clients.get(userIdStr);
     
