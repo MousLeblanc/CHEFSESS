@@ -294,21 +294,22 @@ class GroupDashboard {
         const residentsCounts = await this.loadResidentsCounts();
         
         tbody.innerHTML = this.sites.map(site => `
-            <tr>
+            <tr style="${!site.isActive ? 'opacity: 0.6; background-color: #f8f9fa;' : ''}">
                 <td>
                     <strong>${site.siteName}</strong>
+                    ${!site.isActive ? '<span class="badge bg-secondary ms-2">INACTIF</span>' : ''}
                     <br><small class="text-muted">${site.address?.city || 'N/A'}</small>
                 </td>
                 <td>
-                    <span class="status-badge status-synced">${this.getSiteTypeLabel(site.type)}</span>
+                    <span class="status-badge ${site.isActive ? 'status-synced' : 'status-error'}">${this.getSiteTypeLabel(site.type)}</span>
                 </td>
                 <td>
-                    <strong style="color: #667eea; font-size: 1.1rem;">${residentsCounts[site._id] || 0}</strong>
+                    <strong style="color: ${site.isActive ? '#667eea' : '#999'}; font-size: 1.1rem;">${residentsCounts[site._id] || 0}</strong>
                 </td>
-                <td>3,45 €/repas</td>
-                <td class="text-success">+2%</td>
+                <td>${site.isActive ? '3,45 €/repas' : '—'}</td>
+                <td class="${site.isActive ? 'text-success' : 'text-muted'}">${site.isActive ? '+2%' : '—'}</td>
                 <td>
-                    <span class="text-warning">⚠ 2 produits</span>
+                    ${site.isActive ? '<span class="text-warning">⚠ 2 produits</span>' : '—'}
                 </td>
                 <td>
                     <small>${new Date().toLocaleDateString()}</small>
@@ -321,6 +322,11 @@ class GroupDashboard {
                         <button class="btn btn-sm btn-outline" onclick="groupDashboard.editSite('${site._id}')">
                             <i class="fas fa-edit"></i>
                         </button>
+                        ${!site.isActive ? `
+                        <button class="btn btn-sm btn-success" onclick="groupDashboard.activateSite('${site._id}')" title="Activer ce site">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        ` : ''}
                     </div>
                 </td>
             </tr>
@@ -384,6 +390,11 @@ class GroupDashboard {
                     <button class="btn btn-sm btn-outline" onclick="groupDashboard.editSite('${site._id}')">
                         <i class="fas fa-edit"></i> Modifier
                     </button>
+                    ${!site.isActive ? `
+                    <button class="btn btn-sm btn-success" onclick="groupDashboard.activateSite('${site._id}')" title="Activer ce site">
+                        <i class="fas fa-toggle-on"></i> Activer
+                    </button>
+                    ` : ''}
                 </div>
             </div>
         `).join('');
@@ -1242,6 +1253,42 @@ class GroupDashboard {
     viewSiteMenu(siteId) {
         // À implémenter - afficher le menu du site
         this.showToast('Affichage du menu du site - à implémenter', 'info');
+    }
+
+    async activateSite(siteId) {
+        const site = this.sites.find(s => s._id === siteId);
+        if (!site) {
+            this.showToast('Site non trouvé', 'error');
+            return;
+        }
+
+        if (confirm(`Activer le site "${site.siteName}" ?\n\nCela le rendra disponible pour la synchronisation des menus et la gestion des résidents.`)) {
+            try {
+                const response = await fetch(`/api/sites/${siteId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ isActive: true })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Erreur lors de l\'activation');
+                }
+
+                this.showToast(`Site "${site.siteName}" activé avec succès !`, 'success');
+                
+                // Recharger les données
+                await this.loadGroupData();
+                await this.loadSitesData();
+                await this.loadSitesTable();
+            } catch (error) {
+                console.error('❌ Erreur lors de l\'activation:', error);
+                this.showToast(`Erreur: ${error.message}`, 'error');
+            }
+        }
     }
 
     editUser(userId) {

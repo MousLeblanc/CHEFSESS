@@ -174,15 +174,18 @@ export async function createSite(req, res) {
 }
 
 /**
- * Lister tous les sites d'un groupe
+ * Lister tous les sites d'un groupe (actifs ET inactifs)
  */
 export async function listSites(req, res) {
   try {
     const { groupId } = req.params;
     
-    const sites = await Site.find({ groupId, isActive: true })
+    // Récupérer TOUS les sites (actifs et inactifs) pour que l'admin puisse les gérer
+    const sites = await Site.find({ groupId })
       .populate('managers', 'name email roles')
-      .sort({ siteName: 1 });
+      .sort([['isActive', -1], ['siteName', 1]]); // Actifs en premier, puis par nom
+    
+    console.log(`📍 Sites récupérés pour groupe ${groupId}: ${sites.length} (${sites.filter(s => s.isActive).length} actifs, ${sites.filter(s => !s.isActive).length} inactifs)`);
     
     res.json(sites);
   } catch (error) {
@@ -192,13 +195,13 @@ export async function listSites(req, res) {
 }
 
 /**
- * Récupérer un site spécifique
+ * Récupérer un site spécifique (actif ou inactif)
  */
 export async function getSite(req, res) {
   try {
     const { groupId, siteId } = req.params;
     
-    const site = await Site.findOne({ _id: siteId, groupId, isActive: true })
+    const site = await Site.findOne({ _id: siteId, groupId })
       .populate('managers', 'name email roles');
     
     if (!site) {
@@ -213,7 +216,7 @@ export async function getSite(req, res) {
 }
 
 /**
- * Mettre à jour un site
+ * Mettre à jour un site (actif ou inactif)
  */
 export async function updateSite(req, res) {
   try {
@@ -221,7 +224,7 @@ export async function updateSite(req, res) {
     const updates = req.body;
     
     const site = await Site.findOneAndUpdate(
-      { _id: siteId, groupId, isActive: true },
+      { _id: siteId, groupId },
       updates,
       { new: true, runValidators: true }
     );
@@ -230,7 +233,7 @@ export async function updateSite(req, res) {
       return res.status(404).json({ message: "Site non trouvé" });
     }
 
-    console.log(`✅ Site mis à jour: ${site.siteName} par ${req.user.name}`);
+    console.log(`✅ Site mis à jour: ${site.siteName} (${site.isActive ? 'ACTIF' : 'INACTIF'}) par ${req.user.name}`);
     res.json(site);
   } catch (error) {
     console.error('Erreur lors de la mise à jour du site:', error);

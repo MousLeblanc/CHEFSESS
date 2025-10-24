@@ -2,15 +2,21 @@ import mongoose from "mongoose";
 
 const recipeSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  category: { type: String, enum: ["entrée", "plat", "dessert", "petit-déjeuner", "soupe"], required: true },
+  category: { type: String, enum: ["entrée", "plat", "dessert", "petit-déjeuner", "soupe", "accompagnement", "boisson", "purée"], required: true },
 
   // Adaptation aux établissements
   establishmentType: [{ type: String, enum: ["ecole", "ehpad", "hopital", "collectivite", "resto"] }],
 
+  // Groupes d'âge (optionnel - si absent, la recette convient à tous les âges)
+  ageGroup: {
+    min: { type: Number }, // âge minimum en années
+    max: { type: Number }  // âge maximum en années
+  },
+
   // Textures & régimes
   texture: {
     type: String,
-    enum: ["normale", "hachée", "mixée", "lisse", "liquide"],
+    enum: ["normale", "hachée", "mixée", "lisse", "liquide", "boire"],
     default: "normale"
   },
   diet: [{ type: String }], // ex: ["sans sel ajouté", "hypocalorique", "végétarien"]

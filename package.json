@@ -30,6 +30,9 @@
     "migrate-multisite": "node scripts/migrate-to-multisite.js",
     "test-multisite": "node scripts/test-multisite.js",
     "init-vulpia": "node scripts/init-vulpia-group.js",
+    "add-all-vulpia-sites": "node scripts/add-all-vulpia-sites.js",
+    "add-mock-residents": "node scripts/add-mock-residents-vulpia.js",
+    "test-vulpia-menu": "node scripts/test-vulpia-menu-generation.js",
     "fix-residents": "node scripts/fix-residents-groupid.js"
   },
   "keywords": [
