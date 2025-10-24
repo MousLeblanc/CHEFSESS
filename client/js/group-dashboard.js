@@ -753,35 +753,106 @@ class GroupDashboard {
                 throw new Error('Aucun site actif trouvé. Veuillez activer au moins un site.');
             }
             
+            console.log('✅ Sites actifs:', activeSites.length);
+            
             // Étape 2: Récupérer tous les résidents des sites actifs
-            progressText.textContent = `Analyse des profils nutritionnels de ${activeSites.length} sites...`;
+            progressText.textContent = `Récupération des profils nutritionnels de ${activeSites.length} sites...`;
             await new Promise(resolve => setTimeout(resolve, 300));
+            
+            const response = await fetch(`/api/residents/group/${this.currentGroup}/grouped`, {
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                throw new Error('Erreur lors de la récupération des résidents');
+            }
+            
+            const residentsData = await response.json();
+            console.log('✅ Données résidents:', residentsData);
+            
+            // Construire la structure de données pour l'API de génération de menu
+            const ageGroups = [];
+            const allergens = new Set();
+            const dietaryRestrictions = new Set();
+            const medicalConditions = new Set();
+            const textures = new Set();
+            
+            // Agrégation des profils - utiliser les données groupées si disponibles
+            if (residentsData.data && residentsData.data.groups) {
+                const groups = residentsData.data.groups;
+                
+                // Allergènes
+                if (groups.allergies) {
+                    groups.allergies.forEach(group => {
+                        allergens.add(group.name);
+                    });
+                }
+                
+                // Intolérances (traiter comme des allergènes)
+                if (groups.intolerances) {
+                    groups.intolerances.forEach(group => {
+                        allergens.add(group.name);
+                    });
+                }
+                
+                // Restrictions alimentaires
+                if (groups.restrictions) {
+                    groups.restrictions.forEach(group => {
+                        dietaryRestrictions.add(group.name);
+                    });
+                }
+                
+                // Textures
+                if (groups.textures) {
+                    groups.textures.forEach(group => {
+                        textures.add(group.name);
+                    });
+                }
+                
+                // Groupe d'âge majoritaire (seniors pour EHPADs)
+                ageGroups.push({
+                    ageRange: "75+",
+                    count: residentsData.data.totalResidents || 1
+                });
+            }
+            
+            console.log('📊 Profils agrégés:', {
+                ageGroups,
+                allergens: Array.from(allergens),
+                dietaryRestrictions: Array.from(dietaryRestrictions),
+                medicalConditions: Array.from(medicalConditions),
+                textures: Array.from(textures)
+            });
             
             // Étape 3: Générer le menu avec l'IA
             progressText.textContent = `Génération intelligente des menus...`;
             
-            const response = await fetch('/api/intelligent-menu/generate', {
+            const menuResponse = await fetch('/api/intelligent-menu/generate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 credentials: 'include',
                 body: JSON.stringify({
-                    groupId: this.currentGroup,
-                    establishmentType: 'ehpad', // Pour Vulpia, c'est principalement des EHPADs
-                    startDate,
-                    numDays,
+                    establishmentType: 'ehpad',
+                    ageGroups,
+                    numDishes: numDays,
+                    menuStructure: 'entree_plat_dessert',
+                    allergens: Array.from(allergens),
+                    dietaryRestrictions: Array.from(dietaryRestrictions),
+                    medicalConditions: Array.from(medicalConditions),
+                    texture: textures.size > 0 ? Array.from(textures)[0] : 'normale',
                     theme: theme || undefined,
-                    multiSite: true // Indiquer que c'est pour plusieurs sites
+                    useStockOnly: false
                 })
             });
             
-            if (!response.ok) {
-                const errorData = await response.json();
+            if (!menuResponse.ok) {
+                const errorData = await menuResponse.json();
                 throw new Error(errorData.message || 'Erreur lors de la génération des menus');
             }
             
-            const result = await response.json();
+            const result = await menuResponse.json();
             
             // Étape 4: Afficher les résultats
             progressDiv.style.display = 'none';
