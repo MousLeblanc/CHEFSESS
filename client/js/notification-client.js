@@ -100,6 +100,7 @@ class NotificationClient {
       
       this.ws.onopen = () => {
         console.log('✅ Connecté au service de notifications');
+        console.log('   URL:', wsUrl.replace(/token=[^&]+/, 'token=***'));
         this.isConnected = true;
         this.reconnectAttempts = 0;
         this.triggerEvent('connected', {});
@@ -109,9 +110,13 @@ class NotificationClient {
         try {
           const notification = JSON.parse(event.data);
           console.log('📬 Notification reçue:', notification);
+          console.log('   Type:', notification.type);
+          console.log('   Titre:', notification.title);
+          console.log('   Son activé:', notification.sound);
           this.handleNotification(notification);
         } catch (error) {
           console.error('❌ Erreur lors du traitement de la notification:', error);
+          console.error('   Event data:', event.data);
         }
       };
       

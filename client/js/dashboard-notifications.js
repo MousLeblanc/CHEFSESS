@@ -19,15 +19,17 @@ document.addEventListener('DOMContentLoaded', () => {
         window.notificationClient.on('order_status_change', (notification) => {
             console.log('📦 Changement de statut de commande:', notification);
             
-            // Recharger les commandes si la fonction existe
-            if (window.loadOrders) {
-                window.loadOrders();
-            } else if (window.dashboard && typeof window.dashboard.loadOrders === 'function') {
-                window.dashboard.loadOrders();
-            }
+            // Le popup est déjà affiché automatiquement par handleNotification
+            // On doit juste recharger les données
             
-            // Afficher un toast personnalisé
-            showCustomToast(notification);
+            // Recharger les commandes si la fonction existe
+            setTimeout(() => {
+                if (window.loadOrders) {
+                    window.loadOrders();
+                } else if (window.dashboard && typeof window.dashboard.loadOrders === 'function') {
+                    window.dashboard.loadOrders();
+                }
+            }, 500);
         });
         
         // Écouter les livraisons confirmées

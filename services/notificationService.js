@@ -80,13 +80,23 @@ class NotificationService {
    * @param {object} notification - Objet de notification
    */
   sendToUser(userId, notification) {
-    const userConnections = this.clients.get(userId.toString());
+    const userIdStr = userId.toString();
+    const userConnections = this.clients.get(userIdStr);
+    
+    console.log(`\n📤 Tentative d'envoi notification à l'utilisateur ${userIdStr}`);
+    console.log(`   Type: ${notification.type}`);
+    console.log(`   Titre: ${notification.title}`);
+    console.log(`   Clients connectés au total: ${this.clients.size}`);
+    console.log(`   IDs connectés: ${Array.from(this.clients.keys()).join(', ')}`);
     
     if (!userConnections || userConnections.size === 0) {
-      console.log(`ℹ️ Utilisateur ${userId} n'est pas connecté au WebSocket`);
+      console.log(`❌ Utilisateur ${userIdStr} n'est pas connecté au WebSocket`);
+      console.log(`   Utilisateurs actuellement connectés: ${Array.from(this.clients.keys()).join(', ')}`);
       return false;
     }
 
+    console.log(`✅ Utilisateur ${userIdStr} trouvé avec ${userConnections.size} connexion(s)`);
+    
     const message = JSON.stringify(notification);
     let sent = 0;
     
@@ -94,11 +104,14 @@ class NotificationService {
       if (ws.readyState === 1) { // 1 = OPEN
         ws.send(message);
         sent++;
+        console.log(`   ✓ Message envoyé sur connexion ${sent}`);
+      } else {
+        console.log(`   ✗ Connexion fermée (readyState: ${ws.readyState})`);
       }
     });
 
-    console.log(`📤 Notification envoyée à ${sent} connexion(s) de l'utilisateur ${userId}`);
-    return true;
+    console.log(`📤 Notification envoyée à ${sent}/${userConnections.size} connexion(s) de l'utilisateur ${userIdStr}\n`);
+    return sent > 0;
   }
 
   /**

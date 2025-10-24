@@ -217,7 +217,10 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     throw new Error('Statut invalide');
   }
 
-  const order = await Order.findById(req.params.id);
+  // Charger la commande avec les données populate AVANT de modifier
+  const order = await Order.findById(req.params.id)
+    .populate('customer', 'businessName name email')
+    .populate('supplier', 'businessName name email');
 
   if (!order) {
     res.status(404);
@@ -225,22 +228,28 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   }
 
   // Vérifier que l'utilisateur est le fournisseur de cette commande
-  if (order.supplier.toString() !== req.user._id.toString()) {
+  if (order.supplier._id.toString() !== req.user._id.toString()) {
     res.status(403);
     throw new Error('Non autorisé à modifier cette commande');
   }
 
   const oldStatus = order.status;
+  console.log(`🔄 Changement de statut: ${oldStatus} → ${status} pour commande ${order.orderNumber}`);
+  
   await order.updateStatus(status);
   
   // 🔔 NOTIFIER LE CLIENT DU CHANGEMENT DE STATUT
   try {
-    await order.populate('supplier', 'businessName name');
-    await order.populate('customer', 'businessName name');
-    notificationService.notifyOrderStatusChange(order.customer._id, order, oldStatus, status);
-    console.log(`📬 Notification de changement de statut envoyée au client ${order.customer._id}`);
+    const customerId = order.customer._id || order.customer;
+    console.log(`📬 Envoi notification au client ${customerId}`);
+    console.log(`   Supplier: ${order.supplier?.businessName || 'N/A'}`);
+    console.log(`   Customer: ${order.customer?.businessName || 'N/A'}`);
+    
+    notificationService.notifyOrderStatusChange(customerId, order, oldStatus, status);
+    console.log(`✅ Notification de changement de statut envoyée au client ${customerId}`);
   } catch (notifError) {
     console.error('❌ Erreur lors de l\'envoi de la notification:', notifError);
+    console.error('   Stack:', notifError.stack);
   }
 
   res.json({ success: true, data: order });
