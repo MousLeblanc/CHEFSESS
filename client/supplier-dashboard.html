@@ -1400,11 +1400,12 @@
         };
         
         // ========== SYSTÈME DE RAFRAÎCHISSEMENT AUTOMATIQUE FOURNISSEUR ==========
+        // ⚠️ DÉSACTIVÉ - Les notifications WebSocket remplacent ce système
         
         let supplierAutoRefreshInterval = null;
         let lastSupplierOrdersCheck = null;
         
-        async function checkSupplierOrdersUpdates() {
+        async function checkSupplierOrdersUpdates_DEPRECATED() {
             try {
                 // Plus besoin de vérifier le token, il est dans le cookie
                 const response = await fetch('/api/orders/supplier', {
@@ -1594,7 +1595,7 @@
             }, 5000);
         }
         
-        function startSupplierAutoRefresh(intervalSeconds = 15) {
+        function startSupplierAutoRefresh_DEPRECATED(intervalSeconds = 15) {
             if (supplierAutoRefreshInterval) {
                 clearInterval(supplierAutoRefreshInterval);
             }
@@ -1723,8 +1724,9 @@
                 window.setupCategoryAutoDetect();
             }, 500);
             
-            // Démarrer le rafraîchissement automatique (5 secondes pour détection rapide)
-            startSupplierAutoRefresh(5);
+            // ⚠️ NE PLUS utiliser le rafraîchissement automatique par polling
+            // Les notifications WebSocket sont maintenant instantanées
+            // startSupplierAutoRefresh(5);
         });
     </script>
     
@@ -1737,33 +1739,42 @@
             
             // Écouter les événements de notification
             if (window.notificationClient) {
+                console.log('🔔 Configuration des gestionnaires de notifications fournisseur');
+                
                 // Nouvelle commande reçue
                 window.notificationClient.on('new_order', (notification) => {
-                    console.log('🛒 Nouvelle commande reçue!', notification);
+                    console.log('🛒 NOUVELLE COMMANDE REÇUE (WebSocket)!', notification);
                     
-                    // Recharger les commandes
+                    // Recharger IMMÉDIATEMENT les commandes
                     if (window.dashboard && typeof window.dashboard.loadOrders === 'function') {
+                        console.log('   → Rechargement des commandes...');
                         window.dashboard.loadOrders();
                     }
                     
                     // Recharger les stats
                     if (window.dashboard && typeof window.dashboard.loadStats === 'function') {
+                        console.log('   → Rechargement des stats...');
                         window.dashboard.loadStats();
                     }
                     
-                    // Faire vibrer l'onglet Commandes
+                    // Faire vibrer l'onglet Commandes si pas actif
                     const ordersTab = document.querySelector('[data-tab="orders"]');
-                    if (ordersTab && !ordersTab.classList.contains('active')) {
-                        ordersTab.style.animation = 'pulse 1s 3';
-                        setTimeout(() => {
-                            ordersTab.style.animation = '';
-                        }, 3000);
+                    if (ordersTab) {
+                        if (!ordersTab.classList.contains('active')) {
+                            ordersTab.style.animation = 'pulse 1s 3';
+                            setTimeout(() => {
+                                ordersTab.style.animation = '';
+                            }, 3000);
+                        } else {
+                            // Si déjà sur l'onglet commandes, scroller vers la nouvelle commande
+                            console.log('   → Déjà sur l\'onglet commandes');
+                        }
                     }
                 });
                 
                 // Problème signalé sur une commande
                 window.notificationClient.on('order_issue', (notification) => {
-                    console.log('⚠️ Problème signalé!', notification);
+                    console.log('⚠️ PROBLÈME SIGNALÉ (WebSocket)!', notification);
                     
                     // Recharger les commandes
                     if (window.dashboard && typeof window.dashboard.loadOrders === 'function') {
@@ -1773,8 +1784,15 @@
                 
                 // Connexion établie
                 window.notificationClient.on('connected', () => {
-                    console.log('✅ Service de notifications en temps réel actif');
+                    console.log('✅ Service de notifications en temps réel actif pour FOURNISSEUR');
                 });
+                
+                // Déconnexion
+                window.notificationClient.on('disconnected', () => {
+                    console.warn('⚠️ Service de notifications déconnecté');
+                });
+            } else {
+                console.error('❌ notificationClient non disponible!');
             }
         });
     </script>

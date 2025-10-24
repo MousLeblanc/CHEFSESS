@@ -17,19 +17,28 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Écouter les changements de statut de commande
         window.notificationClient.on('order_status_change', (notification) => {
-            console.log('📦 Changement de statut de commande:', notification);
+            console.log('📦 CHANGEMENT DE STATUT (WebSocket):', notification);
+            console.log('   Commande:', notification.data?.orderNumber);
+            console.log('   Nouveau statut:', notification.data?.newStatus);
             
-            // Le popup est déjà affiché automatiquement par handleNotification
-            // On doit juste recharger les données
+            // Le popup avec son est déjà affiché automatiquement par handleNotification
+            // On doit juste recharger les données IMMÉDIATEMENT
             
             // Recharger les commandes si la fonction existe
-            setTimeout(() => {
-                if (window.loadOrders) {
-                    window.loadOrders();
-                } else if (window.dashboard && typeof window.dashboard.loadOrders === 'function') {
-                    window.dashboard.loadOrders();
-                }
-            }, 500);
+            if (window.loadOrders) {
+                console.log('   → Rechargement des commandes (loadOrders)...');
+                window.loadOrders();
+            } else if (window.dashboard && typeof window.dashboard.loadOrders === 'function') {
+                console.log('   → Rechargement des commandes (dashboard.loadOrders)...');
+                window.dashboard.loadOrders();
+            } else {
+                console.warn('   ⚠️ Aucune fonction de rechargement trouvée');
+            }
+            
+            // Recharger aussi les stats si disponible
+            if (window.dashboard && typeof window.dashboard.loadStats === 'function') {
+                window.dashboard.loadStats();
+            }
         });
         
         // Écouter les livraisons confirmées
@@ -42,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Connexion établie
         window.notificationClient.on('connected', () => {
-            console.log('✅ Service de notifications en temps réel actif pour dashboard');
+            console.log('✅ Service de notifications en temps réel actif pour ADMIN/COLLECTIVITÉ');
             
             // Afficher un petit indicateur de connexion
             showConnectionIndicator(true);
@@ -50,8 +59,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Déconnexion
         window.notificationClient.on('disconnected', () => {
-            console.log('⚠️ Service de notifications déconnecté');
+            console.warn('⚠️ Service de notifications déconnecté pour ADMIN');
             showConnectionIndicator(false);
+        });
+        
+        // Log de toutes les notifications reçues
+        window.notificationClient.on('notification', (notification) => {
+            console.log('📬 Notification générique reçue:', notification.type, notification);
         });
     };
     
