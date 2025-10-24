@@ -241,12 +241,18 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   // 🔔 NOTIFIER LE CLIENT DU CHANGEMENT DE STATUT
   try {
     const customerId = order.customer._id || order.customer;
-    console.log(`📬 Envoi notification au client ${customerId}`);
+    console.log(`\n📬 ======== ENVOI NOTIFICATION CLIENT ========`);
+    console.log(`   Customer ID: ${customerId}`);
+    console.log(`   Customer type: ${typeof customerId}`);
+    console.log(`   Customer toString: ${customerId.toString()}`);
     console.log(`   Supplier: ${order.supplier?.businessName || 'N/A'}`);
     console.log(`   Customer: ${order.customer?.businessName || 'N/A'}`);
+    console.log(`   Order: ${order.orderNumber}`);
+    console.log(`   Status: ${oldStatus} → ${status}`);
     
     notificationService.notifyOrderStatusChange(customerId, order, oldStatus, status);
-    console.log(`✅ Notification de changement de statut envoyée au client ${customerId}`);
+    console.log(`✅ Notification envoyée au service`);
+    console.log(`========================================\n`);
   } catch (notifError) {
     console.error('❌ Erreur lors de l\'envoi de la notification:', notifError);
     console.error('   Stack:', notifError.stack);

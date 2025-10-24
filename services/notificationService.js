@@ -34,7 +34,9 @@ class NotificationService {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decoded.id;
         
-        console.log(`✅ Client connecté: ${userId}`);
+        console.log(`✅ Client WebSocket connecté:`);
+        console.log(`   User ID: ${userId}`);
+        console.log(`   Token décodé:`, JSON.stringify(decoded, null, 2));
         
         // Associer la connexion à l'utilisateur
         if (!this.clients.has(userId)) {

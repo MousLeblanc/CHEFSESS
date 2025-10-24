@@ -172,7 +172,25 @@ class NotificationClient {
    */
   getToken() {
     // Essayer de récupérer le token depuis localStorage
-    return localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    
+    // Debug: décoder le token pour voir l'ID utilisateur
+    if (token) {
+      try {
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1]));
+          console.log('🔑 Token JWT décodé (client):', payload);
+          console.log('   User ID dans token:', payload.id);
+        }
+      } catch (e) {
+        console.error('❌ Erreur décodage token:', e);
+      }
+    } else {
+      console.warn('⚠️ Pas de token dans localStorage');
+    }
+    
+    return token;
   }
 
   /**
