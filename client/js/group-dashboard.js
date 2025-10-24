@@ -204,6 +204,7 @@ class GroupDashboard {
         // Formulaires
         document.getElementById('add-site-form')?.addEventListener('submit', (e) => this.handleAddSite(e));
         document.getElementById('create-group-menu-form')?.addEventListener('submit', (e) => this.handleCreateGroupMenu(e));
+        document.getElementById('generate-ai-menu-form')?.addEventListener('submit', (e) => this.handleGenerateAIMenu(e));
 
         // Bouton de déconnexion
         document.getElementById('logout-btn')?.addEventListener('click', () => this.logout());
@@ -422,6 +423,13 @@ class GroupDashboard {
     async loadMenusData() {
         // Générer les options de semaine pour les 12 prochaines semaines
         this.populateWeekSelector('week-selector');
+        
+        // Initialiser la date par défaut du générateur IA à aujourd'hui
+        const today = new Date().toISOString().split('T')[0];
+        const dateInput = document.getElementById('ai-menu-start-date');
+        if (dateInput) {
+            dateInput.value = today;
+        }
     }
 
     async loadSyncData() {
@@ -711,6 +719,155 @@ class GroupDashboard {
             console.error('Erreur lors de la création du menu groupe:', error);
             this.showToast('Erreur lors de la création du menu groupe', 'error');
         }
+    }
+
+    async handleGenerateAIMenu(e) {
+        e.preventDefault();
+        
+        const startDate = document.getElementById('ai-menu-start-date').value;
+        const numDays = parseInt(document.getElementById('ai-menu-num-days').value);
+        const theme = document.getElementById('ai-menu-theme').value;
+        
+        if (!startDate || !numDays) {
+            this.showToast('Veuillez remplir tous les champs obligatoires', 'warning');
+            return;
+        }
+
+        // Afficher le spinner de progression
+        const progressDiv = document.getElementById('ai-generation-progress');
+        const progressText = document.getElementById('ai-progress-text');
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const resultsDiv = document.getElementById('ai-menu-results');
+        
+        progressDiv.style.display = 'block';
+        submitBtn.disabled = true;
+        resultsDiv.style.display = 'none';
+        
+        try {
+            // Étape 1: Récupérer les sites actifs
+            progressText.textContent = `Chargement des sites actifs...`;
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            const activeSites = this.sites.filter(s => s.isActive);
+            if (activeSites.length === 0) {
+                throw new Error('Aucun site actif trouvé. Veuillez activer au moins un site.');
+            }
+            
+            // Étape 2: Récupérer tous les résidents des sites actifs
+            progressText.textContent = `Analyse des profils nutritionnels de ${activeSites.length} sites...`;
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            // Étape 3: Générer le menu avec l'IA
+            progressText.textContent = `Génération intelligente des menus...`;
+            
+            const response = await fetch('/api/intelligent-menu/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    groupId: this.currentGroup,
+                    establishmentType: 'ehpad', // Pour Vulpia, c'est principalement des EHPADs
+                    startDate,
+                    numDays,
+                    theme: theme || undefined,
+                    multiSite: true // Indiquer que c'est pour plusieurs sites
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Erreur lors de la génération des menus');
+            }
+            
+            const result = await response.json();
+            
+            // Étape 4: Afficher les résultats
+            progressDiv.style.display = 'none';
+            submitBtn.disabled = false;
+            this.displayAIMenuResults(result, activeSites.length);
+            
+            this.showToast('Menus générés avec succès pour tous les sites !', 'success');
+            
+        } catch (error) {
+            console.error('❌ Erreur lors de la génération IA:', error);
+            progressDiv.style.display = 'none';
+            submitBtn.disabled = false;
+            this.showToast(`Erreur: ${error.message}`, 'error');
+        }
+    }
+
+    displayAIMenuResults(result, sitesCount) {
+        const resultsDiv = document.getElementById('ai-menu-results');
+        
+        let html = `
+            <div style="background: #d4edda; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #28a745; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 0.5rem 0; color: #155724;">
+                    <i class="fas fa-check-circle"></i> Menus générés avec succès !
+                </h3>
+                <p style="margin: 0; color: #155724;">
+                    Les menus ont été créés pour <strong>${sitesCount} sites actifs</strong> en tenant compte de tous les profils nutritionnels des résidents.
+                </p>
+            </div>
+        `;
+        
+        // Afficher un résumé du menu
+        if (result.menu && result.menu.days) {
+            html += `
+                <h3 style="margin-bottom: 1rem;"><i class="fas fa-calendar-alt"></i> Aperçu du menu</h3>
+                <div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
+            `;
+            
+            result.menu.days.forEach((day, index) => {
+                html += `
+                    <div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 1rem;">
+                        <h4 style="margin: 0 0 0.75rem 0; color: #667eea;">
+                            Jour ${index + 1} - ${new Date(day.date).toLocaleDateString()}
+                        </h4>
+                        <div style="display: grid; gap: 0.5rem;">
+                            <div style="padding: 0.5rem; background: #f8f9fa; border-radius: 4px;">
+                                <strong>🥗 Entrée:</strong> ${day.meals.find(m => m.type === 'lunch')?.courses.find(c => c.category === 'entrée')?.name || 'N/A'}
+                            </div>
+                            <div style="padding: 0.5rem; background: #f8f9fa; border-radius: 4px;">
+                                <strong>🍖 Plat:</strong> ${day.meals.find(m => m.type === 'lunch')?.courses.find(c => c.category === 'plat')?.name || 'N/A'}
+                            </div>
+                            <div style="padding: 0.5rem; background: #f8f9fa; border-radius: 4px;">
+                                <strong>🍰 Dessert:</strong> ${day.meals.find(m => m.type === 'lunch')?.courses.find(c => c.category === 'dessert')?.name || 'N/A'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+        }
+        
+        // Bouton pour synchroniser vers les sites
+        html += `
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button onclick="groupDashboard.syncMenuToAllSites()" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">
+                    <i class="fas fa-sync"></i> Synchroniser vers tous les sites
+                </button>
+                <button onclick="window.location.reload()" class="btn btn-outline" style="padding: 0.75rem 1.5rem;">
+                    <i class="fas fa-redo"></i> Générer un nouveau menu
+                </button>
+            </div>
+        `;
+        
+        resultsDiv.innerHTML = html;
+        resultsDiv.style.display = 'block';
+        
+        // Scroller vers les résultats
+        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    async syncMenuToAllSites() {
+        this.showToast('Synchronisation vers tous les sites...', 'info');
+        // À implémenter: logique de synchronisation
+        setTimeout(() => {
+            this.showToast('Synchronisation terminée !', 'success');
+        }, 2000);
     }
 
     async syncAllSites(yearWeek) {

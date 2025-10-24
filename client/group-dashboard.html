@@ -230,15 +230,69 @@
 
         <!-- Gestion des menus -->
         <div id="menus-tab" class="tab-content">
+            <!-- Générateur IA Multi-Sites -->
+            <div class="card" style="margin-bottom: 2rem; border: 2px solid #667eea;">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h2><i class="fas fa-wand-magic-sparkles"></i> Générateur IA Multi-Sites</h2>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.9;">Génération intelligente de menus pour tous les sites actifs</p>
+                </div>
+                <div class="card-body">
+                    <form id="generate-ai-menu-form">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                            <div class="form-group">
+                                <label for="ai-menu-start-date"><i class="fas fa-calendar"></i> Date de début *</label>
+                                <input type="date" id="ai-menu-start-date" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
+                            </div>
+                            <div class="form-group">
+                                <label for="ai-menu-num-days"><i class="fas fa-calendar-week"></i> Nombre de jours *</label>
+                                <input type="number" id="ai-menu-num-days" min="1" max="14" value="7" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label for="ai-menu-theme"><i class="fas fa-lightbulb"></i> Thème du menu (optionnel)</label>
+                            <input type="text" id="ai-menu-theme" placeholder="Ex: Cuisine méditerranéenne, Saveurs d'automne..." style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+
+                        <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #2196f3;">
+                            <p style="margin: 0; color: #1565c0; font-size: 0.9rem;">
+                                <i class="fas fa-info-circle"></i> 
+                                <strong>L'IA prendra automatiquement en compte :</strong><br>
+                                • Tous les profils nutritionnels des résidents de tous les sites actifs<br>
+                                • La disponibilité du stock centralisé<br>
+                                • Les allergies, intolérances et restrictions alimentaires<br>
+                                • Les textures adaptées (normale, hachée, mixée)<br>
+                                • Les conditions médicales spécifiques
+                            </p>
+                        </div>
+
+                        <div id="ai-generation-progress" style="display: none; background: #fff3cd; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; text-align: center;">
+                            <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: #856404;"></i>
+                            <p style="margin: 0.5rem 0 0 0; color: #856404; font-weight: 600;">Génération en cours...</p>
+                            <p style="margin: 0.25rem 0 0 0; color: #666; font-size: 0.85rem;" id="ai-progress-text">Analyse des profils nutritionnels...</p>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                            <i class="fas fa-wand-magic-sparkles"></i> Générer les menus pour tous les sites
+                        </button>
+                    </form>
+
+                    <div id="ai-menu-results" style="display: none; margin-top: 2rem;">
+                        <!-- Les résultats seront affichés ici -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menus existants -->
             <div class="card">
                 <div class="card-header">
-                    <h2><i class="fas fa-utensils"></i> Menus Multi-Sites</h2>
+                    <h2><i class="fas fa-utensils"></i> Menus Multi-Sites Existants</h2>
                     <div class="header-actions">
                         <select id="week-selector" class="form-select">
                             <option value="">Sélectionner une semaine</option>
                         </select>
-                        <button id="create-group-menu-btn" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Créer Menu Groupe
+                        <button id="create-group-menu-btn" class="btn btn-outline">
+                            <i class="fas fa-plus"></i> Créer Menu Manuel
                         </button>
                     </div>
                 </div>
