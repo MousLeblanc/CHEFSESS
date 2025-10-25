@@ -216,8 +216,20 @@ class GroupDashboard {
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         
         // Activer l'onglet sélectionné
-        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-        document.getElementById(`${tabName}-tab`).classList.add('active');
+        const tabBtn = document.querySelector(`[data-tab="${tabName}"]`);
+        const tabContent = document.getElementById(`${tabName}-tab`);
+        
+        if (tabBtn) {
+            tabBtn.classList.add('active');
+        } else {
+            console.warn(`⚠️ Bouton d'onglet non trouvé: ${tabName}`);
+        }
+        
+        if (tabContent) {
+            tabContent.classList.add('active');
+        } else {
+            console.warn(`⚠️ Contenu d'onglet non trouvé: ${tabName}-tab`);
+        }
         
         // Charger les données spécifiques à l'onglet
         this.loadTabData(tabName);
