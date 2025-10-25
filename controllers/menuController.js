@@ -1,12 +1,71 @@
 import RecipeEnriched from "../models/Recipe.js";
 import { generateAdaptedRecipe, calculateCompatibilityScore } from "../services/aiService.js";
 
+/**
+ * Normalise les valeurs du frontend vers le format backend/MongoDB
+ */
+const normalizeFilterValue = (value) => {
+  if (!value) return value;
+  
+  const map = {
+    "Sans sel": "hyposode",
+    "sans sel": "hyposode",
+    "Sans Sel": "hyposode",
+    "Sans sucre": "hypoglucidique",
+    "sans sucre": "hypoglucidique",
+    "Végétarien": "végétarien",
+    "vegetarien": "végétarien",
+    "Végétalien": "végétalien",
+    "Vegan": "végétalien",
+    "vegan": "végétalien",
+    "Mixée": "mixée",
+    "mixée": "mixée",
+    "mixee": "mixée",
+    "Hachée": "hachée",
+    "hachée": "hachée",
+    "hachee": "hachée",
+    "Hyperprotéiné": "hyperproteine",
+    "hyperprotéiné": "hyperproteine",
+    "hyperproteine": "hyperproteine",
+    "Casher": "casher",
+    "casher": "casher",
+    "Halal": "halal",
+    "halal": "halal",
+    "Sans gluten": "sans_gluten",
+    "sans gluten": "sans_gluten",
+    "Sans Gluten": "sans_gluten",
+    "Sans lactose": "sans_lactose",
+    "sans lactose": "sans_lactose",
+    "Hypocalorique": "hypocalorique",
+    "hypocalorique": "hypocalorique",
+    "Diabète": "diabete",
+    "diabète": "diabete",
+    "Hypertension": "hypertension",
+    "hypertension": "hypertension"
+  };
+  
+  return map[value] || value.toLowerCase();
+};
+
 export const generateCollectiviteMenu = async (req, res) => {
   try {
-    const { filters } = req.body;
+    let { filters } = req.body;
     if (!filters) return res.status(400).json({ message: "Filtres manquants" });
 
-    console.log('🔍 Recherche de recettes avec filtres:', filters);
+    console.log('🔍 Recherche de recettes avec filtres (AVANT normalisation):', filters);
+    
+    // NORMALISER les filtres pour correspondre aux valeurs MongoDB
+    if (filters.diet) {
+      filters.diet = filters.diet.map(normalizeFilterValue);
+    }
+    if (filters.pathologies) {
+      filters.pathologies = filters.pathologies.map(normalizeFilterValue);
+    }
+    if (filters.texture) {
+      filters.texture = normalizeFilterValue(filters.texture);
+    }
+    
+    console.log('✅ Filtres normalisés:', filters);
 
     // Construire les conditions de recherche avec les nouveaux champs enrichis
     const searchConditions = [];
@@ -18,22 +77,28 @@ export const generateCollectiviteMenu = async (req, res) => {
     
     // Diet/Restrictions alimentaires - chercher dans TOUS les champs pertinents
     if (filters.diet?.length > 0) {
+      // Les tags ont des # devant, mais pas les autres champs
+      const dietTags = filters.diet.map(d => `#${d}`);
+      
       searchConditions.push({
         $or: [
           { diet: { $in: filters.diet } },
           { dietaryRestrictions: { $in: filters.diet } },
-          { tags: { $in: filters.diet } }
+          { tags: { $in: dietTags } }  // Ajouter # pour les tags
         ]
       });
     }
     
     // Pathologies - chercher dans TOUS les champs pertinents
     if (filters.pathologies?.length > 0) {
+      // Les tags ont des # devant, mais pas les autres champs
+      const pathologyTags = filters.pathologies.map(p => `#${p}`);
+      
       searchConditions.push({
         $or: [
           { pathologies: { $in: filters.pathologies } },
           { compatibleFor: { $in: filters.pathologies } },
-          { tags: { $in: filters.pathologies } }
+          { tags: { $in: pathologyTags } }  // Ajouter # pour les tags
         ]
       });
     }
@@ -55,18 +120,20 @@ export const generateCollectiviteMenu = async (req, res) => {
       const expandedConditions = [];
       
       if (filters.diet?.length > 0) {
+        const dietTags = filters.diet.map(d => `#${d}`);
         expandedConditions.push(
           { diet: { $in: filters.diet } },
           { dietaryRestrictions: { $in: filters.diet } },
-          { tags: { $in: filters.diet } }
+          { tags: { $in: dietTags } }
         );
       }
       
       if (filters.pathologies?.length > 0) {
+        const pathologyTags = filters.pathologies.map(p => `#${p}`);
         expandedConditions.push(
           { pathologies: { $in: filters.pathologies } },
           { compatibleFor: { $in: filters.pathologies } },
-          { tags: { $in: filters.pathologies } }
+          { tags: { $in: pathologyTags } }
         );
       }
       
@@ -146,7 +213,7 @@ export const generateCollectiviteMenu = async (req, res) => {
  */
 export const generateMaisonRetraiteMenu = async (req, res) => {
   try {
-  const { 
+  let { 
       texture = 'normale',
       diet = [],
       pathologies = [],
@@ -155,9 +222,22 @@ export const generateMaisonRetraiteMenu = async (req, res) => {
       totalPeople = 10
   } = req.body;
 
-    console.log('🏥 Génération menu maison de retraite:', {
+    console.log('🏥 Génération menu maison de retraite (AVANT normalisation):', {
       texture, diet, pathologies, allergens, numDishes, totalPeople
     });
+    
+    // NORMALISER les filtres pour correspondre aux valeurs MongoDB
+    if (diet.length > 0) {
+      diet = diet.map(normalizeFilterValue);
+    }
+    if (pathologies.length > 0) {
+      pathologies = pathologies.map(normalizeFilterValue);
+    }
+    if (texture) {
+      texture = normalizeFilterValue(texture);
+    }
+    
+    console.log('✅ Filtres normalisés:', { texture, diet, pathologies });
 
     // Filtres spécialisés pour seniors
     const seniorFilters = {
@@ -178,22 +258,28 @@ export const generateMaisonRetraiteMenu = async (req, res) => {
     
     // Diet/Restrictions - chercher dans tous les champs
     if (diet.length > 0) {
+      // Les tags ont des # devant, mais pas les autres champs
+      const dietTags = diet.map(d => `#${d}`);
+      
       seniorSearchConditions.push({
         $or: [
           { diet: { $in: diet } },
           { dietaryRestrictions: { $in: diet } },
-          { tags: { $in: diet } }
+          { tags: { $in: dietTags } }  // Ajouter # pour les tags
         ]
       });
     }
     
     // Pathologies - chercher dans tous les champs
     if (pathologies.length > 0) {
+      // Les tags ont des # devant, mais pas les autres champs
+      const pathologyTags = pathologies.map(p => `#${p}`);
+      
       seniorSearchConditions.push({
         $or: [
           { pathologies: { $in: pathologies } },
           { compatibleFor: { $in: pathologies } },
-          { tags: { $in: pathologies } }
+          { tags: { $in: pathologyTags } }  // Ajouter # pour les tags
         ]
       });
     }
