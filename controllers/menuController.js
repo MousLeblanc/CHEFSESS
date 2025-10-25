@@ -3,41 +3,69 @@ import { generateAdaptedRecipe, calculateCompatibilityScore } from "../services/
 
 /**
  * Normalise les valeurs du frontend vers le format backend/MongoDB
+ * DOIT correspondre EXACTEMENT aux tags dans la DB (avec accents et underscores)
  */
 const normalizeFilterValue = (value) => {
   if (!value) return value;
   
   const map = {
-    "Sans sel": "hyposode",
-    "sans sel": "hyposode",
-    "Sans Sel": "hyposode",
+    // Sans sel → sans_sel (avec underscore comme dans les tags!)
+    "Sans sel": "sans_sel",
+    "sans sel": "sans_sel",
+    "Sans Sel": "sans_sel",
+    
+    // Sans sucre → hypoglucidique
     "Sans sucre": "hypoglucidique",
     "sans sucre": "hypoglucidique",
+    
+    // Végétarien (garder l'accent)
     "Végétarien": "végétarien",
     "vegetarien": "végétarien",
+    "Vegetarien": "végétarien",
+    
+    // Végétalien (garder l'accent)
     "Végétalien": "végétalien",
     "Vegan": "végétalien",
     "vegan": "végétalien",
+    
+    // Textures (garder les accents)
     "Mixée": "mixée",
     "mixée": "mixée",
     "mixee": "mixée",
     "Hachée": "hachée",
     "hachée": "hachée",
     "hachee": "hachée",
-    "Hyperprotéiné": "hyperproteine",
-    "hyperprotéiné": "hyperproteine",
-    "hyperproteine": "hyperproteine",
+    "Tendre": "tendre",
+    "tendre": "tendre",
+    "Lisse": "lisse",
+    "lisse": "lisse",
+    
+    // Hyperprotéiné (garder l'accent!)
+    "Hyperprotéiné": "hyperprotéiné",
+    "hyperprotéiné": "hyperprotéiné",
+    "hyperproteine": "hyperprotéiné",
+    "Hyperproteine": "hyperprotéiné",
+    
+    // Religions
     "Casher": "casher",
     "casher": "casher",
     "Halal": "halal",
     "halal": "halal",
+    
+    // Sans gluten → sans_gluten (avec underscore!)
     "Sans gluten": "sans_gluten",
     "sans gluten": "sans_gluten",
     "Sans Gluten": "sans_gluten",
+    
+    // Sans lactose → sans_lactose (avec underscore!)
     "Sans lactose": "sans_lactose",
     "sans lactose": "sans_lactose",
+    
+    // Hypocalorique
     "Hypocalorique": "hypocalorique",
     "hypocalorique": "hypocalorique",
+    
+    // Pathologies
     "Diabète": "diabete",
     "diabète": "diabete",
     "Hypertension": "hypertension",

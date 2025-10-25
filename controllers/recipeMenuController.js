@@ -8,29 +8,62 @@ import openai from '../services/openaiClient.js';
 /**
  * Normalise les valeurs du frontend vers le format backend
  */
+/**
+ * Normalise les valeurs du frontend vers le format backend/MongoDB
+ * DOIT correspondre EXACTEMENT aux tags et dietaryRestrictions dans la DB
+ */
 function normalizeDietaryRestrictions(restrictions) {
   const mapping = {
-    'Sans sel': 'hyposode',
-    'sans sel': 'hyposode',
-    'Sans Sel': 'hyposode',
+    // Sans sel → sans_sel (avec underscore comme dans les tags!)
+    'Sans sel': 'sans_sel',
+    'sans sel': 'sans_sel',
+    'Sans Sel': 'sans_sel',
+    
+    // Religions
     'Halal': 'halal',
     'halal': 'halal',
     'Casher': 'casher',
     'casher': 'casher',
+    
+    // Végétarien (garder l'accent)
     'Végétarien': 'végétarien',
     'végétarien': 'végétarien',
     'Vegetarien': 'végétarien',
+    
+    // Végétalien (garder l'accent)
     'Végétalien': 'végétalien',
     'végétalien': 'végétalien',
+    'Vegan': 'végétalien',
+    'vegan': 'végétalien',
+    
+    // Sans gluten → sans_gluten (avec underscore!)
     'Sans gluten': 'sans_gluten',
     'sans gluten': 'sans_gluten',
     'Sans Gluten': 'sans_gluten',
+    
+    // Sans lactose → sans_lactose (avec underscore!)
     'Sans lactose': 'sans_lactose',
     'sans lactose': 'sans_lactose',
-    'Hyperprotéiné': 'hyperproteine',
-    'hyperprotéiné': 'hyperproteine',
+    
+    // Hyperprotéiné (garder l'accent!)
+    'Hyperprotéiné': 'hyperprotéiné',
+    'hyperprotéiné': 'hyperprotéiné',
+    'hyperproteine': 'hyperprotéiné',
+    'Hyperproteine': 'hyperprotéiné',
+    
+    // Hypocalorique
     'Hypocalorique': 'hypocalorique',
-    'hypocalorique': 'hypocalorique'
+    'hypocalorique': 'hypocalorique',
+    
+    // Textures
+    'Mixée': 'mixée',
+    'mixée': 'mixée',
+    'mixee': 'mixée',
+    'Hachée': 'hachée',
+    'hachée': 'hachée',
+    'hachee': 'hachée',
+    'Tendre': 'tendre',
+    'tendre': 'tendre'
   };
   
   return restrictions.map(r => mapping[r] || r.toLowerCase());

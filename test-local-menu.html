@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Menu Local</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .btn-danger {
+            background: #f44336;
+        }
+        .btn-danger:hover {
+            background: #da190b;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            max-height: 400px;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+        .loading {
+            color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Menu API - LOCAL</h1>
+    <p><strong>Serveur:</strong> http://localhost:5000</p>
+
+    <div class="test-section">
+        <h2>Test 1: Menu avec "Sans sel" + "Végétarien"</h2>
+        <button onclick="testMenu1()">🚀 Lancer Test 1</button>
+        <div id="result1"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Menu EHPAD avec "Mixée" + "Hyperprotéiné"</h2>
+        <button onclick="testMenu2()">🚀 Lancer Test 2</button>
+        <div id="result2"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Menu avec "Halal" + "Casher"</h2>
+        <button onclick="testMenu3()">🚀 Lancer Test 3</button>
+        <div id="result3"></div>
+    </div>
+
+    <script>
+        async function testMenu1() {
+            const resultDiv = document.getElementById('result1');
+            resultDiv.innerHTML = '<p class="loading">⏳ Recherche en cours...</p>';
+
+            try {
+                const response = await fetch('http://localhost:5000/api/menu/generate-collectivite', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        filters: {
+                            diet: ["Sans sel", "Végétarien"]
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ SUCCÈS !</p>
+                        <p><strong>Recettes trouvées:</strong> ${data.totalFound}</p>
+                        <p><strong>Recettes sélectionnées:</strong> ${data.selectedCount}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ ERREUR</p>
+                        <p>${data.message}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ ERREUR RÉSEAU</p>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+
+        async function testMenu2() {
+            const resultDiv = document.getElementById('result2');
+            resultDiv.innerHTML = '<p class="loading">⏳ Recherche en cours...</p>';
+
+            try {
+                const response = await fetch('http://localhost:5000/api/menu/generate-maison-retraite', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        texture: "Mixée",
+                        diet: ["Hyperprotéiné"],
+                        numDishes: 3,
+                        totalPeople: 50
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ SUCCÈS !</p>
+                        <p><strong>Recettes trouvées:</strong> ${data.totalFound}</p>
+                        <p><strong>Recettes sélectionnées:</strong> ${data.selectedCount}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ ERREUR</p>
+                        <p>${data.message}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ ERREUR RÉSEAU</p>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+
+        async function testMenu3() {
+            const resultDiv = document.getElementById('result3');
+            resultDiv.innerHTML = '<p class="loading">⏳ Recherche en cours...</p>';
+
+            try {
+                const response = await fetch('http://localhost:5000/api/menu/generate-collectivite', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        filters: {
+                            diet: ["Halal", "Casher"]
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ SUCCÈS !</p>
+                        <p><strong>Recettes trouvées:</strong> ${data.totalFound}</p>
+                        <p><strong>Recettes sélectionnées:</strong> ${data.selectedCount}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ ERREUR</p>
+                        <p>${data.message}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ ERREUR RÉSEAU</p>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
+
