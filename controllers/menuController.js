@@ -8,36 +8,80 @@ export const generateCollectiviteMenu = async (req, res) => {
 
     console.log('🔍 Recherche de recettes avec filtres:', filters);
 
+    // Construire les conditions de recherche avec les nouveaux champs enrichis
+    const searchConditions = [];
+    
+    // Texture
+    if (filters.texture) {
+      searchConditions.push({ texture: filters.texture });
+    }
+    
+    // Diet/Restrictions alimentaires - chercher dans TOUS les champs pertinents
+    if (filters.diet?.length > 0) {
+      searchConditions.push({
+        $or: [
+          { diet: { $in: filters.diet } },
+          { dietaryRestrictions: { $in: filters.diet } },
+          { tags: { $in: filters.diet } }
+        ]
+      });
+    }
+    
+    // Pathologies - chercher dans TOUS les champs pertinents
+    if (filters.pathologies?.length > 0) {
+      searchConditions.push({
+        $or: [
+          { pathologies: { $in: filters.pathologies } },
+          { compatibleFor: { $in: filters.pathologies } },
+          { tags: { $in: filters.pathologies } }
+        ]
+      });
+    }
+
     // Étape 1 : recherche stricte
-    let recipes = await RecipeEnriched.find({
-      $and: [
-        filters.texture ? { texture: filters.texture } : {},
-        filters.diet?.length ? { diet: { $all: filters.diet } } : {},
-        filters.pathologies?.length ? { pathologies: { $all: filters.pathologies } } : {}
-      ]
-    });
+    let recipes = [];
+    if (searchConditions.length > 0) {
+      recipes = await RecipeEnriched.find({ $and: searchConditions });
+    } else {
+      // Si pas de filtres, prendre toutes les recettes
+      recipes = await RecipeEnriched.find({}).limit(50);
+    }
 
     console.log(`📊 Recherche stricte: ${recipes.length} recettes trouvées`);
 
-    // Étape 2 : fallback élargi
-    if (recipes.length === 0) {
+    // Étape 2 : fallback élargi si aucun résultat
+    if (recipes.length === 0 && (filters.diet?.length > 0 || filters.pathologies?.length > 0)) {
       console.warn("⚠️ Aucun résultat strict. Recherche élargie...");
-      recipes = await RecipeEnriched.find({
-        $or: [
-          { diet: { $in: filters.diet || [] } },
-          { pathologies: { $in: filters.pathologies || [] } },
-          { compatibleFor: { $in: filters.pathologies || [] } }
-        ]
-      });
-      console.log(`📊 Recherche élargie: ${recipes.length} recettes trouvées`);
+      const expandedConditions = [];
+      
+      if (filters.diet?.length > 0) {
+        expandedConditions.push(
+          { diet: { $in: filters.diet } },
+          { dietaryRestrictions: { $in: filters.diet } },
+          { tags: { $in: filters.diet } }
+        );
+      }
+      
+      if (filters.pathologies?.length > 0) {
+        expandedConditions.push(
+          { pathologies: { $in: filters.pathologies } },
+          { compatibleFor: { $in: filters.pathologies } },
+          { tags: { $in: filters.pathologies } }
+        );
+      }
+      
+      if (expandedConditions.length > 0) {
+        recipes = await RecipeEnriched.find({ $or: expandedConditions });
+        console.log(`📊 Recherche élargie: ${recipes.length} recettes trouvées`);
+      }
     }
 
     // Étape 3 : fallback IA — substitution d'ingrédients
     if (recipes.length === 0) {
       console.warn("⚙️ Activation du fallback IA...");
-      const aiRecipeEnricheds = await generateAdaptedRecipeEnriched(filters);
-      if (aiRecipeEnricheds && aiRecipeEnricheds.length > 0) {
-        recipes = aiRecipeEnricheds.map(r => ({ ...r, aiGenerated: true }));
+      const aiRecipes = await generateAdaptedRecipe(filters);
+      if (aiRecipes && aiRecipes.length > 0) {
+        recipes = aiRecipes.map(r => ({ ...r, aiGenerated: true }));
         console.log(`🤖 IA: ${recipes.length} recettes générées`);
       }
     }
@@ -123,30 +167,68 @@ export const generateMaisonRetraiteMenu = async (req, res) => {
       allergens
     };
 
-    // Recherche avec filtres seniors
+    // Recherche avec filtres seniors - utiliser les nouveaux champs enrichis
+    const seniorSearchConditions = [
+      { establishmentTypes: { $in: ['ehpad', 'hopital'] } }
+    ];
+    
+    if (texture) {
+      seniorSearchConditions.push({ texture: texture });
+    }
+    
+    // Diet/Restrictions - chercher dans tous les champs
+    if (diet.length > 0) {
+      seniorSearchConditions.push({
+        $or: [
+          { diet: { $in: diet } },
+          { dietaryRestrictions: { $in: diet } },
+          { tags: { $in: diet } }
+        ]
+      });
+    }
+    
+    // Pathologies - chercher dans tous les champs
+    if (pathologies.length > 0) {
+      seniorSearchConditions.push({
+        $or: [
+          { pathologies: { $in: pathologies } },
+          { compatibleFor: { $in: pathologies } },
+          { tags: { $in: pathologies } }
+        ]
+      });
+    }
+    
+    // Allergènes - EXCLUSION
+    if (allergens.length > 0) {
+      seniorSearchConditions.push({ allergens: { $nin: allergens } });
+    }
+    
     let recipes = await RecipeEnriched.find({
-      $and: [
-        { establishmentTypes: { $in: ['ehpad', 'hopital'] } },
-        texture ? { texture: texture } : {},
-        diet.length > 0 ? { diet: { $in: diet } } : {},
-        pathologies.length > 0 ? { 
-          $or: [
-            { pathologies: { $in: pathologies } },
-            { compatibleFor: { $in: pathologies } }
-          ]
-        } : {},
-        allergens.length > 0 ? { allergens: { $nin: allergens } } : {}
-      ]
+      $and: seniorSearchConditions.filter(c => Object.keys(c).length > 0)
     });
 
-    console.log(`👴 ${recipes.length} recettes trouvées pour seniors`);
+    console.log(`👴 ${recipes.length} recettes trouvées pour seniors (conditions: ${seniorSearchConditions.length})`);
+    console.log('🔍 Conditions de recherche:', JSON.stringify(seniorSearchConditions, null, 2));
+    
+    // FALLBACK si aucun résultat : essayer sans restrictions diet/pathologies
+    if (recipes.length === 0) {
+      console.warn('⚠️ Aucun résultat avec filtres stricts. Tentative avec EHPAD/Hopital uniquement...');
+      recipes = await RecipeEnriched.find({
+        $and: [
+          { establishmentTypes: { $in: ['ehpad', 'hopital'] } },
+          texture ? { texture: texture } : {},
+          allergens.length > 0 ? { allergens: { $nin: allergens } } : {}
+        ].filter(c => Object.keys(c).length > 0)
+      });
+      console.log(`👴 Fallback: ${recipes.length} recettes trouvées`);
+    }
 
     // Si pas assez de recettes, utiliser l'IA
     if (recipes.length < numDishes) {
       console.log('🤖 Utilisation de l\'IA pour compléter le menu...');
-      const aiRecipeEnricheds = await generateAdaptedRecipeEnriched(seniorFilters);
-      if (aiRecipeEnricheds && aiRecipeEnricheds.length > 0) {
-        recipes = [...recipes, ...aiRecipeEnricheds.map(r => ({ ...r, aiGenerated: true }))];
+      const aiRecipes = await generateAdaptedRecipe(seniorFilters);
+      if (aiRecipes && aiRecipes.length > 0) {
+        recipes = [...recipes, ...aiRecipes.map(r => ({ ...r, aiGenerated: true }))];
       }
     }
 
