@@ -753,27 +753,36 @@ class GroupDashboard {
                 }
                 
                 try {
+                    const payload = {
+                        establishmentType: 'ehpad',
+                        ageGroups: [{
+                            ageRange: "75+",
+                            count: group.residentCount
+                        }],
+                        numDishes: numDays,
+                        menuStructure: 'entree_plat_dessert',
+                        allergens: group.allergens,
+                        dietaryRestrictions: group.dietaryRestrictions,
+                        medicalConditions: group.medicalConditions,
+                        texture: 'normale',
+                        theme: theme || '',
+                        useStockOnly: false,
+                        swallowing: 'normale',
+                        nutritionalProfile: [],
+                        ethicalRestrictions: [],
+                        ageDependencyGroup: 'personne_agee_autonome',
+                        comfortFilters: []
+                    };
+                    
+                    console.log(`📤 Envoi requête pour "${group.name}":`, payload);
+                    
                     const menuResponse = await fetch('/api/intelligent-menu/generate', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         credentials: 'include',
-                        body: JSON.stringify({
-                            establishmentType: 'ehpad',
-                            ageGroups: [{
-                                ageRange: "75+",
-                                count: group.residentCount
-                            }],
-                            numDishes: numDays * 3,
-                            menuStructure: 'entree_plat_dessert',
-                            allergens: group.allergens,
-                            dietaryRestrictions: group.dietaryRestrictions,
-                            medicalConditions: group.medicalConditions,
-                            texture: 'normale',
-                            theme: theme || undefined,
-                            useStockOnly: false
-                        })
+                        body: JSON.stringify(payload)
                     });
                     
                     if (menuResponse.ok) {
@@ -785,10 +794,19 @@ class GroupDashboard {
                         });
                         console.log(`✅ Menu "${group.name}" généré avec succès`);
                     } else {
-                        console.warn(`⚠️ Échec de génération pour "${group.name}"`);
+                        // Capturer le message d'erreur détaillé
+                        let errorMsg = 'Échec de génération';
+                        try {
+                            const errorData = await menuResponse.json();
+                            errorMsg = errorData.message || errorData.error || errorMsg;
+                            console.error(`❌ Erreur ${menuResponse.status} pour "${group.name}":`, errorData);
+                        } catch (e) {
+                            console.error(`❌ Erreur ${menuResponse.status} pour "${group.name}" (pas de détails)`);
+                        }
+                        
                         menuVariants.push({
                             group: group,
-                            error: 'Échec de génération',
+                            error: errorMsg,
                             success: false
                         });
                     }
