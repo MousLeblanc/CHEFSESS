@@ -6,11 +6,42 @@ import Resident from '../models/Resident.js';
 import openai from '../services/openaiClient.js';
 
 /**
+ * Normalise les valeurs du frontend vers le format backend
+ */
+function normalizeDietaryRestrictions(restrictions) {
+  const mapping = {
+    'Sans sel': 'hyposode',
+    'sans sel': 'hyposode',
+    'Sans Sel': 'hyposode',
+    'Halal': 'halal',
+    'halal': 'halal',
+    'Casher': 'casher',
+    'casher': 'casher',
+    'Végétarien': 'végétarien',
+    'végétarien': 'végétarien',
+    'Vegetarien': 'végétarien',
+    'Végétalien': 'végétalien',
+    'végétalien': 'végétalien',
+    'Sans gluten': 'sans_gluten',
+    'sans gluten': 'sans_gluten',
+    'Sans Gluten': 'sans_gluten',
+    'Sans lactose': 'sans_lactose',
+    'sans lactose': 'sans_lactose',
+    'Hyperprotéiné': 'hyperproteine',
+    'hyperprotéiné': 'hyperproteine',
+    'Hypocalorique': 'hypocalorique',
+    'hypocalorique': 'hypocalorique'
+  };
+  
+  return restrictions.map(r => mapping[r] || r.toLowerCase());
+}
+
+/**
  * Génère un menu intelligent basé sur les recettes de la base de données
  * avec adaptation des quantités selon l'âge et le nombre de convives
  */
 export const generateIntelligentMenu = asyncHandler(async (req, res) => {
-  const {
+  let {
     establishmentType,
     ageGroups, // [{ ageRange: "6-12", count: 25 }, ...]
     numDishes, // Nombre de plats (entrée, plat, dessert)
@@ -27,6 +58,10 @@ export const generateIntelligentMenu = asyncHandler(async (req, res) => {
     useStockOnly = false, // Utiliser uniquement les ingrédients en stock
     theme // Thème du menu (optionnel)
   } = req.body;
+
+  // Normaliser les restrictions alimentaires
+  dietaryRestrictions = normalizeDietaryRestrictions(dietaryRestrictions);
+  console.log('🔄 Restrictions normalisées:', dietaryRestrictions);
 
   try {
     // 1. Calculer le nombre total de convives et la tranche d'âge majoritaire
@@ -50,7 +85,11 @@ export const generateIntelligentMenu = asyncHandler(async (req, res) => {
     
     // Si restrictions alimentaires spécifiées
     if (dietaryRestrictions.length > 0) {
-      orConditions.push({ diet: { $in: dietaryRestrictions } });
+      // Chercher dans BOTH 'diet' ET 'dietaryRestrictions'
+      orConditions.push(
+        { diet: { $in: dietaryRestrictions } },
+        { dietaryRestrictions: { $in: dietaryRestrictions } }
+      );
     }
 
     // Si pathologies spécifiées

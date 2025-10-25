@@ -16,10 +16,16 @@ const recipeSchema = new mongoose.Schema({
   // Textures & régimes
   texture: {
     type: String,
-    enum: ["normale", "hachée", "mixée", "lisse", "liquide", "boire"],
+    enum: ["normale", "tendre", "hachée", "mixée", "moulinée", "lisse", "liquide", "boire"],
     default: "normale"
   },
   diet: [{ type: String }], // ex: ["sans sel ajouté", "hypocalorique", "végétarien"]
+  
+  // Restrictions alimentaires détectées automatiquement
+  dietaryRestrictions: [{ type: String }], // ex: ["hyposodé", "végétarien", "halal", "casher", "sans_gluten"]
+  
+  // Tags pour recherche et affichage
+  tags: [{ type: String }], // ex: ["#ehpad", "#hyperprotéiné", "#mixée", "#soupe"]
 
   // Pathologies
   pathologies: [{ type: String }], // ex: ["diabète", "hypertension", "insuffisance rénale"]

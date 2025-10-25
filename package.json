@@ -36,6 +36,7 @@
     "verify-recipe-tags": "node scripts/verify-recipe-tags.js",
     "enrich-recipe-tags": "node scripts/enrich-recipe-tags-auto.js",
     "enrich-production": "node scripts/enrich-recipe-tags-production.js",
+    "enrich-diet-production": "node scripts/enrich-diet-production.js",
     "test-vulpia-menu": "node scripts/test-vulpia-menu-generation.js",
     "fix-residents": "node scripts/fix-residents-groupid.js"
   },
