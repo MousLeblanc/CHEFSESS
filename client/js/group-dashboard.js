@@ -660,90 +660,169 @@ class GroupDashboard {
             
             console.log('✅ Sites actifs:', activeSites.length);
             
-            // Étape 2: Récupérer tous les résidents des sites actifs
-            if (progressText) progressText.textContent = `Récupération des profils nutritionnels de ${activeSites.length} sites...`;
+            // Étape 2: Récupérer les profils groupés des résidents
+            if (progressText) progressText.textContent = `Analyse des profils nutritionnels...`;
             await new Promise(resolve => setTimeout(resolve, 300));
             
-            const response = await fetch(`/api/residents/group/${this.currentGroup}/grouped`, {
+            const groupedResponse = await fetch(`/api/residents/group/${this.currentGroup}/grouped`, {
                 credentials: 'include'
             });
             
-            if (!response.ok) {
-                throw new Error('Erreur lors de la récupération des résidents');
+            if (!groupedResponse.ok) {
+                throw new Error('Erreur lors de la récupération des profils nutritionnels');
             }
             
-            const residentsData = await response.json();
-            console.log('✅ Données résidents:', residentsData);
+            const groupedData = await groupedResponse.json();
+            const totalResidents = groupedData.data?.totalResidents || 0;
+            const groups = groupedData.data?.groups || {};
             
-            // Construire la structure de données pour l'API
-            const totalResidents = residentsData.data?.totalResidents || 100;
-            
-            const ageGroups = [{
-                ageRange: "75+",
-                count: totalResidents
-            }];
-            
-            // Limiter les allergènes aux plus critiques seulement
-            const allergens = [];
-            
-            // Agrégation légère des profils - seulement les allergies critiques
-            if (residentsData.data && residentsData.data.groups && residentsData.data.groups.allergies) {
-                const criticalAllergies = residentsData.data.groups.allergies
-                    .filter(group => group.severity === 'critique' || group.severity === 'sévère')
-                    .slice(0, 3);
-                
-                criticalAllergies.forEach(group => {
-                    allergens.push(group.name);
-                });
+            if (totalResidents === 0) {
+                throw new Error('Aucun résident actif trouvé dans les sites. Veuillez ajouter des résidents avant de générer un menu.');
             }
             
-            console.log('📊 Filtres appliqués (mode permissif):', {
+            console.log('✅ Profils nutritionnels groupés:', {
                 totalResidents,
-                allergensCritiques: allergens,
-                sitesActifs: activeSites.length
+                allergies: groups.allergies?.length || 0,
+                restrictions: groups.restrictions?.length || 0,
+                textures: groups.textures?.length || 0
             });
             
-            // Étape 3: Générer le menu avec l'IA
-            if (progressText) progressText.textContent = 'Génération intelligente des menus...';
+            // Étape 3: Préparer les groupes de résidents pour les variantes de menu
+            if (progressText) progressText.textContent = `Préparation des variantes de menu...`;
             
-            console.log('📤 Génération de menu pour', numDays, 'jours à partir du', startDate);
+            const variantGroups = [];
             
-            const menuResponse = await fetch('/api/intelligent-menu/generate-for-residents', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    siteId: null,
-                    groupId: this.currentGroup,
-                    establishmentType: 'ehpad',
-                    startDate,
-                    numDays,
-                    ageGroups,
-                    allergens,
-                    dietaryRestrictions: [],
-                    medicalConditions: [],
-                    texture: 'normale',
-                    theme: theme || undefined,
-                    useStockOnly: false,
-                    multiSite: true
-                })
+            // Groupe de base (tous les résidents)
+            variantGroups.push({
+                name: 'Menu Standard',
+                description: 'Menu de base pour tous les résidents',
+                residentCount: totalResidents,
+                allergens: [],
+                dietaryRestrictions: [],
+                medicalConditions: []
             });
             
-            if (!menuResponse.ok) {
-                const errorData = await menuResponse.json();
-                throw new Error(errorData.message || 'Erreur lors de la génération des menus');
+            // Groupes par allergies critiques
+            if (groups.allergies && groups.allergies.length > 0) {
+                groups.allergies
+                    .filter(g => (g.severity === 'critique' || g.severity === 'sévère') && g.residents.length >= 50)
+                    .slice(0, 5)
+                    .forEach(allergyGroup => {
+                        variantGroups.push({
+                            name: `Sans ${allergyGroup.name}`,
+                            description: `Menu adapté pour ${allergyGroup.residents.length} résidents allergiques`,
+                            residentCount: allergyGroup.residents.length,
+                            allergens: [allergyGroup.name],
+                            dietaryRestrictions: [],
+                            medicalConditions: [],
+                            severity: allergyGroup.severity
+                        });
+                    });
             }
             
-            const result = await menuResponse.json();
+            // Groupes par restrictions alimentaires
+            if (groups.restrictions && groups.restrictions.length > 0) {
+                groups.restrictions
+                    .filter(g => g.residents.length >= 100)
+                    .slice(0, 5)
+                    .forEach(restrictionGroup => {
+                        variantGroups.push({
+                            name: restrictionGroup.name,
+                            description: `Menu spécifique pour ${restrictionGroup.residents.length} résidents`,
+                            residentCount: restrictionGroup.residents.length,
+                            allergens: [],
+                            dietaryRestrictions: [restrictionGroup.name],
+                            medicalConditions: [],
+                            restrictionType: restrictionGroup.restrictionType
+                        });
+                    });
+            }
             
-            // Étape 4: Afficher les résultats
+            console.log('📊 Variantes de menu à générer:', variantGroups.length, variantGroups.map(v => v.name));
+            
+            // Étape 4: Générer les menus pour chaque groupe avec l'IA
+            if (progressText) progressText.textContent = `Génération de ${variantGroups.length} variantes de menu...`;
+            
+            const menuVariants = [];
+            
+            for (let i = 0; i < variantGroups.length; i++) {
+                const group = variantGroups[i];
+                
+                if (progressText) {
+                    progressText.textContent = `Génération du menu "${group.name}" (${i + 1}/${variantGroups.length})...`;
+                }
+                
+                try {
+                    const menuResponse = await fetch('/api/intelligent-menu/generate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            establishmentType: 'ehpad',
+                            ageGroups: [{
+                                ageRange: "75+",
+                                count: group.residentCount
+                            }],
+                            numDishes: numDays * 3,
+                            menuStructure: 'entree_plat_dessert',
+                            allergens: group.allergens,
+                            dietaryRestrictions: group.dietaryRestrictions,
+                            medicalConditions: group.medicalConditions,
+                            texture: 'normale',
+                            theme: theme || undefined,
+                            useStockOnly: false
+                        })
+                    });
+                    
+                    if (menuResponse.ok) {
+                        const result = await menuResponse.json();
+                        menuVariants.push({
+                            group: group,
+                            menu: result.menu || result,
+                            success: true
+                        });
+                        console.log(`✅ Menu "${group.name}" généré avec succès`);
+                    } else {
+                        console.warn(`⚠️ Échec de génération pour "${group.name}"`);
+                        menuVariants.push({
+                            group: group,
+                            error: 'Échec de génération',
+                            success: false
+                        });
+                    }
+                    
+                    // Petite pause entre les requêtes
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                } catch (err) {
+                    console.error(`❌ Erreur pour "${group.name}":`, err);
+                    menuVariants.push({
+                        group: group,
+                        error: err.message,
+                        success: false
+                    });
+                }
+            }
+            
+            const result = {
+                variants: menuVariants,
+                totalGroups: variantGroups.length,
+                successCount: menuVariants.filter(v => v.success).length,
+                totalResidents: totalResidents
+            };
+            
+            // Étape 5: Afficher les résultats
             if (progressDiv) progressDiv.style.display = 'none';
             if (submitBtn) submitBtn.disabled = false;
-            this.displayAIMenuResults(result, activeSites.length);
+            this.displayAIMenuVariants(result, activeSites.length);
             
-            this.showToast('Menus générés avec succès pour tous les sites !', 'success');
+            const successMsg = result.successCount === result.totalGroups
+                ? `✅ ${result.successCount} variantes de menu générées avec succès !`
+                : `⚠️ ${result.successCount}/${result.totalGroups} variantes générées`;
+            
+            this.showToast(successMsg, result.successCount > 0 ? 'success' : 'warning');
             
         } catch (error) {
             console.error('❌ Erreur lors de la génération IA:', error);
@@ -753,7 +832,136 @@ class GroupDashboard {
         }
     }
 
-    displayAIMenuResults(result, sitesCount) {
+    displayAIMenuVariants(result, sitesCount) {
+        const resultsDiv = document.getElementById('ai-menu-results');
+        if (!resultsDiv) return;
+        
+        const { variants, totalGroups, successCount, totalResidents } = result;
+        
+        let html = `
+            <div style="background: #d4edda; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #28a745; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 0.5rem 0; color: #155724;">
+                    <i class="fas fa-check-circle"></i> ${successCount} variantes de menu générées !
+                </h3>
+                <p style="margin: 0; color: #155724;">
+                    <strong>${successCount}/${totalGroups}</strong> variantes créées pour <strong>${totalResidents} résidents</strong> répartis sur <strong>${sitesCount} sites actifs</strong>.
+                </p>
+            </div>
+        `;
+        
+        // Afficher chaque variante de menu
+        html += `<div style="display: grid; gap: 1.5rem; margin-bottom: 2rem;">`;
+        
+        variants.forEach((variant, index) => {
+            const { group, menu, success, error } = variant;
+            
+            if (!success) {
+                html += `
+                    <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px; padding: 1.5rem;">
+                        <h4 style="margin: 0 0 0.5rem 0; color: #856404;">
+                            ⚠️ ${group.name}
+                        </h4>
+                        <p style="margin: 0; color: #856404;">
+                            <strong>${group.residentCount} résidents</strong> - ${group.description}
+                        </p>
+                        <p style="margin: 0.5rem 0 0 0; color: #dc3545;">
+                            Erreur: ${error || 'Échec de génération'}
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const days = menu?.days || menu?.menu?.days || [];
+            const bgColor = index === 0 ? '#e7f3ff' : '#f8f9fa';
+            const borderColor = index === 0 ? '#667eea' : '#dee2e6';
+            
+            html += `
+                <div style="background: ${bgColor}; border: 2px solid ${borderColor}; border-radius: 10px; padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                        <div>
+                            <h4 style="margin: 0 0 0.25rem 0; color: #333; font-size: 1.3rem;">
+                                ${index === 0 ? '🏆' : '🍽️'} ${group.name}
+                            </h4>
+                            <p style="margin: 0; color: #666; font-size: 0.95rem;">
+                                <strong>${group.residentCount} résidents</strong> - ${group.description}
+                            </p>
+                        </div>
+                        ${group.severity ? `
+                        <span style="background: #dc3545; color: white; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">
+                            ${group.severity}
+                        </span>
+                        ` : ''}
+                    </div>
+            `;
+            
+            if (days.length > 0) {
+                html += `
+                    <div style="display: grid; gap: 0.75rem; margin-top: 1rem;">
+                        ${days.slice(0, 3).map((day, dayIndex) => {
+                            const meals = day.meals || [];
+                            const lunch = meals.find(m => m.type === 'lunch') || {};
+                            const courses = lunch.courses || [];
+                            
+                            return `
+                                <details ${dayIndex === 0 ? 'open' : ''} style="background: white; border-radius: 6px; overflow: hidden;">
+                                    <summary style="padding: 0.75rem; cursor: pointer; background: #f8f9fa; font-weight: 600; color: #667eea;">
+                                        📅 ${typeof day.date === 'string' ? day.date : new Date(day.date).toLocaleDateString('fr-FR')}
+                                    </summary>
+                                    <div style="padding: 0.75rem; display: grid; gap: 0.5rem;">
+                                        <div style="padding: 0.5rem; background: #f8f9fa; border-radius: 4px; border-left: 3px solid #28a745;">
+                                            <strong>🥗 Entrée:</strong> ${courses.find(c => c.category === 'entrée')?.name || 'N/A'}
+                                        </div>
+                                        <div style="padding: 0.5rem; background: #f8f9fa; border-radius: 4px; border-left: 3px solid #fd7e14;">
+                                            <strong>🍖 Plat:</strong> ${courses.find(c => c.category === 'plat')?.name || 'N/A'}
+                                        </div>
+                                        <div style="padding: 0.5rem; background: #f8f9fa; border-radius: 4px; border-left: 3px solid #e83e8c;">
+                                            <strong>🍰 Dessert:</strong> ${courses.find(c => c.category === 'dessert')?.name || 'N/A'}
+                                        </div>
+                                    </div>
+                                </details>
+                            `;
+                        }).join('')}
+                        ${days.length > 3 ? `
+                        <div style="text-align: center; padding: 0.5rem; color: #666; font-size: 0.9rem;">
+                            ... et ${days.length - 3} autres jours
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div style="text-align: center; padding: 1rem; color: #666; font-style: italic;">
+                        Aucun détail de menu disponible
+                    </div>
+                `;
+            }
+            
+            html += `</div>`;
+        });
+        
+        html += `</div>`;
+        
+        // Boutons d'action
+        html += `
+            <div style="display: flex; gap: 1rem; justify-content: center; padding-top: 1rem; border-top: 2px solid #dee2e6;">
+                <button onclick="groupDashboard.syncMenuToAllSites()" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">
+                    <i class="fas fa-sync"></i> Synchroniser vers tous les sites
+                </button>
+                <button onclick="window.location.reload()" class="btn btn-outline" style="padding: 0.75rem 1.5rem;">
+                    <i class="fas fa-redo"></i> Générer de nouveaux menus
+                </button>
+            </div>
+        `;
+        
+        resultsDiv.innerHTML = html;
+        resultsDiv.style.display = 'block';
+        
+        // Scroller vers les résultats
+        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    
+    displayAIMenuResults(result, sitesCount, residentsCount) {
         const resultsDiv = document.getElementById('ai-menu-results');
         if (!resultsDiv) return;
         
@@ -763,7 +971,7 @@ class GroupDashboard {
                     <i class="fas fa-check-circle"></i> Menus générés avec succès !
                 </h3>
                 <p style="margin: 0; color: #155724;">
-                    Les menus ont été créés pour <strong>${sitesCount} sites actifs</strong> en tenant compte de tous les profils nutritionnels des résidents.
+                    Les menus ont été créés pour <strong>${residentsCount} résidents</strong> répartis sur <strong>${sitesCount} sites actifs</strong>, en tenant compte de tous les profils nutritionnels.
                 </p>
             </div>
         `;
