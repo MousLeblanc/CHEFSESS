@@ -1,4 +1,5 @@
 // server.js (Version Finale Stable pour Render + Local)
+// Force redeploy: 2025-10-25 11:25
 import dotenv from "dotenv";
 dotenv.config();
 
