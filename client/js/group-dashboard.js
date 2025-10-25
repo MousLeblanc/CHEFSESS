@@ -821,23 +821,28 @@ class GroupDashboard {
             // Étape 3: Générer le menu avec l'IA
             progressText.textContent = `Génération intelligente des menus...`;
             
-            const menuResponse = await fetch('/api/intelligent-menu/generate', {
+            console.log('📤 Génération de menu pour', numDays, 'jours à partir du', startDate);
+            
+            const menuResponse = await fetch('/api/intelligent-menu/generate-for-residents', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 credentials: 'include',
                 body: JSON.stringify({
+                    siteId: null, // Multi-sites
+                    groupId: this.currentGroup,
                     establishmentType: 'ehpad',
+                    startDate,
+                    numDays,
                     ageGroups,
-                    numDishes: numDays,
-                    menuStructure: 'entree_plat_dessert',
                     allergens, // Seulement allergies critiques
                     dietaryRestrictions: [], // Vide pour l'instant - mode permissif
                     medicalConditions: [], // Vide pour l'instant - mode permissif
                     texture: 'normale', // Texture de base
                     theme: theme || undefined,
-                    useStockOnly: false
+                    useStockOnly: false,
+                    multiSite: true
                 })
             });
             
