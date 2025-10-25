@@ -126,7 +126,7 @@ export const generateMaisonRetraiteMenu = async (req, res) => {
     // Recherche avec filtres seniors
     let recipes = await RecipeEnriched.find({
       $and: [
-        { establishmentTypes: { $in: ['ehpad', 'collectivite'] } },
+        { establishmentTypes: { $in: ['ehpad', 'hopital'] } },
         texture ? { texture: texture } : {},
         diet.length > 0 ? { diet: { $in: diet } } : {},
         pathologies.length > 0 ? { 

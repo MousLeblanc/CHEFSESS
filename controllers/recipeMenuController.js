@@ -40,7 +40,8 @@ export const generateIntelligentMenu = asyncHandler(async (req, res) => {
 
     // Filtrer par type d'établissement si spécifié
     if (establishmentType) {
-      recipeFilter.establishmentTypes = { $in: [establishmentType, 'collectivite'] };
+      // Inclure toujours 'hopital' car c'est le type le plus polyvalent
+      recipeFilter.establishmentTypes = { $in: [establishmentType, 'hopital'] };
     }
 
     // Utiliser une logique OR pour les restrictions et conditions médicales
