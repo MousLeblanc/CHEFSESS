@@ -197,25 +197,38 @@ function filterRecipesByAgeGroup(recipes, targetAgeGroup) {
       return true;
     }
     
-    // Si c'est un format numérique (2.5-18), utiliser l'ancienne logique
-    if (recipe.ageGroup.includes('-') && !isNaN(parseFloat(recipe.ageGroup.split('-')[0]))) {
-      const recipeAges = recipe.ageGroup.split('-').map(a => parseFloat(a));
-      const targetAges = targetAgeGroup.split('-').map(a => parseFloat(a));
+    // NOUVEAU FORMAT: { min: Number, max: Number }
+    if (typeof recipe.ageGroup === 'object' && recipe.ageGroup.min !== undefined && recipe.ageGroup.max !== undefined) {
+      // Pour les seniors/adultes (18+), on accepte toutes les recettes avec max >= 18
+      // Pour les enfants, on vérifie l'overlap
+      if (targetAgeGroup === 'adulte' || targetAgeGroup === 'senior' || targetAgeGroup === '18+' || targetAgeGroup === '75+') {
+        return recipe.ageGroup.max >= 18;
+      }
       
-      return recipe.ageGroup === '2.5-18' || 
-             (recipeAges[0] <= targetAges[1] && recipeAges[1] >= targetAges[0]);
+      // Pour d'autres tranches d'âge numériques (ex: "6-12")
+      if (targetAgeGroup && targetAgeGroup.includes && targetAgeGroup.includes('-')) {
+        const targetAges = targetAgeGroup.split('-').map(a => parseFloat(a));
+        // Vérifier overlap: recette.min <= target.max ET recette.max >= target.min
+        return recipe.ageGroup.min <= targetAges[1] && recipe.ageGroup.max >= targetAges[0];
+      }
+      
+      // Par défaut, accepter (recettes enrichies avec min:2.5, max:99 sont universelles)
+      return true;
     }
     
-    // Pour les formats textuels (adulte, enfant, etc.)
-    const ageGroupMapping = {
-      'adulte': ['adulte'],
-      'enfant': ['2.5-6', '6-12', '12-18'],
-      'adolescent': ['12-18'],
-      'tous': ['2.5-6', '6-12', '12-18', 'adulte']
-    };
+    // ANCIEN FORMAT STRING (au cas où il en reste)
+    if (typeof recipe.ageGroup === 'string' && recipe.ageGroup.includes('-')) {
+      const recipeAges = recipe.ageGroup.split('-').map(a => parseFloat(a));
+      
+      if (targetAgeGroup && targetAgeGroup.includes && targetAgeGroup.includes('-')) {
+        const targetAges = targetAgeGroup.split('-').map(a => parseFloat(a));
+        return recipeAges[0] <= targetAges[1] && recipeAges[1] >= targetAges[0];
+      }
+      
+      return recipe.ageGroup === '2.5-99' || recipeAges[1] >= 99;
+    }
     
-    // Dans le nouveau modèle, on utilise establishmentTypes pour déterminer la compatibilité
-    // Si la recette est compatible avec l'établissement, on garde
+    // Dans le nouveau modèle, on utilise establishmentTypes pour la compatibilité
     if (recipe.establishmentTypes && recipe.establishmentTypes.length > 0) {
       return true;
     }
