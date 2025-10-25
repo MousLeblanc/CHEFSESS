@@ -40,7 +40,7 @@ export const generateIntelligentMenu = asyncHandler(async (req, res) => {
 
     // Filtrer par type d'établissement si spécifié
     if (establishmentType) {
-      recipeFilter.establishmentType = { $in: [establishmentType, 'collectivite'] };
+      recipeFilter.establishmentTypes = { $in: [establishmentType, 'collectivite'] };
     }
 
     // Utiliser une logique OR pour les restrictions et conditions médicales
@@ -213,9 +213,9 @@ function filterRecipesByAgeGroup(recipes, targetAgeGroup) {
       'tous': ['2.5-6', '6-12', '12-18', 'adulte']
     };
     
-    // Dans le nouveau modèle, on utilise establishmentType pour déterminer la compatibilité
+    // Dans le nouveau modèle, on utilise establishmentTypes pour déterminer la compatibilité
     // Si la recette est compatible avec l'établissement, on garde
-    if (recipe.establishmentType && recipe.establishmentType.length > 0) {
+    if (recipe.establishmentTypes && recipe.establishmentTypes.length > 0) {
       return true;
     }
     
