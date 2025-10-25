@@ -34,6 +34,82 @@ class GroupDashboard {
      * Utils
      * ===========================
      */
+    /**
+     * Normalise les valeurs du frontend vers le format backend/MongoDB
+     * DOIT correspondre EXACTEMENT aux tags et dietaryRestrictions dans la DB
+     */
+    normalizeValue(value) {
+        if (!value) return value;
+        
+        const map = {
+            // Sans sel → sans_sel (avec underscore comme dans les tags!)
+            "Sans sel": "sans_sel",
+            "sans sel": "sans_sel",
+            "Sans Sel": "sans_sel",
+            
+            // Sans sucre → hypoglucidique
+            "Sans sucre": "hypoglucidique",
+            "sans sucre": "hypoglucidique",
+            "Sans Sucre": "hypoglucidique",
+            
+            // Végétarien (garder l'accent)
+            "Végétarien": "végétarien",
+            "vegetarien": "végétarien",
+            "Vegetarien": "végétarien",
+            
+            // Végétalien (garder l'accent)
+            "Végétalien": "végétalien",
+            "Vegan": "végétalien",
+            "vegan": "végétalien",
+            
+            // Textures (garder les accents)
+            "Mixée": "mixée",
+            "mixée": "mixée",
+            "mixee": "mixée",
+            "Hachée": "hachée",
+            "hachée": "hachée",
+            "hachee": "hachée",
+            "Tendre": "tendre",
+            "tendre": "tendre",
+            "Lisse": "lisse",
+            "lisse": "lisse",
+            
+            // Hyperprotéiné (garder l'accent!)
+            "Hyperprotéiné": "hyperprotéiné",
+            "hyperprotéiné": "hyperprotéiné",
+            "hyperproteine": "hyperprotéiné",
+            "Hyperproteine": "hyperprotéiné",
+            
+            // Religions
+            "Casher": "casher",
+            "casher": "casher",
+            "Halal": "halal",
+            "halal": "halal",
+            
+            // Sans gluten → sans_gluten (avec underscore!)
+            "Sans gluten": "sans_gluten",
+            "sans gluten": "sans_gluten",
+            "Sans Gluten": "sans_gluten",
+            
+            // Sans lactose → sans_lactose (avec underscore!)
+            "Sans lactose": "sans_lactose",
+            "sans lactose": "sans_lactose",
+            "Sans Lactose": "sans_lactose",
+            
+            // Hypocalorique
+            "Hypocalorique": "hypocalorique",
+            "hypocalorique": "hypocalorique",
+            
+            // Pathologies
+            "Diabète": "diabete",
+            "diabète": "diabete",
+            "Hypertension": "hypertension",
+            "hypertension": "hypertension"
+        };
+        
+        return map[value] || value.toLowerCase();
+    }
+    
     debounce(fn, delay = 300) {
         let timer;
         return (...args) => {
@@ -753,6 +829,16 @@ class GroupDashboard {
                 }
                 
                 try {
+                    // NORMALISER toutes les valeurs avant d'envoyer au backend
+                    const normalizedAllergens = (group.allergens || []).map(a => this.normalizeValue(a));
+                    const normalizedRestrictions = (group.dietaryRestrictions || []).map(r => this.normalizeValue(r));
+                    const normalizedMedical = (group.medicalConditions || []).map(m => this.normalizeValue(m));
+                    
+                    // Séparer les restrictions éthiques/religieuses
+                    const ethicalValues = ['halal', 'casher', 'végétarien', 'végétalien'];
+                    const ethicalRestrictions = normalizedRestrictions.filter(r => ethicalValues.includes(r));
+                    const dietRestrictions = normalizedRestrictions.filter(r => !ethicalValues.includes(r));
+                    
                     const payload = {
                         establishmentType: 'ehpad',
                         ageGroups: [{
@@ -761,20 +847,24 @@ class GroupDashboard {
                         }],
                         numDishes: numDays,
                         menuStructure: 'entree_plat_dessert',
-                        allergens: group.allergens,
-                        dietaryRestrictions: group.dietaryRestrictions,
-                        medicalConditions: group.medicalConditions,
+                        allergens: normalizedAllergens,                    // ✅ NORMALISÉ
+                        dietaryRestrictions: dietRestrictions,             // ✅ NORMALISÉ
+                        medicalConditions: normalizedMedical,              // ✅ NORMALISÉ
+                        ethicalRestrictions: ethicalRestrictions,          // ✅ NORMALISÉ (halal, casher, etc.)
                         texture: 'normale',
                         theme: theme || '',
                         useStockOnly: false,
                         swallowing: 'normale',
                         nutritionalProfile: [],
-                        ethicalRestrictions: [],
                         ageDependencyGroup: 'personne_agee_autonome',
                         comfortFilters: []
                     };
                     
-                    console.log(`📤 Envoi requête pour "${group.name}":`, payload);
+                    console.log(`📤 Envoi requête pour "${group.name}" (AVANT normalisation):`, {
+                        allergens: group.allergens,
+                        dietaryRestrictions: group.dietaryRestrictions
+                    });
+                    console.log(`✅ Requête normalisée:`, payload);
                     
                     const menuResponse = await fetch('/api/intelligent-menu/generate', {
                         method: 'POST',
