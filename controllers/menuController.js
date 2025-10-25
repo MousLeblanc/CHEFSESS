@@ -9,14 +9,15 @@ const normalizeFilterValue = (value) => {
   if (!value) return value;
   
   const map = {
-    // Sans sel → sans_sel (avec underscore comme dans les tags!)
-    "Sans sel": "sans_sel",
-    "sans sel": "sans_sel",
-    "Sans Sel": "sans_sel",
+    // Sans sel → hyposode (comme dans dietaryRestrictions DB!)
+    "Sans sel": "hyposode",
+    "sans sel": "hyposode",
+    "Sans Sel": "hyposode",
     
-    // Sans sucre → hypoglucidique
-    "Sans sucre": "hypoglucidique",
-    "sans sucre": "hypoglucidique",
+    // Sans sucre → pauvre_en_sucre (valeur qui existe dans la DB)
+    "Sans sucre": "pauvre_en_sucre",
+    "sans sucre": "pauvre_en_sucre",
+    "Sans Sucre": "pauvre_en_sucre",
     
     // Végétarien (garder l'accent)
     "Végétarien": "végétarien",
@@ -105,14 +106,20 @@ export const generateCollectiviteMenu = async (req, res) => {
     
     // Diet/Restrictions alimentaires - chercher dans TOUS les champs pertinents
     if (filters.diet?.length > 0) {
-      // Les tags ont des # devant, mais pas les autres champs
-      const dietTags = filters.diet.map(d => `#${d}`);
+      // Les tags ont des # devant ET des noms différents (hyposode → sans_sel)
+      const dietTags = filters.diet.map(d => {
+        // Convertir hyposode → sans_sel pour les tags
+        if (d === 'hyposode') return '#sans_sel';
+        if (d === 'pauvre_en_sucre') return '#pauvre_en_sucre';
+        if (d === 'hyperproteine') return '#hyperprotéiné';
+        return `#${d}`;
+      });
       
       searchConditions.push({
         $or: [
           { diet: { $in: filters.diet } },
-          { dietaryRestrictions: { $in: filters.diet } },
-          { tags: { $in: dietTags } }  // Ajouter # pour les tags
+          { dietaryRestrictions: { $in: filters.diet } },  // hyposode
+          { tags: { $in: dietTags } }  // #sans_sel
         ]
       });
     }
@@ -148,7 +155,13 @@ export const generateCollectiviteMenu = async (req, res) => {
       const expandedConditions = [];
       
       if (filters.diet?.length > 0) {
-        const dietTags = filters.diet.map(d => `#${d}`);
+        const dietTags = filters.diet.map(d => {
+          // Convertir hyposode → sans_sel pour les tags
+          if (d === 'hyposode') return '#sans_sel';
+          if (d === 'pauvre_en_sucre') return '#pauvre_en_sucre';
+          if (d === 'hyperproteine') return '#hyperprotéiné';
+          return `#${d}`;
+        });
         expandedConditions.push(
           { diet: { $in: filters.diet } },
           { dietaryRestrictions: { $in: filters.diet } },
@@ -286,14 +299,20 @@ export const generateMaisonRetraiteMenu = async (req, res) => {
     
     // Diet/Restrictions - chercher dans tous les champs
     if (diet.length > 0) {
-      // Les tags ont des # devant, mais pas les autres champs
-      const dietTags = diet.map(d => `#${d}`);
+      // Les tags ont des # devant ET des noms différents (hyposode → sans_sel)
+      const dietTags = diet.map(d => {
+        // Convertir hyposode → sans_sel pour les tags
+        if (d === 'hyposode') return '#sans_sel';
+        if (d === 'pauvre_en_sucre') return '#pauvre_en_sucre';
+        if (d === 'hyperproteine') return '#hyperprotéiné';
+        return `#${d}`;
+      });
       
       seniorSearchConditions.push({
         $or: [
           { diet: { $in: diet } },
-          { dietaryRestrictions: { $in: diet } },
-          { tags: { $in: dietTags } }  // Ajouter # pour les tags
+          { dietaryRestrictions: { $in: diet } },  // hyposode
+          { tags: { $in: dietTags } }  // #sans_sel
         ]
       });
     }

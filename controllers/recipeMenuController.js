@@ -14,10 +14,10 @@ import openai from '../services/openaiClient.js';
  */
 function normalizeDietaryRestrictions(restrictions) {
   const mapping = {
-    // Sans sel → sans_sel (avec underscore comme dans les tags!)
-    'Sans sel': 'sans_sel',
-    'sans sel': 'sans_sel',
-    'Sans Sel': 'sans_sel',
+    // Sans sel → hyposode (comme dans dietaryRestrictions DB!)
+    'Sans sel': 'hyposode',
+    'sans sel': 'hyposode',
+    'Sans Sel': 'hyposode',
     
     // Religions
     'Halal': 'halal',

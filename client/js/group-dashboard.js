@@ -42,15 +42,15 @@ class GroupDashboard {
         if (!value) return value;
         
         const map = {
-            // Sans sel → sans_sel (avec underscore comme dans les tags!)
-            "Sans sel": "sans_sel",
-            "sans sel": "sans_sel",
-            "Sans Sel": "sans_sel",
+            // Sans sel → hyposode (comme dans dietaryRestrictions DB!)
+            "Sans sel": "hyposode",
+            "sans sel": "hyposode",
+            "Sans Sel": "hyposode",
             
-            // Sans sucre → hypoglucidique
-            "Sans sucre": "hypoglucidique",
-            "sans sucre": "hypoglucidique",
-            "Sans Sucre": "hypoglucidique",
+            // Sans sucre → pauvre_en_sucre (valeur qui existe dans la DB)
+            "Sans sucre": "pauvre_en_sucre",
+            "sans sucre": "pauvre_en_sucre",
+            "Sans Sucre": "pauvre_en_sucre",
             
             // Végétarien (garder l'accent)
             "Végétarien": "végétarien",
