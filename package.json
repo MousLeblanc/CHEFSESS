@@ -33,6 +33,8 @@
     "add-all-vulpia-sites": "node scripts/add-all-vulpia-sites.js",
     "add-mock-residents": "node scripts/add-mock-residents-vulpia.js",
     "fix-stock-categories": "node scripts/fix-stock-categories.js",
+    "verify-recipe-tags": "node scripts/verify-recipe-tags.js",
+    "enrich-recipe-tags": "node scripts/enrich-recipe-tags-auto.js",
     "test-vulpia-menu": "node scripts/test-vulpia-menu-generation.js",
     "fix-residents": "node scripts/fix-residents-groupid.js"
   },

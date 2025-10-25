@@ -5,7 +5,7 @@ const recipeSchema = new mongoose.Schema({
   category: { type: String, enum: ["entrée", "plat", "dessert", "petit-déjeuner", "soupe", "accompagnement", "boisson", "purée"], required: true },
 
   // Adaptation aux établissements
-  establishmentType: [{ type: String, enum: ["ecole", "ehpad", "hopital", "collectivite", "resto"] }],
+  establishmentTypes: [{ type: String, enum: ["cantine_scolaire", "ehpad", "hopital", "cantine_entreprise"] }],
 
   // Groupes d'âge (optionnel - si absent, la recette convient à tous les âges)
   ageGroup: {
