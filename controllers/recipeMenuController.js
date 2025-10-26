@@ -854,15 +854,41 @@ Réponds UNIQUEMENT avec un JSON contenant:
   "ageAdaptation": "Description PRÉCISE des portions par groupe avec nombres exacts. Format: 'Les portions sont adaptées : • Groupe 1 (X enfants - Maternelle/Primaire/etc): portions à XX% • Groupe 2...' - OBLIGATOIRE de mentionner TOUS les groupes avec leurs nombres"
 }
 
-Choisis ${numDishes} recettes SAINES et ADAPTÉES aux personnes âgées qui forment un repas ÉQUILIBRÉ nutritionnellement.
+CRITÈRES DE SÉLECTION POUR UN MENU PROFESSIONNEL ${establishmentType.toUpperCase()}:
 
-IMPORTANT POUR LES SENIORS:
-- Privilégier des plats traditionnels, classiques, faciles à mâcher
-- Éviter les plats trop modernes, exotiques ou difficiles à manger
-- Vérifier que le titre correspond bien aux ingrédients principaux
-- Choisir des recettes avec des textures appropriées (tendres, moelleuses)
-- Prioriser les plats riches en protéines et en calcium
-- Éviter les plats trop épicés ou trop relevés`;
+1. VARIÉTÉ ET ÉQUILIBRE NUTRITIONNEL:
+   - ÉVITE LES RÉPÉTITIONS (pas 2 fois le même ingrédient principal)
+   - Alterne les sources de protéines: viandes, poissons, œufs, légumineuses
+   - Varie les légumes: 3 couleurs minimum (vert, orange/rouge, blanc)
+   - Équilibre les textures: croquant, fondant, moelleux
+   - Mixe cru et cuit si possible
+
+2. APPÉTENCE ET QUALITÉ GASTRONOMIQUE:
+   - Privilégie les plats "maison" aux préparations basiques
+   - Choisis des recettes avec des sauces savoureuses (évite le "vapeur nature")
+   - Varie les modes de cuisson: rôti, braisé, gratiné, mijoté
+   - Assure 3 saveurs différentes minimum (salé, sucré, umami, acide)
+
+3. ADAPTATION SENIORS (EHPAD/Maison de retraite):
+   - Textures tendres et moelleuses (évite le trop croquant/dur)
+   - Recettes traditionnelles françaises et réconfortantes
+   - Portions visuellement généreuses mais nutritionnellement adaptées
+   - Température de service appropriée (tiède plutôt que brûlant)
+   - Facilité de préhension (évite les aliments qui glissent)
+
+4. NUTRIMENTS ESSENTIELS SENIORS:
+   - Protéines: minimum 20g par repas (prévention dénutrition)
+   - Calcium: privilégie produits laitiers, légumes verts
+   - Fibres douces: légumes cuits, fruits compotes
+   - Hydratation: soupes, sauces, desserts laitiers
+
+5. RÈGLES D'EXCLUSION STRICTES:
+   - ❌ PAS de "purée nature" ou "compote nature" (toujours enrichies/aromatisées)
+   - ❌ PAS de répétition du même légume/fruit dans le repas
+   - ❌ ÉVITE les desserts trop sucrés pour les régimes médicaux
+   - ❌ EXCLUS les textures inadaptées (chips, croquant, dur)
+
+Choisis ${numDishes} recettes qui forment un repas COMPLET, ÉQUILIBRÉ, APPÉTISSANT et VARIÉ.`;
 
   try {
     const completion = await openai.chat.completions.create({
@@ -872,8 +898,8 @@ IMPORTANT POUR LES SENIORS:
         { role: "user", content: userPrompt }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.7,
-      max_tokens: 2000
+      temperature: 0.8, // ✅ Plus de créativité pour menus variés
+      max_tokens: 3000  // ✅ Plus d'espace pour réflexion qualité
     });
 
     const aiResponse = JSON.parse(completion.choices[0].message.content);
