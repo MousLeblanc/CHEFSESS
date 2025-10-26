@@ -15690,7 +15690,9 @@ export default [
     "pathologies": [
       "denutrition risque"
     ],
-    "allergens": [],
+    "allergens": [
+      "lactose"
+    ],
     "tags": [
       "ehpad",
       "facile à digérer",
@@ -15700,24 +15702,24 @@ export default [
     ],
     "ingredients": [
       {
-        "name": "Jambon blanc",
-        "quantity": 60,
+        "name": "Carottes",
+        "quantity": 400,
         "unit": "g"
       },
       {
-        "name": "Riz",
-        "quantity": 70,
+        "name": "Poulet cuit",
+        "quantity": 80,
         "unit": "g"
       },
       {
-        "name": "Petits pois",
-        "quantity": 100,
-        "unit": "g"
-      },
-      {
-        "name": "Chou-fleur",
+        "name": "Pommes de terre",
         "quantity": 120,
         "unit": "g"
+      },
+      {
+        "name": "Crème fraîche 15%",
+        "quantity": 60,
+        "unit": "ml"
       },
       {
         "name": "Huile d'olive",
@@ -15731,22 +15733,22 @@ export default [
       },
       {
         "name": "Bouillon de légumes",
-        "quantity": 150,
+        "quantity": 500,
         "unit": "ml"
       }
     ],
     "steps": [
-      "Laver et couper les légumes.",
-      "Cuire les légumes dans le bouillon jusqu'à tendreté.",
-      "Cuire séparément la protéine si nécessaire.",
-      "Mixer ou mouliner selon la texture souhaitée.",
-      "Rectifier l'assaisonnement et servir tiède.",
-      "Adapter la texture avec un hachoir ou mixeur pour une déglutition sécurisée."
+      "Éplucher et couper les carottes et pommes de terre en morceaux.",
+      "Cuire les légumes dans le bouillon jusqu'à tendreté (15-20 min).",
+      "Ajouter le poulet cuit coupé en morceaux.",
+      "Mixer finement avec la crème fraîche jusqu'à texture veloutée.",
+      "Rectifier l'assaisonnement avec cumin et servir tiède.",
+      "Adapter la texture avec mixeur pour une déglutition sécurisée."
     ],
-    "calories": 329,
-    "proteins": 20.4,
-    "carbs": 29.9,
-    "lipids": 13.1,
+    "calories": 280,
+    "proteins": 14.5,
+    "carbs": 28.0,
+    "lipids": 11.2,
     "servings": 4
   },
   {
@@ -19392,7 +19394,7 @@ export default [
   },
   {
     "id": 269,
-    "name": "Velouté protéiné carottes",
+    "name": "Dinde aux légumes méditerranéens et boulgour",
     "type": [
       "ehpad",
       "hopital"
@@ -19415,7 +19417,7 @@ export default [
       "hopital",
       "sans lactose",
       "sans sel ajouté",
-      "soupe",
+      "plat complet",
       "texture normale"
     ],
     "ingredients": [
@@ -19456,11 +19458,11 @@ export default [
       }
     ],
     "steps": [
-      "Laver et couper les légumes.",
-      "Cuire les légumes dans le bouillon jusqu'à tendreté.",
-      "Cuire séparément la protéine si nécessaire.",
-      "Mixer ou mouliner selon la texture souhaitée.",
-      "Rectifier l'assaisonnement et servir tiède."
+      "Laver et couper les légumes en dés.",
+      "Faire revenir la dinde coupée en morceaux dans l'huile d'olive.",
+      "Ajouter les aubergines et tomates, cuire 10 minutes.",
+      "Cuire le boulgour dans le bouillon de légumes.",
+      "Mélanger le tout, ajouter le curcuma et servir chaud."
     ],
     "calories": 407,
     "proteins": 34.0,

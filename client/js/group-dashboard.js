@@ -969,7 +969,41 @@ class GroupDashboard {
         // Afficher chaque variante de menu
         html += `<div style="display: grid; gap: 1.5rem; margin-bottom: 2rem;">`;
         
+        // Détecter le menu de référence (premier menu réussi)
+        const referenceMenu = variants.find(v => v.success)?.menu;
+        const referenceDishes = referenceMenu?.mainMenu?.dishes || referenceMenu?.dishes || [];
+        const referenceNames = referenceDishes.map(d => d.name).sort().join('|');
+        
+        // Grouper les variantes identiques
+        const uniqueMenus = [];
+        const sharedGroups = []; // Groupes qui partagent le même menu
+        
         variants.forEach((variant, index) => {
+            const { group, menu, success, error } = variant;
+            
+            if (!success) {
+                uniqueMenus.push({ variant, isShared: false });
+                return;
+            }
+            
+            const dishes = menu?.mainMenu?.dishes || menu?.dishes || [];
+            const dishNames = dishes.map(d => d.name).sort().join('|');
+            
+            // Si les plats sont identiques au menu de référence et que ce n'est pas le menu principal
+            if (index > 0 && dishNames === referenceNames && referenceNames) {
+                sharedGroups.push(group);
+            } else {
+                uniqueMenus.push({ variant, isShared: false, sharedWith: [] });
+            }
+        });
+        
+        // Ajouter les groupes partagés au premier menu
+        if (uniqueMenus.length > 0 && sharedGroups.length > 0) {
+            uniqueMenus[0].sharedWith = sharedGroups;
+        }
+        
+        uniqueMenus.forEach((item, uniqueIndex) => {
+            const { variant, sharedWith } = item;
             const { group, menu, success, error } = variant;
             
             if (!success) {
@@ -994,19 +1028,30 @@ class GroupDashboard {
             const dishes = menu?.mainMenu?.dishes || menu?.dishes || [];
             const hasContent = days.length > 0 || dishes.length > 0;
             
-            const bgColor = index === 0 ? '#e7f3ff' : '#f8f9fa';
-            const borderColor = index === 0 ? '#667eea' : '#dee2e6';
+            // Calculer le nombre total de résidents (groupe principal + groupes partagés)
+            const totalResidents = group.residentCount + (sharedWith || []).reduce((sum, g) => sum + g.residentCount, 0);
+            
+            const bgColor = uniqueIndex === 0 ? '#e7f3ff' : '#f8f9fa';
+            const borderColor = uniqueIndex === 0 ? '#667eea' : '#dee2e6';
             
             html += `
                 <div style="background: ${bgColor}; border: 2px solid ${borderColor}; border-radius: 10px; padding: 1.5rem;">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                        <div>
+                        <div style="flex: 1;">
                             <h4 style="margin: 0 0 0.25rem 0; color: #333; font-size: 1.3rem;">
-                                ${index === 0 ? '🏆' : '🍽️'} ${group.name}
+                                ${uniqueIndex === 0 ? '🏆' : '🍽️'} ${group.name}
                             </h4>
                             <p style="margin: 0; color: #666; font-size: 0.95rem;">
-                                <strong>${group.residentCount} résidents</strong> - ${group.description}
+                                <strong>${totalResidents} résidents</strong> - ${group.description}
                             </p>
+                            ${sharedWith && sharedWith.length > 0 ? `
+                                <div style="margin-top: 0.5rem; padding: 0.5rem; background: #d4edda; border-radius: 4px; font-size: 0.85rem;">
+                                    <strong style="color: #155724;">✨ Menu compatible également pour :</strong>
+                                    <ul style="margin: 0.25rem 0 0 0; padding-left: 1.5rem; color: #155724;">
+                                        ${sharedWith.map(g => `<li>${g.name} (${g.residentCount} résidents)</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
                         </div>
                         ${group.severity ? `
                         <span style="background: #dc3545; color: white; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">
