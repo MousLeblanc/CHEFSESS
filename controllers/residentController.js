@@ -660,6 +660,12 @@ export async function getResidentsGroupedByNutritionalProfile(req, res) {
             const restrictions = resident.nutritionalProfile?.dietaryRestrictions || [];
             if (restrictions.length > 0) {
                 restrictions.forEach(restriction => {
+                    // ❌ EXCLURE Halal et Casher (gérés au niveau du site, pas comme variantes de menu)
+                    const excludedRestrictions = ['Halal', 'halal', 'Casher', 'casher', 'Kasher', 'kasher'];
+                    if (excludedRestrictions.includes(restriction.restriction)) {
+                        return; // Skip cette restriction
+                    }
+                    
                     const key = `${restriction.type}: ${restriction.restriction}`;
                     if (!restrictionsGroups[key]) {
                         restrictionsGroups[key] = {
