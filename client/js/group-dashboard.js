@@ -877,6 +877,9 @@ class GroupDashboard {
                     
                     if (menuResponse.ok) {
                         const result = await menuResponse.json();
+                        console.log(`📦 Structure reçue pour "${group.name}":`, result);
+                        console.log(`📦 Menu extrait:`, result.menu || result);
+                        
                         menuVariants.push({
                             group: group,
                             menu: result.menu || result,
@@ -980,7 +983,11 @@ class GroupDashboard {
                 return;
             }
             
+            // Gérer les deux formats possibles : jours (days) ou plats directs (mainMenu.dishes)
             const days = menu?.days || menu?.menu?.days || [];
+            const dishes = menu?.mainMenu?.dishes || menu?.dishes || [];
+            const hasContent = days.length > 0 || dishes.length > 0;
+            
             const bgColor = index === 0 ? '#e7f3ff' : '#f8f9fa';
             const borderColor = index === 0 ? '#667eea' : '#dee2e6';
             
@@ -1003,6 +1010,7 @@ class GroupDashboard {
                     </div>
             `;
             
+            // Format avec jours (structure complète)
             if (days.length > 0) {
                 html += `
                     <div style="display: grid; gap: 0.75rem; margin-top: 1rem;">
@@ -1037,7 +1045,32 @@ class GroupDashboard {
                         ` : ''}
                     </div>
                 `;
-            } else {
+            }
+            // Format avec plats directs (numDishes simple)
+            else if (dishes.length > 0) {
+                html += `
+                    <div style="display: grid; gap: 0.5rem; margin-top: 1rem; background: white; border-radius: 6px; padding: 0.75rem;">
+                        ${dishes.map(dish => {
+                            const categoryColors = {
+                                'entrée': '#28a745',
+                                'plat': '#fd7e14', 
+                                'dessert': '#e83e8c',
+                                'soupe': '#17a2b8'
+                            };
+                            const color = categoryColors[dish.category] || '#6c757d';
+                            const icon = dish.category === 'entrée' ? '🥗' : dish.category === 'plat' ? '🍖' : dish.category === 'dessert' ? '🍰' : '🍲';
+                            
+                            return `
+                                <div style="padding: 0.5rem; background: #f8f9fa; border-radius: 4px; border-left: 3px solid ${color};">
+                                    <strong>${icon} ${dish.category?.charAt(0).toUpperCase() + dish.category?.slice(1)}:</strong> ${dish.name}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            } 
+            // Aucun contenu
+            else {
                 html += `
                     <div style="text-align: center; padding: 1rem; color: #666; font-style: italic;">
                         Aucun détail de menu disponible
