@@ -799,7 +799,12 @@ class GroupDashboard {
             // Groupes par restrictions alimentaires
             if (groups.restrictions && groups.restrictions.length > 0) {
                 groups.restrictions
-                    .filter(g => g.residents.length >= 100)
+                    .filter(g => {
+                        // Filtrer : minimum 100 résidents ET pas casher/halal (gérés au niveau site)
+                        const value = (g.restrictionValue || g.name).toLowerCase();
+                        const excludeValues = ['halal', 'casher'];
+                        return g.residents.length >= 100 && !excludeValues.includes(value);
+                    })
                     .slice(0, 5)
                     .forEach(restrictionGroup => {
                         variantGroups.push({
@@ -835,7 +840,8 @@ class GroupDashboard {
                     const normalizedMedical = (group.medicalConditions || []).map(m => this.normalizeValue(m));
                     
                     // Séparer les restrictions éthiques/religieuses
-                    const ethicalValues = ['halal', 'casher', 'végétarien', 'végétalien'];
+                    // Note : Halal et Casher sont gérés au niveau des sites, pas comme variantes de menu
+                    const ethicalValues = ['végétarien', 'végétalien'];
                     const ethicalRestrictions = normalizedRestrictions.filter(r => ethicalValues.includes(r));
                     const dietRestrictions = normalizedRestrictions.filter(r => !ethicalValues.includes(r));
                     
@@ -1019,21 +1025,66 @@ class GroupDashboard {
                             const lunch = meals.find(m => m.type === 'lunch') || {};
                             const courses = lunch.courses || [];
                             
+                            // Helper pour afficher un plat avec ses ingrédients
+                            const renderCourse = (course, color, icon, label) => {
+                                if (!course) return `
+                                    <div style="padding: 0.5rem; background: #f8f9fa; border-radius: 4px; border-left: 3px solid ${color};">
+                                        <strong>${icon} ${label}:</strong> N/A
+                                    </div>
+                                `;
+                                
+                                let ingredientsHtml = '';
+                                if (course.ingredientsPerPerson && course.ingredientsPerPerson.length > 0) {
+                                    ingredientsHtml = `
+                                        <details style="margin-top: 0.5rem;">
+                                            <summary style="cursor: pointer; font-size: 0.85rem; color: #666; font-weight: 500;">
+                                                📋 Ingrédients (${course.residentCount || 0} pers.)
+                                            </summary>
+                                            <div style="margin-top: 0.5rem; padding: 0.5rem; background: white; border-radius: 4px; font-size: 0.8rem;">
+                                                <div style="margin-bottom: 0.5rem;">
+                                                    <strong style="color: ${color};">Par personne:</strong>
+                                                    <ul style="margin: 0.25rem 0; padding-left: 1.5rem; font-size: 0.8rem;">
+                                                        ${course.ingredientsPerPerson.slice(0, 5).map(ing => 
+                                                            `<li>${ing.name}: <strong>${ing.quantity} ${ing.unit}</strong></li>`
+                                                        ).join('')}
+                                                        ${course.ingredientsPerPerson.length > 5 ? 
+                                                            `<li style="color: #666; font-style: italic;">... +${course.ingredientsPerPerson.length - 5}</li>` 
+                                                        : ''}
+                                                    </ul>
+                                                </div>
+                                                <div>
+                                                    <strong style="color: ${color};">Total groupe (${course.residentCount || 0} pers.):</strong>
+                                                    <ul style="margin: 0.25rem 0; padding-left: 1.5rem; font-size: 0.8rem;">
+                                                        ${course.ingredientsTotal.slice(0, 5).map(ing => 
+                                                            `<li>${ing.name}: <strong>${ing.quantity} ${ing.unit}</strong></li>`
+                                                        ).join('')}
+                                                        ${course.ingredientsTotal.length > 5 ? 
+                                                            `<li style="color: #666; font-style: italic;">... +${course.ingredientsTotal.length - 5}</li>` 
+                                                        : ''}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </details>
+                                    `;
+                                }
+                                
+                                return `
+                                    <div style="padding: 0.5rem; background: #f8f9fa; border-radius: 4px; border-left: 3px solid ${color};">
+                                        <strong>${icon} ${label}:</strong> ${course.name}
+                                        ${ingredientsHtml}
+                                    </div>
+                                `;
+                            };
+                            
                             return `
                                 <details ${dayIndex === 0 ? 'open' : ''} style="background: white; border-radius: 6px; overflow: hidden;">
                                     <summary style="padding: 0.75rem; cursor: pointer; background: #f8f9fa; font-weight: 600; color: #667eea;">
                                         📅 ${typeof day.date === 'string' ? day.date : new Date(day.date).toLocaleDateString('fr-FR')}
                                     </summary>
                                     <div style="padding: 0.75rem; display: grid; gap: 0.5rem;">
-                                        <div style="padding: 0.5rem; background: #f8f9fa; border-radius: 4px; border-left: 3px solid #28a745;">
-                                            <strong>🥗 Entrée:</strong> ${courses.find(c => c.category === 'entrée')?.name || 'N/A'}
-                                        </div>
-                                        <div style="padding: 0.5rem; background: #f8f9fa; border-radius: 4px; border-left: 3px solid #fd7e14;">
-                                            <strong>🍖 Plat:</strong> ${courses.find(c => c.category === 'plat')?.name || 'N/A'}
-                                        </div>
-                                        <div style="padding: 0.5rem; background: #f8f9fa; border-radius: 4px; border-left: 3px solid #e83e8c;">
-                                            <strong>🍰 Dessert:</strong> ${courses.find(c => c.category === 'dessert')?.name || 'N/A'}
-                                        </div>
+                                        ${renderCourse(courses.find(c => c.category === 'entrée'), '#28a745', '🥗', 'Entrée')}
+                                        ${renderCourse(courses.find(c => c.category === 'plat'), '#fd7e14', '🍖', 'Plat')}
+                                        ${renderCourse(courses.find(c => c.category === 'dessert'), '#e83e8c', '🍰', 'Dessert')}
                                     </div>
                                 </details>
                             `;
@@ -1060,9 +1111,46 @@ class GroupDashboard {
                             const color = categoryColors[dish.category] || '#6c757d';
                             const icon = dish.category === 'entrée' ? '🥗' : dish.category === 'plat' ? '🍖' : dish.category === 'dessert' ? '🍰' : '🍲';
                             
+                            // Affichage des quantités d'ingrédients
+                            let ingredientsHtml = '';
+                            if (dish.ingredientsPerPerson && dish.ingredientsPerPerson.length > 0) {
+                                ingredientsHtml = `
+                                    <details style="margin-top: 0.5rem;">
+                                        <summary style="cursor: pointer; font-size: 0.9rem; color: #666; font-weight: 500;">
+                                            📋 Ingrédients (${dish.residentCount || 0} pers.)
+                                        </summary>
+                                        <div style="margin-top: 0.5rem; padding: 0.5rem; background: white; border-radius: 4px; font-size: 0.85rem;">
+                                            <div style="margin-bottom: 0.75rem;">
+                                                <strong style="color: ${color};">Par personne:</strong>
+                                                <ul style="margin: 0.25rem 0; padding-left: 1.5rem;">
+                                                    ${dish.ingredientsPerPerson.slice(0, 5).map(ing => 
+                                                        `<li>${ing.name}: <strong>${ing.quantity} ${ing.unit}</strong></li>`
+                                                    ).join('')}
+                                                    ${dish.ingredientsPerPerson.length > 5 ? 
+                                                        `<li style="color: #666; font-style: italic;">... et ${dish.ingredientsPerPerson.length - 5} autres ingrédients</li>` 
+                                                    : ''}
+                                                </ul>
+                                            </div>
+                                            <div>
+                                                <strong style="color: ${color};">Pour le groupe (${dish.residentCount || 0} pers.):</strong>
+                                                <ul style="margin: 0.25rem 0; padding-left: 1.5rem;">
+                                                    ${dish.ingredientsTotal.slice(0, 5).map(ing => 
+                                                        `<li>${ing.name}: <strong>${ing.quantity} ${ing.unit}</strong></li>`
+                                                    ).join('')}
+                                                    ${dish.ingredientsTotal.length > 5 ? 
+                                                        `<li style="color: #666; font-style: italic;">... et ${dish.ingredientsTotal.length - 5} autres ingrédients</li>` 
+                                                    : ''}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </details>
+                                `;
+                            }
+                            
                             return `
                                 <div style="padding: 0.5rem; background: #f8f9fa; border-radius: 4px; border-left: 3px solid ${color};">
                                     <strong>${icon} ${dish.category?.charAt(0).toUpperCase() + dish.category?.slice(1)}:</strong> ${dish.name}
+                                    ${ingredientsHtml}
                                 </div>
                             `;
                         }).join('')}

@@ -1404,17 +1404,61 @@ function isDishCompatible(dish, allergens = [], dietaryRestrictions = []) {
   
   // Vérifier les restrictions alimentaires
   const dishRestrictions = dish.dietaryRestrictions || [];
+  const dishIngredients = (dish.ingredients || []).map(ing => (ing.name || ing.item || '').toLowerCase()).join(' ');
   
   for (const restriction of dietaryRestrictions) {
-    // Si la restriction est demandée, le plat doit la supporter
-    if (!dishRestrictions.includes(restriction)) {
-      // Exceptions : si le plat n'a pas de tag de restriction, vérifier s'il est naturellement compatible
-      if (restriction === 'vegetarien' && (dish.category === 'viande' || dish.category === 'poisson')) {
-        return false;
-      }
-      if (restriction === 'vegan' && (dish.category === 'viande' || dish.category === 'poisson' || dishAllergens.includes('lactose') || dishAllergens.includes('oeufs'))) {
-        return false;
-      }
+    // Si le plat a déjà le tag de restriction, c'est bon
+    if (dishRestrictions.includes(restriction)) {
+      continue;
+    }
+    
+    // Sinon, vérifier si le plat est NATURELLEMENT compatible
+    switch(restriction) {
+      case 'hyposode': // Sans sel
+        // Un plat est compatible pour sans sel si :
+        // 1. Il a le tag hyposode (déjà vérifié ci-dessus)
+        // 2. OU il ne contient pas de sel ajouté (naturellement hyposodé)
+        // La plupart des plats peuvent être préparés sans sel ajouté
+        // Sauf les charcuteries, fromages salés, plats déjà salés
+        const saltyKeywords = ['jambon', 'saucisse', 'charcuterie', 'bacon', 'lardons', 'anchois', 'câpres', 'olives', 'cornichons'];
+        const hasSaltyIngredients = saltyKeywords.some(keyword => dishIngredients.includes(keyword));
+        if (hasSaltyIngredients) {
+          return false; // Plat intrinsèquement salé
+        }
+        // Sinon, le plat peut être préparé sans sel → compatible
+        break;
+        
+      case 'végétarien':
+      case 'vegetarien':
+        // Incompatible si contient viande ou poisson
+        if (dish.category === 'viande' || dish.category === 'poisson') {
+          return false;
+        }
+        break;
+        
+      case 'végétalien':
+      case 'vegan':
+        // Incompatible si contient produits animaux
+        if (dish.category === 'viande' || dish.category === 'poisson' || 
+            dishAllergens.includes('lactose') || dishAllergens.includes('oeufs')) {
+          return false;
+        }
+        break;
+        
+      case 'pauvre_en_sucre':
+        // Compatible si pas de dessert sucré ou friandises
+        const sweetKeywords = ['sucre', 'confiture', 'chocolat', 'caramel', 'miel', 'sirop'];
+        const hasSweetIngredients = sweetKeywords.some(keyword => dishIngredients.includes(keyword));
+        if (hasSweetIngredients && dish.category === 'dessert') {
+          return false; // Dessert sucré incompatible
+        }
+        break;
+        
+      // Pour les autres restrictions, si le plat n'a pas le tag, on considère qu'il n'est pas adapté
+      default:
+        if (!dishRestrictions.includes(restriction)) {
+          return false;
+        }
     }
   }
   
@@ -1463,6 +1507,39 @@ async function findReplacementDish(allRecipes, originalDish, allergens, dietaryR
  * Génère un menu avec variantes INTELLIGENTES
  * Réutilise les plats compatibles du menu principal
  */
+/**
+ * Enrichit un plat avec les quantités d'ingrédients par personne et pour le groupe
+ */
+function enrichDishWithIngredientQuantities(dish, residentCount) {
+  if (!dish || !dish.ingredients || dish.ingredients.length === 0) {
+    return dish;
+  }
+  
+  // Récupérer le nombre de personnes de la recette originale (par défaut 4)
+  const recipeServings = dish.servings || dish.numberOfPeople || 4;
+  
+  // Calculer les quantités par personne
+  const ingredientsPerPerson = dish.ingredients.map(ing => ({
+    name: ing.name || ing.item,
+    quantity: parseFloat((ing.quantity / recipeServings).toFixed(2)),
+    unit: ing.unit || 'portion'
+  }));
+  
+  // Calculer les quantités pour le groupe entier
+  const ingredientsTotal = dish.ingredients.map(ing => ({
+    name: ing.name || ing.item,
+    quantity: parseFloat(((ing.quantity / recipeServings) * residentCount).toFixed(2)),
+    unit: ing.unit || 'portion'
+  }));
+  
+  return {
+    ...dish,
+    ingredientsPerPerson,
+    ingredientsTotal,
+    residentCount
+  };
+}
+
 async function generateMenuWithVariants(
   allRecipes,
   numDishes,
@@ -1574,17 +1651,27 @@ async function generateMenuWithVariants(
   console.log(`\n✅ Menu principal étendu à ${mainMenuTotalCount} personnes (inclus ${compatibleProfiles.length} profil(s) compatible(s))`);
   console.log(`🔄 ${generatedVariants.length} variante(s) réelle(s) nécessaire(s)`);
   
+  // ✨ ENRICHIR TOUS LES PLATS avec quantités d'ingrédients par personne ET pour le groupe
+  const enrichedMainDishes = mainMenuRecipes.dishes.map(dish => 
+    enrichDishWithIngredientQuantities(dish, mainMenuTotalCount)
+  );
+  
+  const enrichedVariants = generatedVariants.map(variant => ({
+    ...variant,
+    dishes: variant.dishes.map(dish => enrichDishWithIngredientQuantities(dish, variant.count))
+  }));
+  
   return {
     title: mainMenuRecipes.title,
     description: mainMenuRecipes.description,
     mainMenu: {
       count: mainMenuTotalCount,
       originalCount: mainGroup.count,
-      dishes: mainMenuRecipes.dishes,
+      dishes: enrichedMainDishes,
       ageAdaptation: mainMenuRecipes.ageAdaptation,
       compatibleWith: compatibleProfiles
     },
-    variants: generatedVariants
+    variants: enrichedVariants
   };
 }
 
