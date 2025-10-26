@@ -19,6 +19,12 @@ function normalizeDietaryRestrictions(restrictions) {
     'sans sel': 'hyposode',
     'Sans Sel': 'hyposode',
     
+    // Sans sucre → pauvre_en_sucre (valeur qui existe dans la DB)
+    'Sans sucre': 'pauvre_en_sucre',
+    'sans sucre': 'pauvre_en_sucre',
+    'Sans Sucre': 'pauvre_en_sucre',
+    'pauvre_en_sucre': 'pauvre_en_sucre',
+    
     // Religions
     'Halal': 'halal',
     'halal': 'halal',
@@ -44,6 +50,7 @@ function normalizeDietaryRestrictions(restrictions) {
     // Sans lactose → sans_lactose (avec underscore!)
     'Sans lactose': 'sans_lactose',
     'sans lactose': 'sans_lactose',
+    'Sans Lactose': 'sans_lactose',
     
     // Hyperprotéiné (garder l'accent!)
     'Hyperprotéiné': 'hyperprotéiné',
@@ -63,7 +70,15 @@ function normalizeDietaryRestrictions(restrictions) {
     'hachée': 'hachée',
     'hachee': 'hachée',
     'Tendre': 'tendre',
-    'tendre': 'tendre'
+    'tendre': 'tendre',
+    'Lisse': 'lisse',
+    'lisse': 'lisse',
+    
+    // Pathologies
+    'Diabète': 'diabete',
+    'diabète': 'diabete',
+    'Hypertension': 'hypertension',
+    'hypertension': 'hypertension'
   };
   
   return restrictions.map(r => mapping[r] || r.toLowerCase());
@@ -135,9 +150,13 @@ export const generateIntelligentMenu = asyncHandler(async (req, res) => {
       orConditions.push({ nutritionalProfile: { $in: nutritionalProfile } });
     }
 
-    // Si restrictions éthiques/religieuses spécifiées
+    // Si restrictions éthiques/religieuses spécifiées (halal, casher, végétarien, etc.)
+    // Ces valeurs sont aussi stockées dans dietaryRestrictions dans la BDD
     if (ethicalRestrictions.length > 0) {
-      orConditions.push({ ethicalRestrictions: { $in: ethicalRestrictions } });
+      orConditions.push(
+        { diet: { $in: ethicalRestrictions } },
+        { dietaryRestrictions: { $in: ethicalRestrictions } }
+      );
     }
 
     // Si on a des conditions OR, les ajouter au filtre
@@ -179,11 +198,17 @@ export const generateIntelligentMenu = asyncHandler(async (req, res) => {
       console.log(`👴 ${compatibleRecipes.length} recettes adaptées aux seniors après filtrage`);
     }
 
-    if (compatibleRecipes.length < numDishes) {
+    // Vérification assouplie: avertir si peu de recettes mais continuer
+    if (compatibleRecipes.length === 0) {
       return res.status(400).json({
         success: false,
-        message: `Pas assez de recettes compatibles. Trouvé: ${compatibleRecipes.length}, requis: ${numDishes}`
+        message: `Aucune recette compatible trouvée avec les critères spécifiés.`
       });
+    }
+    
+    if (compatibleRecipes.length < numDishes) {
+      console.log(`⚠️ Attention: ${compatibleRecipes.length} recettes compatibles trouvées pour ${numDishes} plats demandés.`);
+      console.log(`   L'IA réutilisera certaines recettes ou adaptera le menu.`);
     }
 
     // 4. Si useStockOnly, vérifier la disponibilité en stock
@@ -1752,11 +1777,17 @@ export const generateMenuForResidents = asyncHandler(async (req, res) => {
     compatibleRecipes = filterRecipesForSeniors(compatibleRecipes);
     console.log(`👴 ${compatibleRecipes.length} recettes adaptées aux seniors après filtrage`);
 
-    if (compatibleRecipes.length < numDishes) {
+    // Vérification assouplie: avertir si peu de recettes mais continuer
+    if (compatibleRecipes.length === 0) {
       return res.status(400).json({
         success: false,
-        message: `Pas assez de recettes compatibles. Trouvé: ${compatibleRecipes.length}, requis: ${numDishes}`
+        message: `Aucune recette compatible trouvée avec les critères spécifiés.`
       });
+    }
+    
+    if (compatibleRecipes.length < numDishes) {
+      console.log(`⚠️ Attention: ${compatibleRecipes.length} recettes compatibles trouvées pour ${numDishes} plats demandés.`);
+      console.log(`   L'IA réutilisera certaines recettes ou adaptera le menu.`);
     }
 
     // 7. Si useStockOnly, vérifier la disponibilité en stock

@@ -666,6 +666,7 @@ export async function getResidentsGroupedByNutritionalProfile(req, res) {
                             type: 'restriction',
                             name: key,
                             restrictionType: restriction.type,
+                            restrictionValue: restriction.restriction,  // ✅ Valeur brute pour l'API menu
                             residents: []
                         };
                     }

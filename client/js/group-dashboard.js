@@ -803,11 +803,11 @@ class GroupDashboard {
                     .slice(0, 5)
                     .forEach(restrictionGroup => {
                         variantGroups.push({
-                            name: restrictionGroup.name,
+                            name: restrictionGroup.name,  // Pour l'affichage ("médicale: Sans sel")
                             description: `Menu spécifique pour ${restrictionGroup.residents.length} résidents`,
                             residentCount: restrictionGroup.residents.length,
                             allergens: [],
-                            dietaryRestrictions: [restrictionGroup.name],
+                            dietaryRestrictions: [restrictionGroup.restrictionValue || restrictionGroup.name],  // ✅ Utiliser restrictionValue
                             medicalConditions: [],
                             restrictionType: restrictionGroup.restrictionType
                         });
