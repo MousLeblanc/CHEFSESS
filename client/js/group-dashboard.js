@@ -1997,20 +1997,34 @@ class GroupDashboard {
                 // Recherche flexible: enlever les accents et normaliser
                 const normalizeString = (str) => str.toLowerCase()
                     .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Enlever accents
+                    .replace(/œ/g, 'oe')  // œ → oe
+                    .replace(/æ/g, 'ae')  // æ → ae
+                    .replace(/['']/g, ' ') // Apostrophes → espace
                     .trim();
                 
                 const ingredientNorm = normalizeString(ingredient.name);
+                console.log(`🔍 Recherche ingrédient: "${ingredient.name}" → normalisé: "${ingredientNorm}"`);
                 
                 const stockItem = stockItems.find(item => {
                     const stockNameNorm = normalizeString(item.name);
                     
                     // Recherche bidirectionnelle et flexible
-                    return stockNameNorm.includes(ingredientNorm) || 
+                    const match = stockNameNorm.includes(ingredientNorm) || 
                            ingredientNorm.includes(stockNameNorm) ||
                            // Recherche par mots-clés (ex: "épinard" match "épinards")
                            stockNameNorm.split(/\s+/).some(word => ingredientNorm.includes(word) && word.length > 3) ||
                            ingredientNorm.split(/\s+/).some(word => stockNameNorm.includes(word) && word.length > 3);
+                    
+                    if (match) {
+                        console.log(`   ✅ Match trouvé: "${item.name}" (${item.quantity}${item.unit})`);
+                    }
+                    
+                    return match;
                 });
+                
+                if (!stockItem) {
+                    console.log(`   ❌ Pas de match dans le stock pour "${ingredient.name}"`);
+                }
                 
                 if (!stockItem) {
                     return {
@@ -2391,9 +2405,12 @@ class GroupDashboard {
     
     async deductFromStock(stockItems) {
         try {
+            console.log('🔍 deductFromStock appelé avec:', stockItems);
+            
             const token = localStorage.getItem('token');
             if (!token) {
-                console.error('Token non disponible');
+                console.error('❌ Token non disponible');
+                this.showToast('Vous devez être connecté', 'error');
                 return false;
             }
             
@@ -2401,18 +2418,23 @@ class GroupDashboard {
             const itemsToDeduct = stockItems
                 .filter(item => item.status === 'ok')
                 .map(item => {
+                    console.log('📦 Traitement item:', item);
+                    
                     // Convertir la quantité nécessaire dans l'unité du stock
                     let quantityInStockUnit = item.needed;
                     
                     // Si l'unité du menu est différente de l'unité du stock, convertir
                     if (item.unit && item.stockUnit && item.unit !== item.stockUnit) {
                         const neededInGrams = this.convertToGrams(item.needed, item.unit);
+                        console.log(`   Conversion: ${item.needed}${item.unit} = ${neededInGrams}g`);
                         
                         // Reconvertir dans l'unité du stock
                         if (item.stockUnit === 'kg') {
                             quantityInStockUnit = neededInGrams / 1000;
+                            console.log(`   → ${quantityInStockUnit}kg (unité stock)`);
                         } else if (item.stockUnit === 'l' || item.stockUnit === 'litre') {
                             quantityInStockUnit = neededInGrams / 1000;
+                            console.log(`   → ${quantityInStockUnit}L (unité stock)`);
                         } else {
                             quantityInStockUnit = neededInGrams;
                         }
@@ -2429,11 +2451,12 @@ class GroupDashboard {
                 });
             
             if (itemsToDeduct.length === 0) {
-                console.log('Aucun élément à déduire du stock (tous manquants ou insuffisants)');
+                console.log('⚠️ Aucun élément à déduire du stock (tous manquants ou insuffisants)');
+                this.showToast('Aucun ingrédient à déduire', 'warning');
                 return true;
             }
             
-            console.log('Déduction du stock:', itemsToDeduct);
+            console.log('📤 Envoi de la déduction au serveur:', itemsToDeduct);
             
             const response = await fetch('/api/stock/deduct', {
                 method: 'PUT',
@@ -2444,10 +2467,19 @@ class GroupDashboard {
                 body: JSON.stringify({ itemsToDeduct: itemsToDeduct })
             });
             
+            console.log('📥 Réponse serveur - Status:', response.status);
+            
             if (!response.ok) {
-                const error = await response.json();
-                console.error('Erreur lors de la déduction:', error);
-                this.showToast(error.message || 'Erreur lors de la déduction du stock', 'error');
+                const errorText = await response.text();
+                console.error('❌ Erreur HTTP:', response.status, errorText);
+                let errorMessage = 'Erreur lors de la déduction du stock';
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = errorJson.message || errorMessage;
+                } catch (e) {
+                    errorMessage = errorText || errorMessage;
+                }
+                this.showToast(errorMessage, 'error');
                 return false;
             }
             
@@ -2455,18 +2487,21 @@ class GroupDashboard {
             console.log('✅ Stock déduit avec succès:', result);
             
             // Afficher une modal avec le récapitulatif
+            console.log('📊 Affichage de la modal récapitulatif...');
             this.showStockDeductionSummary(itemsToDeduct);
             
             // Recharger le stock pour afficher les nouvelles quantités
             if (typeof window.loadStockData === 'function') {
+                console.log('🔄 Rechargement du stock...');
                 await window.loadStockData();
             }
             
             return true;
             
         } catch (error) {
-            console.error('Erreur lors de la déduction du stock:', error);
-            this.showToast('Erreur lors de la déduction du stock', 'error');
+            console.error('❌ Exception dans deductFromStock:', error);
+            console.error('   Stack:', error.stack);
+            this.showToast('Erreur technique lors de la déduction: ' + error.message, 'error');
             return false;
         }
     }

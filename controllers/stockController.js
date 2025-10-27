@@ -202,13 +202,38 @@ export const deductStockItems = asyncHandler(async (req, res) => {
   let notEnoughStock = [];
   let updatedItems = [];
 
+  // Fonction de normalisation (comme dans le frontend)
+  const normalizeString = (str) => str.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Enlever accents
+    .replace(/œ/g, 'oe')  // œ → oe
+    .replace(/æ/g, 'ae')  // æ → ae
+    .replace(/['']/g, ' ') // Apostrophes → espace
+    .trim();
+
   for (const deductionItem of itemsToDeduct) {
     const { name, quantity: quantityToDeduct, unit } = deductionItem;
+    
+    console.log(`🔍 Backend - Recherche: "${name}"`);
+    const nameNorm = normalizeString(name);
 
-    const stockItem = userStock.items.find(item =>
-      item.name.toLowerCase() === name.toLowerCase() &&
-      (item.unit.toLowerCase() === unit.toLowerCase() || !unit)
-    );
+    const stockItem = userStock.items.find(item => {
+      const itemNameNorm = normalizeString(item.name);
+      const unitMatch = !unit || item.unit.toLowerCase() === unit.toLowerCase();
+      
+      // Recherche flexible comme le frontend
+      const nameMatch = itemNameNorm === nameNorm ||
+                       itemNameNorm.includes(nameNorm) ||
+                       nameNorm.includes(itemNameNorm) ||
+                       // Recherche par mots-clés
+                       itemNameNorm.split(/\s+/).some(word => nameNorm.includes(word) && word.length > 3) ||
+                       nameNorm.split(/\s+/).some(word => itemNameNorm.includes(word) && word.length > 3);
+      
+      if (nameMatch && unitMatch) {
+        console.log(`   ✅ Match trouvé: "${item.name}"`);
+      }
+      
+      return nameMatch && unitMatch;
+    });
 
     if (stockItem) {
       if (stockItem.quantity >= quantityToDeduct) {
