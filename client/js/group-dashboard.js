@@ -229,8 +229,23 @@ class GroupDashboard {
      */
     async checkAuthentication() {
         try {
-            const res = await fetch("/api/auth/me", { credentials: "include" });
+            const token = localStorage.getItem('token');
+            const headers = { 'Content-Type': 'application/json' };
+            
+            // Envoyer le token dans le header ET via cookies pour compatibilité
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            const res = await fetch("/api/auth/me", { 
+                credentials: "include",
+                headers: headers
+            });
+            
             if (res.status === 401) {
+                // Nettoyer localStorage avant de rediriger
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
                 this.showToast("Session expirée, reconnexion nécessaire.", "warning");
                 setTimeout(() => window.location.href = "/", 1500);
                 return null;
