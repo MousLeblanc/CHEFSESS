@@ -219,13 +219,12 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, sans texte avant ou après, 
         nutritionCalculated[key] = (value || 0) * factor;
       }
       
-      // Extraire les propriétés de l'IA SANS quantite, quantiteTotal et quantiteParPersonne
-      const { quantite: _q, quantiteTotal: _qt, quantiteParPersonne: _qp, quantity: _qty, ...ingRest } = ing;
-      
+      // Construire l'objet final avec SEULEMENT les propriétés dont on a besoin
       return {
-        ...ingRest,  // Spread SANS les champs de quantité
-        quantiteParPersonne: quantityPerPerson,  // Quantité par personne (de l'IA)
-        quantiteTotal: quantityTotal,             // Quantité totale (calculée)
+        nom: ing.nom,
+        unite: ing.unite,
+        quantiteParPersonne: quantityPerPerson,  // Quantité par personne (150g)
+        quantiteTotal: quantityTotal,             // Quantité totale (150 × 42 = 6300g)
         nutritionalValues: ingredientData.nutritionalValues,
         calculated: nutritionCalculated
       };
