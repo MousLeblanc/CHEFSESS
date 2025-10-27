@@ -33,6 +33,7 @@ import groupRoutes from "./routes/groupRoutes.js";
 import menuSyncRoutes from "./routes/menuSyncRoutes.js";
 import siteRoutes from "./routes/siteRoutes.js";
 import initRoutes from "./routes/initRoutes.js";
+import customMenuRoutes from "./routes/customMenuRoutes.js";
 
 // --- OpenAI client ---
 import openai from "./services/openaiClient.js";
@@ -88,6 +89,7 @@ app.use("/api/ai", enhancedAiRoutes);
 app.use("/api/ai-menu", aiMenuRoutes);
 app.use("/api/recipes", recipeRoutes);
 app.use("/api/intelligent-menu", intelligentMenuRoutes);
+app.use("/api/menu", customMenuRoutes);
 app.use("/api/residents", residentRoutes);
 app.use("/api/recipe-generator", recipeGeneratorRoutes);
 app.use("/api/groups", groupRoutes);

@@ -332,6 +332,7 @@ class GroupDashboard {
 
         // UI bindings
         this.initEventListeners();
+        this.initCustomMenuGenerator();
 
         // Default date
         const today = new Date().toISOString().split('T')[0];
@@ -1633,6 +1634,367 @@ class GroupDashboard {
             console.error('Erreur lors de la déconnexion:', error);
             window.location.href = '/';
         }
+    }
+    
+    /* ===========================
+     * Générateur de Menu Personnalisé
+     * ===========================
+     */
+    
+    initCustomMenuGenerator() {
+        // Array pour stocker les objectifs nutritionnels
+        this.nutritionalGoals = [];
+        this.generatedMenus = [];
+        
+        // Événements
+        const addGoalBtn = document.getElementById('add-goal-btn');
+        const customMenuForm = document.getElementById('generate-custom-menu-form');
+        const addGoalForm = document.getElementById('add-nutritional-goal-form');
+        
+        if (addGoalBtn) {
+            addGoalBtn.addEventListener('click', () => {
+                this.showAddGoalModal();
+            });
+        }
+        
+        if (addGoalForm) {
+            addGoalForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.addNutritionalGoal();
+            });
+        }
+        
+        if (customMenuForm) {
+            customMenuForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.generateCustomMenu();
+            });
+        }
+    }
+    
+    showAddGoalModal() {
+        const modal = document.getElementById('add-nutritional-goal-modal');
+        if (modal) {
+            modal.style.display = 'flex';
+            
+            // Gestion de la fermeture
+            const closeButtons = modal.querySelectorAll('.modal-close');
+            closeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+            });
+            
+            // Fermer en cliquant en dehors
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+    }
+    
+    addNutritionalGoal() {
+        const nutrientSelect = document.getElementById('goal-nutrient');
+        const targetInput = document.getElementById('goal-target');
+        
+        if (!nutrientSelect || !targetInput) return;
+        
+        const nutrient = nutrientSelect.value;
+        const nutrientLabel = nutrientSelect.options[nutrientSelect.selectedIndex].text;
+        const target = parseFloat(targetInput.value);
+        
+        // Extraire l'unité du label
+        const unitMatch = nutrientLabel.match(/\(([^)]+)\)/);
+        const unit = unitMatch ? unitMatch[1] : '';
+        const label = nutrientLabel.split('(')[0].trim();
+        
+        // Ajouter l'objectif
+        const goal = {
+            nutrient,
+            label,
+            target,
+            unit,
+            minIngredientValue: this.getMinIngredientValue(nutrient)
+        };
+        
+        this.nutritionalGoals.push(goal);
+        this.renderNutritionalGoals();
+        
+        // Fermer la modale
+        const modal = document.getElementById('add-nutritional-goal-modal');
+        if (modal) modal.style.display = 'none';
+        
+        // Réinitialiser le formulaire
+        document.getElementById('add-nutritional-goal-form').reset();
+    }
+    
+    getMinIngredientValue(nutrient) {
+        const minValues = {
+            proteins: 15,
+            iron: 1.5,
+            calcium: 50,
+            magnesium: 30,
+            zinc: 1,
+            vitaminC: 20,
+            vitaminD: 1,
+            vitaminA: 100,
+            fibers: 5,
+            vitaminE: 1,
+            vitaminK: 10,
+            vitaminB6: 0.2,
+            vitaminB9: 50,
+            vitaminB12: 0.5
+        };
+        return minValues[nutrient] || 5;
+    }
+    
+    renderNutritionalGoals() {
+        const goalsList = document.getElementById('nutritional-goals-list');
+        if (!goalsList) return;
+        
+        if (this.nutritionalGoals.length === 0) {
+            goalsList.innerHTML = '<p style="color: #6b7280; font-size: 0.9rem; margin: 0;">Aucun objectif ajouté. Cliquez sur "Ajouter un objectif" ci-dessous.</p>';
+            return;
+        }
+        
+        goalsList.innerHTML = this.nutritionalGoals.map((goal, index) => `
+            <div style="display: flex; justify-items: center; align-items: center; padding: 0.75rem; background: white; border-radius: 6px; margin-bottom: 0.5rem; border: 1px solid #e5e7eb;">
+                <div style="flex: 1;">
+                    <strong style="color: #374151;">${goal.label}</strong>
+                    <span style="color: #6b7280; margin-left: 0.5rem;">Objectif: ${goal.target}${goal.unit}</span>
+                </div>
+                <button type="button" onclick="groupDashboard.removeNutritionalGoal(${index})" style="background: #fee2e2; color: #991b1b; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                    <i class="fas fa-times"></i> Retirer
+                </button>
+            </div>
+        `).join('');
+    }
+    
+    removeNutritionalGoal(index) {
+        this.nutritionalGoals.splice(index, 1);
+        this.renderNutritionalGoals();
+    }
+    
+    async generateCustomMenu() {
+        if (this.nutritionalGoals.length === 0) {
+            this.showToast('Veuillez ajouter au moins un objectif nutritionnel', 'warning');
+            return;
+        }
+        
+        const numberOfPeople = parseInt(document.getElementById('custom-menu-people').value);
+        const mealType = document.getElementById('custom-menu-type').value;
+        const restrictionsSelect = document.getElementById('custom-menu-restrictions');
+        const dietaryRestrictions = Array.from(restrictionsSelect.selectedOptions).map(opt => opt.value);
+        
+        // Afficher le loader
+        const progressDiv = document.getElementById('custom-menu-progress');
+        const progressText = document.getElementById('custom-progress-text');
+        const resultsDiv = document.getElementById('custom-menu-results');
+        
+        if (progressDiv) progressDiv.style.display = 'block';
+        if (resultsDiv) resultsDiv.style.display = 'none';
+        
+        try {
+            if (progressText) progressText.textContent = 'Recherche des meilleurs ingrédients...';
+            
+            const response = await fetch('/api/menu/generate-custom', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    numberOfPeople,
+                    mealType,
+                    nutritionalGoals: this.nutritionalGoals,
+                    dietaryRestrictions
+                })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Erreur lors de la génération du menu');
+            }
+            
+            const result = await response.json();
+            
+            if (progressText) progressText.textContent = 'Menu généré avec succès !';
+            
+            // Ajouter le menu généré à la liste
+            this.generatedMenus.unshift({
+                ...result,
+                timestamp: new Date(),
+                goals: [...this.nutritionalGoals]
+            });
+            
+            // Afficher les résultats
+            this.displayCustomMenuResult(result);
+            this.displayGeneratedMenusList();
+            
+            this.showToast('Menu personnalisé généré avec succès !', 'success');
+            
+        } catch (error) {
+            console.error('Error generating custom menu:', error);
+            this.showToast(error.message || 'Erreur lors de la génération du menu', 'error');
+        } finally {
+            if (progressDiv) {
+                setTimeout(() => {
+                    progressDiv.style.display = 'none';
+                }, 1000);
+            }
+        }
+    }
+    
+    displayCustomMenuResult(result) {
+        const resultsDiv = document.getElementById('custom-menu-results');
+        if (!resultsDiv) return;
+        
+        const { menu, nutrition, numberOfPeople, nutritionalGoals } = result;
+        
+        // Vérifier les objectifs atteints
+        const goalsStatus = nutritionalGoals.map(goal => {
+            const value = nutrition.perPerson[goal.nutrient] || 0;
+            const achieved = value >= goal.target;
+            return { ...goal, value, achieved };
+        });
+        
+        const allGoalsAchieved = goalsStatus.every(g => g.achieved);
+        
+        resultsDiv.innerHTML = `
+            <div style="background: white; border-radius: 8px; padding: 1.5rem; border: 2px solid ${allGoalsAchieved ? '#10b981' : '#f59e0b'};">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <h3 style="margin: 0; color: #111827; font-size: 1.5rem;">${menu.nomMenu}</h3>
+                    <span style="background: ${allGoalsAchieved ? '#d1fae5' : '#fef3c7'}; color: ${allGoalsAchieved ? '#065f46' : '#92400e'}; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">
+                        ${allGoalsAchieved ? '✅ Tous les objectifs atteints' : '⚠️ Objectifs partiellement atteints'}
+                    </span>
+                </div>
+                
+                <p style="color: #6b7280; margin: 0 0 1.5rem 0;">${menu.description}</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <p style="margin: 0 0 0.5rem 0; font-weight: 600; color: #374151;"><i class="fas fa-users"></i> ${numberOfPeople} personnes</p>
+                        <p style="margin: 0 0 0.5rem 0; font-weight: 600; color: #374151;"><i class="fas fa-clock"></i> ${menu.tempsCuisson}</p>
+                        <p style="margin: 0; font-weight: 600; color: #374151;"><i class="fas fa-chart-bar"></i> ${menu.difficulte}</p>
+                    </div>
+                    <div style="background: #f3f4f6; padding: 1rem; border-radius: 6px;">
+                        <p style="margin: 0 0 0.5rem 0; font-weight: 600; color: #374151;">Par personne:</p>
+                        <p style="margin: 0; font-size: 0.9rem; color: #6b7280;">
+                            🔥 ${Math.round(nutrition.perPerson.calories || 0)} kcal<br>
+                            🥩 ${(nutrition.perPerson.proteins || 0).toFixed(1)}g protéines<br>
+                            🍞 ${(nutrition.perPerson.carbs || 0).toFixed(1)}g glucides<br>
+                            🥑 ${(nutrition.perPerson.lipids || 0).toFixed(1)}g lipides<br>
+                            🌾 ${(nutrition.perPerson.fibers || 0).toFixed(1)}g fibres
+                        </p>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="margin: 0 0 1rem 0; color: #374151;">📊 Objectifs Nutritionnels</h4>
+                    ${goalsStatus.map(goal => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: ${goal.achieved ? '#d1fae5' : '#fee2e2'}; border-radius: 6px; margin-bottom: 0.5rem;">
+                            <span style="font-weight: 600; color: #374151;">${goal.label}</span>
+                            <span style="color: ${goal.achieved ? '#065f46' : '#991b1b'};">
+                                ${goal.value.toFixed(1)}${goal.unit} / ${goal.target}${goal.unit}
+                                ${goal.achieved ? '✅' : '⚠️'}
+                            </span>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="margin: 0 0 1rem 0; color: #374151;">🥘 Ingrédients</h4>
+                    <ul style="columns: 2; column-gap: 2rem; margin: 0; padding-left: 1.5rem;">
+                        ${menu.ingredients.map(ing => 
+                            `<li style="margin-bottom: 0.5rem; color: #4b5563;">${ing.nom}: ${ing.quantite}${ing.unite}</li>`
+                        ).join('')}
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 style="margin: 0 0 1rem 0; color: #374151;">👨‍🍳 Instructions</h4>
+                    <ol style="margin: 0; padding-left: 1.5rem;">
+                        ${menu.instructions.map(instruction => 
+                            `<li style="margin-bottom: 0.75rem; color: #4b5563;">${instruction}</li>`
+                        ).join('')}
+                    </ol>
+                </div>
+                
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb; display: flex; gap: 1rem;">
+                    <button onclick="groupDashboard.exportMenu(${this.generatedMenus.length - 1})" class="btn btn-outline" style="flex: 1;">
+                        <i class="fas fa-download"></i> Exporter
+                    </button>
+                    <button onclick="groupDashboard.printMenu(${this.generatedMenus.length - 1})" class="btn btn-outline" style="flex: 1;">
+                        <i class="fas fa-print"></i> Imprimer
+                    </button>
+                    <button onclick="groupDashboard.saveMenuToDatabase(${this.generatedMenus.length - 1})" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-save"></i> Sauvegarder dans la base
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        resultsDiv.style.display = 'block';
+    }
+    
+    displayGeneratedMenusList() {
+        if (this.generatedMenus.length === 0) return;
+        
+        const listDiv = document.getElementById('generated-menus-list');
+        const containerDiv = document.getElementById('generated-menus-container');
+        
+        if (!listDiv || !containerDiv) return;
+        
+        listDiv.style.display = 'block';
+        
+        containerDiv.innerHTML = this.generatedMenus.slice(0, 5).map((item, index) => `
+            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; cursor: pointer; transition: all 0.2s;" onclick="groupDashboard.displayCustomMenuResult(${JSON.stringify(item).replace(/"/g, '&quot;')})">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <h4 style="margin: 0 0 0.5rem 0; color: #374151;">${item.menu.nomMenu}</h4>
+                        <p style="margin: 0; font-size: 0.85rem; color: #6b7280;">
+                            ${item.numberOfPeople} pers. • ${item.mealType} • ${new Date(item.timestamp).toLocaleString('fr-FR')}
+                        </p>
+                        <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: #10b981;">
+                            ${item.goals.map(g => `${g.label}: ${g.target}${g.unit}`).join(' • ')}
+                        </p>
+                    </div>
+                    <span style="color: #10b981; font-size: 1.5rem;">✓</span>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    exportMenu(index) {
+        const menuData = this.generatedMenus[index];
+        if (!menuData) return;
+        
+        const jsonStr = JSON.stringify(menuData, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `menu-${menuData.menu.nomMenu.toLowerCase().replace(/\s+/g, '-')}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        this.showToast('Menu exporté avec succès', 'success');
+    }
+    
+    printMenu(index) {
+        const menuData = this.generatedMenus[index];
+        if (!menuData) return;
+        
+        window.print();
+    }
+    
+    async saveMenuToDatabase(index) {
+        const menuData = this.generatedMenus[index];
+        if (!menuData) return;
+        
+        // TODO: Implement save to database
+        this.showToast('Fonctionnalité à venir', 'info');
     }
 }
 

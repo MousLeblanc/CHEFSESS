@@ -2,36 +2,11 @@
 import mongoose from 'mongoose';
 import Stock from '../models/Stock.js';
 import dotenv from 'dotenv';
+import { detectCategory, getIngredientData, getNutritionalValues } from './ingredients-database.js';
 
 dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/chef-ses';
-
-// Dictionnaire de correspondance mot-clé -> catégorie
-const categoryMappings = {
-  'legumes': ['tomate', 'carotte', 'oignon', 'poivron', 'courgette', 'aubergine', 'pomme de terre', 'patate', 'chou', 'salade', 'laitue', 'épinard', 'brocoli', 'haricot', 'pois', 'navaro', 'navet', 'endive', 'poireau', 'asperge', 'artichaut', 'betterave', 'céleri', 'fenouil', 'ail', 'échalote'],
-  'viandes': ['poulet', 'boeuf', 'porc', 'veau', 'agneau', 'canard', 'dinde', 'jambon', 'bacon', 'saucisse', 'steak', 'côtelette', 'rôti', 'bavette', 'aiguillette', 'filet', 'escalope', 'blanquette', 'émincé', 'hachis', 'chair'],
-  'poissons': ['saumon', 'thon', 'cabillaud', 'morue', 'truite', 'bar', 'daurade', 'sole', 'lieu', 'merlan', 'sardine', 'maquereau', 'anchois', 'hareng', 'crevette', 'gambas', 'homard', 'crabe', 'moule', 'huître', 'coquille', 'seiche', 'calmar', 'poulpe', 'aiglefin', 'aileron'],
-  'produits-laitiers': ['lait', 'fromage', 'yaourt', 'beurre', 'crème', 'camembert', 'emmental', 'gruyère', 'roquefort', 'brie', 'chèvre', 'mozzarella', 'parmesan', 'ricotta', 'mascarpone', 'feta', 'cottage'],
-  'cereales': ['pain', 'riz', 'pâtes', 'farine', 'blé', 'avoine', 'orge', 'semoule', 'quinoa', 'boulgour', 'couscous', 'maïs', 'polenta', 'céréale', 'muesli', 'granola'],
-  'fruits': ['pomme', 'poire', 'banane', 'orange', 'clémentine', 'mandarine', 'citron', 'pamplemousse', 'raisin', 'fraise', 'framboise', 'mûre', 'myrtille', 'cerise', 'abricot', 'pêche', 'prune', 'melon', 'pastèque', 'ananas', 'mangue', 'kiwi', 'fruit'],
-  'epices': ['sel', 'poivre', 'épice', 'curry', 'paprika', 'cumin', 'cannelle', 'muscade', 'gingembre', 'safran', 'curcuma', 'coriandre', 'persil', 'thym', 'romarin', 'basilic', 'menthe', 'laurier', 'herbe', 'aromate'],
-  'boissons': ['eau', 'jus', 'soda', 'café', 'thé', 'lait', 'sirop', 'nectar', 'boisson', 'infusion']
-};
-
-function detectCategory(itemName) {
-  const nameLower = itemName.toLowerCase();
-  
-  for (const [category, keywords] of Object.entries(categoryMappings)) {
-    for (const keyword of keywords) {
-      if (nameLower.includes(keyword)) {
-        return category;
-      }
-    }
-  }
-  
-  return 'autres'; // Catégorie par défaut si aucune correspondance
-}
 
 async function fixStockCategories() {
   try {
@@ -57,7 +32,20 @@ async function fixStockCategories() {
           const detectedCategory = detectCategory(item.name);
           
           if (detectedCategory !== 'autres') {
+            // Récupérer aussi les données nutritionnelles
+            const ingredientData = getIngredientData(item.name);
+            
             console.log(`  🔍 "${item.name}" -> ${detectedCategory}`);
+            if (ingredientData && ingredientData.nutritionalValues) {
+              const nutritionalValues = ingredientData.nutritionalValues;
+              console.log(`     📊 Calories: ${nutritionalValues.calories} kcal | Protéines: ${nutritionalValues.proteins}g | Glucides: ${nutritionalValues.carbs}g | Lipides: ${nutritionalValues.lipids}g`);
+              
+              // Optionnel: Ajouter les valeurs nutritionnelles à l'item si le modèle le supporte
+              if (!item.nutritionalValues) {
+                item.nutritionalValues = nutritionalValues;
+              }
+            }
+            
             item.category = detectedCategory;
             updated = true;
             totalUpdated++;

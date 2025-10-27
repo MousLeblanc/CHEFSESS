@@ -1,0 +1,57 @@
+{
+  "poulet": {
+    "calories": 165,
+    "proteins": 31,
+    "carbs": 0,
+    "lipids": 3.6,
+    "fibers": 0,
+    "iron": 0.7,
+    "calcium": 12,
+    "magnesium": 28,
+    "zinc": 1.5,
+    "phosphore": 200
+  },
+  "bœuf": {
+    "calories": 250,
+    "proteins": 26,
+    "carbs": 0,
+    "lipids": 15,
+    "fibers": 0,
+    "iron": 2.6,
+    "calcium": 18,
+    "magnesium": 21,
+    "zinc": 4.8,
+    "phosphore": 175
+  },
+  "saumon": {
+    "calories": 208,
+    "proteins": 20,
+    "carbs": 0,
+    "lipids": 13,
+    "fibers": 0,
+    "iron": 0.25,
+    "calcium": 12,
+    "vitaminD": 8.7
+  },
+  "lentilles": {
+    "calories": 116,
+    "proteins": 9,
+    "carbs": 16.3,
+    "lipids": 0.4,
+    "fibers": 7.9,
+    "iron": 3.3,
+    "calcium": 19,
+    "magnesium": 36
+  },
+  "épinards": {
+    "calories": 23,
+    "proteins": 2.9,
+    "carbs": 3.6,
+    "lipids": 0.4,
+    "fibers": 2.2,
+    "iron": 2.7,
+    "calcium": 99,
+    "vitaminC": 28.1
+  }
+}
+
