@@ -2021,6 +2021,7 @@ class GroupDashboard {
     
     extractIngredientsFromMenu(menuResult, numberOfPeople) {
         // Extraire les ingrédients avec leurs quantités
+        // NOTE: Les quantités retournées par l'AI sont DÉJÀ pour le groupe entier
         const ingredients = [];
         
         if (menuResult.menu && menuResult.menu.ingredients) {
@@ -2029,7 +2030,7 @@ class GroupDashboard {
                 if (typeof ing === 'object' && ing.nom) {
                     ingredients.push({
                         name: ing.nom || ing.name,
-                        quantity: (parseFloat(ing.quantite || ing.quantity) || 0) * numberOfPeople,
+                        quantity: parseFloat(ing.quantite || ing.quantity) || 0,
                         unit: ing.unite || ing.unit || 'g'
                     });
                 }
@@ -2039,7 +2040,7 @@ class GroupDashboard {
                     if (match) {
                         ingredients.push({
                             name: match[1].trim(),
-                            quantity: parseFloat(match[2]) * numberOfPeople,
+                            quantity: parseFloat(match[2]),
                             unit: match[3]
                         });
                     }
@@ -2132,9 +2133,17 @@ class GroupDashboard {
                 <div style="margin-bottom: 1.5rem;">
                     <h4 style="margin: 0 0 1rem 0; color: #374151;">🥘 Ingrédients</h4>
                     <ul style="columns: 2; column-gap: 2rem; margin: 0; padding-left: 1.5rem;">
-                        ${menu.ingredients.map(ing => 
-                            `<li style="margin-bottom: 0.5rem; color: #4b5563;">${ing}</li>`
-                        ).join('')}
+                        ${menu.ingredients.map(ing => {
+                            // Si c'est un objet, formatter correctement
+                            if (typeof ing === 'object') {
+                                const nom = ing.nom || ing.name || 'Ingrédient';
+                                const quantite = ing.quantite || ing.quantity || '';
+                                const unite = ing.unite || ing.unit || '';
+                                return `<li style="margin-bottom: 0.5rem; color: #4b5563;">${nom}: ${quantite}${unite}</li>`;
+                            }
+                            // Si c'est une string, l'afficher directement
+                            return `<li style="margin-bottom: 0.5rem; color: #4b5563;">${ing}</li>`;
+                        }).join('')}
                     </ul>
                 </div>
                 
