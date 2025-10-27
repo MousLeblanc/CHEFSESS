@@ -95,7 +95,7 @@ router.delete('/:id', protect, async (req, res) => {
   }
 });
 
-// Route pour le seeding du stock (ajout de données de démonstration)
+// Route pour le seeding du stock (ajout de données de démonstration enrichies)
 router.post('/seed', protect, async (req, res) => {
   const stock = await Stock.findOneAndUpdate(
     { createdBy: req.user._id },
@@ -103,21 +103,104 @@ router.post('/seed', protect, async (req, res) => {
       createdBy: req.user._id,
       establishmentType: req.user.establishmentType || 'autre',
       items: [
-        { name: 'Tomates', quantity: 10, unit: 'kg', category: 'legumes', price: 2.5, alertThreshold: 3 },
-        { name: 'Poulet', quantity: 5, unit: 'kg', category: 'viandes', price: 8.9, alertThreshold: 2 },
-        { name: 'Farine', quantity: 20, unit: 'kg', category: 'cereales', price: 1.2, alertThreshold: 5 },
-        { name: 'Pommes', quantity: 15, unit: 'kg', category: 'fruits', price: 1.8, alertThreshold: 4 },
-        { name: 'Lait', quantity: 8, unit: 'l', category: 'boissons', price: 1.1, alertThreshold: 3 },
-        { name: 'Oeufs', quantity: 30, unit: 'pièce', category: 'produits-laitiers', price: 0.2, alertThreshold: 10 },
-        { name: 'Pâtes', quantity: 10, unit: 'kg', category: 'cereales', price: 1.5, alertThreshold: 3 },
-        { name: 'Riz', quantity: 15, unit: 'kg', category: 'cereales', price: 1.8, alertThreshold: 4 },
-        { name: 'Thon en conserve', quantity: 12, unit: 'boîte', category: 'autres', price: 1.0, alertThreshold: 5 },
-        { name: 'Huile d\'olive', quantity: 5, unit: 'l', category: 'autres', price: 6.0, alertThreshold: 1 }
+        // ========== VIANDES (quantités > 100 kg) ==========
+        { name: 'Bœuf', quantity: 150, unit: 'kg', category: 'viandes', price: 12.5, alertThreshold: 30 },
+        { name: 'Porc', quantity: 120, unit: 'kg', category: 'viandes', price: 8.9, alertThreshold: 25 },
+        { name: 'Veau', quantity: 110, unit: 'kg', category: 'viandes', price: 15.0, alertThreshold: 20 },
+        { name: 'Agneau', quantity: 105, unit: 'kg', category: 'viandes', price: 14.5, alertThreshold: 20 },
+        { name: 'Steak haché', quantity: 130, unit: 'kg', category: 'viandes', price: 10.5, alertThreshold: 25 },
+        { name: 'Saucisses', quantity: 115, unit: 'kg', category: 'viandes', price: 7.8, alertThreshold: 20 },
+        { name: 'Merguez', quantity: 108, unit: 'kg', category: 'viandes', price: 8.2, alertThreshold: 20 },
+        
+        // ========== VOLAILLES (quantités > 100 kg) ==========
+        { name: 'Poulet', quantity: 200, unit: 'kg', category: 'viandes', price: 6.5, alertThreshold: 40 },
+        { name: 'Dinde', quantity: 150, unit: 'kg', category: 'viandes', price: 7.2, alertThreshold: 30 },
+        { name: 'Canard', quantity: 110, unit: 'kg', category: 'viandes', price: 9.5, alertThreshold: 20 },
+        { name: 'Pintade', quantity: 105, unit: 'kg', category: 'viandes', price: 8.8, alertThreshold: 20 },
+        
+        // ========== POISSONS (quantités > 100 kg) ==========
+        { name: 'Saumon', quantity: 125, unit: 'kg', category: 'poissons', price: 18.5, alertThreshold: 25 },
+        { name: 'Cabillaud', quantity: 130, unit: 'kg', category: 'poissons', price: 12.0, alertThreshold: 25 },
+        { name: 'Thon', quantity: 115, unit: 'kg', category: 'poissons', price: 15.5, alertThreshold: 20 },
+        { name: 'Truite', quantity: 110, unit: 'kg', category: 'poissons', price: 11.5, alertThreshold: 20 },
+        { name: 'Sardine', quantity: 120, unit: 'kg', category: 'poissons', price: 6.5, alertThreshold: 25 },
+        { name: 'Lieu noir', quantity: 105, unit: 'kg', category: 'poissons', price: 8.0, alertThreshold: 20 },
+        
+        // ========== LÉGUMES (quantités > 100 kg) ==========
+        { name: 'Tomates', quantity: 180, unit: 'kg', category: 'legumes', price: 2.5, alertThreshold: 35 },
+        { name: 'Carottes', quantity: 200, unit: 'kg', category: 'legumes', price: 1.8, alertThreshold: 40 },
+        { name: 'Pommes de terre', quantity: 250, unit: 'kg', category: 'legumes', price: 1.2, alertThreshold: 50 },
+        { name: 'Oignons', quantity: 150, unit: 'kg', category: 'legumes', price: 1.5, alertThreshold: 30 },
+        { name: 'Poivrons', quantity: 120, unit: 'kg', category: 'legumes', price: 3.2, alertThreshold: 25 },
+        { name: 'Courgettes', quantity: 140, unit: 'kg', category: 'legumes', price: 2.0, alertThreshold: 28 },
+        { name: 'Aubergines', quantity: 115, unit: 'kg', category: 'legumes', price: 2.8, alertThreshold: 23 },
+        { name: 'Brocolis', quantity: 110, unit: 'kg', category: 'legumes', price: 3.5, alertThreshold: 22 },
+        { name: 'Chou-fleur', quantity: 125, unit: 'kg', category: 'legumes', price: 2.9, alertThreshold: 25 },
+        { name: 'Épinards', quantity: 130, unit: 'kg', category: 'legumes', price: 4.2, alertThreshold: 26 },
+        { name: 'Haricots verts', quantity: 135, unit: 'kg', category: 'legumes', price: 3.8, alertThreshold: 27 },
+        { name: 'Petits pois', quantity: 145, unit: 'kg', category: 'legumes', price: 3.0, alertThreshold: 29 },
+        { name: 'Concombres', quantity: 105, unit: 'kg', category: 'legumes', price: 1.9, alertThreshold: 21 },
+        { name: 'Salades', quantity: 115, unit: 'kg', category: 'legumes', price: 2.2, alertThreshold: 23 },
+        { name: 'Champignons', quantity: 108, unit: 'kg', category: 'legumes', price: 5.5, alertThreshold: 22 },
+        
+        // ========== FÉCULENTS (quantités > 100 kg) ==========
+        { name: 'Pâtes', quantity: 300, unit: 'kg', category: 'cereales', price: 1.5, alertThreshold: 60 },
+        { name: 'Riz blanc', quantity: 280, unit: 'kg', category: 'cereales', price: 1.8, alertThreshold: 56 },
+        { name: 'Riz complet', quantity: 200, unit: 'kg', category: 'cereales', price: 2.2, alertThreshold: 40 },
+        { name: 'Quinoa', quantity: 150, unit: 'kg', category: 'cereales', price: 5.5, alertThreshold: 30 },
+        { name: 'Boulgour', quantity: 140, unit: 'kg', category: 'cereales', price: 2.8, alertThreshold: 28 },
+        { name: 'Semoule', quantity: 180, unit: 'kg', category: 'cereales', price: 2.0, alertThreshold: 36 },
+        { name: 'Lentilles', quantity: 160, unit: 'kg', category: 'cereales', price: 3.2, alertThreshold: 32 },
+        { name: 'Pois chiches', quantity: 145, unit: 'kg', category: 'cereales', price: 3.5, alertThreshold: 29 },
+        { name: 'Haricots blancs', quantity: 130, unit: 'kg', category: 'cereales', price: 2.9, alertThreshold: 26 },
+        { name: 'Haricots rouges', quantity: 125, unit: 'kg', category: 'cereales', price: 3.0, alertThreshold: 25 },
+        { name: 'Farine', quantity: 220, unit: 'kg', category: 'cereales', price: 1.2, alertThreshold: 44 },
+        { name: 'Polenta', quantity: 110, unit: 'kg', category: 'cereales', price: 2.5, alertThreshold: 22 },
+        
+        // ========== PRODUITS LAITIERS ==========
+        { name: 'Lait', quantity: 500, unit: 'litre', category: 'produits-laitiers', price: 1.1, alertThreshold: 100 },
+        { name: 'Yaourts nature', quantity: 600, unit: 'pièce', category: 'produits-laitiers', price: 0.4, alertThreshold: 120 },
+        { name: 'Fromage blanc', quantity: 150, unit: 'kg', category: 'produits-laitiers', price: 3.5, alertThreshold: 30 },
+        { name: 'Crème fraîche', quantity: 120, unit: 'litre', category: 'produits-laitiers', price: 2.8, alertThreshold: 24 },
+        { name: 'Beurre', quantity: 110, unit: 'kg', category: 'produits-laitiers', price: 8.5, alertThreshold: 22 },
+        { name: 'Emmental râpé', quantity: 105, unit: 'kg', category: 'produits-laitiers', price: 12.0, alertThreshold: 21 },
+        { name: 'Mozzarella', quantity: 108, unit: 'kg', category: 'produits-laitiers', price: 11.5, alertThreshold: 22 },
+        { name: 'Oeufs', quantity: 1500, unit: 'pièce', category: 'produits-laitiers', price: 0.2, alertThreshold: 300 },
+        
+        // ========== FRUITS (quantités > 100 kg) ==========
+        { name: 'Pommes', quantity: 200, unit: 'kg', category: 'fruits', price: 1.8, alertThreshold: 40 },
+        { name: 'Oranges', quantity: 180, unit: 'kg', category: 'fruits', price: 2.2, alertThreshold: 36 },
+        { name: 'Bananes', quantity: 150, unit: 'kg', category: 'fruits', price: 1.5, alertThreshold: 30 },
+        { name: 'Poires', quantity: 120, unit: 'kg', category: 'fruits', price: 2.5, alertThreshold: 24 },
+        { name: 'Fraises', quantity: 110, unit: 'kg', category: 'fruits', price: 5.5, alertThreshold: 22 },
+        { name: 'Kiwis', quantity: 115, unit: 'kg', category: 'fruits', price: 3.8, alertThreshold: 23 },
+        { name: 'Raisin', quantity: 125, unit: 'kg', category: 'fruits', price: 4.2, alertThreshold: 25 },
+        { name: 'Melons', quantity: 130, unit: 'kg', category: 'fruits', price: 2.8, alertThreshold: 26 },
+        { name: 'Pastèques', quantity: 140, unit: 'kg', category: 'fruits', price: 1.9, alertThreshold: 28 },
+        { name: 'Pêches', quantity: 105, unit: 'kg', category: 'fruits', price: 3.5, alertThreshold: 21 },
+        
+        // ========== HUILES ET CONDIMENTS ==========
+        { name: 'Huile d\'olive', quantity: 150, unit: 'litre', category: 'autres', price: 6.0, alertThreshold: 30 },
+        { name: 'Huile de tournesol', quantity: 200, unit: 'litre', category: 'autres', price: 3.5, alertThreshold: 40 },
+        { name: 'Vinaigre', quantity: 120, unit: 'litre', category: 'autres', price: 2.0, alertThreshold: 24 },
+        
+        // ========== ÉPICES ==========
+        { name: 'Sel', quantity: 50, unit: 'kg', category: 'epices', price: 0.8, alertThreshold: 10 },
+        { name: 'Poivre', quantity: 25, unit: 'kg', category: 'epices', price: 15.0, alertThreshold: 5 },
+        { name: 'Herbes de Provence', quantity: 15, unit: 'kg', category: 'epices', price: 12.0, alertThreshold: 3 },
+        { name: 'Paprika', quantity: 12, unit: 'kg', category: 'epices', price: 18.0, alertThreshold: 2 },
+        { name: 'Cumin', quantity: 10, unit: 'kg', category: 'epices', price: 20.0, alertThreshold: 2 },
+        { name: 'Curry', quantity: 14, unit: 'kg', category: 'epices', price: 16.0, alertThreshold: 3 },
+        
+        // ========== BOISSONS ==========
+        { name: 'Eau minérale', quantity: 1000, unit: 'litre', category: 'boissons', price: 0.3, alertThreshold: 200 },
+        { name: 'Jus d\'orange', quantity: 300, unit: 'litre', category: 'boissons', price: 1.8, alertThreshold: 60 },
+        { name: 'Jus de pomme', quantity: 250, unit: 'litre', category: 'boissons', price: 1.5, alertThreshold: 50 }
       ]
     },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
-  res.status(200).json({ success: true, message: 'Stock seeded/updated successfully', data: stock.items });
+  res.status(200).json({ success: true, message: 'Stock enrichi avec succès ! 🎉 ' + stock.items.length + ' ingrédients ajoutés.', data: stock.items });
 });
 
 

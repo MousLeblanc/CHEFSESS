@@ -2004,11 +2004,11 @@ class GroupDashboard {
                 <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
                     <!-- Boutons principaux -->
                     <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-                        <button onclick="groupDashboard.acceptMenu(${this.generatedMenus.length - 1})" class="btn btn-primary" style="flex: 1; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; padding: 1rem; font-size: 1rem;">
-                            <i class="fas fa-check-circle"></i> Accepter ce menu
+                        <button onclick="groupDashboard.acceptMenu(${this.generatedMenus.length - 1})" class="btn btn-primary" style="flex: 1; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; padding: 1.25rem; font-size: 1.1rem; font-weight: 700; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);">
+                            <i class="fas fa-check-circle" style="font-size: 1.2rem;"></i> Accepter ce menu
                         </button>
-                        <button onclick="groupDashboard.replaceMenu()" class="btn btn-outline" style="flex: 1; border: 2px solid #f59e0b; color: #d97706; padding: 1rem; font-size: 1rem;">
-                            <i class="fas fa-sync-alt"></i> Remplacer le menu
+                        <button onclick="groupDashboard.replaceMenu()" class="btn" style="flex: 1; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; padding: 1.25rem; font-size: 1.1rem; font-weight: 700; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.4);">
+                            <i class="fas fa-sync-alt" style="font-size: 1.2rem;"></i> Remplacer le menu
                         </button>
                     </div>
                     
