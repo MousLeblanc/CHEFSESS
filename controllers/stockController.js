@@ -186,6 +186,9 @@ export const updateStockItem = asyncHandler(async (req, res) => {
 // @access  Private
 export const deductStockItems = asyncHandler(async (req, res) => {
   const { itemsToDeduct } = req.body;
+  
+  console.log('🚀 ===== DÉBUT DÉDUCTION STOCK =====');
+  console.log('📥 Items reçus:', JSON.stringify(itemsToDeduct, null, 2));
 
   if (!itemsToDeduct || !Array.isArray(itemsToDeduct) || itemsToDeduct.length === 0) {
     res.status(400);
@@ -198,6 +201,9 @@ export const deductStockItems = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Stock utilisateur non trouvé.');
   }
+  
+  console.log(`📦 Stock chargé: ${userStock.items.length} items disponibles`);
+  console.log(`📋 Liste des items en stock:`, userStock.items.map(i => `"${i.name}" (${i.quantity}${i.unit})`).join(', '));
 
   let notEnoughStock = [];
   let updatedItems = [];
@@ -236,14 +242,19 @@ export const deductStockItems = asyncHandler(async (req, res) => {
     });
 
     if (stockItem) {
+      console.log(`   📦 Item trouvé: ${stockItem.name}, quantité: ${stockItem.quantity}${stockItem.unit}, à déduire: ${quantityToDeduct}${unit}`);
       if (stockItem.quantity >= quantityToDeduct) {
         stockItem.quantity -= quantityToDeduct;
         stockItem.updatedAt = new Date();
         updatedItems.push(name);
+        console.log(`   ✅ Déduit avec succès: ${stockItem.name}, nouveau stock: ${stockItem.quantity}${stockItem.unit}`);
       } else {
+        console.log(`   ⚠️ Stock insuffisant: ${stockItem.name}, dispo: ${stockItem.quantity}, besoin: ${quantityToDeduct}`);
         notEnoughStock.push({ name, required: quantityToDeduct, available: stockItem.quantity, unit: stockItem.unit, reason: 'insufficient' });
       }
     } else {
+      console.log(`   ❌ Pas trouvé dans le stock backend: "${name}"`);
+      console.log(`   📋 Ingrédients disponibles dans le stock:`, userStock.items.map(i => i.name).join(', '));
       notEnoughStock.push({ name, required: quantityToDeduct, available: 0, unit: unit, reason: 'not_found' });
     }
   }
