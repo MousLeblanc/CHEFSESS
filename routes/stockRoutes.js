@@ -183,14 +183,25 @@ router.post('/seed', protect, async (req, res) => {
         { name: 'Huile d\'olive', quantity: 150, unit: 'litre', category: 'autres', price: 6.0, alertThreshold: 30 },
         { name: 'Huile de tournesol', quantity: 200, unit: 'litre', category: 'autres', price: 3.5, alertThreshold: 40 },
         { name: 'Vinaigre', quantity: 120, unit: 'litre', category: 'autres', price: 2.0, alertThreshold: 24 },
+        { name: 'Moutarde', quantity: 50, unit: 'kg', category: 'autres', price: 4.5, alertThreshold: 10 },
+        { name: 'Mayonnaise', quantity: 45, unit: 'kg', category: 'autres', price: 5.2, alertThreshold: 9 },
+        { name: 'Ketchup', quantity: 40, unit: 'kg', category: 'autres', price: 3.8, alertThreshold: 8 },
+        { name: 'Sauce soja', quantity: 35, unit: 'litre', category: 'autres', price: 6.5, alertThreshold: 7 },
+        { name: 'Concentré de tomate', quantity: 60, unit: 'kg', category: 'autres', price: 3.2, alertThreshold: 12 },
         
-        // ========== ÉPICES ==========
+        // ========== ÉPICES ET AROMATES ==========
         { name: 'Sel', quantity: 50, unit: 'kg', category: 'epices', price: 0.8, alertThreshold: 10 },
         { name: 'Poivre', quantity: 25, unit: 'kg', category: 'epices', price: 15.0, alertThreshold: 5 },
         { name: 'Herbes de Provence', quantity: 15, unit: 'kg', category: 'epices', price: 12.0, alertThreshold: 3 },
         { name: 'Paprika', quantity: 12, unit: 'kg', category: 'epices', price: 18.0, alertThreshold: 2 },
         { name: 'Cumin', quantity: 10, unit: 'kg', category: 'epices', price: 20.0, alertThreshold: 2 },
         { name: 'Curry', quantity: 14, unit: 'kg', category: 'epices', price: 16.0, alertThreshold: 3 },
+        { name: 'Ail', quantity: 30, unit: 'kg', category: 'epices', price: 5.5, alertThreshold: 6 },
+        { name: 'Persil', quantity: 20, unit: 'kg', category: 'epices', price: 8.0, alertThreshold: 4 },
+        { name: 'Basilic', quantity: 15, unit: 'kg', category: 'epices', price: 12.0, alertThreshold: 3 },
+        { name: 'Thym', quantity: 10, unit: 'kg', category: 'epices', price: 15.0, alertThreshold: 2 },
+        { name: 'Laurier', quantity: 8, unit: 'kg', category: 'epices', price: 18.0, alertThreshold: 2 },
+        { name: 'Coriandre', quantity: 12, unit: 'kg', category: 'epices', price: 14.0, alertThreshold: 2 },
         
         // ========== BOISSONS ==========
         { name: 'Eau minérale', quantity: 1000, unit: 'litre', category: 'boissons', price: 0.3, alertThreshold: 200 },
