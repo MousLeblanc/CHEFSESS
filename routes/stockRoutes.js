@@ -61,11 +61,12 @@ router.get('/:id', protect, async (req, res) => {
   }
 });
 
-// Route pour mettre à jour un ingrédient spécifique par ID
-router.put('/:id', protect, updateStockItem);
-
 // Route pour déduire des éléments du stock (utilisé après la génération de menu)
-router.put('/deduct', protect, deductStockItems); 
+// ⚠️ DOIT ÊTRE AVANT /:id pour éviter que "deduct" soit interprété comme un ID
+router.put('/deduct', protect, deductStockItems);
+
+// Route pour mettre à jour un ingrédient spécifique par ID
+router.put('/:id', protect, updateStockItem); 
 
 // Route pour supprimer un ingrédient spécifique
 router.delete('/:id', protect, async (req, res) => {
