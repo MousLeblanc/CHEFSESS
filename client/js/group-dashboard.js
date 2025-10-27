@@ -1639,16 +1639,22 @@ class GroupDashboard {
 
     async logout() {
         try {
+            // 1️⃣ Appeler l'API pour supprimer le cookie côté serveur
             await fetch('/api/auth/logout', {
                 method: 'POST',
                 credentials: 'include'
             });
-            
-            window.location.href = '/';
         } catch (error) {
             console.error('Erreur lors de la déconnexion:', error);
-            window.location.href = '/';
         }
+        
+        // 2️⃣ Nettoyer complètement le localStorage
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('cart');
+        
+        // 3️⃣ Rediriger vers la page de connexion
+        window.location.href = '/';
     }
     
     /* ===========================
