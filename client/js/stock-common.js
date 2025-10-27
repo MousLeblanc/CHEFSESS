@@ -617,10 +617,52 @@ export function filterStock() {
 
 // ========== INITIALISATION ==========
 
+export async function loadDemoStock() {
+  try {
+    console.log('📦 Chargement du stock de démonstration...');
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('❌ Token non trouvé');
+      showToast('Veuillez vous reconnecter', 'error');
+      return;
+    }
+    
+    // Afficher un loader
+    showToast('⏳ Chargement de 83 ingrédients en cours...', 'info');
+    
+    const response = await fetch('/api/stock/seed', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Erreur lors du chargement');
+    }
+    
+    const result = await response.json();
+    console.log('✅ Stock de démonstration chargé:', result);
+    
+    showToast(`🎉 ${result.data?.length || 83} ingrédients chargés avec succès !`, 'success');
+    
+    // Recharger les données
+    await loadStockData();
+    
+  } catch (error) {
+    console.error('❌ Erreur lors du chargement du stock de démonstration:', error);
+    showToast('Erreur lors du chargement du stock: ' + error.message, 'error');
+  }
+}
+
 export function initStockTab() {
   console.log('📦 Initialisation onglet Stock');
   
   const addStockItemBtn = document.getElementById('add-stock-item-btn');
+  const loadDemoStockBtn = document.getElementById('load-demo-stock-btn');
   const refreshStockBtn = document.getElementById('refresh-stock-btn');
   const consolidateStockBtn = document.getElementById('consolidate-stock-btn');
   const stockSearch = document.getElementById('stock-search');
@@ -629,6 +671,11 @@ export function initStockTab() {
   if (addStockItemBtn) {
     addStockItemBtn.addEventListener('click', showAddStockModal);
     console.log('✅ Listener "Ajouter un article" ajouté');
+  }
+  
+  if (loadDemoStockBtn) {
+    loadDemoStockBtn.addEventListener('click', loadDemoStock);
+    console.log('✅ Listener "Charger stock de démonstration" ajouté');
   }
   
   if (refreshStockBtn) {
