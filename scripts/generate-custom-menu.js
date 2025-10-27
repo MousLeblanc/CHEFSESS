@@ -204,8 +204,12 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, sans texte avant ou après, 
       // L'IA donne les quantités PAR PERSONNE
       const quantityPerPerson = parseFloat(ing.quantite) || 100;
       
+      console.log(`🔍 [BACKEND] Ingrédient "${ing.nom}": quantite de l'IA = ${ing.quantite}, numberOfPeople = ${numberOfPeople}`);
+      
       // Calculer la quantité TOTALE pour toutes les personnes
       const quantityTotal = quantityPerPerson * numberOfPeople;
+      
+      console.log(`🔍 [BACKEND] → quantityPerPerson = ${quantityPerPerson}, quantityTotal = ${quantityTotal}`);
       
       // Calculer les valeurs nutritionnelles pour la quantité TOTALE
       const factor = quantityTotal / 100;
@@ -215,8 +219,11 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, sans texte avant ou après, 
         nutritionCalculated[key] = (value || 0) * factor;
       }
       
+      // Extraire les propriétés de l'IA SANS quantiteTotal et quantiteParPersonne
+      const { quantiteTotal: _, quantiteParPersonne: __, ...ingRest } = ing;
+      
       return {
-        ...ing,
+        ...ingRest,  // Spread SANS les champs qui posent problème
         quantiteParPersonne: quantityPerPerson,  // Quantité par personne (de l'IA)
         quantiteTotal: quantityTotal,             // Quantité totale (calculée)
         nutritionalValues: ingredientData.nutritionalValues,
