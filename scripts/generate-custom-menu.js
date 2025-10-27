@@ -132,8 +132,10 @@ RÈGLES STRICTES:
 2. ÉVITE les noms poétiques, métaphores ou descriptions trop créatives
 3. CHOISIS DES ASSOCIATIONS D'INGRÉDIENTS TRADITIONNELLES ET LOGIQUES
 4. PRIVILÉGIE des ingrédients qui répondent aux objectifs nutritionnels
-5. Les quantités doivent être RÉALISTES et GÉNÉREUSES pour atteindre les objectifs
-6. Le plat doit être APPÉTISSANT, ÉQUILIBRÉ et RECONNAISSABLE
+5. ⚠️ CRITIQUE: Les quantités doivent être pour le TOTAL de ${numberOfPeople} personnes, PAS par personne !
+   Exemple: Pour 50 personnes et 150g de viande par personne → indique 7500g (7.5kg) de viande
+6. Les quantités doivent être RÉALISTES et GÉNÉREUSES pour atteindre les objectifs
+7. Le plat doit être APPÉTISSANT, ÉQUILIBRÉ et RECONNAISSABLE
 
 EXEMPLES DE NOMS ACCEPTABLES:
 - "Poulet grillé aux poivrons et brocolis"
@@ -159,6 +161,10 @@ FORMAT DE RÉPONSE (JSON):
   "tempsCuisson": "30 min",
   "difficulte": "Facile"
 }
+
+⚠️ RAPPEL CRITIQUE: Dans "quantite", mets la quantité TOTALE pour les ${numberOfPeople} personnes !
+Si tu as besoin de 150g de poulet par personne et qu'il y a ${numberOfPeople} personnes, 
+alors "quantite" doit être ${numberOfPeople * 150} (et non 150) !
 
 IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, sans texte avant ou après, sans markdown.`;
 
