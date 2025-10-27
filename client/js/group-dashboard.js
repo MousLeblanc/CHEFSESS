@@ -1650,6 +1650,7 @@ class GroupDashboard {
         const addGoalBtn = document.getElementById('add-goal-btn');
         const customMenuForm = document.getElementById('generate-custom-menu-form');
         const addGoalForm = document.getElementById('add-nutritional-goal-form');
+        const addAndCloseBtn = document.getElementById('add-goal-and-close-btn');
         
         if (addGoalBtn) {
             addGoalBtn.addEventListener('click', () => {
@@ -1657,10 +1658,18 @@ class GroupDashboard {
             });
         }
         
+        // Bouton "Ajouter un autre" (submit du formulaire)
         if (addGoalForm) {
             addGoalForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                this.addNutritionalGoal();
+                this.addNutritionalGoal(false); // Ne pas fermer la modale
+            });
+        }
+        
+        // Bouton "Ajouter et fermer"
+        if (addAndCloseBtn) {
+            addAndCloseBtn.addEventListener('click', () => {
+                this.addNutritionalGoal(true); // Fermer la modale
             });
         }
         
@@ -1694,7 +1703,7 @@ class GroupDashboard {
         }
     }
     
-    addNutritionalGoal() {
+    addNutritionalGoal(closeModal = false) {
         const nutrientSelect = document.getElementById('goal-nutrient');
         const targetInput = document.getElementById('goal-target');
         
@@ -1703,6 +1712,18 @@ class GroupDashboard {
         const nutrient = nutrientSelect.value;
         const nutrientLabel = nutrientSelect.options[nutrientSelect.selectedIndex].text;
         const target = parseFloat(targetInput.value);
+        
+        // Validation
+        if (!target || target <= 0) {
+            this.showToast('Veuillez saisir un objectif valide', 'warning');
+            return;
+        }
+        
+        // Vérifier si ce nutriment n'est pas déjà ajouté
+        if (this.nutritionalGoals.some(g => g.nutrient === nutrient)) {
+            this.showToast('Ce nutriment est déjà dans la liste', 'warning');
+            return;
+        }
         
         // Extraire l'unité du label
         const unitMatch = nutrientLabel.match(/\(([^)]+)\)/);
@@ -1721,12 +1742,19 @@ class GroupDashboard {
         this.nutritionalGoals.push(goal);
         this.renderNutritionalGoals();
         
-        // Fermer la modale
-        const modal = document.getElementById('add-nutritional-goal-modal');
-        if (modal) modal.style.display = 'none';
+        // Toast de confirmation
+        this.showToast(`✅ ${label} ajouté (${target}${unit})`, 'success');
         
-        // Réinitialiser le formulaire
-        document.getElementById('add-nutritional-goal-form').reset();
+        // Réinitialiser seulement le champ "objectif" pour faciliter l'ajout d'un autre
+        targetInput.value = '';
+        targetInput.focus();
+        
+        // Fermer la modale seulement si demandé
+        if (closeModal) {
+            const modal = document.getElementById('add-nutritional-goal-modal');
+            if (modal) modal.style.display = 'none';
+            document.getElementById('add-nutritional-goal-form').reset();
+        }
     }
     
     getMinIngredientValue(nutrient) {
@@ -1932,10 +1960,19 @@ class GroupDashboard {
                         <i class="fas fa-save"></i> Sauvegarder dans la base
                     </button>
                 </div>
+                
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button onclick="groupDashboard.resetForNewMenu()" class="btn btn-outline" style="width: 100%; background: #f0fdf4; border: 2px dashed #10b981; color: #047857; font-weight: 600;">
+                        <i class="fas fa-plus-circle"></i> Générer un autre menu
+                    </button>
+                </div>
             </div>
         `;
         
         resultsDiv.style.display = 'block';
+        
+        // Scroll vers les résultats
+        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     
     displayGeneratedMenusList() {
@@ -1996,7 +2033,36 @@ class GroupDashboard {
         // TODO: Implement save to database
         this.showToast('Fonctionnalité à venir', 'info');
     }
+    
+    resetForNewMenu() {
+        // Réinitialiser les objectifs nutritionnels
+        this.nutritionalGoals = [];
+        this.renderNutritionalGoals();
+        
+        // Réinitialiser le formulaire
+        const form = document.getElementById('generate-custom-menu-form');
+        if (form) {
+            form.reset();
+            // Remettre les valeurs par défaut
+            document.getElementById('custom-menu-people').value = 4;
+            document.getElementById('custom-menu-type').value = 'déjeuner';
+        }
+        
+        // Cacher les résultats
+        const resultsDiv = document.getElementById('custom-menu-results');
+        if (resultsDiv) resultsDiv.style.display = 'none';
+        
+        // Scroll vers le formulaire
+        const formSection = document.getElementById('generate-custom-menu-form');
+        if (formSection) {
+            formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        this.showToast('Prêt pour un nouveau menu ! 🎯', 'success');
+    }
 }
+
+
 
 /* ========= Bootstrap ========= */
 let groupDashboard;
