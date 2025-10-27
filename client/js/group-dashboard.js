@@ -2251,8 +2251,15 @@ class GroupDashboard {
                         ${menu.ingredients.map(ing => {
                             if (typeof ing === 'object') {
                                 const nom = ing.nom || ing.name || 'Ingrédient';
-                                const quantiteParPersonne = ing.quantiteParPersonne || ing.quantite || ing.quantity || '';
                                 const unite = ing.unite || ing.unit || '';
+                                
+                                // Arrondir à 1 décimale pour plus de lisibilité
+                                let quantiteParPersonne = ing.quantiteParPersonne || ing.quantite || ing.quantity || '';
+                                if (typeof quantiteParPersonne === 'number') {
+                                    quantiteParPersonne = Math.round(quantiteParPersonne * 10) / 10;
+                                }
+                                
+                                console.log('🔍 [FRONTEND] Ingredient:', nom, '→ quantiteParPersonne:', quantiteParPersonne, 'from:', ing.quantiteParPersonne);
                                 
                                 return `<li style="margin-bottom: 0.5rem; color: #4b5563;">
                                     <strong>${nom}</strong>: ${quantiteParPersonne}${unite}
