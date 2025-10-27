@@ -1899,20 +1899,30 @@ class GroupDashboard {
             
             const result = await response.json();
             
+            if (progressText) progressText.textContent = 'Vérification du stock...';
+            
+            // Vérifier la disponibilité des ingrédients en stock
+            const stockCheck = await this.checkStockAvailability(result, numberOfPeople);
+            
             if (progressText) progressText.textContent = 'Menu généré avec succès !';
             
-            // Ajouter le menu généré à la liste
+            // Ajouter le menu généré à la liste avec les infos de stock
             this.generatedMenus.unshift({
                 ...result,
                 timestamp: new Date(),
-                goals: [...this.nutritionalGoals]
+                goals: [...this.nutritionalGoals],
+                stockCheck: stockCheck
             });
             
             // Afficher les résultats
-            this.displayCustomMenuResult(result);
+            this.displayCustomMenuResult(result, stockCheck);
             this.displayGeneratedMenusList();
             
-            this.showToast('Menu personnalisé généré avec succès !', 'success');
+            if (stockCheck.allAvailable) {
+                this.showToast('✅ Menu généré ! Tous les ingrédients sont en stock', 'success');
+            } else {
+                this.showToast(`⚠️ Menu généré mais ${stockCheck.missingCount} ingrédient(s) manquant(s)`, 'warning');
+            }
             
         } catch (error) {
             console.error('Error generating custom menu:', error);
@@ -1926,7 +1936,111 @@ class GroupDashboard {
         }
     }
     
-    displayCustomMenuResult(result) {
+    async checkStockAvailability(menuResult, numberOfPeople) {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                return { allAvailable: false, missingCount: 0, items: [], message: 'Non connecté' };
+            }
+            
+            // Récupérer le stock actuel
+            const stockResponse = await fetch('/api/stock', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!stockResponse.ok) {
+                console.error('Erreur lors de la récupération du stock');
+                return { allAvailable: false, missingCount: 0, items: [], message: 'Erreur de chargement du stock' };
+            }
+            
+            const stockData = await stockResponse.json();
+            const stockItems = stockData.data || [];
+            
+            // Extraire les ingrédients du menu avec leurs quantités
+            const menuIngredients = this.extractIngredientsFromMenu(menuResult, numberOfPeople);
+            
+            // Vérifier chaque ingrédient
+            const checkResults = menuIngredients.map(ingredient => {
+                const stockItem = stockItems.find(item => 
+                    item.name.toLowerCase().includes(ingredient.name.toLowerCase()) ||
+                    ingredient.name.toLowerCase().includes(item.name.toLowerCase())
+                );
+                
+                if (!stockItem) {
+                    return {
+                        name: ingredient.name,
+                        needed: ingredient.quantity,
+                        available: 0,
+                        unit: ingredient.unit,
+                        status: 'missing'
+                    };
+                }
+                
+                const available = stockItem.quantity;
+                const needed = ingredient.quantity;
+                
+                if (available >= needed) {
+                    return {
+                        name: ingredient.name,
+                        needed: needed,
+                        available: available,
+                        unit: ingredient.unit,
+                        status: 'ok',
+                        stockItemId: stockItem._id
+                    };
+                } else {
+                    return {
+                        name: ingredient.name,
+                        needed: needed,
+                        available: available,
+                        unit: ingredient.unit,
+                        status: 'insufficient',
+                        stockItemId: stockItem._id
+                    };
+                }
+            });
+            
+            const missingItems = checkResults.filter(item => item.status !== 'ok');
+            
+            return {
+                allAvailable: missingItems.length === 0,
+                missingCount: missingItems.length,
+                items: checkResults,
+                missingItems: missingItems
+            };
+            
+        } catch (error) {
+            console.error('Erreur lors de la vérification du stock:', error);
+            return { allAvailable: false, missingCount: 0, items: [], message: 'Erreur' };
+        }
+    }
+    
+    extractIngredientsFromMenu(menuResult, numberOfPeople) {
+        // Extraire les ingrédients avec leurs quantités
+        const ingredients = [];
+        
+        if (menuResult.menu && menuResult.menu.ingredients) {
+            menuResult.menu.ingredients.forEach(ing => {
+                // Parser le format "ingredient: quantité"
+                const match = ing.match(/(.+?):\s*(\d+(?:\.\d+)?)\s*(\w+)/);
+                if (match) {
+                    ingredients.push({
+                        name: match[1].trim(),
+                        quantity: parseFloat(match[2]) * numberOfPeople,
+                        unit: match[3]
+                    });
+                }
+            });
+        }
+        
+        return ingredients;
+    }
+    
+    displayCustomMenuResult(result, stockCheck = null) {
         const resultsDiv = document.getElementById('custom-menu-results');
         if (!resultsDiv) return;
         
@@ -1983,11 +2097,33 @@ class GroupDashboard {
                     `).join('')}
                 </div>
                 
+                ${stockCheck ? `
+                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: ${stockCheck.allAvailable ? '#d1fae5' : '#fef3c7'}; border-radius: 8px; border: 2px solid ${stockCheck.allAvailable ? '#10b981' : '#f59e0b'};">
+                        <h4 style="margin: 0 0 1rem 0; color: #374151;">
+                            ${stockCheck.allAvailable ? '✅ Stock disponible' : `⚠️ Stock : ${stockCheck.missingCount} élément(s) à vérifier`}
+                        </h4>
+                        ${stockCheck.items && stockCheck.items.length > 0 ? `
+                            <div style="max-height: 200px; overflow-y: auto;">
+                                ${stockCheck.items.map(item => `
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; margin-bottom: 0.5rem; background: white; border-radius: 4px; border-left: 4px solid ${item.status === 'ok' ? '#10b981' : item.status === 'missing' ? '#ef4444' : '#f59e0b'};">
+                                        <span style="font-weight: 500; color: #374151;">${item.name}</span>
+                                        <span style="font-size: 0.85rem; color: ${item.status === 'ok' ? '#059669' : item.status === 'missing' ? '#dc2626' : '#d97706'};">
+                                            ${item.status === 'ok' ? `✓ ${item.available.toFixed(1)}${item.unit} (besoin: ${item.needed.toFixed(1)}${item.unit})` : 
+                                              item.status === 'missing' ? `✗ Non trouvé en stock (besoin: ${item.needed.toFixed(1)}${item.unit})` :
+                                              `⚠ Insuffisant: ${item.available.toFixed(1)}${item.unit} (besoin: ${item.needed.toFixed(1)}${item.unit})`}
+                                        </span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                ` : ''}
+                
                 <div style="margin-bottom: 1.5rem;">
                     <h4 style="margin: 0 0 1rem 0; color: #374151;">🥘 Ingrédients</h4>
                     <ul style="columns: 2; column-gap: 2rem; margin: 0; padding-left: 1.5rem;">
                         ${menu.ingredients.map(ing => 
-                            `<li style="margin-bottom: 0.5rem; color: #4b5563;">${ing.nom}: ${ing.quantite}${ing.unite}</li>`
+                            `<li style="margin-bottom: 0.5rem; color: #4b5563;">${ing}</li>`
                         ).join('')}
                     </ul>
                 </div>
@@ -2120,20 +2256,98 @@ class GroupDashboard {
         this.showToast('Prêt pour un nouveau menu ! 🎯', 'success');
     }
     
-    acceptMenu(index) {
+    async acceptMenu(index) {
         const menuData = this.generatedMenus[index];
         if (!menuData) return;
+        
+        // Vérifier si le stock est disponible
+        const stockCheck = menuData.stockCheck;
+        
+        if (stockCheck && !stockCheck.allAvailable) {
+            const confirmMsg = `⚠️ Attention : ${stockCheck.missingCount} ingrédient(s) manquant(s) ou insuffisant(s).\n\nVoulez-vous quand même accepter ce menu ?\n(Les quantités disponibles seront déduites du stock)`;
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+        }
+        
+        // Déduire les quantités du stock
+        if (stockCheck && stockCheck.items && stockCheck.items.length > 0) {
+            this.showToast('⏳ Déduction des quantités du stock...', 'info');
+            
+            const success = await this.deductFromStock(stockCheck.items);
+            
+            if (success) {
+                this.showToast(`✅ Menu "${menuData.menu.nomMenu}" accepté ! Quantités déduites du stock.`, 'success');
+            } else {
+                this.showToast(`⚠️ Menu accepté mais erreur lors de la déduction du stock`, 'warning');
+            }
+        } else {
+            this.showToast(`✅ Menu "${menuData.menu.nomMenu}" accepté !`, 'success');
+        }
         
         // Marquer le menu comme accepté
         this.acceptedMenu = menuData;
         
-        // Message de confirmation
-        this.showToast(`✅ Menu "${menuData.menu.nomMenu}" accepté !`, 'success');
-        
         // Optionnel : Cacher les résultats et préparer pour un nouveau menu
         setTimeout(() => {
             this.resetForNewMenu();
-        }, 1500);
+        }, 2000);
+    }
+    
+    async deductFromStock(stockItems) {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('Token non disponible');
+                return false;
+            }
+            
+            // Préparer les éléments à déduire (seulement ceux qui sont disponibles)
+            // On déduit seulement ce qui est disponible, pas les insuffisants ni les manquants
+            const itemsToDeduct = stockItems
+                .filter(item => item.status === 'ok')
+                .map(item => ({
+                    name: item.name,
+                    quantity: item.needed,
+                    unit: item.unit
+                }));
+            
+            if (itemsToDeduct.length === 0) {
+                console.log('Aucun élément à déduire du stock (tous manquants ou insuffisants)');
+                return true;
+            }
+            
+            console.log('Déduction du stock:', itemsToDeduct);
+            
+            const response = await fetch('/api/stock/deduct', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ itemsToDeduct: itemsToDeduct })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                console.error('Erreur lors de la déduction:', error);
+                return false;
+            }
+            
+            const result = await response.json();
+            console.log('✅ Stock déduit avec succès:', result);
+            
+            // Recharger le stock pour afficher les nouvelles quantités
+            if (typeof window.loadStockData === 'function') {
+                await window.loadStockData();
+            }
+            
+            return true;
+            
+        } catch (error) {
+            console.error('Erreur lors de la déduction du stock:', error);
+            return false;
+        }
     }
     
     replaceMenu() {
