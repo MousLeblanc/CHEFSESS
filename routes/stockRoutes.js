@@ -97,12 +97,19 @@ router.delete('/:id', protect, async (req, res) => {
 
 // Route pour le seeding du stock (ajout de données de démonstration enrichies)
 router.post('/seed', protect, async (req, res) => {
-  const stock = await Stock.findOneAndUpdate(
-    { createdBy: req.user._id },
-    {
-      createdBy: req.user._id,
-      establishmentType: req.user.establishmentType || 'autre',
-      items: [
+  // Charger ou créer le stock utilisateur
+  let userStock = await Stock.findOne({ createdBy: req.user._id });
+  
+  if (!userStock) {
+    userStock = new Stock({ 
+      createdBy: req.user._id, 
+      establishmentType: req.user.establishmentType || 'autre', 
+      items: [] 
+    });
+  }
+  
+  // Définir les articles du seed
+  const seedItems = [
         // ========== VIANDES (quantités > 100 kg) ==========
         { name: 'Bœuf', quantity: 150, unit: 'kg', category: 'viandes', price: 12.5, alertThreshold: 30 },
         { name: 'Porc', quantity: 120, unit: 'kg', category: 'viandes', price: 8.9, alertThreshold: 25 },
@@ -207,11 +214,32 @@ router.post('/seed', protect, async (req, res) => {
         { name: 'Eau minérale', quantity: 1000, unit: 'litre', category: 'boissons', price: 0.3, alertThreshold: 200 },
         { name: 'Jus d\'orange', quantity: 300, unit: 'litre', category: 'boissons', price: 1.8, alertThreshold: 60 },
         { name: 'Jus de pomme', quantity: 250, unit: 'litre', category: 'boissons', price: 1.5, alertThreshold: 50 }
-      ]
-    },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
-  );
-  res.status(200).json({ success: true, message: 'Stock enrichi avec succès ! 🎉 ' + stock.items.length + ' ingrédients ajoutés.', data: stock.items });
+      ];
+  
+  // Fusionner les items du seed avec les items existants (ne pas écraser les items ajoutés manuellement)
+  let addedCount = 0;
+  for (const seedItem of seedItems) {
+    // Vérifier si l'item existe déjà (par nom et unité)
+    const existingItem = userStock.items.find(
+      item => item.name.toLowerCase() === seedItem.name.toLowerCase() && 
+              item.unit.toLowerCase() === seedItem.unit.toLowerCase()
+    );
+    
+    if (!existingItem) {
+      // Ajouter uniquement si l'item n'existe pas
+      userStock.items.push(seedItem);
+      addedCount++;
+    }
+  }
+  
+  // Sauvegarder le stock
+  await userStock.save();
+  
+  res.status(200).json({ 
+    success: true, 
+    message: `Stock enrichi ! ${addedCount} nouveaux ingrédients ajoutés. Total : ${userStock.items.length} articles.`, 
+    data: userStock.items 
+  });
 });
 
 
