@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nettoyage authentification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            margin-bottom: 1rem;
+        }
+        button {
+            padding: 1rem 2rem;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        .status {
+            margin-top: 1.5rem;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Nettoyage des données d'authentification</h1>
+        <p>Ceci va supprimer tous les tokens et cookies stockés</p>
+        
+        <button onclick="clearAllAuth()">🗑️ Tout nettoyer</button>
+        <button onclick="goToLogin()">🔐 Aller à la connexion</button>
+        
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        function clearAllAuth() {
+            const status = document.getElementById('status');
+            
+            try {
+                // 1. Nettoyer localStorage
+                localStorage.clear();
+                status.innerHTML = '✅ localStorage nettoyé<br>';
+                
+                // 2. Nettoyer sessionStorage
+                sessionStorage.clear();
+                status.innerHTML += '✅ sessionStorage nettoyé<br>';
+                
+                // 3. Supprimer tous les cookies
+                document.cookie.split(";").forEach(function(c) { 
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                });
+                status.innerHTML += '✅ Cookies nettoyés<br>';
+                
+                // 4. Appeler l'API de logout
+                fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                }).then(() => {
+                    status.innerHTML += '✅ Session serveur terminée<br>';
+                    status.innerHTML += '<br>🎉 <strong>Nettoyage terminé !</strong><br>';
+                    status.innerHTML += '<br>Vous pouvez maintenant vous reconnecter.';
+                }).catch(err => {
+                    status.innerHTML += '⚠️ Erreur logout serveur (ignoré)<br>';
+                    status.innerHTML += '<br>🎉 <strong>Nettoyage local terminé !</strong>';
+                });
+                
+            } catch (error) {
+                status.innerHTML += '❌ Erreur: ' + error.message;
+            }
+        }
+        
+        function goToLogin() {
+            window.location.href = '/';
+        }
+        
+        // Auto-nettoyage au chargement
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('auto') === 'true') {
+                clearAllAuth();
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
+
