@@ -248,6 +248,9 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, sans texte avant ou après, 
       nutrition.perPerson[key] = value / numberOfPeople;
     }
     
+    // Log pour vérifier ce qu'on retourne
+    console.log('📤 [BACKEND] Exemple d\'ingrédient retourné:', JSON.stringify(enrichedIngredients[0], null, 2));
+    
     return {
       menu: menuData,
       nutrition: nutrition,
