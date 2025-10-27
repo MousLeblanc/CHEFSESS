@@ -1654,8 +1654,8 @@ class GroupDashboard {
         localStorage.removeItem('cart');
         
         // 3️⃣ Rediriger vers la page de connexion
-        window.location.href = '/';
-    }
+            window.location.href = '/';
+        }
     
     /* ===========================
      * Générateur de Menu Personnalisé
@@ -2126,12 +2126,15 @@ class GroupDashboard {
                     const isNutritionalGoal = nutritionalKeywords.some(keyword => nomLower.includes(keyword));
                     
                     if (!isNutritionalGoal) {
+                        // Utiliser la quantité TOTALE (déjà multipliée par le nombre de personnes) pour le stock
+                        const quantity = parseFloat(ing.quantiteTotal || ing.quantite || ing.quantity) || 0;
+                        
                         ingredients.push({
                             name: ing.nom || ing.name,
-                            quantity: parseFloat(ing.quantite || ing.quantity) || 0,
+                            quantity: quantity,
                             unit: ing.unite || ing.unit || 'g'
                         });
-                        console.log('✅ Ingrédient ajouté:', ing.nom || ing.name);
+                        console.log('✅ Ingrédient ajouté:', ing.nom || ing.name, `${quantity}${ing.unite || ing.unit || 'g'}`);
                     } else {
                         console.log('❌ Objectif nutritionnel ignoré:', ing.nom || ing.name);
                     }
@@ -2248,9 +2251,19 @@ class GroupDashboard {
                             // Si c'est un objet, formatter correctement
                             if (typeof ing === 'object') {
                                 const nom = ing.nom || ing.name || 'Ingrédient';
-                                const quantite = ing.quantite || ing.quantity || '';
+                                const quantiteParPersonne = ing.quantiteParPersonne || ing.quantite || ing.quantity || '';
+                                const quantiteTotal = ing.quantiteTotal || '';
                                 const unite = ing.unite || ing.unit || '';
-                                return `<li style="margin-bottom: 0.5rem; color: #4b5563;">${nom}: ${quantite}${unite}</li>`;
+                                
+                                // Afficher "par personne (total pour X personnes)"
+                                if (quantiteTotal && quantiteParPersonne && numberOfPeople > 1) {
+                                    return `<li style="margin-bottom: 0.5rem; color: #4b5563;">
+                                        <strong>${nom}</strong>: ${quantiteParPersonne}${unite} par personne 
+                                        <span style="color: #6b7280;">(${quantiteTotal}${unite} pour ${numberOfPeople} pers.)</span>
+                                    </li>`;
+                                } else {
+                                    return `<li style="margin-bottom: 0.5rem; color: #4b5563;">${nom}: ${quantiteParPersonne}${unite}</li>`;
+                                }
                             }
                             // Si c'est une string, l'afficher directement
                             return `<li style="margin-bottom: 0.5rem; color: #4b5563;">${ing}</li>`;

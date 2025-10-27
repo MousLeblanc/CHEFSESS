@@ -132,9 +132,9 @@ RÈGLES STRICTES:
 2. ÉVITE les noms poétiques, métaphores ou descriptions trop créatives
 3. CHOISIS DES ASSOCIATIONS D'INGRÉDIENTS TRADITIONNELLES ET LOGIQUES
 4. PRIVILÉGIE des ingrédients qui répondent aux objectifs nutritionnels
-5. ⚠️ CRITIQUE: Les quantités doivent être pour le TOTAL de ${numberOfPeople} personnes, PAS par personne !
-   Exemple: Pour 50 personnes et 150g de viande par personne → indique 7500g (7.5kg) de viande
-6. Les quantités doivent être RÉALISTES et GÉNÉREUSES pour atteindre les objectifs
+5. ⚠️ IMPORTANT: Les quantités doivent être PAR PERSONNE (portions individuelles)
+   Exemple: Pour du poulet, indique environ 150g (quantité par personne)
+6. Les quantités doivent être RÉALISTES et GÉNÉREUSES pour atteindre les objectifs nutritionnels
 7. Le plat doit être APPÉTISSANT, ÉQUILIBRÉ et RECONNAISSABLE
 
 EXEMPLES DE NOMS ACCEPTABLES:
@@ -150,7 +150,7 @@ FORMAT DE RÉPONSE (JSON):
   "ingredients": [
     {
       "nom": "nom exact de l'ingrédient",
-      "quantite": 300,
+      "quantite": 150,
       "unite": "g"
     }
   ],
@@ -162,9 +162,8 @@ FORMAT DE RÉPONSE (JSON):
   "difficulte": "Facile"
 }
 
-⚠️ RAPPEL CRITIQUE: Dans "quantite", mets la quantité TOTALE pour les ${numberOfPeople} personnes !
-Si tu as besoin de 150g de poulet par personne et qu'il y a ${numberOfPeople} personnes, 
-alors "quantite" doit être ${numberOfPeople * 150} (et non 150) !
+⚠️ RAPPEL: Dans "quantite", indique la portion PAR PERSONNE (ex: 150g de poulet par personne).
+Le système multipliera automatiquement par ${numberOfPeople} pour obtenir la quantité totale.
 
 IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, sans texte avant ou après, sans markdown.`;
 
@@ -202,8 +201,14 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, sans texte avant ou après, 
         return null;
       }
       
-      const quantity = parseFloat(ing.quantite) || 100;
-      const factor = quantity / 100;
+      // L'IA donne les quantités PAR PERSONNE
+      const quantityPerPerson = parseFloat(ing.quantite) || 100;
+      
+      // Calculer la quantité TOTALE pour toutes les personnes
+      const quantityTotal = quantityPerPerson * numberOfPeople;
+      
+      // Calculer les valeurs nutritionnelles pour la quantité TOTALE
+      const factor = quantityTotal / 100;
       
       const nutritionCalculated = {};
       for (const [key, value] of Object.entries(ingredientData.nutritionalValues)) {
@@ -212,6 +217,8 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, sans texte avant ou après, 
       
       return {
         ...ing,
+        quantiteParPersonne: quantityPerPerson,  // Quantité par personne (de l'IA)
+        quantiteTotal: quantityTotal,             // Quantité totale (calculée)
         nutritionalValues: ingredientData.nutritionalValues,
         calculated: nutritionCalculated
       };
