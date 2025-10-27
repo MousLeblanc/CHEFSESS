@@ -2244,39 +2244,47 @@ class GroupDashboard {
                     </div>
                 ` : ''}
                 
+                <!-- Ingrédients PAR PERSONNE -->
                 <div style="margin-bottom: 1.5rem;">
-                    <h4 style="margin: 0 0 1rem 0; color: #374151;">🥘 Ingrédients</h4>
+                    <h4 style="margin: 0 0 1rem 0; color: #374151;">👤 Ingrédients par personne</h4>
                     <ul style="columns: 2; column-gap: 2rem; margin: 0; padding-left: 1.5rem;">
                         ${menu.ingredients.map(ing => {
-                            // Si c'est un objet, formatter correctement
                             if (typeof ing === 'object') {
                                 const nom = ing.nom || ing.name || 'Ingrédient';
                                 const quantiteParPersonne = ing.quantiteParPersonne || ing.quantite || ing.quantity || '';
-                                const quantiteTotal = ing.quantiteTotal || '';
+                                const unite = ing.unite || ing.unit || '';
+                                
+                                return `<li style="margin-bottom: 0.5rem; color: #4b5563;">
+                                    <strong>${nom}</strong>: ${quantiteParPersonne}${unite}
+                                </li>`;
+                            }
+                            return `<li style="margin-bottom: 0.5rem; color: #4b5563;">${ing}</li>`;
+                        }).join('')}
+                    </ul>
+                </div>
+                
+                <!-- Quantités TOTALES pour le groupe -->
+                <div style="margin-bottom: 1.5rem; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h4 style="margin: 0 0 1rem 0; color: #ffffff;">👥 Quantités totales pour ${numberOfPeople} personnes</h4>
+                    <ul style="columns: 2; column-gap: 2rem; margin: 0; padding-left: 1.5rem; color: #ffffff;">
+                        ${menu.ingredients.map(ing => {
+                            if (typeof ing === 'object') {
+                                const nom = ing.nom || ing.name || 'Ingrédient';
+                                const quantiteTotal = ing.quantiteTotal || ing.quantite || ing.quantity || '';
                                 const unite = ing.unite || ing.unit || '';
                                 
                                 console.log('🔍 Ingrédient:', nom, {
-                                    quantiteParPersonne,
+                                    quantiteParPersonne: ing.quantiteParPersonne,
                                     quantiteTotal,
                                     unite,
                                     numberOfPeople
                                 });
                                 
-                                // Afficher "par personne (total pour X personnes)" si on a les deux quantités
-                                if (numberOfPeople > 1 && quantiteParPersonne && quantiteTotal && quantiteParPersonne !== quantiteTotal) {
-                                    return `<li style="margin-bottom: 0.5rem; color: #4b5563;">
-                                        <strong>${nom}</strong>: ${quantiteParPersonne}${unite} par personne 
-                                        <span style="color: #6b7280;">(${quantiteTotal}${unite} pour ${numberOfPeople} pers.)</span>
-                                    </li>`;
-                                } 
-                                // Sinon, afficher ce qu'on a (quantiteParPersonne en priorité, ou quantite/quantity en fallback)
-                                else {
-                                    const quantite = quantiteTotal || quantiteParPersonne;
-                                    return `<li style="margin-bottom: 0.5rem; color: #4b5563;">${nom}: ${quantite}${unite}</li>`;
-                                }
+                                return `<li style="margin-bottom: 0.5rem; color: #ffffff;">
+                                    <strong>${nom}</strong>: ${quantiteTotal}${unite}
+                                </li>`;
                             }
-                            // Si c'est une string, l'afficher directement
-                            return `<li style="margin-bottom: 0.5rem; color: #4b5563;">${ing}</li>`;
+                            return `<li style="margin-bottom: 0.5rem; color: #ffffff;">${ing}</li>`;
                         }).join('')}
                     </ul>
                 </div>
