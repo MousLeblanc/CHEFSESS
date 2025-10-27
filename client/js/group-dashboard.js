@@ -1581,11 +1581,214 @@ class GroupDashboard {
     }
 
     async viewSite(siteId) {
-        this.showToast('Visualisation du site - en cours de développement', 'info');
+        const site = this.sites.find(s => s._id === siteId);
+        if (!site) {
+            this.showToast('Site non trouvé', 'error');
+            return;
+        }
+
+        try {
+            // Récupérer le nombre de résidents pour ce site
+            const response = await fetch(`/api/residents?siteId=${siteId}`, {
+                credentials: 'include'
+            });
+            const residents = response.ok ? await response.json() : [];
+
+            // Créer la modal de visualisation
+            const modalHtml = `
+                <div class="modal-overlay" id="view-site-modal" style="display: flex;">
+                    <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+                        <div class="modal-header">
+                            <h2 style="margin: 0; color: #2c3e50;">📍 ${site.siteName}</h2>
+                            <button class="modal-close" onclick="document.getElementById('view-site-modal').remove()">×</button>
+                        </div>
+                        <div class="modal-body" style="padding: 2rem;">
+                            <div style="display: grid; gap: 1.5rem;">
+                                <!-- Informations générales -->
+                                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                                    <h3 style="margin: 0 0 1rem 0; color: #495057;">ℹ️ Informations générales</h3>
+                                    <div style="display: grid; gap: 0.75rem;">
+                                        <div><strong>Type:</strong> ${site.establishmentType || 'Non défini'}</div>
+                                        <div><strong>Statut:</strong> <span class="status-badge ${site.isActive ? 'status-synced' : 'status-error'}">${site.isActive ? 'ACTIF' : 'INACTIF'}</span></div>
+                                        <div><strong>Synchronisation:</strong> ${site.syncMode === 'auto' ? 'Automatique' : 'Manuelle'}</div>
+                                        <div><strong>Résidents:</strong> ${residents.length || 0}</div>
+                                    </div>
+                                </div>
+
+                                <!-- Coordonnées -->
+                                <div style="background: #e8f4f8; padding: 1.5rem; border-radius: 8px;">
+                                    <h3 style="margin: 0 0 1rem 0; color: #2980b9;">📞 Coordonnées</h3>
+                                    <div style="display: grid; gap: 0.75rem;">
+                                        <div><strong>Adresse:</strong> ${site.address || 'Non renseignée'}</div>
+                                        <div><strong>Téléphone:</strong> ${site.contact?.phone || 'Non renseigné'}</div>
+                                        <div><strong>Email:</strong> ${site.contact?.email || 'Non renseigné'}</div>
+                                    </div>
+                                </div>
+
+                                <!-- Responsable -->
+                                ${site.contact?.responsable ? `
+                                <div style="background: #fff3cd; padding: 1.5rem; border-radius: 8px;">
+                                    <h3 style="margin: 0 0 1rem 0; color: #856404;">👤 Responsable</h3>
+                                    <div style="display: grid; gap: 0.75rem;">
+                                        <div><strong>Nom:</strong> ${site.contact.responsable.name || 'Non renseigné'}</div>
+                                        <div><strong>Téléphone:</strong> ${site.contact.responsable.phone || 'Non renseigné'}</div>
+                                        <div><strong>Email:</strong> ${site.contact.responsable.email || 'Non renseigné'}</div>
+                                    </div>
+                                </div>
+                                ` : ''}
+
+                                <!-- Statistiques -->
+                                <div style="background: #d4edda; padding: 1.5rem; border-radius: 8px;">
+                                    <h3 style="margin: 0 0 1rem 0; color: #155724;">📊 Statistiques</h3>
+                                    <div style="display: grid; gap: 0.75rem;">
+                                        <div><strong>Total résidents:</strong> ${residents.length || 0}</div>
+                                        <div><strong>Dernière mise à jour:</strong> ${site.updatedAt ? new Date(site.updatedAt).toLocaleDateString('fr-FR') : 'Non disponible'}</div>
+                                        <div><strong>Créé le:</strong> ${site.createdAt ? new Date(site.createdAt).toLocaleDateString('fr-FR') : 'Non disponible'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-outline" onclick="document.getElementById('view-site-modal').remove()">Fermer</button>
+                            <button class="btn btn-primary" onclick="groupDashboard.editSite('${siteId}'); document.getElementById('view-site-modal').remove();">
+                                <i class="fas fa-edit"></i> Modifier
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        } catch (error) {
+            console.error('Erreur lors du chargement des détails du site:', error);
+            this.showToast('Erreur lors du chargement des détails', 'error');
+        }
     }
 
     async editSite(siteId) {
-        this.showToast('Édition du site - en cours de développement', 'info');
+        const site = this.sites.find(s => s._id === siteId);
+        if (!site) {
+            this.showToast('Site non trouvé', 'error');
+            return;
+        }
+
+        // Créer la modal d'édition
+        const modalHtml = `
+            <div class="modal-overlay" id="edit-site-modal" style="display: flex;">
+                <div class="modal-content" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <h2 style="margin: 0; color: #2c3e50;">✏️ Modifier ${site.siteName}</h2>
+                        <button class="modal-close" onclick="document.getElementById('edit-site-modal').remove()">×</button>
+                    </div>
+                    <form id="edit-site-form">
+                        <div class="modal-body" style="padding: 2rem;">
+                            <div style="display: grid; gap: 1.5rem;">
+                                <!-- Nom du site -->
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nom du site</label>
+                                    <input type="text" name="siteName" value="${site.siteName || ''}" class="form-control" required>
+                                </div>
+
+                                <!-- Adresse -->
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Adresse</label>
+                                    <textarea name="address" class="form-control" rows="3">${site.address || ''}</textarea>
+                                </div>
+
+                                <!-- Téléphone du site -->
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Téléphone du site</label>
+                                    <input type="tel" name="phone" value="${site.contact?.phone || ''}" class="form-control">
+                                </div>
+
+                                <!-- Email du site -->
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Email du site</label>
+                                    <input type="email" name="email" value="${site.contact?.email || ''}" class="form-control">
+                                </div>
+
+                                <hr style="margin: 1rem 0; border: none; border-top: 2px solid #e9ecef;">
+
+                                <!-- Responsable -->
+                                <h3 style="margin: 0; color: #495057;">👤 Responsable du site</h3>
+
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nom du responsable</label>
+                                    <input type="text" name="responsableName" value="${site.contact?.responsable?.name || ''}" class="form-control">
+                                </div>
+
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Téléphone du responsable</label>
+                                    <input type="tel" name="responsablePhone" value="${site.contact?.responsable?.phone || ''}" class="form-control">
+                                </div>
+
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Email du responsable</label>
+                                    <input type="email" name="responsableEmail" value="${site.contact?.responsable?.email || ''}" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline" onclick="document.getElementById('edit-site-modal').remove()">Annuler</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Enregistrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // Gérer la soumission du formulaire
+        document.getElementById('edit-site-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const updateData = {
+                siteName: formData.get('siteName'),
+                address: formData.get('address'),
+                contact: {
+                    phone: formData.get('phone'),
+                    email: formData.get('email'),
+                    responsable: {
+                        name: formData.get('responsableName'),
+                        phone: formData.get('responsablePhone'),
+                        email: formData.get('responsableEmail')
+                    }
+                }
+            };
+
+            try {
+                this.showLoader('Enregistrement en cours...');
+                
+                const response = await fetch(`/api/sites/${siteId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(updateData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Erreur lors de la mise à jour');
+                }
+
+                this.showToast('Site mis à jour avec succès', 'success');
+                document.getElementById('edit-site-modal').remove();
+                
+                // Recharger les sites
+                await this.loadSitesData();
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour du site:', error);
+                this.showToast(error.message || 'Erreur lors de la mise à jour', 'error');
+            } finally {
+                this.hideLoader();
+            }
+        });
     }
 
     async activateSite(siteId) {
