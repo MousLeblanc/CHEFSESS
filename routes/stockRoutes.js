@@ -196,7 +196,7 @@ router.post('/seed', protect, async (req, res) => {
         { name: 'Paprika', quantity: 12, unit: 'kg', category: 'epices', price: 18.0, alertThreshold: 2 },
         { name: 'Cumin', quantity: 10, unit: 'kg', category: 'epices', price: 20.0, alertThreshold: 2 },
         { name: 'Curry', quantity: 14, unit: 'kg', category: 'epices', price: 16.0, alertThreshold: 3 },
-        { name: 'Ail', quantity: 30, unit: 'kg', category: 'epices', price: 5.5, alertThreshold: 6 },
+        { name: 'Ail', quantity: 2000, unit: 'pièce', category: 'epices', price: 0.08, alertThreshold: 100 },
         { name: 'Persil', quantity: 20, unit: 'kg', category: 'epices', price: 8.0, alertThreshold: 4 },
         { name: 'Basilic', quantity: 15, unit: 'kg', category: 'epices', price: 12.0, alertThreshold: 3 },
         { name: 'Thym', quantity: 10, unit: 'kg', category: 'epices', price: 15.0, alertThreshold: 2 },
