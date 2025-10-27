@@ -2025,14 +2025,24 @@ class GroupDashboard {
         
         if (menuResult.menu && menuResult.menu.ingredients) {
             menuResult.menu.ingredients.forEach(ing => {
-                // Parser le format "ingredient: quantité"
-                const match = ing.match(/(.+?):\s*(\d+(?:\.\d+)?)\s*(\w+)/);
-                if (match) {
+                // Si c'est un objet avec nom, quantité, unité
+                if (typeof ing === 'object' && ing.nom) {
                     ingredients.push({
-                        name: match[1].trim(),
-                        quantity: parseFloat(match[2]) * numberOfPeople,
-                        unit: match[3]
+                        name: ing.nom || ing.name,
+                        quantity: (parseFloat(ing.quantite || ing.quantity) || 0) * numberOfPeople,
+                        unit: ing.unite || ing.unit || 'g'
                     });
+                }
+                // Si c'est une string, parser le format "ingredient: quantité unité"
+                else if (typeof ing === 'string') {
+                    const match = ing.match(/(.+?):\s*(\d+(?:\.\d+)?)\s*(\w+)/);
+                    if (match) {
+                        ingredients.push({
+                            name: match[1].trim(),
+                            quantity: parseFloat(match[2]) * numberOfPeople,
+                            unit: match[3]
+                        });
+                    }
                 }
             });
         }
