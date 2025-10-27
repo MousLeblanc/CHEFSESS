@@ -1994,10 +1994,23 @@ class GroupDashboard {
             
             // Vérifier chaque ingrédient
             const checkResults = menuIngredients.map(ingredient => {
-                const stockItem = stockItems.find(item => 
-                    item.name.toLowerCase().includes(ingredient.name.toLowerCase()) ||
-                    ingredient.name.toLowerCase().includes(item.name.toLowerCase())
-                );
+                // Recherche flexible: enlever les accents et normaliser
+                const normalizeString = (str) => str.toLowerCase()
+                    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Enlever accents
+                    .trim();
+                
+                const ingredientNorm = normalizeString(ingredient.name);
+                
+                const stockItem = stockItems.find(item => {
+                    const stockNameNorm = normalizeString(item.name);
+                    
+                    // Recherche bidirectionnelle et flexible
+                    return stockNameNorm.includes(ingredientNorm) || 
+                           ingredientNorm.includes(stockNameNorm) ||
+                           // Recherche par mots-clés (ex: "épinard" match "épinards")
+                           stockNameNorm.split(/\s+/).some(word => ingredientNorm.includes(word) && word.length > 3) ||
+                           ingredientNorm.split(/\s+/).some(word => stockNameNorm.includes(word) && word.length > 3);
+                });
                 
                 if (!stockItem) {
                     return {
@@ -2056,30 +2069,61 @@ class GroupDashboard {
         // NOTE: Les quantités retournées par l'AI sont DÉJÀ pour le groupe entier
         const ingredients = [];
         
+        console.log('🔍 Extraction ingrédients - menuResult:', menuResult);
+        
         if (menuResult.menu && menuResult.menu.ingredients) {
+            console.log('📋 Ingrédients bruts:', menuResult.menu.ingredients);
+            
             menuResult.menu.ingredients.forEach(ing => {
+                // FILTRER les objectifs nutritionnels (Vitamine C, Fer, etc.)
+                // Ces mots-clés ne sont PAS des ingrédients physiques
+                const nutritionalKeywords = [
+                    'vitamine', 'vitamin', 'fer', 'iron', 'calcium', 'fibres', 'fiber',
+                    'protéine', 'protein', 'glucide', 'lipide', 'calorie', 'énergie',
+                    'magnésium', 'zinc', 'potassium', 'phosphore'
+                ];
+                
                 // Si c'est un objet avec nom, quantité, unité
                 if (typeof ing === 'object' && ing.nom) {
-                    ingredients.push({
-                        name: ing.nom || ing.name,
-                        quantity: parseFloat(ing.quantite || ing.quantity) || 0,
-                        unit: ing.unite || ing.unit || 'g'
-                    });
+                    const nomLower = (ing.nom || ing.name || '').toLowerCase();
+                    
+                    // Vérifier si c'est un objectif nutritionnel (à ignorer)
+                    const isNutritionalGoal = nutritionalKeywords.some(keyword => nomLower.includes(keyword));
+                    
+                    if (!isNutritionalGoal) {
+                        ingredients.push({
+                            name: ing.nom || ing.name,
+                            quantity: parseFloat(ing.quantite || ing.quantity) || 0,
+                            unit: ing.unite || ing.unit || 'g'
+                        });
+                        console.log('✅ Ingrédient ajouté:', ing.nom || ing.name);
+                    } else {
+                        console.log('❌ Objectif nutritionnel ignoré:', ing.nom || ing.name);
+                    }
                 }
                 // Si c'est une string, parser le format "ingredient: quantité unité"
                 else if (typeof ing === 'string') {
-                    const match = ing.match(/(.+?):\s*(\d+(?:\.\d+)?)\s*(\w+)/);
-                    if (match) {
-                        ingredients.push({
-                            name: match[1].trim(),
-                            quantity: parseFloat(match[2]),
-                            unit: match[3]
-                        });
+                    const ingLower = ing.toLowerCase();
+                    const isNutritionalGoal = nutritionalKeywords.some(keyword => ingLower.includes(keyword));
+                    
+                    if (!isNutritionalGoal) {
+                        const match = ing.match(/(.+?):\s*(\d+(?:\.\d+)?)\s*(\w+)/);
+                        if (match) {
+                            ingredients.push({
+                                name: match[1].trim(),
+                                quantity: parseFloat(match[2]),
+                                unit: match[3]
+                            });
+                            console.log('✅ Ingrédient ajouté (string):', match[1].trim());
+                        }
+                    } else {
+                        console.log('❌ Objectif nutritionnel ignoré (string):', ing);
                     }
                 }
             });
         }
         
+        console.log('📦 Ingrédients finaux à déduire:', ingredients);
         return ingredients;
     }
     
@@ -2353,15 +2397,36 @@ class GroupDashboard {
                 return false;
             }
             
-            // Préparer les éléments à déduire (seulement ceux qui sont disponibles)
-            // On déduit seulement ce qui est disponible, pas les insuffisants ni les manquants
+            // Préparer les éléments à déduire avec conversion d'unités
             const itemsToDeduct = stockItems
                 .filter(item => item.status === 'ok')
-                .map(item => ({
-                    name: item.name,
-                    quantity: item.needed,
-                    unit: item.unit
-                }));
+                .map(item => {
+                    // Convertir la quantité nécessaire dans l'unité du stock
+                    let quantityInStockUnit = item.needed;
+                    
+                    // Si l'unité du menu est différente de l'unité du stock, convertir
+                    if (item.unit && item.stockUnit && item.unit !== item.stockUnit) {
+                        const neededInGrams = this.convertToGrams(item.needed, item.unit);
+                        
+                        // Reconvertir dans l'unité du stock
+                        if (item.stockUnit === 'kg') {
+                            quantityInStockUnit = neededInGrams / 1000;
+                        } else if (item.stockUnit === 'l' || item.stockUnit === 'litre') {
+                            quantityInStockUnit = neededInGrams / 1000;
+                        } else {
+                            quantityInStockUnit = neededInGrams;
+                        }
+                    }
+                    
+                    return {
+                        name: item.name,
+                        quantity: quantityInStockUnit,
+                        unit: item.stockUnit || item.unit,
+                        // Garder l'ancien stock pour affichage
+                        oldQuantity: item.available,
+                        newQuantity: item.available - quantityInStockUnit
+                    };
+                });
             
             if (itemsToDeduct.length === 0) {
                 console.log('Aucun élément à déduire du stock (tous manquants ou insuffisants)');
@@ -2382,11 +2447,15 @@ class GroupDashboard {
             if (!response.ok) {
                 const error = await response.json();
                 console.error('Erreur lors de la déduction:', error);
+                this.showToast(error.message || 'Erreur lors de la déduction du stock', 'error');
                 return false;
             }
             
             const result = await response.json();
             console.log('✅ Stock déduit avec succès:', result);
+            
+            // Afficher une modal avec le récapitulatif
+            this.showStockDeductionSummary(itemsToDeduct);
             
             // Recharger le stock pour afficher les nouvelles quantités
             if (typeof window.loadStockData === 'function') {
@@ -2397,8 +2466,65 @@ class GroupDashboard {
             
         } catch (error) {
             console.error('Erreur lors de la déduction du stock:', error);
+            this.showToast('Erreur lors de la déduction du stock', 'error');
             return false;
         }
+    }
+    
+    showStockDeductionSummary(deductedItems) {
+        // Créer la modal de récapitulatif
+        const modalHTML = `
+            <div id="stock-deduction-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+                <div style="background: white; border-radius: 12px; padding: 2rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                    <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+                            <i class="fas fa-check" style="color: white; font-size: 24px;"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; color: #1f2937; font-size: 1.5rem;">Stock mis à jour !</h3>
+                            <p style="margin: 0.25rem 0 0 0; color: #6b7280; font-size: 0.9rem;">Les quantités ont été déduites avec succès</p>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f9fafb; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <h4 style="margin: 0 0 1rem 0; color: #374151; font-size: 1.1rem;">📊 Récapitulatif des déductions</h4>
+                        
+                        <div style="space-y: 0.75rem;">
+                            ${deductedItems.map(item => `
+                                <div style="background: white; border-radius: 6px; padding: 1rem; margin-bottom: 0.75rem; border-left: 4px solid #10b981;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div style="flex: 1;">
+                                            <div style="font-weight: 600; color: #1f2937; margin-bottom: 0.25rem;">${item.name}</div>
+                                            <div style="font-size: 0.85rem; color: #6b7280;">
+                                                <span style="color: #ef4444; text-decoration: line-through;">${item.oldQuantity.toFixed(item.unit === 'kg' || item.unit === 'l' || item.unit === 'litre' ? 1 : 0)}${item.unit}</span>
+                                                →
+                                                <span style="color: #10b981; font-weight: 600;">${item.newQuantity.toFixed(item.unit === 'kg' || item.unit === 'l' || item.unit === 'litre' ? 1 : 0)}${item.unit}</span>
+                                            </div>
+                                        </div>
+                                        <div style="text-align: right; padding-left: 1rem;">
+                                            <div style="font-size: 0.85rem; color: #6b7280;">Déduit:</div>
+                                            <div style="font-weight: 600; color: #dc2626;">-${item.quantity.toFixed(item.unit === 'kg' || item.unit === 'l' || item.unit === 'litre' ? 1 : 0)}${item.unit}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem;">
+                        <button onclick="document.getElementById('stock-deduction-modal').remove(); location.reload();" style="flex: 1; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 1rem;">
+                            <i class="fas fa-sync-alt"></i> Rafraîchir la page
+                        </button>
+                        <button onclick="document.getElementById('stock-deduction-modal').remove();" style="flex: 1; padding: 0.75rem 1.5rem; background: #f3f4f6; color: #374151; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 1rem;">
+                            Fermer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Insérer la modal dans le DOM
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
     }
     
     replaceMenu() {
