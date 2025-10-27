@@ -1651,6 +1651,7 @@ class GroupDashboard {
         const customMenuForm = document.getElementById('generate-custom-menu-form');
         const addGoalForm = document.getElementById('add-nutritional-goal-form');
         const addAndCloseBtn = document.getElementById('add-goal-and-close-btn');
+        const modal = document.getElementById('add-nutritional-goal-modal');
         
         if (addGoalBtn) {
             addGoalBtn.addEventListener('click', () => {
@@ -1673,6 +1674,23 @@ class GroupDashboard {
             });
         }
         
+        // Gestion de la fermeture de la modale (une seule fois)
+        if (modal) {
+            const closeButtons = modal.querySelectorAll('.modal-close');
+            closeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    this.closeGoalModal();
+                });
+            });
+            
+            // Fermer en cliquant en dehors
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    this.closeGoalModal();
+                }
+            });
+        }
+        
         if (customMenuForm) {
             customMenuForm.addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -1685,21 +1703,21 @@ class GroupDashboard {
         const modal = document.getElementById('add-nutritional-goal-modal');
         if (modal) {
             modal.style.display = 'flex';
-            
-            // Gestion de la fermeture
-            const closeButtons = modal.querySelectorAll('.modal-close');
-            closeButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    modal.style.display = 'none';
-                });
-            });
-            
-            // Fermer en cliquant en dehors
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.style.display = 'none';
-                }
-            });
+            // Focus sur le premier champ
+            const nutrientSelect = document.getElementById('goal-nutrient');
+            if (nutrientSelect) {
+                setTimeout(() => nutrientSelect.focus(), 100);
+            }
+        }
+    }
+    
+    closeGoalModal() {
+        const modal = document.getElementById('add-nutritional-goal-modal');
+        if (modal) {
+            modal.style.display = 'none';
+            // Réinitialiser le formulaire
+            const form = document.getElementById('add-nutritional-goal-form');
+            if (form) form.reset();
         }
     }
     
@@ -1751,9 +1769,7 @@ class GroupDashboard {
         
         // Fermer la modale seulement si demandé
         if (closeModal) {
-            const modal = document.getElementById('add-nutritional-goal-modal');
-            if (modal) modal.style.display = 'none';
-            document.getElementById('add-nutritional-goal-form').reset();
+            this.closeGoalModal();
         }
     }
     
