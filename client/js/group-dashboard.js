@@ -1936,6 +1936,25 @@ class GroupDashboard {
         }
     }
     
+    convertToGrams(quantity, unit) {
+        // Convertir toutes les quantités en grammes pour comparaison uniforme
+        const unitLower = (unit || '').toLowerCase();
+        
+        if (unitLower === 'kg') {
+            return quantity * 1000;
+        } else if (unitLower === 'l' || unitLower === 'litre' || unitLower === 'litres') {
+            return quantity * 1000; // 1L = 1000ml (traité comme grammes)
+        } else if (unitLower === 'ml') {
+            return quantity; // 1ml ≈ 1g pour simplification
+        } else if (unitLower === 'g' || unitLower === 'gramme' || unitLower === 'grammes') {
+            return quantity;
+        } else if (unitLower === 'pièce' || unitLower === 'pièces' || unitLower === 'unité' || unitLower === 'unités') {
+            return quantity * 100; // Approximation : 1 pièce ≈ 100g
+        } else {
+            return quantity; // Par défaut, traiter comme des grammes
+        }
+    }
+    
     async checkStockAvailability(menuResult, numberOfPeople) {
         try {
             const token = localStorage.getItem('token');
@@ -1980,24 +1999,27 @@ class GroupDashboard {
                     };
                 }
                 
-                const available = stockItem.quantity;
-                const needed = ingredient.quantity;
+                // Convertir les deux quantités en grammes pour comparaison
+                const availableInGrams = this.convertToGrams(stockItem.quantity, stockItem.unit);
+                const neededInGrams = this.convertToGrams(ingredient.quantity, ingredient.unit);
                 
-                if (available >= needed) {
+                if (availableInGrams >= neededInGrams) {
                     return {
                         name: ingredient.name,
-                        needed: needed,
-                        available: available,
+                        needed: ingredient.quantity,
+                        available: stockItem.quantity,
                         unit: ingredient.unit,
+                        stockUnit: stockItem.unit,
                         status: 'ok',
                         stockItemId: stockItem._id
                     };
                 } else {
                     return {
                         name: ingredient.name,
-                        needed: needed,
-                        available: available,
+                        needed: ingredient.quantity,
+                        available: stockItem.quantity,
                         unit: ingredient.unit,
+                        stockUnit: stockItem.unit,
                         status: 'insufficient',
                         stockItemId: stockItem._id
                     };
@@ -2119,9 +2141,9 @@ class GroupDashboard {
                                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; margin-bottom: 0.5rem; background: white; border-radius: 4px; border-left: 4px solid ${item.status === 'ok' ? '#10b981' : item.status === 'missing' ? '#ef4444' : '#f59e0b'};">
                                         <span style="font-weight: 500; color: #374151;">${item.name}</span>
                                         <span style="font-size: 0.85rem; color: ${item.status === 'ok' ? '#059669' : item.status === 'missing' ? '#dc2626' : '#d97706'};">
-                                            ${item.status === 'ok' ? `✓ ${item.available.toFixed(1)}${item.unit} (besoin: ${item.needed.toFixed(1)}${item.unit})` : 
+                                            ${item.status === 'ok' ? `✓ Stock: ${item.available.toFixed(item.stockUnit === 'kg' ? 0 : 1)}${item.stockUnit || item.unit} (besoin: ${item.needed.toFixed(1)}${item.unit})` : 
                                               item.status === 'missing' ? `✗ Non trouvé en stock (besoin: ${item.needed.toFixed(1)}${item.unit})` :
-                                              `⚠ Insuffisant: ${item.available.toFixed(1)}${item.unit} (besoin: ${item.needed.toFixed(1)}${item.unit})`}
+                                              `⚠ Insuffisant: ${item.available.toFixed(item.stockUnit === 'kg' ? 0 : 1)}${item.stockUnit || item.unit} (besoin: ${item.needed.toFixed(1)}${item.unit})`}
                                         </span>
                                     </div>
                                 `).join('')}
