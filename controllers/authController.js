@@ -151,6 +151,7 @@ export const login = asyncHandler(async (req, res) => {
     // Envoyer les données utilisateur (pour localStorage côté client)
     res.json({
       success: true,
+      token: token, // ✅ Ajout du token pour localStorage (compatibilité avec les anciens appels API)
       user: {
         id: user._id,
         name: user.name,
