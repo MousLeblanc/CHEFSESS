@@ -2255,14 +2255,24 @@ class GroupDashboard {
                                 const quantiteTotal = ing.quantiteTotal || '';
                                 const unite = ing.unite || ing.unit || '';
                                 
-                                // Afficher "par personne (total pour X personnes)"
-                                if (quantiteTotal && quantiteParPersonne && numberOfPeople > 1) {
+                                console.log('🔍 Ingrédient:', nom, {
+                                    quantiteParPersonne,
+                                    quantiteTotal,
+                                    unite,
+                                    numberOfPeople
+                                });
+                                
+                                // Afficher "par personne (total pour X personnes)" si on a les deux quantités
+                                if (numberOfPeople > 1 && quantiteParPersonne && quantiteTotal && quantiteParPersonne !== quantiteTotal) {
                                     return `<li style="margin-bottom: 0.5rem; color: #4b5563;">
                                         <strong>${nom}</strong>: ${quantiteParPersonne}${unite} par personne 
                                         <span style="color: #6b7280;">(${quantiteTotal}${unite} pour ${numberOfPeople} pers.)</span>
                                     </li>`;
-                                } else {
-                                    return `<li style="margin-bottom: 0.5rem; color: #4b5563;">${nom}: ${quantiteParPersonne}${unite}</li>`;
+                                } 
+                                // Sinon, afficher ce qu'on a (quantiteParPersonne en priorité, ou quantite/quantity en fallback)
+                                else {
+                                    const quantite = quantiteTotal || quantiteParPersonne;
+                                    return `<li style="margin-bottom: 0.5rem; color: #4b5563;">${nom}: ${quantite}${unite}</li>`;
                                 }
                             }
                             // Si c'est une string, l'afficher directement
