@@ -1703,6 +1703,8 @@ class GroupDashboard {
         const modal = document.getElementById('add-nutritional-goal-modal');
         if (modal) {
             modal.style.display = 'flex';
+            // Mettre à jour la liste dans la modale
+            this.updateModalGoalsList();
             // Focus sur le premier champ
             const nutrientSelect = document.getElementById('goal-nutrient');
             if (nutrientSelect) {
@@ -1767,10 +1769,44 @@ class GroupDashboard {
         targetInput.value = '';
         targetInput.focus();
         
+        // Mettre à jour la liste dans la modale
+        this.updateModalGoalsList();
+        
         // Fermer la modale seulement si demandé
         if (closeModal) {
             this.closeGoalModal();
         }
+    }
+    
+    updateModalGoalsList() {
+        const modalListDiv = document.getElementById('modal-goals-list');
+        const modalContainer = document.getElementById('modal-goals-container');
+        
+        if (!modalListDiv || !modalContainer) return;
+        
+        if (this.nutritionalGoals.length === 0) {
+            modalListDiv.style.display = 'none';
+            return;
+        }
+        
+        modalListDiv.style.display = 'block';
+        
+        modalContainer.innerHTML = this.nutritionalGoals.map((goal, index) => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: white; border-radius: 4px; margin-bottom: 0.5rem; border: 1px solid #d1fae5;">
+                <div>
+                    <strong style="color: #047857; font-size: 0.9rem;">${goal.label}</strong>
+                    <span style="color: #059669; margin-left: 0.5rem; font-size: 0.85rem;">${goal.target}${goal.unit}</span>
+                </div>
+                <button type="button" onclick="groupDashboard.removeGoalFromModal(${index})" style="background: #fee2e2; color: #991b1b; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+    
+    removeGoalFromModal(index) {
+        this.removeNutritionalGoal(index);
+        this.updateModalGoalsList();
     }
     
     getMinIngredientValue(nutrient) {
@@ -1965,22 +2001,29 @@ class GroupDashboard {
                     </ol>
                 </div>
                 
-                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb; display: flex; gap: 1rem;">
-                    <button onclick="groupDashboard.exportMenu(${this.generatedMenus.length - 1})" class="btn btn-outline" style="flex: 1;">
-                        <i class="fas fa-download"></i> Exporter
-                    </button>
-                    <button onclick="groupDashboard.printMenu(${this.generatedMenus.length - 1})" class="btn btn-outline" style="flex: 1;">
-                        <i class="fas fa-print"></i> Imprimer
-                    </button>
-                    <button onclick="groupDashboard.saveMenuToDatabase(${this.generatedMenus.length - 1})" class="btn btn-primary" style="flex: 1;">
-                        <i class="fas fa-save"></i> Sauvegarder dans la base
-                    </button>
-                </div>
-                
-                <div style="margin-top: 1rem; text-align: center;">
-                    <button onclick="groupDashboard.resetForNewMenu()" class="btn btn-outline" style="width: 100%; background: #f0fdf4; border: 2px dashed #10b981; color: #047857; font-weight: 600;">
-                        <i class="fas fa-plus-circle"></i> Générer un autre menu
-                    </button>
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+                    <!-- Boutons principaux -->
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                        <button onclick="groupDashboard.acceptMenu(${this.generatedMenus.length - 1})" class="btn btn-primary" style="flex: 1; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; padding: 1rem; font-size: 1rem;">
+                            <i class="fas fa-check-circle"></i> Accepter ce menu
+                        </button>
+                        <button onclick="groupDashboard.replaceMenu()" class="btn btn-outline" style="flex: 1; border: 2px solid #f59e0b; color: #d97706; padding: 1rem; font-size: 1rem;">
+                            <i class="fas fa-sync-alt"></i> Remplacer le menu
+                        </button>
+                    </div>
+                    
+                    <!-- Boutons secondaires -->
+                    <div style="display: flex; gap: 1rem;">
+                        <button onclick="groupDashboard.exportMenu(${this.generatedMenus.length - 1})" class="btn btn-outline" style="flex: 1;">
+                            <i class="fas fa-download"></i> Exporter
+                        </button>
+                        <button onclick="groupDashboard.printMenu(${this.generatedMenus.length - 1})" class="btn btn-outline" style="flex: 1;">
+                            <i class="fas fa-print"></i> Imprimer
+                        </button>
+                        <button onclick="groupDashboard.saveMenuToDatabase(${this.generatedMenus.length - 1})" class="btn btn-outline" style="flex: 1;">
+                            <i class="fas fa-save"></i> Sauvegarder
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -2076,7 +2119,44 @@ class GroupDashboard {
         
         this.showToast('Prêt pour un nouveau menu ! 🎯', 'success');
     }
+    
+    acceptMenu(index) {
+        const menuData = this.generatedMenus[index];
+        if (!menuData) return;
+        
+        // Marquer le menu comme accepté
+        this.acceptedMenu = menuData;
+        
+        // Message de confirmation
+        this.showToast(`✅ Menu "${menuData.menu.nomMenu}" accepté !`, 'success');
+        
+        // Optionnel : Cacher les résultats et préparer pour un nouveau menu
+        setTimeout(() => {
+            this.resetForNewMenu();
+        }, 1500);
+    }
+    
+    replaceMenu() {
+        // Garder les mêmes critères (nutritionalGoals déjà en place)
+        const numberOfPeople = parseInt(document.getElementById('custom-menu-people').value);
+        const mealType = document.getElementById('custom-menu-type').value;
+        
+        if (this.nutritionalGoals.length === 0) {
+            this.showToast('Impossible de regénérer : aucun objectif défini', 'warning');
+            return;
+        }
+        
+        // Message d'information
+        this.showToast('🔄 Génération d\'un nouveau menu avec les mêmes critères...', 'info');
+        
+        // Régénérer le menu
+        setTimeout(() => {
+            this.generateCustomMenu();
+        }, 500);
+    }
 }
+
+
 
 
 

@@ -603,6 +603,16 @@
                 <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
+                <!-- Liste des objectifs déjà ajoutés -->
+                <div id="modal-goals-list" style="margin-bottom: 1rem; display: none;">
+                    <h4 style="font-size: 0.95rem; color: #374151; margin-bottom: 0.5rem;">
+                        <i class="fas fa-check-circle" style="color: #10b981;"></i> Objectifs ajoutés :
+                    </h4>
+                    <div id="modal-goals-container" style="background: #f0fdf4; padding: 0.75rem; border-radius: 6px; border: 1px solid #86efac; margin-bottom: 1rem;">
+                        <!-- Les objectifs apparaîtront ici -->
+                    </div>
+                </div>
+                
                 <form id="add-nutritional-goal-form">
                     <div class="form-group">
                         <label for="goal-nutrient">Nutriment *</label>
