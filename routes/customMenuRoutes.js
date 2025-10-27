@@ -12,7 +12,7 @@ const router = express.Router();
  * Génère un menu personnalisé selon les critères nutritionnels
  */
 router.post('/generate-custom', asyncHandler(async (req, res) => {
-    const { numberOfPeople, mealType, nutritionalGoals, dietaryRestrictions } = req.body;
+    const { numberOfPeople, mealType, nutritionalGoals, dietaryRestrictions, avoidMenuName, forceVariation } = req.body;
     
     // Validation
     if (!numberOfPeople || numberOfPeople < 1) {
@@ -41,7 +41,9 @@ router.post('/generate-custom', asyncHandler(async (req, res) => {
             numberOfPeople,
             mealType,
             nutritionalGoals,
-            dietaryRestrictions: dietaryRestrictions || []
+            dietaryRestrictions: dietaryRestrictions || [],
+            avoidMenuName,
+            forceVariation
         });
         
         res.status(200).json({

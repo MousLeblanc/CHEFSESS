@@ -45,11 +45,16 @@ export async function generateCustomMenu({
   numberOfPeople = 4,
   mealType = 'déjeuner',
   nutritionalGoals = [],
-  dietaryRestrictions = []
+  dietaryRestrictions = [],
+  avoidMenuName = null,
+  forceVariation = false
 }) {
   console.log(`\n🎯 Génération d'un menu personnalisé...`);
   console.log(`   👥 ${numberOfPeople} personnes`);
   console.log(`   🍽️  Type : ${mealType}`);
+  if (forceVariation && avoidMenuName) {
+    console.log(`   🔄 Forcer une variation (éviter: "${avoidMenuName}")`);
+  }
   
   if (nutritionalGoals.length === 0) {
     throw new Error('Au moins un objectif nutritionnel doit être spécifié');
@@ -98,6 +103,15 @@ export async function generateCustomMenu({
     ? `RESTRICTIONS ALIMENTAIRES: ${dietaryRestrictions.join(', ')}` 
     : '';
   
+  const variationText = forceVariation && avoidMenuName
+    ? `⚠️ IMPORTANT: Tu as DÉJÀ proposé "${avoidMenuName}".
+Tu DOIS créer un menu COMPLÈTEMENT DIFFÉRENT avec:
+- Un nom de plat différent
+- Des ingrédients principaux différents (si possible)
+- Une présentation/cuisson différente
+NE RÉPÈTE PAS le menu précédent !`
+    : '';
+  
   const prompt = `Tu es un chef cuisinier professionnel spécialisé dans les repas nutritifs pour établissements de santé (EHPAD, hôpitaux).
 
 MISSION: Compose un ${mealType} CLASSIQUE et ÉQUILIBRÉ pour ${numberOfPeople} personnes.
@@ -106,6 +120,8 @@ OBJECTIFS NUTRITIONNELS PRIORITAIRES:
 ${goalsText}
 
 ${restrictionsText}
+
+${variationText}
 
 ${ingredientsSections}
 
@@ -152,7 +168,7 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, sans texte avant ou après, 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
+      temperature: forceVariation ? 0.9 : 0.7,  // Plus de créativité pour les variations
       max_tokens: 2000,
     });
 

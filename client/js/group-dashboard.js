@@ -1856,7 +1856,7 @@ class GroupDashboard {
         this.renderNutritionalGoals();
     }
     
-    async generateCustomMenu() {
+    async generateCustomMenu(forceNew = false) {
         if (this.nutritionalGoals.length === 0) {
             this.showToast('Veuillez ajouter au moins un objectif nutritionnel', 'warning');
             return;
@@ -1878,18 +1878,28 @@ class GroupDashboard {
         try {
             if (progressText) progressText.textContent = 'Recherche des meilleurs ingrédients...';
             
+            // Si on veut forcer un nouveau menu, ajouter le dernier menu généré à éviter
+            const payload = {
+                numberOfPeople,
+                mealType,
+                nutritionalGoals: this.nutritionalGoals,
+                dietaryRestrictions
+            };
+            
+            // Ajouter le nom du dernier menu pour éviter les doublons
+            if (forceNew && this.generatedMenus.length > 0) {
+                const lastMenu = this.generatedMenus[0];
+                payload.avoidMenuName = lastMenu.menu?.nomMenu;
+                payload.forceVariation = true;
+            }
+            
             const response = await fetch('/api/menu/generate-custom', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
-                body: JSON.stringify({
-                    numberOfPeople,
-                    mealType,
-                    nutritionalGoals: this.nutritionalGoals,
-                    dietaryRestrictions
-                })
+                body: JSON.stringify(payload)
             });
             
             if (!response.ok) {
@@ -2402,11 +2412,11 @@ class GroupDashboard {
         }
         
         // Message d'information
-        this.showToast('🔄 Génération d\'un nouveau menu avec les mêmes critères...', 'info');
+        this.showToast('🔄 Génération d\'un menu DIFFÉRENT avec les mêmes critères...', 'info');
         
-        // Régénérer le menu
+        // Régénérer le menu avec forceNew = true pour éviter le même menu
         setTimeout(() => {
-            this.generateCustomMenu();
+            this.generateCustomMenu(true);  // true = forcer une variation
         }, 500);
     }
 }
