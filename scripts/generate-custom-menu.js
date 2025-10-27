@@ -201,15 +201,15 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, sans texte avant ou après, 
         return null;
       }
       
-      // L'IA donne les quantités PAR PERSONNE
-      const quantityPerPerson = parseFloat(ing.quantite) || 100;
+      // L'IA génère les quantités TOTALES (pour toutes les personnes), pas par personne
+      const quantityTotal = parseFloat(ing.quantite) || 100;
       
-      console.log(`🔍 [BACKEND] Ingrédient "${ing.nom}": quantite de l'IA = ${ing.quantite}, numberOfPeople = ${numberOfPeople}`);
+      console.log(`🔍 [BACKEND] Ingrédient "${ing.nom}": quantite de l'IA (TOTALE) = ${ing.quantite}, numberOfPeople = ${numberOfPeople}`);
       
-      // Calculer la quantité TOTALE pour toutes les personnes
-      const quantityTotal = quantityPerPerson * numberOfPeople;
+      // Calculer la quantité PAR PERSONNE en divisant par le nombre de personnes
+      const quantityPerPerson = quantityTotal / numberOfPeople;
       
-      console.log(`🔍 [BACKEND] → quantityPerPerson = ${quantityPerPerson}, quantityTotal = ${quantityTotal}`);
+      console.log(`🔍 [BACKEND] → quantityTotal = ${quantityTotal}, quantityPerPerson = ${quantityPerPerson}`);
       
       // Calculer les valeurs nutritionnelles pour la quantité TOTALE
       const factor = quantityTotal / 100;
