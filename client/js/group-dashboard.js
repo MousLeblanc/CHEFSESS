@@ -427,6 +427,12 @@ class GroupDashboard {
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => this.logout());
         }
+
+        // Bouton seed fournisseurs
+        const seedSuppliersBtn = document.getElementById('seed-suppliers-btn');
+        if (seedSuppliersBtn) {
+            seedSuppliersBtn.addEventListener('click', () => this.seedSuppliers());
+        }
     }
 
     async switchTab(tabName) {
@@ -1859,6 +1865,58 @@ class GroupDashboard {
         // 3️⃣ Rediriger vers la page de connexion
             window.location.href = '/';
         }
+    
+    async seedSuppliers() {
+        try {
+            const button = document.getElementById('seed-suppliers-btn');
+            const originalHTML = button.innerHTML;
+            
+            // Désactiver le bouton et afficher loading
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement...';
+            
+            this.showToast('🌱 Chargement des fournisseurs en cours...', 'info');
+            
+            const response = await fetch('/api/suppliers/seed', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.token}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.message || 'Erreur lors du chargement des fournisseurs');
+            }
+            
+            this.showToast(
+                `✅ ${data.created} fournisseur(s) créé(s), ${data.skipped} déjà existant(s)`,
+                'success'
+            );
+            
+            // Actualiser la liste des fournisseurs
+            if (typeof window.loadSuppliers === 'function') {
+                window.loadSuppliers();
+            }
+            
+            // Restaurer le bouton
+            button.innerHTML = originalHTML;
+            button.disabled = false;
+            
+        } catch (error) {
+            console.error('Erreur lors du seed des fournisseurs:', error);
+            this.showToast(`❌ ${error.message}`, 'danger');
+            
+            // Restaurer le bouton en cas d'erreur
+            const button = document.getElementById('seed-suppliers-btn');
+            if (button) {
+                button.innerHTML = '<i class="fas fa-database"></i> Charger les 15 fournisseurs';
+                button.disabled = false;
+            }
+        }
+    }
     
     /* ===========================
      * Générateur de Menu Personnalisé

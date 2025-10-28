@@ -5,7 +5,8 @@ import {
   createSupplier,
   updateSupplier,
   deleteSupplier,
-  getSupplierStats
+  getSupplierStats,
+  seedSuppliers
 } from '../controllers/supplierController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -21,6 +22,9 @@ router.route('/')
 
 router.route('/stats')
   .get(getSupplierStats);
+
+router.route('/seed')
+  .post(seedSuppliers);
 
 router.route('/:id')
   .get(getSupplier)
