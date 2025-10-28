@@ -436,14 +436,11 @@ window.confirmDelivery = async function(orderId) {
       // Recharger la liste des commandes
       loadCustomerOrders();
       
-      // Recharger le stock automatiquement si la fonction existe
+      // 🔄 Recharger automatiquement la page après 2 secondes pour voir le stock mis à jour
       setTimeout(() => {
-        if (typeof window.loadStockData === 'function') {
-          console.log('🔄 Rechargement du stock...');
-          window.loadStockData();
-          console.log('✅ Stock rechargé');
-        }
-      }, 1000);
+        console.log('🔄 Rechargement automatique de la page pour actualiser le stock...');
+        window.location.reload();
+      }, 2000);
     } else {
       const error = await response.json();
       console.error('❌ Erreur:', error);
