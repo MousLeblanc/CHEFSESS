@@ -38,7 +38,13 @@
 <body>
   <div class="page-container">
     <header>
-      <h1><i class="fas fa-heartbeat"></i> EHPAD</h1>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <i class="fas fa-heartbeat" style="font-size: 2rem;"></i>
+        <div>
+          <h1 id="site-name" style="margin: 0; font-size: 1.8em;">EHPAD</h1>
+          <p id="group-name" style="margin: 0; font-size: 0.85em; opacity: 0.9;">Vulpia Group</p>
+        </div>
+      </div>
       <div style="display: flex; align-items: center; gap: 1.5rem;">
         <button onclick="showMyOrders()" style="background-color: #3498db; padding: 0.7rem 1.2rem; font-size: 0.9rem;">
           <i class="fas fa-receipt"></i> Mes Commandes
@@ -313,7 +319,7 @@
     initDashboardMenuGenerator('ehpad');
   </script>
 
-  <!--  Système de notifications en temps réel -->
+  <!--  Systï¿½me de notifications en temps rï¿½el -->
   <script src="js/notification-client.js"></script>
   <script src="js/dashboard-notifications.js"></script>
 

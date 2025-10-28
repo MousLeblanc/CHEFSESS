@@ -5,6 +5,8 @@ console.log('🏥 EHPAD Dashboard JS chargé');
 
 // Variables globales
 let groupCounter = 1;
+let currentUser = null;
+let currentSite = null;
 
 // Options pour les groupes EHPAD
 const textureOptions = [
@@ -37,9 +39,74 @@ const dietOptions = [
   { value: 'cacher', label: 'Casher' }
 ];
 
+// Fonction pour charger les informations de l'utilisateur et du site
+async function loadUserAndSiteInfo() {
+  try {
+    // Récupérer le token d'authentification
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('❌ Pas de token trouvé, redirection vers login');
+      window.location.href = 'index.html';
+      return;
+    }
+
+    // Récupérer les informations utilisateur depuis localStorage
+    const userString = localStorage.getItem('user');
+    if (userString) {
+      currentUser = JSON.parse(userString);
+      console.log('👤 Utilisateur chargé:', currentUser);
+
+      // Si l'utilisateur a un siteId, charger les infos du site
+      if (currentUser.siteId) {
+        await loadSiteInfo(currentUser.siteId);
+      }
+    }
+  } catch (error) {
+    console.error('❌ Erreur lors du chargement des infos utilisateur:', error);
+  }
+}
+
+// Fonction pour charger les informations du site
+async function loadSiteInfo(siteId) {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/sites/${siteId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
+    });
+
+    if (response.ok) {
+      currentSite = await response.json();
+      console.log('🏥 Site chargé:', currentSite);
+      updateSiteHeader();
+    } else {
+      console.error('❌ Erreur lors du chargement du site');
+    }
+  } catch (error) {
+    console.error('❌ Erreur lors du chargement du site:', error);
+  }
+}
+
+// Fonction pour mettre à jour le header avec le nom du site
+function updateSiteHeader() {
+  if (!currentSite) return;
+
+  const siteNameElement = document.getElementById('site-name');
+  if (siteNameElement) {
+    siteNameElement.textContent = currentSite.siteName || 'EHPAD';
+    console.log('✅ Nom du site affiché:', currentSite.siteName);
+  }
+}
+
 // Initialisation au chargement de la page
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   console.log('✅ DOM chargé - Initialisation EHPAD Dashboard');
+  
+  // Charger les informations utilisateur et du site
+  await loadUserAndSiteInfo();
   
   // Initialisation des onglets
   initTabs();
