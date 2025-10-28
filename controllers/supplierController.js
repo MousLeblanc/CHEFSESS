@@ -7,14 +7,27 @@ import Supplier from '../models/Supplier.js';
 const getSuppliers = asyncHandler(async (req, res) => {
   const { search, category, status, establishmentType } = req.query;
   
+  console.log('🔍 [getSuppliers] req.user:', {
+    id: req.user.id,
+    role: req.user.role,
+    roles: req.user.roles,
+    groupId: req.user.groupId,
+    siteId: req.user.siteId
+  });
+  
   // Construction du filtre
   let filter = {};
   
   // Filtrer par groupe si l'utilisateur a un groupId
+  // Exception: Les GROUP_ADMIN peuvent voir tous les fournisseurs de leur groupe
   if (req.user.groupId) {
     filter.groupId = req.user.groupId;
+    console.log('🔍 Filtre par req.user.groupId:', req.user.groupId);
   } else if (req.user.siteId && req.user.siteId.groupId) {
     filter.groupId = req.user.siteId.groupId;
+    console.log('🔍 Filtre par req.user.siteId.groupId:', req.user.siteId.groupId);
+  } else {
+    console.log('⚠️ Aucun groupId trouvé - récupération de TOUS les fournisseurs');
   }
   
   // Filtre par type d'établissement
@@ -37,7 +50,7 @@ const getSuppliers = asyncHandler(async (req, res) => {
     filter.$text = { $search: search };
   }
   
-  console.log('🔍 Filtre fournisseurs:', filter);
+  console.log('🔍 Filtre final fournisseurs:', JSON.stringify(filter));
   
   const suppliers = await Supplier.find(filter)
     .populate('createdBy', 'name email')
@@ -45,6 +58,14 @@ const getSuppliers = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 });
   
   console.log(`✅ ${suppliers.length} fournisseurs trouvés`);
+  
+  if (suppliers.length > 0) {
+    console.log('📦 Premier fournisseur:', {
+      name: suppliers[0].name,
+      groupId: suppliers[0].groupId,
+      productsCount: suppliers[0].products?.length || 0
+    });
+  }
   
   res.json({
     success: true,
