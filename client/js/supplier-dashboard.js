@@ -104,10 +104,13 @@ class SupplierDashboard {
             });
 
             if (response.ok) {
-                const products = await response.json();
+                const result = await response.json();
+                const products = result.data || result; // Support both formats
+                console.log('✅ Produits chargés:', products.length);
                 this.displayProducts(products);
             }
         } catch (error) {
+            console.error('❌ Erreur chargement produits:', error);
             this.showToast('Erreur lors du chargement des produits', 'error');
         }
     }
