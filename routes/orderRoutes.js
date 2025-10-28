@@ -18,7 +18,7 @@ const canManageOrders = (req, res, next) => {
   console.log('👤 User role:', req.user.role);
   console.log('👥 User roles:', req.user.roles);
   
-  const allowedRoles = ['collectivite', 'restaurant', 'resto', 'GROUP_ADMIN', 'SITE_MANAGER'];
+  const allowedRoles = ['collectivite', 'restaurant', 'resto', 'groupe', 'GROUP_ADMIN', 'SITE_MANAGER', 'CHEF'];
   
   // Vérifier le rôle principal (string)
   if (allowedRoles.includes(req.user.role)) {
