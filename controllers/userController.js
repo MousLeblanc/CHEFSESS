@@ -73,9 +73,14 @@ export const updateUserProfile = async (req, res) => {
  */
 export const getSuppliers = async (req, res) => {
     try {
-        const suppliers = await User.find({ role: 'fournisseur' })
-            .select('_id name email businessName phone establishmentType createdAt')
+        // ✅ Retourner les vrais fournisseurs depuis la collection Supplier
+        const Supplier = (await import('../models/Supplier.js')).default;
+        
+        const suppliers = await Supplier.find({})
+            .select('_id name email contact phone address type isBio products status rating')
             .sort({ createdAt: -1 });
+
+        console.log(`✅ [userController.getSuppliers] ${suppliers.length} fournisseurs retournés`);
 
         res.json({
             success: true,
