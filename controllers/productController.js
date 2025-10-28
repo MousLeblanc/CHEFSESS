@@ -56,20 +56,41 @@ export const getProductsBySupplier = async (req, res) => {
   try {
     const supplierId = req.params.supplierId || req.user.supplierId;
     
+    console.log('🔍 [getProductsBySupplier] supplierId:', supplierId);
+    console.log('🔍 [getProductsBySupplier] req.params:', req.params);
+    console.log('🔍 [getProductsBySupplier] req.user.supplierId:', req.user?.supplierId);
+    
     if (!supplierId) {
-      return res.status(400).json({ message: 'ID fournisseur manquant' });
+      console.error('❌ ID fournisseur manquant');
+      return res.status(400).json({ 
+        success: false,
+        message: 'ID fournisseur manquant' 
+      });
     }
 
     const supplier = await Supplier.findById(supplierId);
     
+    console.log('🔍 [getProductsBySupplier] Fournisseur trouvé:', supplier ? supplier.name : 'NULL');
+    console.log('🔍 [getProductsBySupplier] Nombre de produits:', supplier?.products?.length || 0);
+    
     if (!supplier) {
-      return res.status(404).json({ message: 'Fournisseur non trouvé' });
+      console.error('❌ Fournisseur non trouvé pour ID:', supplierId);
+      return res.status(404).json({ 
+        success: false,
+        message: 'Fournisseur non trouvé',
+        supplierId: supplierId
+      });
     }
 
     // Retourner les produits du fournisseur
+    console.log('✅ Envoi de', supplier.products?.length || 0, 'produits');
     res.json(supplier.products || []);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('❌ [getProductsBySupplier] Erreur:', error.message);
+    res.status(500).json({ 
+      success: false,
+      message: error.message 
+    });
   }
 };
 
