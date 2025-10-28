@@ -14,9 +14,11 @@ const router = express.Router();
 
 // Middleware pour vérifier si l'utilisateur peut passer des commandes
 const canManageOrders = (req, res, next) => {
-  console.log('🔐 Vérification des permissions pour les commandes');
-  console.log('👤 User role:', req.user.role);
-  console.log('👥 User roles:', req.user.roles);
+  console.log('\n🔐 ===== Vérification des permissions pour les commandes =====');
+  console.log('👤 User ID:', req.user._id);
+  console.log('👤 User email:', req.user.email);
+  console.log('👤 User role (string):', req.user.role, '| Type:', typeof req.user.role);
+  console.log('👥 User roles (array):', req.user.roles, '| Type:', typeof req.user.roles, '| IsArray:', Array.isArray(req.user.roles));
   
   const allowedRoles = ['collectivite', 'restaurant', 'resto', 'groupe', 'GROUP_ADMIN', 'SITE_MANAGER', 'CHEF'];
   

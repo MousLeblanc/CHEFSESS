@@ -34,6 +34,15 @@ export const protect = async (req, res, next) => {
       });
     }
     
+    // 🔍 Logs pour diagnostiquer les rôles
+    console.log('👤 User chargé:', {
+      id: req.user._id,
+      email: req.user.email,
+      role: req.user.role,
+      roles: req.user.roles,
+      siteId: req.user.siteId
+    });
+    
     next();
   } catch (error) {
     return res.status(401).json({
