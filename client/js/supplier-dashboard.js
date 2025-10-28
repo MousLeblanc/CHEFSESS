@@ -103,11 +103,25 @@ class SupplierDashboard {
                 }
             });
 
+            console.log('📡 Réponse API products/mine:', response.status);
+
             if (response.ok) {
                 const result = await response.json();
-                const products = result.data || result; // Support both formats
-                console.log('✅ Produits chargés:', products.length);
+                console.log('📦 Données reçues (result):', result);
+                console.log('📦 Type de result:', typeof result);
+                console.log('📦 result.data:', result.data);
+                
+                const products = Array.isArray(result) ? result : (result.data || []);
+                console.log('✅ Produits finaux:', products);
+                console.log('✅ Type de products:', typeof products);
+                console.log('✅ Array.isArray(products):', Array.isArray(products));
+                console.log('✅ Nombre de produits:', products.length);
+                
                 this.displayProducts(products);
+            } else {
+                const errorText = await response.text();
+                console.error('❌ Erreur HTTP:', response.status, errorText);
+                this.showToast('Erreur lors du chargement des produits', 'error');
             }
         } catch (error) {
             console.error('❌ Erreur chargement produits:', error);
