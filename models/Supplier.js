@@ -53,6 +53,53 @@ const supplierSchema = new mongoose.Schema({
     enum: ['legumes', 'viandes', 'poissons', 'produits-laitiers', 'cereales', 'epices', 'boissons', 'autres'],
     required: true
   }],
+  type: {
+    type: String,
+    enum: ['poissonnier', 'boucher', 'epicier', 'primeur', 'cremier', 'boulanger', 'grossiste'],
+    trim: true
+  },
+  isBio: {
+    type: Boolean,
+    default: false
+  },
+  products: [{
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    category: {
+      type: String,
+      required: true
+    },
+    unit: {
+      type: String,
+      required: true,
+      enum: ['kg', 'L', 'pièce', 'boîte', 'unité']
+    },
+    price: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+    stock: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    promotion: {
+      active: {
+        type: Boolean,
+        default: false
+      },
+      discountPercent: {
+        type: Number,
+        min: 0,
+        max: 100
+      },
+      endDate: Date
+    }
+  }],
   status: {
     type: String,
     enum: ['active', 'inactive', 'suspended'],
@@ -72,12 +119,16 @@ const supplierSchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: false
   },
   establishmentType: {
     type: String,
     enum: ['cantine_scolaire', 'cantine_entreprise', 'ehpad', 'hopital', 'maison_de_retraite', 'autre'],
-    required: true
+    required: false
+  },
+  groupId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Group'
   }
 }, {
   timestamps: true
