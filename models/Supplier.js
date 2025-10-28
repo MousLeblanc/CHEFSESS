@@ -40,7 +40,7 @@ const supplierSchema = new mongoose.Schema({
     postalCode: {
       type: String,
       trim: true,
-      match: [/^[0-9]{5}$/, 'Le code postal doit contenir 5 chiffres']
+      match: [/^[0-9]{4,5}$/, 'Le code postal doit contenir 4 ou 5 chiffres']
     },
     country: {
       type: String,
