@@ -54,10 +54,14 @@ export async function siteLogin(req, res) {
         // Générer le token JWT
         const token = jwt.sign(
             { 
-                userId: user._id, 
+                id: user._id, // 🔑 Utiliser "id" au lieu de "userId" pour cohérence
+                role: user.role,
+                roles: user.roles || [],
+                name: user.name,
+                email: user.email,
+                establishmentType: user.establishmentType,
                 siteId: site._id,
-                groupId: site.groupId._id,
-                roles: user.roles 
+                groupId: site.groupId._id
             },
             process.env.JWT_SECRET,
             { expiresIn: '7d' }

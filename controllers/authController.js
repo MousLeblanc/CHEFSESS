@@ -9,10 +9,13 @@ const generateToken = (user) => {
   return jwt.sign(
     { 
       id: user._id, 
-      role: user.role, 
+      role: user.role,
+      roles: user.roles || [], // 🔑 Inclure les rôles (array)
       name: user.name, 
       email: user.email,
-      establishmentType: user.establishmentType
+      establishmentType: user.establishmentType,
+      siteId: user.siteId, // 🔑 Inclure le siteId si présent
+      groupId: user.groupId // 🔑 Inclure le groupId si présent
     },
     process.env.JWT_SECRET,
     { expiresIn: '7d' } // 7 jours - aligné avec maxAge du cookie
