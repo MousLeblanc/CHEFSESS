@@ -1,92 +1,110 @@
 import Product from '../models/Product.js';
-import Supplier from '../models/Supplier.js';
 
 // ✅ Créer un produit (fournisseur)
 export const createProduct = async (req, res) => {
   try {
-    // Chercher le fournisseur par supplierId de l'utilisateur connecté
-    const supplier = await Supplier.findById(req.user.supplierId);
+    console.log('📦 [createProduct] User:', req.user.id, 'Role:', req.user.role);
     
-    if (!supplier) {
-      return res.status(404).json({ message: 'Fournisseur non trouvé' });
+    // Vérifier que l'utilisateur est un fournisseur
+    if (req.user.role !== 'fournisseur') {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Seuls les fournisseurs peuvent ajouter des produits' 
+      });
     }
 
-    // Ajouter le produit au tableau products du fournisseur
-    supplier.products.push(req.body);
-    await supplier.save();
+    // Créer le produit avec le supplier = ID du user fournisseur
+    const productData = {
+      ...req.body,
+      supplier: req.user.id  // L'ID du User fournisseur connecté
+    };
+
+    const product = await Product.create(productData);
+    
+    console.log('✅ Produit créé:', product.name, 'par', req.user.id);
 
     res.status(201).json({ 
       success: true, 
       message: 'Produit ajouté avec succès',
-      product: supplier.products[supplier.products.length - 1]
+      data: product
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('❌ Erreur création produit:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message 
+    });
   }
 };
 
-// ✅ Voir tous les produits (optionnel pour les acheteurs/admin)
+// ✅ Voir MES produits (fournisseur connecté)
+export const getMyProducts = async (req, res) => {
+  try {
+    console.log('📦 [getMyProducts] User:', req.user.id, 'Role:', req.user.role);
+    
+    const products = await Product.find({ supplier: req.user.id })
+      .sort({ createdAt: -1 });
+    
+    console.log(`✅ ${products.length} produits trouvés pour fournisseur ${req.user.id}`);
+
+    res.json({
+      success: true,
+      count: products.length,
+      data: products
+    });
+  } catch (error) {
+    console.error('❌ Erreur récupération produits:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message 
+    });
+  }
+};
+
+// ✅ Voir tous les produits (pour les acheteurs/sites)
 export const getAllProducts = async (req, res) => {
   try {
-    // Récupérer tous les fournisseurs et leurs produits
-    const suppliers = await Supplier.find({ groupId: req.user.groupId }).populate('groupId', 'name');
+    const products = await Product.find({ active: true })
+      .populate('supplier', 'name email businessName phone')
+      .sort({ createdAt: -1 });
     
-    // Extraire tous les produits de tous les fournisseurs
-    const allProducts = [];
-    suppliers.forEach(supplier => {
-      if (supplier.products && supplier.products.length > 0) {
-        supplier.products.forEach(product => {
-          allProducts.push({
-            ...product.toObject(),
-            supplierName: supplier.name,
-            supplierId: supplier._id
-          });
-        });
-      }
+    console.log(`✅ ${products.length} produits actifs trouvés`);
+
+    res.json({
+      success: true,
+      count: products.length,
+      data: products
     });
-    
-    res.json(allProducts);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('❌ Erreur récupération tous produits:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message 
+    });
   }
 };
 
-// ✅ Voir les produits du fournisseur connecté
+// ✅ Voir les produits d'un fournisseur spécifique
 export const getProductsBySupplier = async (req, res) => {
   try {
-    const supplierId = req.params.supplierId || req.user.supplierId;
+    const supplierId = req.params.supplierId;
     
     console.log('🔍 [getProductsBySupplier] supplierId:', supplierId);
-    console.log('🔍 [getProductsBySupplier] req.params:', req.params);
-    console.log('🔍 [getProductsBySupplier] req.user.supplierId:', req.user?.supplierId);
     
-    if (!supplierId) {
-      console.error('❌ ID fournisseur manquant');
-      return res.status(400).json({ 
-        success: false,
-        message: 'ID fournisseur manquant' 
-      });
-    }
+    const products = await Product.find({ 
+      supplier: supplierId,
+      active: true 
+    }).sort({ createdAt: -1 });
+    
+    console.log(`✅ ${products.length} produits trouvés pour fournisseur ${supplierId}`);
 
-    const supplier = await Supplier.findById(supplierId);
-    
-    console.log('🔍 [getProductsBySupplier] Fournisseur trouvé:', supplier ? supplier.name : 'NULL');
-    console.log('🔍 [getProductsBySupplier] Nombre de produits:', supplier?.products?.length || 0);
-    
-    if (!supplier) {
-      console.error('❌ Fournisseur non trouvé pour ID:', supplierId);
-      return res.status(404).json({ 
-        success: false,
-        message: 'Fournisseur non trouvé',
-        supplierId: supplierId
-      });
-    }
-
-    // Retourner les produits du fournisseur
-    console.log('✅ Envoi de', supplier.products?.length || 0, 'produits');
-    res.json(supplier.products || []);
+    res.json({
+      success: true,
+      count: products.length,
+      data: products
+    });
   } catch (error) {
-    console.error('❌ [getProductsBySupplier] Erreur:', error.message);
+    console.error('❌ Erreur récupération produits fournisseur:', error);
     res.status(500).json({ 
       success: false,
       message: error.message 
@@ -97,57 +115,85 @@ export const getProductsBySupplier = async (req, res) => {
 // ✅ Modifier un produit (fournisseur)
 export const updateProduct = async (req, res) => {
   try {
-    const supplier = await Supplier.findById(req.user.supplierId);
+    const product = await Product.findById(req.params.id);
     
-    if (!supplier) {
-      return res.status(404).json({ message: 'Fournisseur non trouvé' });
+    if (!product) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Produit non trouvé' 
+      });
     }
 
-    // Trouver le produit dans le tableau
-    const productIndex = supplier.products.findIndex(p => p._id.toString() === req.params.id);
-    
-    if (productIndex === -1) {
-      return res.status(404).json({ message: 'Produit non trouvé' });
+    // Vérifier que le produit appartient au fournisseur connecté
+    if (product.supplier.toString() !== req.user.id) {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Non autorisé à modifier ce produit' 
+      });
     }
 
     // Mettre à jour le produit
-    Object.assign(supplier.products[productIndex], req.body);
-    await supplier.save();
+    Object.assign(product, req.body);
+    await product.save();
+
+    console.log('✅ Produit modifié:', product.name);
 
     res.json({ 
       success: true, 
       message: 'Produit modifié avec succès',
-      product: supplier.products[productIndex]
+      data: product
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('❌ Erreur modification produit:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message 
+    });
   }
 };
 
 // ✅ Supprimer un produit (fournisseur)
 export const deleteProduct = async (req, res) => {
   try {
-    const supplier = await Supplier.findById(req.user.supplierId);
+    const product = await Product.findById(req.params.id);
     
-    if (!supplier) {
-      return res.status(404).json({ message: 'Fournisseur non trouvé' });
+    if (!product) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Produit non trouvé' 
+      });
     }
 
-    // Trouver et supprimer le produit du tableau
-    const productIndex = supplier.products.findIndex(p => p._id.toString() === req.params.id);
-    
-    if (productIndex === -1) {
-      return res.status(404).json({ message: 'Produit non trouvé' });
+    // Vérifier que le produit appartient au fournisseur connecté
+    if (product.supplier.toString() !== req.user.id) {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Non autorisé à supprimer ce produit' 
+      });
     }
 
-    supplier.products.splice(productIndex, 1);
-    await supplier.save();
+    await Product.findByIdAndDelete(req.params.id);
+
+    console.log('✅ Produit supprimé:', product.name);
 
     res.json({ 
       success: true, 
       message: 'Produit supprimé avec succès'
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('❌ Erreur suppression produit:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message 
+    });
   }
+};
+
+export default {
+  createProduct,
+  getMyProducts,
+  getAllProducts,
+  getProductsBySupplier,
+  updateProduct,
+  deleteProduct
 };

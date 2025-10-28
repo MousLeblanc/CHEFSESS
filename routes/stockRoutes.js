@@ -66,7 +66,7 @@ router.get('/:id', protect, async (req, res) => {
 router.put('/deduct', protect, deductStockItems);
 
 // Route pour mettre à jour un ingrédient spécifique par ID
-router.put('/:id', protect, updateStockItem); 
+router.put('/:id', protect, updateStockItem);
 
 // Route pour supprimer un ingrédient spécifique
 router.delete('/:id', protect, async (req, res) => {
@@ -103,8 +103,8 @@ router.post('/seed', protect, async (req, res) => {
   
   if (!userStock) {
     userStock = new Stock({ 
-      createdBy: req.user._id, 
-      establishmentType: req.user.establishmentType || 'autre', 
+      createdBy: req.user._id,
+      establishmentType: req.user.establishmentType || 'autre',
       items: [] 
     });
   }

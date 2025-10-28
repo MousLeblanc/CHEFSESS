@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   createProduct,
+  getMyProducts,
   getAllProducts,
   getProductsBySupplier,
   updateProduct,
@@ -39,7 +40,7 @@ const canViewProducts = (req, res, next) => {
 
 // --- Fournisseur : créer et gérer ses produits ---
 router.post('/', protect, authorize('fournisseur'), createProduct);
-router.get('/mine', protect, authorize('fournisseur'), getProductsBySupplier);
+router.get('/mine', protect, authorize('fournisseur'), getMyProducts);
 router.put('/:id', protect, authorize('fournisseur'), updateProduct);
 router.delete('/:id', protect, authorize('fournisseur'), deleteProduct);
 
