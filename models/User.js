@@ -17,10 +17,22 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId, 
     ref: "Site" 
   },
+  supplierId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Supplier"
+  },
   roles: [{ 
     type: String, 
     enum: ["GROUP_ADMIN", "SITE_MANAGER", "CHEF", "SUPPLIER", "VIEWER", "NUTRITIONIST"] 
   }],
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  isEmailVerified: {
+    type: Boolean,
+    default: false
+  },
   
   // Informations professionnelles
   businessName: { type: String },

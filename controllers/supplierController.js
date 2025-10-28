@@ -10,6 +10,13 @@ const getSuppliers = asyncHandler(async (req, res) => {
   // Construction du filtre
   let filter = {};
   
+  // Filtrer par groupe si l'utilisateur a un groupId
+  if (req.user.groupId) {
+    filter.groupId = req.user.groupId;
+  } else if (req.user.siteId && req.user.siteId.groupId) {
+    filter.groupId = req.user.siteId.groupId;
+  }
+  
   // Filtre par type d'établissement
   if (establishmentType) {
     filter.establishmentType = establishmentType;
@@ -30,12 +37,17 @@ const getSuppliers = asyncHandler(async (req, res) => {
     filter.$text = { $search: search };
   }
   
+  console.log('🔍 Filtre fournisseurs:', filter);
+  
   const suppliers = await Supplier.find(filter)
     .populate('createdBy', 'name email')
+    .populate('groupId', 'name')
     .sort({ createdAt: -1 });
   
+  console.log(`✅ ${suppliers.length} fournisseurs trouvés`);
+  
   res.json({
-            success: true,
+    success: true,
     count: suppliers.length,
     data: suppliers
   });
