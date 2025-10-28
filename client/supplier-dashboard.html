@@ -1153,9 +1153,11 @@
                     console.log('✅ Statut mis à jour');
                     showSupplierToast('✅ Statut de la commande mis à jour !', 'success');
                     
-                    // Recharger les commandes
-                    const dashboard = new SupplierDashboard();
-                    await dashboard.loadOrders();
+                    // 🔄 Recharger automatiquement la page après 1 seconde
+                    setTimeout(() => {
+                        console.log('🔄 Rechargement automatique de la page...');
+                        window.location.reload();
+                    }, 1000);
                 } else {
                     throw new Error('Erreur lors de la mise à jour du statut');
                 }
