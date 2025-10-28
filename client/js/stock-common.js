@@ -40,7 +40,8 @@ export async function loadStockData() {
       stockData = [];
       renderStockTable();
       alert('Session expirée. Veuillez vous reconnecter.');
-      window.location.href = '/index.html';
+      // 🧹 Forcer le nettoyage des cookies avant la reconnexion
+      window.location.href = '/index.html?forceCleanup=true';
     } else {
       const errorText = await response.text();
       console.error(`❌ Erreur ${response.status}:`, errorText);
