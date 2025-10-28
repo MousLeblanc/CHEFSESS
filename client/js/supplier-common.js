@@ -115,13 +115,23 @@ export async function browseSupplierProducts(supplierId, supplierName) {
   
   try {
     const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    };
+    
+    // Ajouter le token si disponible
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    console.log('🔑 Token présent:', !!token);
+    console.log('📡 Appel API:', `/api/products/supplier/${supplierId}`);
+    
     const response = await fetch(`/api/products/supplier/${supplierId}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      },
+      headers: headers,
       credentials: 'include' // 🔐 Envoie automatiquement le cookie
     });
     
