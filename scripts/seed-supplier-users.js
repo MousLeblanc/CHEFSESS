@@ -2,7 +2,6 @@
 // Crée des comptes utilisateurs pour les fournisseurs
 
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -56,15 +55,13 @@ async function seedSupplierUsers() {
         continue;
       }
 
-      // Hasher le mot de passe
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
-
+      // Ne pas hasher le mot de passe ici car le modèle User le fait automatiquement dans le hook pre('save')
+      
       // Créer le compte utilisateur
       const user = new User({
         name: supplier.contact || supplier.name.split(' ')[0],
         email: userEmail,
-        password: hashedPassword,
+        password: password, // Le mot de passe sera haché automatiquement par le modèle
         role: 'fournisseur',
         roles: ['SUPPLIER'],
         groupId: group._id,
