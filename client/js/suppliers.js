@@ -131,30 +131,16 @@ class RestaurantSupplierManager {
             console.log('📡 Réponse produits API:', response.status, response.statusText);
 
             if (response.ok) {
-                const data = await response.json();
-                console.log('✅ Produits reçus de l\'API:', data);
-                console.log('📊 Type de data:', typeof data, Array.isArray(data));
-                console.log('📊 data.length:', data.length);
+                const result = await response.json();
+                console.log('📡 Réponse de l\'API:', result);
                 
-                // Forcer la conversion en vrai tableau si nécessaire
-                let products = [];
+                // ✅ L'API retourne { success: true, count: X, data: [...] }
+                // On extrait TOUJOURS result.data
+                const products = result.data || result || [];
                 
-                if (Array.isArray(data)) {
-                    console.log('✅ C\'est déjà un tableau');
-                    products = data;
-                } else if (data && typeof data === 'object' && typeof data.length === 'number') {
-                    // Objet ressemblant à un tableau (avec length) - le convertir
-                    console.log('🔄 Conversion d\'un objet array-like en tableau');
-                    products = Array.from(data);
-                } else if (data.data) {
-                    console.log('✅ Extraction depuis data.data');
-                    products = Array.isArray(data.data) ? data.data : Array.from(data.data);
-                } else if (data.products) {
-                    console.log('✅ Extraction depuis data.products');
-                    products = Array.isArray(data.products) ? data.products : Array.from(data.products);
-                }
+                console.log('✅ Produits extraits:', Array.isArray(products), products.length, 'produits');
+                console.log('✅ Premier produit:', products[0]);
                 
-                console.log('✅ Produits finaux:', products.length, 'produits');
                 return products;
             } else {
                 console.warn('❌ Erreur lors du chargement des produits:', response.status);
