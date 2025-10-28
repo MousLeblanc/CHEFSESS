@@ -12,17 +12,29 @@ const router = express.Router();
 
 // Middleware pour vérifier si l'utilisateur peut voir les produits
 const canViewProducts = (req, res, next) => {
-  const allowedRoles = ['restaurant', 'resto', 'collectivite', 'fournisseur'];
-  const allowedUserRoles = ['GROUP_ADMIN', 'SITE_MANAGER'];
+  const allowedRoles = ['restaurant', 'resto', 'collectivite', 'fournisseur', 'groupe'];
+  const allowedUserRoles = ['GROUP_ADMIN', 'SITE_MANAGER', 'CHEF'];
   
-  if (allowedRoles.includes(req.user.role) || 
-      (req.user.roles && req.user.roles.some(r => allowedUserRoles.includes(r)))) {
-    next();
-  } else {
-    res.status(403).json({ 
-      message: 'Accès refusé.' 
-    });
+  // Autoriser si le rôle est dans la liste autorisée
+  if (allowedRoles.includes(req.user.role)) {
+    return next();
   }
+  
+  // Autoriser si l'utilisateur a un des rôles autorisés
+  if (req.user.roles && req.user.roles.some(r => allowedUserRoles.includes(r))) {
+    return next();
+  }
+  
+  // Autoriser si l'utilisateur a un siteId (c'est un utilisateur de site/EHPAD)
+  if (req.user.siteId) {
+    return next();
+  }
+  
+  // Sinon, refuser l'accès
+  res.status(403).json({ 
+    success: false,
+    message: 'Accès refusé. Vous devez être un site, un groupe ou un fournisseur pour voir les catalogues.' 
+  });
 };
 
 // --- Fournisseur : créer et gérer ses produits ---
