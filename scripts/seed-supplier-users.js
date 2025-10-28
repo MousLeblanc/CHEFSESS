@@ -36,17 +36,16 @@ async function seedSupplierUsers() {
     let skipped = 0;
 
     for (const supplier of suppliers) {
-      // Créer un email de connexion basé sur le nom du fournisseur
+      // Créer un email de connexion basé sur le nom du fournisseur (sans tirets ni espaces)
       const supplierNameSlug = supplier.name
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '') // Enlever les accents
-        .replace(/[^a-z0-9]/g, '-')      // Remplacer les caractères spéciaux par -
-        .replace(/-+/g, '-')              // Remplacer les --- par -
-        .replace(/^-|-$/g, '');           // Enlever les - au début et à la fin
+        .replace(/[^a-z0-9]/g, '')       // Enlever tous les caractères spéciaux (espaces, tirets, etc.)
+        .trim();
 
-      const userEmail = `${supplierNameSlug}@vulpiasupplier.com`;
-      const password = `${supplier.name.split(' ')[0]}2024!`; // Ex: "Poissonnerie2024!"
+      const userEmail = `${supplierNameSlug}@gmail.com`;
+      const password = supplierNameSlug; // Même chose que l'email sans @gmail.com
 
       // Vérifier si l'utilisateur existe déjà
       const existingUser = await User.findOne({ email: userEmail });
@@ -89,11 +88,11 @@ async function seedSupplierUsers() {
     console.log(`   📦 Total : ${created + skipped}`);
 
     console.log('\n🔐 INFORMATIONS DE CONNEXION :');
-    console.log('   📧 Format email : [nom-fournisseur]@vulpiasupplier.com');
-    console.log('   🔑 Format mot de passe : [PremierMot]2024!');
+    console.log('   📧 Format email : [nomfournisseursansespaces]@gmail.com');
+    console.log('   🔑 Format mot de passe : [nomfournisseursansespaces]');
     console.log('\n   Exemples:');
-    console.log('   - poissonnerie-la-mer-du-nord@vulpiasupplier.com / Poissonnerie2024!');
-    console.log('   - boucherie-artisanale-leroy@vulpiasupplier.com / Boucherie2024!');
+    console.log('   - poissonerielamerdunord@gmail.com / poissonerielamerdunord');
+    console.log('   - boucherieartisanaleleroy@gmail.com / boucherieartisanaleleroy');
 
     await mongoose.disconnect();
     console.log('\n✅ Déconnecté de MongoDB');
