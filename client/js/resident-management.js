@@ -95,63 +95,83 @@ class ResidentManager {
       return;
     }
 
-    container.innerHTML = this.residents.map(resident => this.renderResidentCard(resident)).join('');
+    // Afficher en grille avec 3 colonnes
+    container.innerHTML = `
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;">
+        ${this.residents.map(resident => this.renderResidentCard(resident)).join('')}
+      </div>
+    `;
   }
 
   renderResidentCard(resident) {
     const age = this.calculateAge(resident.dateOfBirth);
     const medicalSummary = this.getMedicalSummary(resident.nutritionalProfile);
     const isSelected = this.selectedResidents.has(resident._id);
+    const portionSize = resident.portionSize || 1;
 
     return `
       <div class="resident-card" style="
         background: ${isSelected ? '#e8f5e8' : '#fff'};
         border: 2px solid ${isSelected ? '#4caf50' : '#e0e0e0'};
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        padding: 0.9rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
         transition: all 0.3s ease;
         cursor: pointer;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
       " onclick="residentManager.toggleResidentSelection('${resident._id}')">
         
-        <div style="display: flex; justify-content: between; align-items: flex-start; margin-bottom: 1rem;">
-          <div style="flex: 1;">
-            <h3 style="margin: 0 0 0.5rem 0; color: #333; display: flex; align-items: center; gap: 0.5rem;">
-              ${isSelected ? '<i class="fas fa-check-circle" style="color: #4caf50;"></i>' : '<i class="fas fa-circle" style="color: #ccc;"></i>'}
-              ${resident.firstName} ${resident.lastName}
-              ${resident.roomNumber ? `<span style="background: #e3f2fd; color: #1976d2; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; margin-left: 0.5rem;">Ch. ${resident.roomNumber}</span>` : ''}
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.6rem;">
+          <div style="flex: 1; min-width: 0;">
+            <h3 style="margin: 0 0 0.3rem 0; color: #333; display: flex; align-items: center; gap: 0.4rem; font-size: 0.95rem; font-weight: 600;">
+              ${isSelected ? '<i class="fas fa-check-circle" style="color: #4caf50; font-size: 0.85rem;"></i>' : '<i class="fas fa-circle" style="color: #ccc; font-size: 0.85rem;"></i>'}
+              <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${resident.firstName} ${resident.lastName}</span>
             </h3>
-            <p style="margin: 0; color: #666; font-size: 0.9rem;">${age} ans</p>
+            <p style="margin: 0; color: #666; font-size: 0.75rem;">${age} ans ${resident.roomNumber ? `• Ch. ${resident.roomNumber}` : ''}</p>
           </div>
-          <div style="display: flex; gap: 0.5rem;">
+          <div style="display: flex; gap: 0.3rem;">
             <button onclick="event.stopPropagation(); residentManager.editResident('${resident._id}')" 
-                    style="background: #3498db; color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer;">
+                    style="background: #3498db; color: white; border: none; padding: 0.35rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
               <i class="fas fa-edit"></i>
             </button>
             <button onclick="event.stopPropagation(); residentManager.deleteResident('${resident._id}')" 
-                    style="background: #e74c3c; color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer;">
+                    style="background: #e74c3c; color: white; border: none; padding: 0.35rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
               <i class="fas fa-trash"></i>
             </button>
           </div>
         </div>
 
-        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-          <h4 style="margin: 0 0 0.5rem 0; color: #495057; font-size: 0.9rem;">
-            <i class="fas fa-stethoscope"></i> Profil médical
+        <!-- Sélecteur de portion -->
+        <div onclick="event.stopPropagation();" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 0.6rem; border-radius: 6px; margin-bottom: 0.6rem;">
+          <label style="display: block; margin-bottom: 0.3rem; color: white; font-size: 0.7rem; font-weight: 600;">
+            <i class="fas fa-utensils" style="font-size: 0.7rem;"></i> Taille de portion
+          </label>
+          <select onchange="residentManager.updatePortionSize('${resident._id}', this.value)" 
+                  style="width: 100%; padding: 0.4rem; border: none; border-radius: 4px; font-size: 0.75rem; font-weight: 600; background: white; color: #667eea; cursor: pointer;">
+            <option value="0.5" ${portionSize === 0.5 ? 'selected' : ''}>½ - Demi-portion</option>
+            <option value="1" ${portionSize === 1 ? 'selected' : ''}>1 - Portion normale</option>
+            <option value="2" ${portionSize === 2 ? 'selected' : ''}>2 - Double portion</option>
+          </select>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 0.6rem; border-radius: 6px; margin-bottom: 0.6rem; flex: 1;">
+          <h4 style="margin: 0 0 0.4rem 0; color: #495057; font-size: 0.75rem; font-weight: 600;">
+            <i class="fas fa-stethoscope" style="font-size: 0.7rem;"></i> Profil médical
           </h4>
-          <p style="margin: 0; color: #666; font-size: 0.85rem; line-height: 1.4;">
+          <p style="margin: 0; color: #666; font-size: 0.7rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
             ${medicalSummary || 'Aucune information médicale spécifique'}
           </p>
         </div>
 
         ${resident.emergencyContact ? `
-          <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; border-left: 4px solid #ffc107;">
-            <h4 style="margin: 0 0 0.5rem 0; color: #856404; font-size: 0.9rem;">
-              <i class="fas fa-phone"></i> Contact d'urgence
+          <div style="background: #fff3cd; padding: 0.6rem; border-radius: 6px; border-left: 3px solid #ffc107;">
+            <h4 style="margin: 0 0 0.3rem 0; color: #856404; font-size: 0.7rem; font-weight: 600;">
+              <i class="fas fa-phone" style="font-size: 0.65rem;"></i> Contact d'urgence
             </h4>
-            <p style="margin: 0; color: #856404; font-size: 0.85rem;">
-              ${resident.emergencyContact.name} - ${resident.emergencyContact.phone}
+            <p style="margin: 0; color: #856404; font-size: 0.65rem;">
+              ${resident.emergencyContact.name}<br>${resident.emergencyContact.phone}
             </p>
           </div>
         ` : ''}
@@ -214,6 +234,35 @@ class ResidentManager {
     }
     this.renderResidents();
     this.updateGenerateButton();
+  }
+
+  async updatePortionSize(residentId, portionSize) {
+    try {
+      const response = await fetch(`/api/residents/${residentId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ portionSize: parseFloat(portionSize) })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la mise à jour de la portion');
+      }
+
+      // Mettre à jour localement
+      const resident = this.residents.find(r => r._id === residentId);
+      if (resident) {
+        resident.portionSize = parseFloat(portionSize);
+      }
+
+      const portionLabel = portionSize === '0.5' ? 'demi-portion' : portionSize === '2' ? 'double portion' : 'portion normale';
+      this.showToast(`Portion mise à jour : ${portionLabel}`, 'success');
+    } catch (error) {
+      console.error('Erreur:', error);
+      this.showToast('Erreur lors de la mise à jour de la portion', 'error');
+    }
   }
 
   updateGenerateButton() {
@@ -302,9 +351,19 @@ class ResidentManager {
             </div>
           </div>
 
-          <div style="margin-bottom: 1rem;">
-            <label>Numéro de chambre</label>
-            <input type="text" id="resident-room" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label>Numéro de chambre</label>
+              <input type="text" id="resident-room" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+            </div>
+            <div>
+              <label>Taille de portion</label>
+              <select id="resident-portion" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+                <option value="0.5">½ - Demi-portion</option>
+                <option value="1" selected>1 - Portion normale</option>
+                <option value="2">2 - Double portion</option>
+              </select>
+            </div>
           </div>
 
           <div style="margin-bottom: 1rem;">
@@ -411,6 +470,7 @@ class ResidentManager {
         dateOfBirth: document.getElementById('resident-birthdate').value,
         gender: document.getElementById('resident-gender').value,
         roomNumber: document.getElementById('resident-room').value,
+        portionSize: parseFloat(document.getElementById('resident-portion').value),
         nutritionalProfile: {
           medicalConditions: medicalConditions,
           allergies: allergies,

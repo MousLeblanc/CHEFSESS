@@ -170,6 +170,14 @@ const residentSchema = new mongoose.Schema({
     }
   },
   
+  // Taille de portion pour les repas
+  portionSize: {
+    type: Number,
+    enum: [0.5, 1, 2],
+    default: 1,
+    description: '0.5 = demi-portion, 1 = portion normale, 2 = double portion'
+  },
+  
   // Informations de contact d'urgence
   emergencyContact: {
     name: String,
