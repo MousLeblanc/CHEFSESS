@@ -1,5 +1,6 @@
 // client/JS/ehpad-dashboard.js
 import { loadSuppliersData, renderSuppliersList, updateCartCount, initSupplierTab } from './supplier-common.js';
+import { loadStockData } from './stock-common.js';
 
 console.log('🏥 EHPAD Dashboard JS chargé');
 
@@ -167,6 +168,18 @@ function initTabs() {
       // Ajouter la classe active au bouton et contenu sélectionné
       btn.classList.add('active');
       document.getElementById(`${tab}-tab`).classList.add('active');
+      
+      // 📦 Charger le stock quand l'onglet Stock est sélectionné
+      if (tab === 'stock') {
+        console.log('📦 Chargement du stock pour l\'onglet Stock');
+        loadStockData();
+      }
+      
+      // 🚚 Charger les fournisseurs quand l'onglet Fournisseurs est sélectionné
+      if (tab === 'suppliers') {
+        console.log('🚚 Chargement des fournisseurs');
+        loadSuppliersData();
+      }
     });
   });
 }

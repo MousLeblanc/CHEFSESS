@@ -700,3 +700,5 @@ export function initStockTab() {
   loadStockData();
 }
 
+// 🌐 Exposer loadStockData à window pour les autres scripts
+window.loadStockData = loadStockData;
