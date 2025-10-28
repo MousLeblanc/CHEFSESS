@@ -18,17 +18,9 @@ const getSuppliers = asyncHandler(async (req, res) => {
   // Construction du filtre
   let filter = {};
   
-  // Filtrer par groupe si l'utilisateur a un groupId
-  // Exception: Les GROUP_ADMIN peuvent voir tous les fournisseurs de leur groupe
-  if (req.user.groupId) {
-    filter.groupId = req.user.groupId;
-    console.log('🔍 Filtre par req.user.groupId:', req.user.groupId);
-  } else if (req.user.siteId && req.user.siteId.groupId) {
-    filter.groupId = req.user.siteId.groupId;
-    console.log('🔍 Filtre par req.user.siteId.groupId:', req.user.siteId.groupId);
-  } else {
-    console.log('⚠️ Aucun groupId trouvé - récupération de TOUS les fournisseurs');
-  }
+  // ✅ Les fournisseurs sont INDÉPENDANTS des groupes
+  // Tous les sites peuvent voir tous les fournisseurs
+  console.log('📦 Récupération de TOUS les fournisseurs (pas de filtre par groupe)');
   
   // Filtre par type d'établissement
   if (establishmentType) {
