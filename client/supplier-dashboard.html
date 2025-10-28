@@ -758,8 +758,13 @@
                     });
 
                     if (response.ok) {
-                        const products = await response.json();
-                        console.log('✅ Produits chargés:', products);
+                        const result = await response.json();
+                        console.log('📡 Réponse API:', result);
+                        
+                        // ✅ L'API retourne { success: true, count: X, data: [...] }
+                        const products = result.data || result || [];
+                        console.log('✅ Produits extraits:', products);
+                        
                         this.displayProducts(products);
                         
                         // Mettre à jour le compteur
