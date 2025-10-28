@@ -1153,11 +1153,12 @@
                     console.log('✅ Statut mis à jour');
                     showSupplierToast('✅ Statut de la commande mis à jour !', 'success');
                     
-                    // 🔄 Recharger automatiquement la page après 1 seconde
+                    // 🔄 Recharger automatiquement avec un hard refresh après 2 secondes
                     setTimeout(() => {
-                        console.log('🔄 Rechargement automatique de la page...');
-                        window.location.reload();
-                    }, 1000);
+                        console.log('🔄 Rechargement automatique (hard refresh)...');
+                        // Force un hard refresh en ajoutant un timestamp à l'URL
+                        window.location.href = window.location.href.split('?')[0] + '?refresh=' + Date.now();
+                    }, 2000);
                 } else {
                     throw new Error('Erreur lors de la mise à jour du statut');
                 }
