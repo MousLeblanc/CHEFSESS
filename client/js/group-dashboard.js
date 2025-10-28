@@ -1589,20 +1589,10 @@ class GroupDashboard {
 
         try {
             // Récupérer le nombre de résidents pour ce site
-            const response = await fetch(`/api/residents/site/${siteId}`, {
+            const response = await fetch(`/api/residents?siteId=${siteId}`, {
                 credentials: 'include'
             });
-            const result = response.ok ? await response.json() : { data: [] };
-            const residents = result.data || [];
-
-            // Formater l'adresse si c'est un objet
-            const formatAddress = (addr) => {
-                if (!addr) return 'Non renseignée';
-                if (typeof addr === 'string') return addr;
-                const parts = [addr.street, addr.postalCode, addr.city, addr.country]
-                    .filter(Boolean);
-                return parts.length > 0 ? parts.join(', ') : 'Non renseignée';
-            };
+            const residents = response.ok ? await response.json() : [];
 
             // Créer la modal de visualisation
             const modalHtml = `
@@ -1629,9 +1619,9 @@ class GroupDashboard {
                                 <div style="background: #e8f4f8; padding: 1.5rem; border-radius: 8px;">
                                     <h3 style="margin: 0 0 1rem 0; color: #2980b9;">📞 Coordonnées</h3>
                                     <div style="display: grid; gap: 0.75rem;">
-                                        <div><strong>Adresse:</strong> ${formatAddress(site.address)}</div>
-                                        <div><strong>Téléphone:</strong> ${site.contact?.phone || 'À définir'}</div>
-                                        <div><strong>Email:</strong> ${site.contact?.email || 'À définir'}</div>
+                                        <div><strong>Adresse:</strong> ${site.address || 'Non renseignée'}</div>
+                                        <div><strong>Téléphone:</strong> ${site.contact?.phone || 'Non renseigné'}</div>
+                                        <div><strong>Email:</strong> ${site.contact?.email || 'Non renseigné'}</div>
                                     </div>
                                 </div>
 
@@ -1682,15 +1672,6 @@ class GroupDashboard {
             return;
         }
 
-        // Formater l'adresse si c'est un objet
-        const formatAddress = (addr) => {
-            if (!addr) return '';
-            if (typeof addr === 'string') return addr;
-            const parts = [addr.street, addr.postalCode, addr.city, addr.country]
-                .filter(Boolean);
-            return parts.join(', ');
-        };
-
         // Créer la modal d'édition
         const modalHtml = `
             <div class="modal-overlay" id="edit-site-modal" style="display: flex;">
@@ -1711,7 +1692,7 @@ class GroupDashboard {
                                 <!-- Adresse -->
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Adresse</label>
-                                    <textarea name="address" class="form-control" rows="3">${formatAddress(site.address)}</textarea>
+                                    <textarea name="address" class="form-control" rows="3">${site.address || ''}</textarea>
                                 </div>
 
                                 <!-- Téléphone du site -->
