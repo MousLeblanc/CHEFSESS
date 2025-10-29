@@ -64,6 +64,7 @@
       <button class="tab-btn" data-tab="recipe-generator"><i class="fas fa-magic"></i> Générateur IA</button>
       <button class="tab-btn" data-tab="stock"><i class="fas fa-boxes"></i> Stock</button>
       <button class="tab-btn" data-tab="suppliers"><i class="fas fa-truck"></i> Fournisseurs</button>
+      <button class="tab-btn" data-tab="foodcost"><i class="fas fa-chart-line"></i> Food Cost</button>
     </div>
 
     <!-- Onglet Menus -->
@@ -309,6 +310,29 @@
         </div>
       </div>
     </div>
+
+    <!-- Onglet Food Cost -->
+    <div id="foodcost-tab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-chart-line"></i> Suivi du Food Cost</h2>
+        
+        <!-- Statistiques globales -->
+        <div id="foodcost-stats"></div>
+        
+        <!-- Actions -->
+        <div style="display: flex; gap: 1rem; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+          <h3 style="margin: 0;"><i class="fas fa-calendar-alt"></i> Périodes de suivi</h3>
+          <button id="create-period-btn" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nouvelle période
+          </button>
+        </div>
+        
+        <!-- Liste des périodes -->
+        <div id="foodcost-periods" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
+          <!-- Les périodes seront chargées dynamiquement -->
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- 🧹 Script de nettoyage des anciens tokens (doit être chargé en premier) -->
@@ -320,6 +344,7 @@
   <script type="module" src="JS/ehpad-dashboard.js"></script>
   <script type="module" src="JS/resident-management.js"></script>
   <script src="js/recipe-generator.js"></script>
+  <script src="js/foodcost-manager.js"></script>
   <script src="js/init.js"></script>
   <!-- Système de génération intelligente de menus -->
   <script src="js/intelligent-menu-generator.js"></script>

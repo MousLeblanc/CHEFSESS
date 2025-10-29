@@ -35,6 +35,7 @@ import siteRoutes from "./routes/siteRoutes.js";
 import initRoutes from "./routes/initRoutes.js";
 import customMenuRoutes from "./routes/customMenuRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import foodCostRoutes from "./routes/foodCostRoutes.js";
 
 // --- OpenAI client ---
 import openai from "./services/openaiClient.js";
@@ -98,6 +99,7 @@ app.use("/api/menus-sync", menuSyncRoutes);
 app.use("/api/sites", siteRoutes);
 app.use("/api/init", initRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/foodcost", foodCostRoutes);
 
 // === HEALTH CHECK ===
 app.get("/api/health", (req, res) => {
