@@ -137,12 +137,24 @@ const residentSchema = new mongoose.Schema({
       }
     },
     
-    // Texture et mastication
+    // Texture et mastication (IDDSI - International Dysphagia Diet Standardisation Initiative)
     texturePreferences: {
       consistency: {
         type: String,
-        enum: ['normale', 'mixée', 'hachée', 'liquide', 'purée'],
-        default: 'normale'
+        enum: [
+          'iddsi_7',      // Normal facile à mastiquer
+          'iddsi_6',      // Petites morceaux tendres
+          'iddsi_5',      // Haché lubrifié
+          'iddsi_4',      // Purée lisse / Très épais (boisson)
+          'iddsi_3',      // Purée fluide / Modérément épais (boisson)
+          'iddsi_2',      // Légèrement épais (boisson)
+          'iddsi_1',      // Très légèrement épais (boisson)
+          'iddsi_0',      // Liquide
+          'finger_food',  // Finger Food
+          // Anciennes valeurs pour compatibilité
+          'normale', 'mixée', 'hachée', 'liquide', 'purée'
+        ],
+        default: 'iddsi_7'
       },
       difficulty: {
         type: String,

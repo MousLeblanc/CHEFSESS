@@ -207,8 +207,24 @@ class ResidentManager {
     
     // Texture
     if (nutritionalProfile.texturePreferences?.consistency && 
-        nutritionalProfile.texturePreferences.consistency !== 'normale') {
-      summary.push(`Texture: ${nutritionalProfile.texturePreferences.consistency}`);
+        nutritionalProfile.texturePreferences.consistency !== 'normale' &&
+        nutritionalProfile.texturePreferences.consistency !== 'iddsi_7') {
+      const textureLabels = {
+        'iddsi_6': 'IDDSI 6 - Morceaux tendres',
+        'iddsi_5': 'IDDSI 5 - Haché',
+        'iddsi_4': 'IDDSI 4 - Purée lisse',
+        'iddsi_3': 'IDDSI 3 - Purée fluide',
+        'iddsi_2': 'IDDSI 2 - Légèrement épais',
+        'iddsi_1': 'IDDSI 1 - Très légèrement épais',
+        'iddsi_0': 'IDDSI 0 - Liquide',
+        'finger_food': 'Finger Food',
+        'mixée': 'Mixée',
+        'hachée': 'Hachée',
+        'liquide': 'Liquide',
+        'purée': 'Purée'
+      };
+      const textureLabel = textureLabels[nutritionalProfile.texturePreferences.consistency] || nutritionalProfile.texturePreferences.consistency;
+      summary.push(`Texture: ${textureLabel}`);
     }
     
     // Allergies
@@ -416,32 +432,22 @@ class ResidentManager {
             </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-            <div>
-              <label>Texture (IDDSI Aliments)</label>
-              <select id="resident-texture" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
-                <option value="iddsi_7">IDDSI 7 - Normal facile à mastiquer</option>
-                <option value="iddsi_6">IDDSI 6 - Petites morceaux tendres</option>
-                <option value="iddsi_5">IDDSI 5 - Haché lubrifié</option>
-                <option value="iddsi_4">IDDSI 4 - Purée lisse</option>
-                <option value="iddsi_3">IDDSI 3 - Purée fluide</option>
-                <option value="finger_food">Finger Food</option>
-              </select>
-            </div>
-            <div>
-              <label>Déglutition (IDDSI)</label>
-              <select id="resident-swallowing" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
-                <option value="iddsi_7">IDDSI 7 - Normal facile à mastiquer</option>
-                <option value="iddsi_6">IDDSI 6 - Petites morceaux tendres</option>
-                <option value="iddsi_5">IDDSI 5 - Haché lubrifié</option>
-                <option value="iddsi_4">IDDSI 4 - Purée lisse/Très épais (boisson)</option>
-                <option value="iddsi_3">IDDSI 3 - Purée fluide/Modérément épais (boisson)</option>
-                <option value="iddsi_2">IDDSI 2 - Légèrement épais (boisson)</option>
-                <option value="iddsi_1">IDDSI 1 - Très légèrement épais (boisson)</option>
-                <option value="iddsi_0">IDDSI 0 - Liquide</option>
-                <option value="finger_food">Finger Food</option>
-              </select>
-            </div>
+          <div style="margin-bottom: 1rem;">
+            <label>Texture / Consistance (IDDSI) *</label>
+            <select id="resident-texture" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+              <option value="iddsi_7">IDDSI 7 - Normal facile à mastiquer</option>
+              <option value="iddsi_6">IDDSI 6 - Petites morceaux tendres</option>
+              <option value="iddsi_5">IDDSI 5 - Haché lubrifié</option>
+              <option value="iddsi_4">IDDSI 4 - Purée lisse / Très épais (boisson)</option>
+              <option value="iddsi_3">IDDSI 3 - Purée fluide / Modérément épais (boisson)</option>
+              <option value="iddsi_2">IDDSI 2 - Légèrement épais (boisson)</option>
+              <option value="iddsi_1">IDDSI 1 - Très légèrement épais (boisson)</option>
+              <option value="iddsi_0">IDDSI 0 - Liquide</option>
+              <option value="finger_food">Finger Food</option>
+            </select>
+            <small style="color: #666; font-size: 0.85rem; margin-top: 0.3rem; display: block;">
+              <i class="fas fa-info-circle"></i> IDDSI 0-4 pour liquides/boissons, IDDSI 3-7 pour aliments
+            </small>
           </div>
 
           <div style="margin-bottom: 1rem;">
@@ -495,16 +501,10 @@ class ResidentManager {
         });
       }
       
-      // Sélectionner la texture
+      // Sélectionner la texture IDDSI
       if (np.texturePreferences?.consistency) {
         const textureSelect = modal.querySelector('#resident-texture');
         if (textureSelect) textureSelect.value = np.texturePreferences.consistency;
-      }
-      
-      // Sélectionner la déglutition
-      if (np.texturePreferences?.notes) {
-        const swallowingSelect = modal.querySelector('#resident-swallowing');
-        if (swallowingSelect) swallowingSelect.value = np.texturePreferences.notes;
       }
       
       // Notes
@@ -568,7 +568,7 @@ class ResidentManager {
           texturePreferences: {
             consistency: document.getElementById('resident-texture').value,
             difficulty: 'aucune',
-            notes: document.getElementById('resident-swallowing')?.value || ''
+            notes: ''
           },
           nutritionalNeeds: {},
           hydration: {},
