@@ -369,7 +369,7 @@ class FoodCostManager {
             <i class="fas ${this.getStatusIcon(period.analysis?.status || 'ok')}" style="color: ${this.getStatusColor(period.analysis?.status || 'ok')};"></i>
             Détails - ${this.getPeriodLabel(period.period)}
           </h2>
-          <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+          <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 2rem; font-weight: bold; color: #333; cursor: pointer; padding: 0; width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center;">&times;</button>
         </div>
         <div class="modal-body">
           <p><strong>Période:</strong> ${new Date(period.startDate).toLocaleDateString('fr-FR')} - ${new Date(period.endDate).toLocaleDateString('fr-FR')}</p>

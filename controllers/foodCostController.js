@@ -172,6 +172,11 @@ export const createFoodCost = async (req, res) => {
     
     // Calculer les dépenses des commandes pour cette période
     // 🎯 Filtrer par date de LIVRAISON, pas date de création !
+    console.log(`\n📊 ========== RECHERCHE COMMANDES ==========`);
+    console.log(`🗓️  Période: ${start.toLocaleDateString('fr-FR')} - ${end.toLocaleDateString('fr-FR')}`);
+    console.log(`🏥 Site ID: ${targetSiteId}`);
+    console.log(`🔍 Recherche des commandes livrées entre ces dates...\n`);
+    
     const orders = await Order.find({
       siteId: targetSiteId,
       $or: [
@@ -192,8 +197,33 @@ export const createFoodCost = async (req, res) => {
       ]
     });
     
-    console.log(`📊 Recherche commandes livrées entre ${start.toLocaleDateString('fr-FR')} et ${end.toLocaleDateString('fr-FR')}`);
-    console.log(`📦 ${orders.length} commande(s) livrée(s) trouvée(s)`);
+    console.log(`📦 ${orders.length} commande(s) trouvée(s) avec dates.delivered dans la période`);
+    
+    // Diagnostic supplémentaire si aucune commande
+    if (orders.length === 0) {
+      console.log(`\n⚠️  AUCUNE COMMANDE TROUVÉE ! Diagnostic:`);
+      
+      const ordersWithoutDate = await Order.find({
+        siteId: targetSiteId,
+        status: { $in: ['delivered', 'completed'] },
+        'dates.delivered': { $exists: false }
+      });
+      console.log(`   ❌ Commandes livrées SANS dates.delivered: ${ordersWithoutDate.length}`);
+      
+      if (ordersWithoutDate.length > 0) {
+        console.log(`\n   📋 Commandes sans date de livraison:`);
+        ordersWithoutDate.slice(0, 5).forEach(o => {
+          console.log(`      - ${o.orderNumber}: créée le ${o.createdAt?.toLocaleDateString('fr-FR')}`);
+        });
+        if (ordersWithoutDate.length > 5) {
+          console.log(`      ... et ${ordersWithoutDate.length - 5} autre(s)`);
+        }
+        console.log(`\n   💡 SOLUTION:`);
+        console.log(`      → Aller sur /admin-tools.html`);
+        console.log(`      → Cliquer "📅 Corriger les dates de livraison"`);
+        console.log(`      → Puis recalculer cette période Food Cost`);
+      }
+    }
     
     const ordersTotal = orders.reduce((sum, order) => {
       // Utiliser pricing.total car le modèle Order stocke le total dans pricing.total
@@ -439,6 +469,11 @@ export const recalculateOrders = async (req, res) => {
     
     // Recalculer les commandes
     // 🎯 Filtrer par date de LIVRAISON, pas date de création !
+    console.log(`\n🔄 ========== RECALCUL FOOD COST ==========`);
+    console.log(`📊 Période: ${foodCost.startDate.toLocaleDateString('fr-FR')} - ${foodCost.endDate.toLocaleDateString('fr-FR')}`);
+    console.log(`🏥 Site ID: ${foodCost.siteId}`);
+    console.log(`🔍 Recherche des commandes livrées entre ces dates...\n`);
+    
     const orders = await Order.find({
       siteId: foodCost.siteId,
       $or: [
@@ -459,9 +494,31 @@ export const recalculateOrders = async (req, res) => {
       ]
     });
     
-    console.log(`\n🔄 RECALCUL FOOD COST`);
-    console.log(`📊 Période: ${foodCost.startDate.toLocaleDateString('fr-FR')} - ${foodCost.endDate.toLocaleDateString('fr-FR')}`);
-    console.log(`📦 ${orders.length} commande(s) livrée(s) dans cette période`);
+    console.log(`📦 ${orders.length} commande(s) trouvée(s) avec dates.delivered dans la période`);
+    
+    // Diagnostic supplémentaire
+    if (orders.length === 0) {
+      console.log(`\n⚠️  AUCUNE COMMANDE TROUVÉE ! Diagnostic:`);
+      
+      // Vérifier s'il y a des commandes livrées sans dates.delivered
+      const ordersWithoutDate = await Order.find({
+        siteId: foodCost.siteId,
+        status: { $in: ['delivered', 'completed'] },
+        'dates.delivered': { $exists: false }
+      });
+      console.log(`   ❌ Commandes livrées SANS dates.delivered: ${ordersWithoutDate.length}`);
+      
+      if (ordersWithoutDate.length > 0) {
+        console.log(`\n   📋 Commandes sans date de livraison:`);
+        ordersWithoutDate.forEach(o => {
+          console.log(`      - ${o.orderNumber}: créée le ${o.createdAt?.toLocaleDateString('fr-FR')}, MAJ le ${o.updatedAt?.toLocaleDateString('fr-FR')}`);
+        });
+        console.log(`\n   ⚠️  ACTION REQUISE:`);
+        console.log(`      → Aller sur /admin-tools.html`);
+        console.log(`      → Cliquer "📅 Corriger les dates de livraison"`);
+        console.log(`      → Puis relancer ce recalcul`);
+      }
+    }
     
     foodCost.expenses.orders = orders.reduce((sum, order) => {
       // Utiliser pricing.total car le modèle Order stocke le total dans pricing.total
