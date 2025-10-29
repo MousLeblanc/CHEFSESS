@@ -79,9 +79,10 @@ class SupplierDashboard {
     async loadStats() {
         try {
             const response = await fetch('/api/supplier/stats', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+}
             });
 
             if (response.ok) {
@@ -98,9 +99,10 @@ class SupplierDashboard {
     async loadProducts() {
         try {
             const response = await fetch('/api/products/mine', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+}
             });
 
             console.log('📡 Réponse API products/mine:', response.status);
@@ -132,9 +134,10 @@ class SupplierDashboard {
     async loadOrders() {
         try {
             const response = await fetch('/api/orders/supplier', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+}
             });
 
             if (response.ok) {
@@ -174,11 +177,12 @@ class SupplierDashboard {
             console.log(`🌐 Envoi ${method} vers ${url}`);
 
             const response = await fetch(url, {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+},
                 body: JSON.stringify(formData)
             });
 
@@ -314,9 +318,10 @@ class SupplierDashboard {
 window.editProduct = async function(productId) {
     try {
         const response = await fetch(`/api/products/${productId}`, {
+            credentials: 'include', // 🍪 Cookie HTTP-Only
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+                // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+}
         });
         
         if (response.ok) {
@@ -354,10 +359,11 @@ window.deleteProduct = async function(productId) {
     
     try {
         const response = await fetch(`/api/products/${productId}`, {
+            credentials: 'include', // 🍪 Cookie HTTP-Only
             method: 'DELETE',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+                // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+}
         });
         
         if (response.ok) {

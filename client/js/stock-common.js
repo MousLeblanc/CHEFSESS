@@ -622,7 +622,7 @@ export async function loadDemoStock() {
   try {
     console.log('📦 Chargement du stock de démonstration...');
     
-    const token = localStorage.getItem('token');
+    // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
     if (!token) {
       console.error('❌ Token non trouvé');
       showToast('Veuillez vous reconnecter', 'error');
@@ -633,10 +633,11 @@ export async function loadDemoStock() {
     showToast('⏳ Chargement de 83 ingrédients en cours...', 'info');
     
     const response = await fetch('/api/stock/seed', {
+      credentials: 'include', // 🍪 Cookie HTTP-Only
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
       }
     });
     

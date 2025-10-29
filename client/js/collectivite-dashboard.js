@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function loadStockData() {
         try {
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             if (!token) {
                 console.error('❌ Token d\'authentification manquant');
                 console.log('🔄 Utilisation des données mockées...');
@@ -205,10 +205,11 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('🔄 Chargement du stock depuis l\'API...');
 
             const response = await fetch('/api/stock', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
                 }
             });
 
@@ -643,7 +644,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ajout d'un article au stock
     async function addStockItem(form) {
         try {
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             if (!token) {
                 console.log('🔄 Mode mock: ajout d\'article local');
                 addMockStockItem(form);
@@ -664,10 +665,11 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             const response = await fetch('/api/stock', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(stockData)
             });
@@ -736,7 +738,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadSuppliersData() {
         console.log('🔄 Chargement des fournisseurs depuis l\'API...');
         try {
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             if (!token) {
                 console.error('❌ Token d\'authentification manquant');
                 console.log('🔄 Utilisation des données mockées...');
@@ -748,19 +750,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Charger les fournisseurs enregistrés par les collectivités
             const suppliersResponse = await fetch('/api/suppliers', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
                 }
             });
 
             // Charger aussi les fournisseurs actifs (ceux qui se sont connectés)
             const activeSuppliersResponse = await fetch('/api/users/suppliers', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
                 }
             });
 
@@ -1034,7 +1038,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function addSupplier(form) {
         try {
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             if (!token) {
                 console.log('🔄 Mode mock: ajout de fournisseur local');
                 addMockSupplier(form);
@@ -1052,10 +1056,11 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             const response = await fetch('/api/suppliers', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(supplierData)
             });
@@ -1110,7 +1115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fonctions globales pour le stock et les fournisseurs
     window.editStockItem = async function(id) {
         try {
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             if (!token) {
                 console.log('🔄 Mode mock: modification locale');
                 editMockStockItem(id);
@@ -1119,10 +1124,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Récupérer les données de l'article
             const response = await fetch(`/api/stock/${id}`, {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
                 }
             });
 
@@ -1242,7 +1248,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function updateStockItem(id, form) {
         try {
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             if (!token) {
                 console.log('🔄 Mode mock: modification locale');
                 updateMockStockItem(id, form);
@@ -1263,10 +1269,11 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             const response = await fetch(`/api/stock/${id}`, {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(stockData)
             });
@@ -1322,7 +1329,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             if (!token) {
                 console.log('🔄 Mode mock: suppression locale');
                 deleteMockStockItem(id);
@@ -1330,10 +1337,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const response = await fetch(`/api/stock/${id}`, {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
                 }
             });
 
@@ -1370,7 +1378,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     window.editSupplier = async function(id) {
         try {
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             if (!token) {
                 alert('Token d\'authentification manquant');
                 return;
@@ -1378,10 +1386,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Récupérer les données du fournisseur
             const response = await fetch(`/api/suppliers/${id}`, {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
                 }
             });
 
@@ -1458,7 +1467,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function updateSupplier(id, form) {
         try {
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             if (!token) {
                 alert('Token d\'authentification manquant');
                 return;
@@ -1475,10 +1484,11 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             const response = await fetch(`/api/suppliers/${id}`, {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(supplierData)
             });
@@ -1508,7 +1518,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             if (!token) {
                 console.log('🔄 Mode mock: suppression locale');
                 deleteMockSupplier(id);
@@ -1516,10 +1526,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const response = await fetch(`/api/suppliers/${id}`, {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
                 }
             });
 
@@ -1563,9 +1574,10 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // Charger les produits du fournisseur
             const response = await fetch(`/api/products/supplier/${supplierId}`, {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+}
             });
             
             let products = [];
@@ -1830,13 +1842,14 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             
             try {
-                const token = localStorage.getItem('token');
+                // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
                 const response = await fetch('/api/orders', {
+                    credentials: 'include', // 🍪 Cookie HTTP-Only
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
+                        // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+},
                     body: JSON.stringify(orderData)
                 });
                 
@@ -2162,11 +2175,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const response = await fetch('/api/menus/generate-collectivite', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+},
                 body: JSON.stringify(payload)
             });
 
@@ -2307,13 +2321,14 @@ window.saveMenu = function(menuIndex) {
     if (!menu) return;
     
     // Appeler l'API de sauvegarde
-    const token = localStorage.getItem('token');
+    // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
     fetch('/api/menus/save', {
+        credentials: 'include', // 🍪 Cookie HTTP-Only
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
+            // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+},
         body: JSON.stringify({
             title: menu.nom,
             theme: 'Collectivité',
@@ -2338,13 +2353,14 @@ window.saveMenu = function(menuIndex) {
 // Fonction pour déduire les ingrédients du stock
 async function deductStockItems(itemsToDeduct) {
     try {
-        const token = localStorage.getItem('token');
+        // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
         const response = await fetch('/api/stock/deduct', {
+            credentials: 'include', // 🍪 Cookie HTTP-Only
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
+                // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+},
             body: JSON.stringify({ itemsToDeduct })
         });
         
@@ -2573,7 +2589,7 @@ window.checkoutCart = async function() {
     });
     
     try {
-        const token = localStorage.getItem('token');
+        // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
         const orderResults = [];
         
         // Créer une commande pour chaque fournisseur
@@ -2588,11 +2604,12 @@ window.checkoutCart = async function() {
             };
             
             const response = await fetch('/api/orders', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+},
                 body: JSON.stringify(orderData)
             });
             
@@ -2632,11 +2649,12 @@ window.showMyOrders = async function() {
     console.log('📋 Affichage de mes commandes...');
     
     try {
-        const token = localStorage.getItem('token');
+        // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
         const response = await fetch('/api/orders', {
+            credentials: 'include', // 🍪 Cookie HTTP-Only
             headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
             }
         });
         
@@ -2810,12 +2828,13 @@ window.cancelMyOrder = async function(orderId) {
     }
     
     try {
-        const token = localStorage.getItem('token');
+        // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
         const response = await fetch(`/api/orders/${orderId}/cancel`, {
+            credentials: 'include', // 🍪 Cookie HTTP-Only
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
             }
         });
         

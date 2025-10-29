@@ -334,17 +334,18 @@ const elements = {
 // --- FONCTIONS DE GESTION DU STOCK (localStorage pour l'instant) ---
 async function loadStockFromAPI() {
     try {
-        const token = localStorage.getItem('token');
+        // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
         if (!token) {
             console.warn('❌ Pas de token - Utilisation du localStorage');
             return JSON.parse(localStorage.getItem('stock') || "[]");
         }
 
         const response = await fetch('/api/stock', {
+            credentials: 'include', // 🍪 Cookie HTTP-Only
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
+                // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json',
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 'Pragma': 'no-cache',
                 'Expires': '0'

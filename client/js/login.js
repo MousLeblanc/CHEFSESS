@@ -17,9 +17,8 @@ async function handleLogin(email, password) {
       throw new Error(data.message || `Erreur HTTP ${res.status}`);
     }
 
-    // 🔐 Stocker le token ET les données utilisateur
-    // Le token est aussi dans un cookie HttpOnly, mais on le stocke aussi en localStorage pour compatibilité
-    localStorage.setItem('token', data.token);
+    // 🍪 Token géré via cookie HTTP-Only (plus sécurisé)
+    // On stocke uniquement les données utilisateur
     localStorage.setItem('user', JSON.stringify(data.user));
 
     showToast("Connexion réussie!", "success");

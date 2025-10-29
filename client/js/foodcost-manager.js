@@ -16,11 +16,12 @@ class FoodCostManager {
   // Charger les statistiques globales
   async loadStats() {
     try {
-      const token = localStorage.getItem('token');
+      // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
       const response = await fetch('/api/foodcost/stats/summary', {
+        credentials: 'include', // 🍪 Cookie HTTP-Only
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+}
       });
 
       if (!response.ok) throw new Error('Erreur lors du chargement des statistiques');
@@ -129,11 +130,12 @@ class FoodCostManager {
   // Charger les périodes de food cost
   async loadPeriods() {
     try {
-      const token = localStorage.getItem('token');
+      // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
       const response = await fetch('/api/foodcost', {
+        credentials: 'include', // 🍪 Cookie HTTP-Only
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+}
       });
 
       if (!response.ok) throw new Error('Erreur lors du chargement des périodes');
@@ -299,7 +301,7 @@ class FoodCostManager {
   // Créer une nouvelle période
   async createPeriod(modal) {
     try {
-      const token = localStorage.getItem('token');
+      // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
       
       const formData = {
         period: document.getElementById('period-type').value,
@@ -313,10 +315,11 @@ class FoodCostManager {
       };
 
       const response = await fetch('/api/foodcost', {
+        credentials: 'include', // 🍪 Cookie HTTP-Only
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
         },
         body: JSON.stringify(formData)
       });
@@ -339,11 +342,12 @@ class FoodCostManager {
   // Voir les détails d'une période
   async viewPeriodDetails(periodId) {
     try {
-      const token = localStorage.getItem('token');
+      // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
       const response = await fetch(`/api/foodcost/${periodId}`, {
+        credentials: 'include', // 🍪 Cookie HTTP-Only
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+}
       });
 
       if (!response.ok) throw new Error('Erreur lors du chargement des détails');
@@ -508,7 +512,7 @@ class FoodCostManager {
   // Ajouter une dépense manuelle
   async addExpense(periodId, modal) {
     try {
-      const token = localStorage.getItem('token');
+      // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
       
       const formData = {
         date: document.getElementById('expense-date').value,
@@ -521,10 +525,11 @@ class FoodCostManager {
       };
 
       const response = await fetch(`/api/foodcost/${periodId}/expense`, {
+        credentials: 'include', // 🍪 Cookie HTTP-Only
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
         },
         body: JSON.stringify(formData)
       });
@@ -552,7 +557,7 @@ class FoodCostManager {
   // Recalculer les commandes d'une période
   async recalculateOrders(periodId) {
     try {
-      const token = localStorage.getItem('token');
+      // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
       
       // Confirmation
       if (!confirm('Recalculer les commandes fournisseurs pour cette période ?\n\nCela mettra à jour le total en utilisant le bon champ pricing.total.')) {
@@ -562,10 +567,11 @@ class FoodCostManager {
       console.log('🔄 Début recalcul pour période:', periodId);
       
       const response = await fetch(`/api/foodcost/${periodId}/recalculate`, {
+        credentials: 'include', // 🍪 Cookie HTTP-Only
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
         }
       });
 
@@ -614,7 +620,7 @@ class FoodCostManager {
   // Supprimer une période
   async deletePeriod(periodId) {
     try {
-      const token = localStorage.getItem('token');
+      // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
       
       // Confirmation
       if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette période ?\n\nCette action est irréversible !')) {
@@ -624,10 +630,11 @@ class FoodCostManager {
       console.log('🗑️ Suppression de la période:', periodId);
       
       const response = await fetch(`/api/foodcost/${periodId}`, {
+        credentials: 'include', // 🍪 Cookie HTTP-Only
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
         }
       });
 

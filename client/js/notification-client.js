@@ -172,7 +172,7 @@ class NotificationClient {
    */
   getToken() {
     // Essayer de récupérer le token depuis localStorage
-    const token = localStorage.getItem('token');
+    // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
     
     // Debug: décoder le token pour voir l'ID utilisateur
     if (token) {
@@ -387,7 +387,7 @@ window.NotificationClient = NotificationClient;
 // Auto-initialisation si un token est disponible
 if (typeof window !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('token');
+    // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
     if (token) {
       console.log('🔔 Initialisation automatique du client de notifications');
       window.notificationClient = new NotificationClient();

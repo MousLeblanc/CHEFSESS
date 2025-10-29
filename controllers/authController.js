@@ -166,16 +166,16 @@ export const login = asyncHandler(async (req, res) => {
       }
     }
     
-    // Envoyer les données utilisateur (pour localStorage côté client)
+    // 🍪 Token envoyé uniquement via cookie HTTP-Only (sécurisé)
+    // ❌ Plus de token dans le JSON pour éviter localStorage
     res.json({
       success: true,
-      token: token, // ✅ Ajout du token pour localStorage (compatibilité avec les anciens appels API)
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-        businessName: businessName, // ✅ Utilise le nom du Supplier si disponible
+        businessName: businessName,
         establishmentType: user.establishmentType,
         groupId: user.groupId,
         siteId: user.siteId,
@@ -227,15 +227,15 @@ export const refreshToken = asyncHandler(async (req, res) => {
       }
     }
     
+    // 🍪 Token envoyé uniquement via cookie HTTP-Only
     res.json({
       success: true,
-      token: newToken,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-        businessName: businessName, // ✅ Utilise le nom du Supplier si disponible
+        businessName: businessName,
         establishmentType: user.establishmentType
       }
     });

@@ -22,7 +22,7 @@ function isDateTomorrow(date) {
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DASHBOARD: DOMContentLoaded - Initialisation pour accueil.html");
 
-    const token = localStorage.getItem('token');
+    // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
     const userString = localStorage.getItem('user');
     let user = null;
 
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     if (user.role !== 'resto') {
         console.log(`DASHBOARD: Rôle ${user.role} non autorisé. Redirection.`);
-        localStorage.removeItem('token');
+        // 🍪 Token supprimé via cookie (géré par le backend)
         localStorage.removeItem('user');
         window.location.href = 'index.html';
         return;
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
         logoutBtn.addEventListener('click', function (e) {
             e.preventDefault();
             console.log("DASHBOARD: Déconnexion...");
-            localStorage.removeItem('token');
+            // 🍪 Token supprimé via cookie (géré par le backend)
             localStorage.removeItem('user');
             // Nettoyer les anciennes clés si elles existent encore pour une transition propre
             ['chaif-ses-authenticated', 'chaif-ses-user-id', 'chaif-ses-user-email', 'chaif-ses-user-name', 'chaif-ses-user-role', 'chaif-ses-session-start', 'redirect-count'].forEach(key => localStorage.removeItem(key));

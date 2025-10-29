@@ -229,7 +229,7 @@ class GroupDashboard {
      */
     async checkAuthentication() {
         try {
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             const headers = { 'Content-Type': 'application/json' };
             
             // Envoyer le token dans le header ET via cookies pour compatibilité
@@ -244,7 +244,7 @@ class GroupDashboard {
             
             if (res.status === 401) {
                 // Nettoyer localStorage avant de rediriger
-                localStorage.removeItem('token');
+                // 🍪 Token supprimé via cookie (géré par le backend)
                 localStorage.removeItem('user');
                 this.showToast("Session expirée, reconnexion nécessaire.", "warning");
                 setTimeout(() => window.location.href = "/", 1500);
@@ -1548,15 +1548,16 @@ class GroupDashboard {
                 costsChart.innerHTML = '<div class="loader" style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
             }
             
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             if (!token) {
                 throw new Error('Non connecté. Veuillez vous reconnecter.');
             }
             
             const response = await fetch('/api/foodcost/reports', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
                 }
             });
             
@@ -2040,7 +2041,7 @@ class GroupDashboard {
         }
         
         // 2️⃣ Nettoyer complètement le localStorage
-        localStorage.removeItem('token');
+        // 🍪 Token supprimé via cookie (géré par le backend)
         localStorage.removeItem('user');
         localStorage.removeItem('cart');
         
@@ -2060,11 +2061,12 @@ class GroupDashboard {
             this.showToast('🌱 Chargement des fournisseurs en cours...', 'info');
             
             const response = await fetch('/api/suppliers/seed', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.token}`
-                }
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+}
             });
             
             const data = await response.json();
@@ -2358,11 +2360,12 @@ class GroupDashboard {
             }
             
             const response = await fetch('/api/menu/generate-custom', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+},
                 body: JSON.stringify(payload)
             });
             
@@ -2431,17 +2434,18 @@ class GroupDashboard {
     
     async checkStockAvailability(menuResult, numberOfPeople) {
         try {
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             if (!token) {
                 return { allAvailable: false, missingCount: 0, items: [], message: 'Non connecté' };
             }
             
             // Récupérer le stock actuel
             const stockResponse = await fetch('/api/stock', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
                 }
             });
             
@@ -2909,7 +2913,7 @@ class GroupDashboard {
         try {
             console.log('🔍 deductFromStock appelé avec:', stockItems);
             
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             if (!token) {
                 console.error('❌ Token non disponible');
                 this.showToast('Vous devez être connecté', 'error');
@@ -2961,10 +2965,11 @@ class GroupDashboard {
             console.log('📤 Envoi de la déduction au serveur:', itemsToDeduct);
             
             const response = await fetch('/api/stock/deduct', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ itemsToDeduct: itemsToDeduct })
             });

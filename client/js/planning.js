@@ -63,11 +63,12 @@ menuList.appendChild(div);
 async function generateWeekPlanning(startDate) {
   try {
     const res = await fetch('/api/menus/generate', {
+      credentials: 'include', // 🍪 Cookie HTTP-Only
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0'
       },
@@ -133,10 +134,11 @@ document.querySelectorAll('.add-menu-btn').forEach(btn => {
 btn.addEventListener('click', async () => {
 const date = btn.dataset.date;
 const res = await fetch('/api/menus', {
+credentials: 'include', // 🍪 Cookie HTTP-Only
 method: 'POST',
 headers: {
 'Content-Type': 'application/json',
-'Authorization': `Bearer ${localStorage.getItem('token')}`,
+// 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
 'Cache-Control': 'no-cache, no-store, must-revalidate',
 'Pragma': 'no-cache',
 'Expires': '0'

@@ -10,10 +10,11 @@ export async function refreshUserData() {
 
   try {
     const response = await fetch('/api/users/me', {
+      credentials: 'include', // 🍪 Cookie HTTP-Only
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Cache-Control': 'no-cache'
+        // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Cache-Control': 'no-cache'
       }
     });
 
@@ -82,7 +83,7 @@ export async function logout() {
   
   // Nettoyer localStorage
   localStorage.removeItem('user');
-  localStorage.removeItem('token'); // Supprimer le token si utilisé
+  // 🍪 Token supprimé via cookie (géré par le backend) // Supprimer le token si utilisé
   localStorage.removeItem('cart'); // Supprimer aussi le panier
   
   // Rediriger vers la page de connexion (chemin absolu)

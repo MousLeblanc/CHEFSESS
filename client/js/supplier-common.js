@@ -11,7 +11,7 @@ export async function loadSuppliersData() {
   console.log('📦 Chargement des fournisseurs...');
   
   try {
-    const token = localStorage.getItem('token');
+    // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
     console.log('🔑 Token présent:', token ? 'OUI' : 'NON');
     console.log('🔑 Token (premiers caractères):', token ? token.substring(0, 20) + '...' : 'N/A');
     
@@ -114,7 +114,7 @@ export async function browseSupplierProducts(supplierId, supplierName) {
   currentSupplierId = supplierId;
   
   try {
-    const token = localStorage.getItem('token');
+    // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
     const headers = {
       'Content-Type': 'application/json',
       'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -538,7 +538,7 @@ async function checkoutCart() {
   }
   
   try {
-    const token = localStorage.getItem('token');
+    // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
     
     // Grouper les articles par fournisseur
     const ordersBySupplier = {};

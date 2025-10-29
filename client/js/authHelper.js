@@ -16,7 +16,7 @@ export function isAuthenticated() {
 }
 
 export function logout() {
-  localStorage.removeItem('token');
+  // 🍪 Token supprimé via cookie (géré par le backend)
   localStorage.removeItem('user');
   window.location.href = 'index.html';
 }

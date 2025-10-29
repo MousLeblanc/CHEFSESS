@@ -15,6 +15,7 @@ class AuthAPI {
     async login(email, password) {
         try {
             const response = await fetch(`${this.baseURL}/login`, {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -42,6 +43,7 @@ class AuthAPI {
     async register(userData) {
         try {
             const response = await fetch(`${this.baseURL}/register`, {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -67,13 +69,14 @@ class AuthAPI {
      */
     async verifyToken() {
         try {
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             if (!token) return false;
 
             const response = await fetch(`${this.baseURL}/verify`, {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+}
             });
 
             return response.ok;
@@ -87,7 +90,7 @@ class AuthAPI {
      * Déconnexion - Supprime le token et les données utilisateur
      */
     logout() {
-        localStorage.removeItem('token');
+        // 🍪 Token supprimé via cookie (géré par le backend)
         localStorage.removeItem('user');
     }
 }

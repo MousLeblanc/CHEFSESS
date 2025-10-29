@@ -119,7 +119,7 @@ const API_BASE = (window.API_BASE || 'http://localhost:5000');
 
 async function fetchMenuFromBackend(servings = 4) {
   // 1. Vérification du token
-  const token = localStorage.getItem('token');
+  // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
   if (!token || token === "undefined") {
     showToast("Session expirée, redirection...", "error");
     // supprimé (plus utilisé);
@@ -130,11 +130,12 @@ async function fetchMenuFromBackend(servings = 4) {
   // 2. Requête API avec gestion améliorée des erreurs
   try {
     const res = await fetch(`${API_BASE}/api/menus/generate`, {
+      credentials: 'include', // 🍪 Cookie HTTP-Only
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0'
       },
@@ -148,7 +149,7 @@ async function fetchMenuFromBackend(servings = 4) {
     // 3. Gestion des réponses HTTP
     if (res.status === 401) {
       showToast("Session expirée, redirection...", "error");
-      localStorage.removeItem('token');
+      // 🍪 Token supprimé via cookie (géré par le backend)
       // supprimé (plus utilisé);
       window.location.href = 'index.html';
       return null;

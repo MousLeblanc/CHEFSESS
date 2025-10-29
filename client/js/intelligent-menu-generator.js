@@ -57,6 +57,7 @@ class IntelligentMenuGenerator {
       }
 
       const response = await fetch(`${this.apiUrl}${endpoint}`, {
+        credentials: 'include', // 🍪 Cookie HTTP-Only
         method: 'POST',
         headers: headers,
         body: JSON.stringify({
@@ -105,9 +106,10 @@ class IntelligentMenuGenerator {
       if (filters.limit) queryParams.append('limit', filters.limit);
 
       const response = await fetch(`${this.apiUrl}/suggestions?${queryParams}`, {
+        credentials: 'include', // 🍪 Cookie HTTP-Only
         headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        }
+          // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+}
       });
 
       if (!response.ok) {
@@ -142,9 +144,10 @@ class IntelligentMenuGenerator {
       });
 
       const response = await fetch(`${this.recipeApiUrl}?${queryParams}`, {
+        credentials: 'include', // 🍪 Cookie HTTP-Only
         headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        }
+          // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+}
       });
 
       if (!response.ok) {
@@ -167,9 +170,10 @@ class IntelligentMenuGenerator {
   async getRecipeById(recipeId) {
     try {
       const response = await fetch(`${this.recipeApiUrl}/${recipeId}`, {
+        credentials: 'include', // 🍪 Cookie HTTP-Only
         headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        }
+          // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+}
       });
 
       if (!response.ok) {
@@ -191,9 +195,10 @@ class IntelligentMenuGenerator {
   async getRecipeStats() {
     try {
       const response = await fetch(`${this.recipeApiUrl}/stats/overview`, {
+        credentials: 'include', // 🍪 Cookie HTTP-Only
         headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        }
+          // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+}
       });
 
       if (!response.ok) {

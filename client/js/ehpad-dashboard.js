@@ -44,7 +44,7 @@ const dietOptions = [
 async function loadUserAndSiteInfo() {
   try {
     // Récupérer le token d'authentification
-    const token = localStorage.getItem('token');
+    // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
     if (!token) {
       console.error('❌ Pas de token trouvé, redirection vers login');
       window.location.href = 'index.html';
@@ -70,11 +70,11 @@ async function loadUserAndSiteInfo() {
 // Fonction pour charger les informations du site
 async function loadSiteInfo(siteId) {
   try {
-    const token = localStorage.getItem('token');
+    // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
     const response = await fetch(`/api/sites/${siteId}`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
       },
       credentials: 'include'
     });
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('token');
+      // 🍪 Token supprimé via cookie (géré par le backend)
       localStorage.removeItem('user');
       window.location.href = 'index.html';
     });

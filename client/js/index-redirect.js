@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   const user = JSON.parse(localStorage.getItem('user') || 'null');
-  const token = localStorage.getItem('token');
+  // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
   if (token && user) {
     switch (user.role) {
       case 'maison': window.location.href = 'maison-dashboard.html'; break;

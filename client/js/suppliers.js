@@ -46,7 +46,7 @@ class RestaurantSupplierManager {
 
         // Bouton de déconnexion
         document.querySelector('.logout-btn').addEventListener('click', () => {
-            localStorage.removeItem('token');
+            // 🍪 Token supprimé via cookie (géré par le backend)
             localStorage.removeItem('user');
             localStorage.removeItem('chaif-ses-session-start');
             window.location.href = 'index.html';
@@ -75,9 +75,10 @@ class RestaurantSupplierManager {
         try {
             console.log('🔄 Chargement des fournisseurs depuis l\'API...');
             const response = await fetch('/api/users/suppliers', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json',
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json',
                     'Cache-Control': 'no-cache, no-store, must-revalidate',
                     'Pragma': 'no-cache',
                     'Expires': '0'
@@ -97,7 +98,7 @@ class RestaurantSupplierManager {
                 console.error('❌ Session expirée (401) - Redirection vers login');
                 this.showToast('Session expirée. Reconnexion nécessaire.', 'error');
                 setTimeout(() => {
-                    localStorage.removeItem('token');
+                    // 🍪 Token supprimé via cookie (géré par le backend)
                     localStorage.removeItem('user');
                     window.location.href = 'index.html';
                 }, 2000);
@@ -119,9 +120,10 @@ class RestaurantSupplierManager {
         try {
             console.log('🔄 Chargement des produits du fournisseur ID:', supplierId);
             const response = await fetch(`/api/products/supplier/${supplierId}`, {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json',
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json',
                     'Cache-Control': 'no-cache, no-store, must-revalidate',
                     'Pragma': 'no-cache',
                     'Expires': '0'
@@ -466,13 +468,14 @@ class RestaurantSupplierManager {
             };
             
             try {
-                const token = localStorage.getItem('token');
+                // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
                 const response = await fetch('/api/orders', {
+                    credentials: 'include', // 🍪 Cookie HTTP-Only
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
+                        // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+},
                     body: JSON.stringify(orderData)
                 });
                 
@@ -614,11 +617,12 @@ class RestaurantSupplierManager {
             };
 
             const response = await fetch(`${API_BASE}/api/catalog/orders`, {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+},
                 body: JSON.stringify(orderData)
             });
 
@@ -990,7 +994,7 @@ class RestaurantSupplierManager {
         });
         
         try {
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             const orderResults = [];
             
             // Créer une commande pour chaque fournisseur
@@ -1005,11 +1009,12 @@ class RestaurantSupplierManager {
                 };
                 
                 const response = await fetch('/api/orders', {
+                    credentials: 'include', // 🍪 Cookie HTTP-Only
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
+                        // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+},
                     body: JSON.stringify(orderData)
                 });
                 
@@ -1050,11 +1055,12 @@ class RestaurantSupplierManager {
         console.log('📋 Affichage de mes commandes...');
         
         try {
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             const response = await fetch('/api/orders', {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
                 }
             });
             
@@ -1228,12 +1234,13 @@ class RestaurantSupplierManager {
         }
         
         try {
-            const token = localStorage.getItem('token');
+            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
             const response = await fetch(`/api/orders/${orderId}/cancel`, {
+                credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
+'Content-Type': 'application/json'
                 }
             });
             
