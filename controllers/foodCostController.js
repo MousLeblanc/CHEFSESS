@@ -171,19 +171,35 @@ export const createFoodCost = async (req, res) => {
     const numberOfMeals = residentsCount * numberOfDays * 3;
     
     // Calculer les dépenses des commandes pour cette période
+    // 🎯 Filtrer par date de LIVRAISON, pas date de création !
     const orders = await Order.find({
       siteId: targetSiteId,
-      createdAt: {
-        $gte: start,
-        $lte: end
-      },
-      status: { $in: ['delivered', 'completed'] }
+      $or: [
+        {
+          'dates.delivered': {
+            $gte: start,
+            $lte: end
+          },
+          status: 'delivered'
+        },
+        {
+          'dates.delivered': {
+            $gte: start,
+            $lte: end
+          },
+          status: 'completed'
+        }
+      ]
     });
+    
+    console.log(`📊 Recherche commandes livrées entre ${start.toLocaleDateString('fr-FR')} et ${end.toLocaleDateString('fr-FR')}`);
+    console.log(`📦 ${orders.length} commande(s) livrée(s) trouvée(s)`);
     
     const ordersTotal = orders.reduce((sum, order) => {
       // Utiliser pricing.total car le modèle Order stocke le total dans pricing.total
       const orderTotal = order.pricing?.total || 0;
-      console.log(`📦 Commande ${order.orderNumber}: ${orderTotal}€`);
+      const deliveredDate = order.dates?.delivered ? new Date(order.dates.delivered).toLocaleDateString('fr-FR') : 'N/A';
+      console.log(`📦 Commande ${order.orderNumber} (livrée le ${deliveredDate}): ${orderTotal}€`);
       return sum + orderTotal;
     }, 0);
     
@@ -422,23 +438,40 @@ export const recalculateOrders = async (req, res) => {
     }
     
     // Recalculer les commandes
+    // 🎯 Filtrer par date de LIVRAISON, pas date de création !
     const orders = await Order.find({
       siteId: foodCost.siteId,
-      createdAt: {
-        $gte: foodCost.startDate,
-        $lte: foodCost.endDate
-      },
-      status: { $in: ['delivered', 'completed'] }
+      $or: [
+        {
+          'dates.delivered': {
+            $gte: foodCost.startDate,
+            $lte: foodCost.endDate
+          },
+          status: 'delivered'
+        },
+        {
+          'dates.delivered': {
+            $gte: foodCost.startDate,
+            $lte: foodCost.endDate
+          },
+          status: 'completed'
+        }
+      ]
     });
+    
+    console.log(`\n🔄 RECALCUL FOOD COST`);
+    console.log(`📊 Période: ${foodCost.startDate.toLocaleDateString('fr-FR')} - ${foodCost.endDate.toLocaleDateString('fr-FR')}`);
+    console.log(`📦 ${orders.length} commande(s) livrée(s) dans cette période`);
     
     foodCost.expenses.orders = orders.reduce((sum, order) => {
       // Utiliser pricing.total car le modèle Order stocke le total dans pricing.total
       const orderTotal = order.pricing?.total || 0;
-      console.log(`📦 Recalcul commande ${order.orderNumber}: ${orderTotal}€`);
+      const deliveredDate = order.dates?.delivered ? new Date(order.dates.delivered).toLocaleDateString('fr-FR') : 'N/A';
+      console.log(`   📦 ${order.orderNumber} (livré le ${deliveredDate}): ${orderTotal}€`);
       return sum + orderTotal;
     }, 0);
     
-    console.log(`💰 Total recalculé: ${foodCost.expenses.orders}€ (${orders.length} commandes)`);
+    console.log(`💰 Total recalculé: ${foodCost.expenses.orders}€`);
     foodCost.lastUpdatedBy = req.user._id;
     
     await foodCost.save();
