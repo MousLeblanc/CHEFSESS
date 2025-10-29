@@ -705,6 +705,172 @@ export const acknowledgeAlert = async (req, res) => {
   }
 };
 
+// @desc    Obtenir les rapports agrégés de tous les sites pour l'admin
+// @route   GET /api/foodcost/reports
+// @access  Private (Admin, Group Admin)
+export const getAdminReports = async (req, res) => {
+  try {
+    // Vérifier les permissions
+    if (req.user.role !== 'admin' && req.user.role !== 'GROUP_ADMIN') {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Accès refusé. Seuls les administrateurs peuvent voir les rapports.' 
+      });
+    }
+    
+    const { period, startDate, endDate } = req.query;
+    
+    // Définir la période par défaut (mois en cours)
+    const defaultStart = new Date();
+    defaultStart.setDate(1);
+    defaultStart.setHours(0, 0, 0, 0);
+    
+    const defaultEnd = new Date();
+    defaultEnd.setMonth(defaultEnd.getMonth() + 1, 0);
+    defaultEnd.setHours(23, 59, 59, 999);
+    
+    const periodStart = startDate ? new Date(startDate) : defaultStart;
+    const periodEnd = endDate ? new Date(endDate) : defaultEnd;
+    
+    console.log(`📊 Génération rapport admin pour période: ${periodStart.toLocaleDateString('fr-FR')} - ${periodEnd.toLocaleDateString('fr-FR')}`);
+    
+    // Construire le query pour filtrer les périodes
+    let query = {
+      startDate: { $gte: periodStart },
+      endDate: { $lte: periodEnd }
+    };
+    
+    // Si GROUP_ADMIN, limiter à son groupe
+    if (req.user.role === 'GROUP_ADMIN') {
+      query.groupId = req.user.groupId;
+    }
+    
+    // Récupérer toutes les périodes Food Cost
+    const foodCosts = await FoodCost.find(query)
+      .populate('siteId', 'name siteName establishmentType address')
+      .populate('groupId', 'name')
+      .sort({ 'siteId.name': 1, startDate: -1 });
+    
+    console.log(`✅ ${foodCosts.length} période(s) trouvée(s)`);
+    
+    // Créer un Map pour agréger les données par site
+    const siteStats = new Map();
+    let totalBudget = 0;
+    let totalExpenses = 0;
+    let totalSites = 0;
+    let sitesWithOverBudget = 0;
+    
+    foodCosts.forEach(fc => {
+      const siteId = fc.siteId?._id?.toString();
+      if (!siteId) return;
+      
+      const siteName = fc.siteId?.siteName || fc.siteId?.name || 'Site inconnu';
+      
+      if (!siteStats.has(siteId)) {
+        siteStats.set(siteId, {
+          siteId: siteId,
+          siteName: siteName,
+          establishmentType: fc.siteId?.establishmentType || 'autre',
+          address: fc.siteId?.address || '',
+          groupName: fc.groupId?.name || '',
+          periods: [],
+          totalBudget: 0,
+          totalExpenses: 0,
+          percentUsed: 0,
+          alerts: [],
+          hasOverBudget: false
+        });
+        totalSites++;
+      }
+      
+      const site = siteStats.get(siteId);
+      
+      // Ajouter les données de cette période
+      site.periods.push({
+        period: fc.period,
+        startDate: fc.startDate,
+        endDate: fc.endDate,
+        budget: fc.budget.planned,
+        expenses: fc.expenses.total,
+        percentUsed: fc.percentUsed,
+        hasOverBudget: fc.percentUsed > 100
+      });
+      
+      site.totalBudget += fc.budget.planned;
+      site.totalExpenses += fc.expenses.total;
+      
+      totalBudget += fc.budget.planned;
+      totalExpenses += fc.expenses.total;
+      
+      // Gérer les alertes
+      if (fc.alerts && fc.alerts.length > 0) {
+        fc.alerts.forEach(alert => {
+          if (!alert.acknowledged) {
+            site.alerts.push({
+              type: alert.type,
+              message: alert.message,
+              severity: alert.severity,
+              createdAt: alert.createdAt
+            });
+          }
+        });
+      }
+      
+      // Vérifier si le site a un dépassement de budget
+      if (fc.percentUsed > 100) {
+        site.hasOverBudget = true;
+      }
+    });
+    
+    // Calculer le pourcentage global pour chaque site
+    siteStats.forEach(site => {
+      if (site.totalBudget > 0) {
+        site.percentUsed = Math.round((site.totalExpenses / site.totalBudget) * 100);
+      }
+      if (site.hasOverBudget) {
+        sitesWithOverBudget++;
+      }
+    });
+    
+    // Convertir le Map en array et trier par % d'utilisation (décroissant)
+    const sitesArray = Array.from(siteStats.values())
+      .sort((a, b) => b.percentUsed - a.percentUsed);
+    
+    const totalPercentUsed = totalBudget > 0 ? Math.round((totalExpenses / totalBudget) * 100) : 0;
+    
+    // Calculer les statistiques globales
+    const summary = {
+      totalSites,
+      totalBudget: Math.round(totalBudget * 100) / 100,
+      totalExpenses: Math.round(totalExpenses * 100) / 100,
+      totalPercentUsed,
+      sitesWithOverBudget,
+      period: {
+        start: periodStart,
+        end: periodEnd,
+        label: `${periodStart.toLocaleDateString('fr-FR')} - ${periodEnd.toLocaleDateString('fr-FR')}`
+      }
+    };
+    
+    console.log(`📊 Résumé: ${totalSites} sites, Budget: ${summary.totalBudget}€, Dépenses: ${summary.totalExpenses}€ (${totalPercentUsed}%)`);
+    console.log(`⚠️  ${sitesWithOverBudget} site(s) en dépassement de budget`);
+    
+    res.json({
+      success: true,
+      summary,
+      sites: sitesArray
+    });
+    
+  } catch (error) {
+    console.error('Erreur getAdminReports:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Erreur lors de la génération des rapports',
+      error: error.message 
+    });
+  }
+};
+
 export default {
   getFoodCostPeriods,
   getFoodCostById,
@@ -714,6 +880,8 @@ export default {
   deleteManualExpense,
   recalculateOrders,
   getFoodCostStats,
-  acknowledgeAlert
+  acknowledgeAlert,
+  getAdminReports,
+  deleteFoodCost
 };
 

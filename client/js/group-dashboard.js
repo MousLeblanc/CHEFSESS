@@ -1533,15 +1533,182 @@ class GroupDashboard {
     }
 
     async loadReportsData() {
-        const nutritionChart = document.getElementById('nutrition-chart');
-        if (nutritionChart) {
-            nutritionChart.innerHTML = '<p class="text-center">Rapport nutritionnel en cours de développement</p>';
+        try {
+            console.log('📊 Chargement des rapports Food Cost...');
+            
+            // Afficher un loader
+            const nutritionChart = document.getElementById('nutrition-chart');
+            const costsChart = document.getElementById('costs-chart');
+            
+            if (nutritionChart) {
+                nutritionChart.innerHTML = '<div class="loader" style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
+            }
+            
+            if (costsChart) {
+                costsChart.innerHTML = '<div class="loader" style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
+            }
+            
+            const response = await fetch('/api/foodcost/reports', {
+                headers: {
+                    'Authorization': `Bearer ${this.getToken()}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Erreur lors du chargement des rapports');
+            }
+            
+            const data = await response.json();
+            console.log('✅ Rapports chargés:', data);
+            
+            // Afficher les statistiques générales
+            this.displayReportsSummary(data.summary);
+            
+            // Afficher le tableau des sites
+            this.displaySitesTable(data.sites);
+            
+            // Remplacer les contenus par défaut
+            if (nutritionChart) {
+                nutritionChart.innerHTML = '<p class="text-center" style="color: #666;">Rapports nutritionnels disponibles prochainement</p>';
+            }
+            
+        } catch (error) {
+            console.error('Erreur loadReportsData:', error);
+            this.showToast('Erreur lors du chargement des rapports: ' + error.message, 'error');
+            
+            const costsChart = document.getElementById('costs-chart');
+            if (costsChart) {
+                costsChart.innerHTML = `<p class="text-center" style="color: #e74c3c;">❌ ${error.message}</p>`;
+            }
         }
-        
+    }
+    
+    displayReportsSummary(summary) {
         const costsChart = document.getElementById('costs-chart');
-        if (costsChart) {
-            costsChart.innerHTML = '<p class="text-center">Rapport des coûts en cours de développement</p>';
-        }
+        if (!costsChart) return;
+        
+        const percentColor = summary.totalPercentUsed > 100 ? '#e74c3c' : 
+                            summary.totalPercentUsed > 90 ? '#f39c12' : '#27ae60';
+        
+        costsChart.innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 12px; color: white; text-align: center;">
+                    <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem;">
+                        ${summary.totalSites}
+                    </div>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">Sites suivis</div>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); padding: 1.5rem; border-radius: 12px; color: white; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">
+                        ${summary.totalBudget.toLocaleString('fr-FR')}€
+                    </div>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">Budget total</div>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%); padding: 1.5rem; border-radius: 12px; color: white; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">
+                        ${summary.totalExpenses.toLocaleString('fr-FR')}€
+                    </div>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">Dépenses totales</div>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, ${percentColor} 0%, ${percentColor}dd 100%); padding: 1.5rem; border-radius: 12px; color: white; text-align: center;">
+                    <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem;">
+                        ${summary.totalPercentUsed}%
+                    </div>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">Utilisation moyenne</div>
+                </div>
+                
+                ${summary.sitesWithOverBudget > 0 ? `
+                <div style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); padding: 1.5rem; border-radius: 12px; color: white; text-align: center;">
+                    <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem;">
+                        <i class="fas fa-exclamation-triangle"></i> ${summary.sitesWithOverBudget}
+                    </div>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">Site(s) en dépassement</div>
+                </div>
+                ` : ''}
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center;">
+                <i class="fas fa-calendar-alt"></i> <strong>Période :</strong> ${summary.period.label}
+            </div>
+        `;
+    }
+    
+    displaySitesTable(sites) {
+        const costsChart = document.getElementById('costs-chart');
+        if (!costsChart) return;
+        
+        // Créer le tableau
+        const tableHTML = `
+            <div style="margin-top: 2rem;">
+                <h3 style="margin-bottom: 1rem; color: #2c3e50;"><i class="fas fa-table"></i> Détail par site</h3>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <thead>
+                            <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                <th style="padding: 1rem; text-align: left;">Site</th>
+                                <th style="padding: 1rem; text-align: left;">Type</th>
+                                <th style="padding: 1rem; text-align: right;">Budget</th>
+                                <th style="padding: 1rem; text-align: right;">Dépenses</th>
+                                <th style="padding: 1rem; text-align: center;">% Utilisé</th>
+                                <th style="padding: 1rem; text-align: center;">Alertes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${sites.length === 0 ? `
+                                <tr>
+                                    <td colspan="6" style="padding: 2rem; text-align: center; color: #666;">
+                                        Aucune donnée Food Cost disponible pour la période sélectionnée
+                                    </td>
+                                </tr>
+                            ` : sites.map((site, index) => {
+                                const percentColor = site.percentUsed > 100 ? '#e74c3c' : 
+                                                    site.percentUsed > 90 ? '#f39c12' : '#27ae60';
+                                const bgColor = index % 2 === 0 ? '#ffffff' : '#f8f9fa';
+                                
+                                return `
+                                    <tr style="background: ${bgColor}; border-bottom: 1px solid #e0e0e0;">
+                                        <td style="padding: 1rem;">
+                                            <strong>${site.siteName}</strong>
+                                            ${site.groupName ? `<br><small style="color: #666;">${site.groupName}</small>` : ''}
+                                        </td>
+                                        <td style="padding: 1rem;">${site.establishmentType}</td>
+                                        <td style="padding: 1rem; text-align: right; font-weight: 600;">
+                                            ${site.totalBudget.toLocaleString('fr-FR')}€
+                                        </td>
+                                        <td style="padding: 1rem; text-align: right; font-weight: 600;">
+                                            ${site.totalExpenses.toLocaleString('fr-FR')}€
+                                        </td>
+                                        <td style="padding: 1rem; text-align: center;">
+                                            <div style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; background: ${percentColor}; color: white; font-weight: bold;">
+                                                ${site.percentUsed}%
+                                            </div>
+                                        </td>
+                                        <td style="padding: 1rem; text-align: center;">
+                                            ${site.alerts.length > 0 ? `
+                                                <span style="background: #e74c3c; color: white; padding: 0.3rem 0.7rem; border-radius: 12px; font-weight: bold;">
+                                                    <i class="fas fa-exclamation-circle"></i> ${site.alerts.length}
+                                                </span>
+                                            ` : `
+                                                <span style="color: #27ae60;">
+                                                    <i class="fas fa-check-circle"></i> OK
+                                                </span>
+                                            `}
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        
+        // Ajouter le tableau après les cartes
+        costsChart.innerHTML += tableHTML;
     }
 
     async loadUsersData() {

@@ -9,7 +9,8 @@ import {
   deleteManualExpense,
   recalculateOrders,
   getFoodCostStats,
-  acknowledgeAlert
+  acknowledgeAlert,
+  getAdminReports
 } from "../controllers/foodCostController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -20,6 +21,9 @@ router.use(protect);
 
 // Routes de statistiques
 router.get('/stats/summary', getFoodCostStats);
+
+// Route pour les rapports admin (tous les sites)
+router.get('/reports', getAdminReports);
 
 // Routes CRUD de base
 router.route('/')
