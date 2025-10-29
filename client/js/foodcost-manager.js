@@ -556,6 +556,8 @@ class FoodCostManager {
         return;
       }
       
+      console.log('🔄 Début recalcul pour période:', periodId);
+      
       const response = await fetch(`/api/foodcost/${periodId}/recalculate`, {
         method: 'POST',
         headers: {
@@ -564,12 +566,25 @@ class FoodCostManager {
         }
       });
 
+      console.log('📡 Response status:', response.status);
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Erreur lors du recalcul');
+        const errorText = await response.text();
+        console.error('❌ Erreur response:', errorText);
+        let errorMessage;
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || 'Erreur lors du recalcul';
+        } catch (e) {
+          errorMessage = errorText || 'Erreur lors du recalcul';
+        }
+        throw new Error(errorMessage);
       }
 
-      this.showToast('Commandes recalculées avec succès', 'success');
+      const data = await response.json();
+      console.log('✅ Données recalculées:', data);
+
+      this.showToast(`✅ Recalcul terminé ! Total: ${data.data?.expenses?.orders || 0}€`, 'success');
       
       // Recharger les données
       await this.loadPeriods();

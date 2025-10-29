@@ -490,6 +490,19 @@ export const recalculateOrders = async (req, res) => {
       ]
     });
     
+    console.log(`\n📦 ========== RÉSULTATS ==========`);
+    console.log(`✅ ${orders.length} commande(s) trouvée(s)`);
+    
+    if (orders.length === 0) {
+      console.log(`\n⚠️  AUCUNE COMMANDE TROUVÉE !`);
+      console.log(`   Vérifiez:`);
+      console.log(`   - Site ID: ${foodCost.siteId}`);
+      console.log(`   - Période: ${foodCost.startDate.toLocaleDateString('fr-FR')} - ${foodCost.endDate.toLocaleDateString('fr-FR')}`);
+      console.log(`   - Status: delivered ou completed`);
+    } else {
+      console.log(`\n📋 Liste des commandes:`);
+    }
+    
     foodCost.expenses.orders = orders.reduce((sum, order) => {
       // Utiliser pricing.total car le modèle Order stocke le total dans pricing.total
       const orderTotal = order.pricing?.total || 0;
