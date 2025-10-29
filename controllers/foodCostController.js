@@ -710,13 +710,28 @@ export const acknowledgeAlert = async (req, res) => {
 // @access  Private (Admin, Group Admin)
 export const getAdminReports = async (req, res) => {
   try {
-    // Vérifier les permissions
-    if (req.user.role !== 'admin' && req.user.role !== 'GROUP_ADMIN') {
+    // Vérifier les permissions (role OU roles array)
+    const isAdmin = req.user.role === 'admin' || 
+                    req.user.role === 'GROUP_ADMIN' ||
+                    (req.user.roles && (req.user.roles.includes('admin') || req.user.roles.includes('GROUP_ADMIN')));
+    
+    if (!isAdmin) {
+      console.log('❌ Accès refusé aux rapports:', {
+        role: req.user.role,
+        roles: req.user.roles,
+        userId: req.user._id
+      });
       return res.status(403).json({ 
         success: false,
         message: 'Accès refusé. Seuls les administrateurs peuvent voir les rapports.' 
       });
     }
+    
+    console.log('✅ Accès autorisé aux rapports:', {
+      role: req.user.role,
+      roles: req.user.roles,
+      groupId: req.user.groupId
+    });
     
     const { period, startDate, endDate } = req.query;
     
@@ -740,9 +755,15 @@ export const getAdminReports = async (req, res) => {
       endDate: { $lte: periodEnd }
     };
     
-    // Si GROUP_ADMIN, limiter à son groupe
-    if (req.user.role === 'GROUP_ADMIN') {
+    // Si GROUP_ADMIN, limiter à son groupe (vérifier role OU roles array)
+    const isGroupAdmin = req.user.role === 'GROUP_ADMIN' || 
+                        (req.user.roles && req.user.roles.includes('GROUP_ADMIN'));
+    
+    if (isGroupAdmin && req.user.groupId) {
       query.groupId = req.user.groupId;
+      console.log(`🔒 Filtrage par groupe: ${req.user.groupId}`);
+    } else if (req.user.role === 'admin' || (req.user.roles && req.user.roles.includes('admin'))) {
+      console.log(`👑 Admin global - Tous les sites`);
     }
     
     // Récupérer toutes les périodes Food Cost
