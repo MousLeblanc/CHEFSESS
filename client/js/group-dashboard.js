@@ -1674,26 +1674,34 @@ class GroupDashboard {
                                                     site.percentUsed > 90 ? '#f39c12' : '#27ae60';
                                 const bgColor = index % 2 === 0 ? '#ffffff' : '#f8f9fa';
                                 
+                                // Détecter si le site n'a pas de données Food Cost
+                                const hasData = site.periods && site.periods.length > 0;
+                                
                                 return `
                                     <tr style="background: ${bgColor}; border-bottom: 1px solid #e0e0e0;">
                                         <td style="padding: 1rem;">
                                             <strong>${site.siteName}</strong>
                                             ${site.groupName ? `<br><small style="color: #666;">${site.groupName}</small>` : ''}
+                                            ${!hasData ? `<br><span style="color: #999; font-size: 0.85rem; font-style: italic;">⚠️ Pas de période Food Cost</span>` : ''}
                                         </td>
                                         <td style="padding: 1rem;">${site.establishmentType}</td>
                                         <td style="padding: 1rem; text-align: right; font-weight: 600;">
-                                            ${site.totalBudget.toLocaleString('fr-FR')}€
+                                            ${hasData ? site.totalBudget.toLocaleString('fr-FR') + '€' : '<span style="color: #999;">—</span>'}
                                         </td>
                                         <td style="padding: 1rem; text-align: right; font-weight: 600;">
-                                            ${site.totalExpenses.toLocaleString('fr-FR')}€
+                                            ${hasData ? site.totalExpenses.toLocaleString('fr-FR') + '€' : '<span style="color: #999;">—</span>'}
                                         </td>
                                         <td style="padding: 1rem; text-align: center;">
-                                            <div style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; background: ${percentColor}; color: white; font-weight: bold;">
-                                                ${site.percentUsed}%
-                                            </div>
+                                            ${hasData ? `
+                                                <div style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; background: ${percentColor}; color: white; font-weight: bold;">
+                                                    ${site.percentUsed}%
+                                                </div>
+                                            ` : `
+                                                <span style="color: #999; font-style: italic;">N/A</span>
+                                            `}
                                         </td>
                                         <td style="padding: 1rem; text-align: center;">
-                                            ${site.alerts.length > 0 ? `
+                                            ${hasData ? (site.alerts.length > 0 ? `
                                                 <span style="background: #e74c3c; color: white; padding: 0.3rem 0.7rem; border-radius: 12px; font-weight: bold;">
                                                     <i class="fas fa-exclamation-circle"></i> ${site.alerts.length}
                                                 </span>
@@ -1701,6 +1709,8 @@ class GroupDashboard {
                                                 <span style="color: #27ae60;">
                                                     <i class="fas fa-check-circle"></i> OK
                                                 </span>
+                                            `) : `
+                                                <span style="color: #999;">—</span>
                                             `}
                                         </td>
                                     </tr>

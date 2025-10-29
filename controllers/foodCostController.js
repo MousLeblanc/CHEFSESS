@@ -749,60 +749,72 @@ export const getAdminReports = async (req, res) => {
     
     console.log(`📊 Génération rapport admin pour période: ${periodStart.toLocaleDateString('fr-FR')} - ${periodEnd.toLocaleDateString('fr-FR')}`);
     
-    // Construire le query pour filtrer les périodes
-    let query = {
-      startDate: { $gte: periodStart },
-      endDate: { $lte: periodEnd }
-    };
-    
-    // Si GROUP_ADMIN, limiter à son groupe (vérifier role OU roles array)
+    // Déterminer le groupe à afficher
     const isGroupAdmin = req.user.role === 'GROUP_ADMIN' || 
                         (req.user.roles && req.user.roles.includes('GROUP_ADMIN'));
     
+    let groupIdFilter = null;
     if (isGroupAdmin && req.user.groupId) {
-      query.groupId = req.user.groupId;
+      groupIdFilter = req.user.groupId;
       console.log(`🔒 Filtrage par groupe: ${req.user.groupId}`);
     } else if (req.user.role === 'admin' || (req.user.roles && req.user.roles.includes('admin'))) {
       console.log(`👑 Admin global - Tous les sites`);
     }
     
-    // Récupérer toutes les périodes Food Cost
-    const foodCosts = await FoodCost.find(query)
+    // 🎯 ÉTAPE 1 : Récupérer TOUS les sites du groupe (ou tous les sites si admin global)
+    const Site = (await import('../models/Site.js')).default;
+    const siteQuery = groupIdFilter ? { groupId: groupIdFilter } : {};
+    const allSites = await Site.find(siteQuery)
+      .select('_id name siteName establishmentType address groupId')
+      .populate('groupId', 'name');
+    
+    console.log(`📍 ${allSites.length} site(s) total dans le groupe`);
+    
+    // 🎯 ÉTAPE 2 : Récupérer les périodes Food Cost pour ces sites
+    const siteIds = allSites.map(s => s._id);
+    const foodCostQuery = {
+      siteId: { $in: siteIds },
+      startDate: { $gte: periodStart },
+      endDate: { $lte: periodEnd }
+    };
+    
+    const foodCosts = await FoodCost.find(foodCostQuery)
       .populate('siteId', 'name siteName establishmentType address')
       .populate('groupId', 'name')
       .sort({ 'siteId.name': 1, startDate: -1 });
     
-    console.log(`✅ ${foodCosts.length} période(s) trouvée(s)`);
+    console.log(`✅ ${foodCosts.length} période(s) Food Cost trouvée(s)`);
     
-    // Créer un Map pour agréger les données par site
+    // 🎯 ÉTAPE 3 : Initialiser le Map avec TOUS les sites (même sans Food Cost)
     const siteStats = new Map();
     let totalBudget = 0;
     let totalExpenses = 0;
-    let totalSites = 0;
     let sitesWithOverBudget = 0;
     
+    // Pré-remplir avec tous les sites
+    allSites.forEach(site => {
+      const siteId = site._id.toString();
+      siteStats.set(siteId, {
+        siteId: siteId,
+        siteName: site.siteName || site.name || 'Site inconnu',
+        establishmentType: site.establishmentType || 'autre',
+        address: site.address || '',
+        groupName: site.groupId?.name || '',
+        periods: [],
+        totalBudget: 0,
+        totalExpenses: 0,
+        percentUsed: 0,
+        alerts: [],
+        hasOverBudget: false
+      });
+    });
+    
+    console.log(`📊 ${siteStats.size} site(s) initialisé(s) dans le rapport`);
+    
+    // 🎯 ÉTAPE 4 : Ajouter les données Food Cost pour les sites qui en ont
     foodCosts.forEach(fc => {
       const siteId = fc.siteId?._id?.toString();
-      if (!siteId) return;
-      
-      const siteName = fc.siteId?.siteName || fc.siteId?.name || 'Site inconnu';
-      
-      if (!siteStats.has(siteId)) {
-        siteStats.set(siteId, {
-          siteId: siteId,
-          siteName: siteName,
-          establishmentType: fc.siteId?.establishmentType || 'autre',
-          address: fc.siteId?.address || '',
-          groupName: fc.groupId?.name || '',
-          periods: [],
-          totalBudget: 0,
-          totalExpenses: 0,
-          percentUsed: 0,
-          alerts: [],
-          hasOverBudget: false
-        });
-        totalSites++;
-      }
+      if (!siteId || !siteStats.has(siteId)) return;
       
       const site = siteStats.get(siteId);
       
@@ -861,11 +873,12 @@ export const getAdminReports = async (req, res) => {
     
     // Calculer les statistiques globales
     const summary = {
-      totalSites,
+      totalSites: allSites.length, // ✅ Total réel de sites (pas seulement ceux avec Food Cost)
       totalBudget: Math.round(totalBudget * 100) / 100,
       totalExpenses: Math.round(totalExpenses * 100) / 100,
       totalPercentUsed,
       sitesWithOverBudget,
+      sitesWithFoodCost: Array.from(siteStats.values()).filter(s => s.periods.length > 0).length,
       period: {
         start: periodStart,
         end: periodEnd,
@@ -873,7 +886,7 @@ export const getAdminReports = async (req, res) => {
       }
     };
     
-    console.log(`📊 Résumé: ${totalSites} sites, Budget: ${summary.totalBudget}€, Dépenses: ${summary.totalExpenses}€ (${totalPercentUsed}%)`);
+    console.log(`📊 Résumé: ${allSites.length} sites total, ${summary.sitesWithFoodCost} avec Food Cost, Budget: ${summary.totalBudget}€, Dépenses: ${summary.totalExpenses}€ (${totalPercentUsed}%)`);
     console.log(`⚠️  ${sitesWithOverBudget} site(s) en dépassement de budget`);
     
     res.json({
