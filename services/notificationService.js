@@ -20,12 +20,30 @@ class NotificationService {
     this.wss.on('connection', (ws, req) => {
       console.log('🔌 Nouvelle connexion WebSocket');
       
-      // Extraire le token de la query string
-      const url = new URL(req.url, `http://${req.headers.host}`);
-      const token = url.searchParams.get('token');
+      // 🍪 Extraire le token depuis les cookies HTTP-Only
+      let token = null;
+      
+      // Parser les cookies depuis le header
+      const cookies = req.headers.cookie;
+      if (cookies) {
+        const cookieArray = cookies.split(';');
+        for (const cookie of cookieArray) {
+          const [name, value] = cookie.trim().split('=');
+          if (name === 'token') {
+            token = value;
+            break;
+          }
+        }
+      }
+      
+      // Fallback : essayer depuis la query string (compatibilité)
+      if (!token) {
+        const url = new URL(req.url, `http://${req.headers.host}`);
+        token = url.searchParams.get('token');
+      }
       
       if (!token) {
-        console.log('❌ Pas de token fourni');
+        console.log('❌ Pas de token fourni (ni cookie ni query string)');
         ws.close(1008, 'Token requis');
         return;
       }
