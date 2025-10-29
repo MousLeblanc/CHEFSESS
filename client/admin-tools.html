@@ -182,9 +182,19 @@
             <div id="check-results" class="results" style="display: none;"></div>
         </div>
 
-        <!-- Correction -->
+        <!-- Correction des Suppliers manquants -->
         <div class="section">
-            <h2>2️⃣ Corriger les noms</h2>
+            <h2>2️⃣ Créer les Suppliers manquants</h2>
+            <p>⚠️ <strong>À faire en premier !</strong> Crée les Suppliers manquants dans la base de données pour tous les utilisateurs fournisseurs qui ont un supplierId invalide.</p>
+            <button id="fix-missing-btn" onclick="fixMissingSuppliers()">
+                🆕 Créer les Suppliers manquants
+            </button>
+            <div id="fix-missing-results" class="results" style="display: none;"></div>
+        </div>
+
+        <!-- Correction des noms -->
+        <div class="section">
+            <h2>3️⃣ Corriger les noms</h2>
             <p>Corrige automatiquement tous les businessName incorrects en les remplaçant par les noms depuis la collection Supplier.</p>
             <button id="fix-btn" onclick="fixSupplierNames()">
                 🔧 Corriger les noms
@@ -305,6 +315,73 @@
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '🔧 Corriger les noms';
+            }
+        }
+
+        async function fixMissingSuppliers() {
+            if (!confirm('⚠️ Êtes-vous sûr de vouloir créer les Suppliers manquants ?\n\nCela créera de nouveaux documents dans la collection Suppliers.')) {
+                return;
+            }
+            
+            const btn = document.getElementById('fix-missing-btn');
+            const results = document.getElementById('fix-missing-results');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Création en cours...';
+            results.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/admin/fix-missing-suppliers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    results.style.display = 'block';
+                    results.innerHTML = `
+                        <h3 class="success">✅ ${data.message}</h3>
+                        <p><strong>Total:</strong> ${data.summary.total} fournisseur(s)</p>
+                        <p><strong>✅ Avec Supplier valide:</strong> ${data.summary.withValidSupplier}</p>
+                        <p><strong>🆕 Suppliers créés:</strong> ${data.summary.created}</p>
+                        <p><strong>⚠️ Sans supplierId:</strong> ${data.summary.withoutSupplierId}</p>
+                        <p><strong>🔴 Erreurs:</strong> ${data.summary.errors}</p>
+                        
+                        ${data.details.created.length > 0 ? `
+                            <h4>✅ Suppliers créés:</h4>
+                            <pre>${JSON.stringify(data.details.created, null, 2)}</pre>
+                        ` : ''}
+                        
+                        ${data.details.withoutSupplierId.length > 0 ? `
+                            <h4>⚠️ Sans supplierId (action manuelle requise):</h4>
+                            <pre>${JSON.stringify(data.details.withoutSupplierId, null, 2)}</pre>
+                        ` : ''}
+                        
+                        ${data.details.errors.length > 0 ? `
+                            <h4>🔴 Erreurs:</h4>
+                            <pre>${JSON.stringify(data.details.errors, null, 2)}</pre>
+                        ` : ''}
+                        
+                        ${data.summary.created > 0 ? `
+                            <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                                <strong>✅ Prochaine étape :</strong><br>
+                                Cliquez maintenant sur "🔍 Vérifier les noms" pour voir si les businessName sont corrects !
+                            </div>
+                        ` : ''}
+                    `;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de la création');
+                }
+            } catch (error) {
+                results.style.display = 'block';
+                results.innerHTML = `<p class="error">❌ Erreur: ${error.message}</p>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🆕 Créer les Suppliers manquants';
             }
         }
     </script>
