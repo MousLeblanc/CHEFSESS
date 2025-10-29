@@ -15,20 +15,24 @@ const router = express.Router();
 const canViewProducts = (req, res, next) => {
   const allowedRoles = ['restaurant', 'resto', 'collectivite', 'fournisseur', 'groupe'];
   const allowedUserRoles = ['GROUP_ADMIN', 'SITE_MANAGER', 'CHEF'];
+  const allowedEstablishmentTypes = ['ehpad', 'hopital', 'maison_de_retraite', 'cantine_scolaire', 'cantine_entreprise'];
   
-  // Autoriser si le rôle est dans la liste autorisée
+  // Vérifier le rôle principal
   if (allowedRoles.includes(req.user.role)) {
-    return next();
+    next();
+    return;
   }
   
-  // Autoriser si l'utilisateur a un des rôles autorisés
+  // Vérifier le type d'établissement (pour collectivités)
+  if (req.user.role === 'collectivite' || (req.user.establishmentType && allowedEstablishmentTypes.includes(req.user.establishmentType))) {
+    next();
+    return;
+  }
+  
+  // Vérifier les rôles secondaires (array)
   if (req.user.roles && req.user.roles.some(r => allowedUserRoles.includes(r))) {
-    return next();
-  }
-  
-  // Autoriser si l'utilisateur a un siteId (c'est un utilisateur de site/EHPAD)
-  if (req.user.siteId) {
-    return next();
+    next();
+    return;
   }
   
   // Sinon, refuser l'accès

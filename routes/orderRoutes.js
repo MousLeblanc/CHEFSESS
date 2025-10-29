@@ -18,13 +18,22 @@ const canManageOrders = (req, res, next) => {
   console.log('👤 User ID:', req.user._id);
   console.log('👤 User email:', req.user.email);
   console.log('👤 User role (string):', req.user.role, '| Type:', typeof req.user.role);
+  console.log('👤 User establishmentType:', req.user.establishmentType);
   console.log('👥 User roles (array):', req.user.roles, '| Type:', typeof req.user.roles, '| IsArray:', Array.isArray(req.user.roles));
   
   const allowedRoles = ['collectivite', 'restaurant', 'resto', 'groupe', 'GROUP_ADMIN', 'SITE_MANAGER', 'CHEF'];
+  const allowedEstablishmentTypes = ['ehpad', 'hopital', 'maison_de_retraite', 'cantine_scolaire', 'cantine_entreprise'];
   
   // Vérifier le rôle principal (string)
   if (allowedRoles.includes(req.user.role)) {
     console.log('✅ Accès autorisé via role principal:', req.user.role);
+    next();
+    return;
+  }
+  
+  // Vérifier le type d'établissement (pour collectivités)
+  if (req.user.role === 'collectivite' || (req.user.establishmentType && allowedEstablishmentTypes.includes(req.user.establishmentType))) {
+    console.log('✅ Accès autorisé via establishmentType:', req.user.establishmentType);
     next();
     return;
   }
