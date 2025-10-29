@@ -201,6 +201,16 @@
             </button>
             <div id="fix-results" class="results" style="display: none;"></div>
         </div>
+
+        <!-- Correction des dates de livraison -->
+        <div class="section">
+            <h2>4️⃣ Corriger les dates de livraison manquantes</h2>
+            <p>⚠️ <strong>Important pour le Food Cost !</strong> Ajoute les dates de livraison manquantes aux commandes livrées. Sans ces dates, les commandes ne seront pas comptées dans le Food Cost.</p>
+            <button id="fix-delivery-dates-btn" onclick="fixDeliveryDates()">
+                📅 Corriger les dates de livraison
+            </button>
+            <div id="fix-delivery-dates-results" class="results" style="display: none;"></div>
+        </div>
     </div>
 
     <script>
@@ -382,6 +392,66 @@
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '🆕 Créer les Suppliers manquants';
+            }
+        }
+
+        async function fixDeliveryDates() {
+            if (!confirm('⚠️ Ajouter les dates de livraison manquantes aux commandes livrées ?\n\nCela utilisera la date de mise à jour comme estimation.')) {
+                return;
+            }
+            
+            const btn = document.getElementById('fix-delivery-dates-btn');
+            const results = document.getElementById('fix-delivery-dates-results');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Correction en cours...';
+            results.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/admin/fix-delivery-dates', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    results.style.display = 'block';
+                    results.innerHTML = `
+                        <h3 class="success">✅ ${data.message}</h3>
+                        <p><strong>Total:</strong> ${data.summary.total} commande(s) trouvée(s) sans date</p>
+                        <p><strong>🔧 Corrigées:</strong> ${data.summary.fixed}</p>
+                        <p><strong>🔴 Erreurs:</strong> ${data.summary.errors}</p>
+                        
+                        ${data.details.fixed.length > 0 ? `
+                            <h4>Commandes corrigées:</h4>
+                            <pre>${JSON.stringify(data.details.fixed, null, 2)}</pre>
+                        ` : ''}
+                        
+                        ${data.details.errors.length > 0 ? `
+                            <h4>Erreurs:</h4>
+                            <pre>${JSON.stringify(data.details.errors, null, 2)}</pre>
+                        ` : ''}
+                        
+                        ${data.summary.fixed > 0 ? `
+                            <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                                <strong>✅ Prochaine étape :</strong><br>
+                                Allez maintenant dans Food Cost et cliquez sur "Recalculer les commandes" pour mettre à jour les montants !
+                            </div>
+                        ` : ''}
+                    `;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de la correction');
+                }
+            } catch (error) {
+                results.style.display = 'block';
+                results.innerHTML = `<p class="error">❌ Erreur: ${error.message}</p>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '📅 Corriger les dates de livraison';
             }
         }
     </script>

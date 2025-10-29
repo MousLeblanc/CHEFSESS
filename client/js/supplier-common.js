@@ -659,7 +659,7 @@ async function showMyOrders() {
             <button class="btn-secondary" onclick="window.showMyOrders()" style="padding: 0.5rem 1rem;">
               <i class="fas fa-sync-alt"></i> Actualiser
             </button>
-            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()" style="background: none; border: none; font-size: 2rem; font-weight: bold; color: #333; cursor: pointer; padding: 0; width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center;">&times;</button>
           </div>
         </div>
         

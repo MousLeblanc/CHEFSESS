@@ -5,6 +5,7 @@ import Supplier from '../models/Supplier.js';
 import Site from '../models/Site.js';
 import Group from '../models/Group.js';
 import Product from '../models/Product.js';
+import Order from '../models/Order.js';
 
 const router = express.Router();
 
@@ -315,6 +316,81 @@ router.post('/fix-missing-suppliers', protect, async (req, res) => {
         withValidSupplier: results.withValidSupplier.length,
         created: results.created.length,
         withoutSupplierId: results.withoutSupplierId.length,
+        errors: results.errors.length
+      },
+      details: results
+    });
+
+  } catch (error) {
+    console.error('❌ Erreur lors de la correction:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la correction',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * @route   POST /api/admin/fix-delivery-dates
+ * @desc    Ajouter les dates de livraison manquantes aux commandes livrées
+ * @access  Private (Admin uniquement)
+ */
+router.post('/fix-delivery-dates', protect, async (req, res) => {
+  try {
+    // Vérifier que l'utilisateur est admin
+    if (req.user.role !== 'admin' && !req.user.roles?.includes('GROUP_ADMIN')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Accès réservé aux administrateurs'
+      });
+    }
+
+    console.log('🔧 Début de la correction des dates de livraison...');
+
+    // Trouver toutes les commandes 'delivered' ou 'completed' SANS date de livraison
+    const ordersWithoutDate = await Order.find({
+      status: { $in: ['delivered', 'completed'] },
+      'dates.delivered': { $exists: false }
+    });
+
+    console.log(`📦 ${ordersWithoutDate.length} commande(s) sans date de livraison`);
+
+    const results = {
+      fixed: [],
+      errors: []
+    };
+
+    for (const order of ordersWithoutDate) {
+      try {
+        // Utiliser la date de mise à jour (updatedAt) comme date de livraison approximative
+        order.dates = order.dates || {};
+        order.dates.delivered = order.updatedAt || order.createdAt;
+        
+        await order.save();
+        
+        results.fixed.push({
+          orderNumber: order.orderNumber,
+          deliveredDate: order.dates.delivered
+        });
+
+        console.log(`✅ ${order.orderNumber}: Date définie à ${order.dates.delivered.toLocaleDateString('fr-FR')}`);
+      } catch (error) {
+        results.errors.push({
+          orderNumber: order.orderNumber,
+          error: error.message
+        });
+      }
+    }
+
+    console.log('✅ Correction des dates de livraison terminée');
+
+    res.json({
+      success: true,
+      message: 'Correction des dates de livraison terminée',
+      summary: {
+        total: ordersWithoutDate.length,
+        fixed: results.fixed.length,
         errors: results.errors.length
       },
       details: results
