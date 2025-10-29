@@ -773,4 +773,6 @@ class ResidentManager {
 let residentManager;
 document.addEventListener('DOMContentLoaded', () => {
   residentManager = new ResidentManager();
+  // Exposer globalement pour les attributs onclick
+  window.residentManager = residentManager;
 });
