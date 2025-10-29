@@ -689,7 +689,7 @@ async function showMyOrders() {
                         <ul style="margin: 0.5rem 0 0 1rem; padding: 0; list-style: none;">
                           ${order.items.map(item => `
                             <li style="padding: 0.25rem 0; font-size: 0.9rem;">
-                              • ${item.name || 'Article'} - ${item.quantity || 0} x ${(item.price || 0).toFixed(2)}€
+                              • ${item.productName || item.name || 'Article'} - ${item.quantity || 0} x ${(item.unitPrice || item.price || 0).toFixed(2)}€ = ${(item.totalPrice || 0).toFixed(2)}€
                             </li>
                           `).join('')}
                         </ul>
@@ -703,7 +703,7 @@ async function showMyOrders() {
                       </span>
                     </td>
                     <td style="text-align: right; padding: 0.75rem; font-weight: bold; font-size: 1.1rem; color: #28a745;">
-                      ${order.items.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0).toFixed(2)}€
+                      ${(order.pricing?.total || order.items.reduce((sum, item) => sum + (item.totalPrice || (item.unitPrice || item.price || 0) * (item.quantity || 0)), 0)).toFixed(2)}€
                     </td>
                     <td style="text-align: center; padding: 0.75rem;">
                       ${(order.status === 'shipped' || order.status === 'ready') ? `
