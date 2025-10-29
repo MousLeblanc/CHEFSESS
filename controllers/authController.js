@@ -151,6 +151,21 @@ export const login = asyncHandler(async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 jours
     });
     
+    // 🔧 Pour les fournisseurs, récupérer le nom depuis Supplier si disponible
+    let businessName = user.businessName;
+    if (user.role === 'fournisseur' && user.supplierId) {
+      try {
+        const Supplier = (await import('../models/Supplier.js')).default;
+        const supplier = await Supplier.findById(user.supplierId).select('name');
+        if (supplier) {
+          businessName = supplier.name;
+          console.log(`✅ Nom du fournisseur récupéré depuis Supplier: ${businessName}`);
+        }
+      } catch (error) {
+        console.warn('⚠️ Erreur lors de la récupération du nom du fournisseur:', error.message);
+      }
+    }
+    
     // Envoyer les données utilisateur (pour localStorage côté client)
     res.json({
       success: true,
@@ -160,7 +175,7 @@ export const login = asyncHandler(async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        businessName: user.businessName,
+        businessName: businessName, // ✅ Utilise le nom du Supplier si disponible
         establishmentType: user.establishmentType,
         groupId: user.groupId,
         siteId: user.siteId,
@@ -198,6 +213,20 @@ export const refreshToken = asyncHandler(async (req, res) => {
     // Générer un nouveau token
     const newToken = generateToken(user);
     
+    // 🔧 Pour les fournisseurs, récupérer le nom depuis Supplier si disponible
+    let businessName = user.businessName;
+    if (user.role === 'fournisseur' && user.supplierId) {
+      try {
+        const Supplier = (await import('../models/Supplier.js')).default;
+        const supplier = await Supplier.findById(user.supplierId).select('name');
+        if (supplier) {
+          businessName = supplier.name;
+        }
+      } catch (error) {
+        console.warn('⚠️ Erreur lors de la récupération du nom du fournisseur:', error.message);
+      }
+    }
+    
     res.json({
       success: true,
       token: newToken,
@@ -206,7 +235,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        businessName: user.businessName,
+        businessName: businessName, // ✅ Utilise le nom du Supplier si disponible
         establishmentType: user.establishmentType
       }
     });
@@ -224,6 +253,21 @@ export const checkToken = asyncHandler(async (req, res) => {
 // Fonction pour obtenir les informations de l'utilisateur connecté
 export const getMe = asyncHandler(async (req, res) => {
   // Si on arrive ici, c'est que le middleware protect a validé le token
+  
+  // 🔧 Pour les fournisseurs, récupérer le nom depuis Supplier si disponible
+  let businessName = req.user.businessName;
+  if (req.user.role === 'fournisseur' && req.user.supplierId) {
+    try {
+      const Supplier = (await import('../models/Supplier.js')).default;
+      const supplier = await Supplier.findById(req.user.supplierId).select('name');
+      if (supplier) {
+        businessName = supplier.name;
+      }
+    } catch (error) {
+      console.warn('⚠️ Erreur lors de la récupération du nom du fournisseur:', error.message);
+    }
+  }
+  
   res.json({
     success: true,
     user: {
@@ -232,7 +276,7 @@ export const getMe = asyncHandler(async (req, res) => {
       email: req.user.email,
       role: req.user.role,
       roles: req.user.roles,
-      businessName: req.user.businessName,
+      businessName: businessName, // ✅ Utilise le nom du Supplier si disponible
       establishmentType: req.user.establishmentType,
       groupId: req.user.groupId,
       siteId: req.user.siteId,

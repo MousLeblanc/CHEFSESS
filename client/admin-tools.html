@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outils Admin - ChAIf SES</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .warning strong {
+            color: #856404;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: #f9f9f9;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .section p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .results pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .success {
+            color: #27ae60;
+            font-weight: 600;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .auth-status {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .auth-status.authenticated {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .auth-status.not-authenticated {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Outils d'Administration</h1>
+        <p class="subtitle">Correction des noms de fournisseurs</p>
+
+        <div id="auth-status" class="auth-status not-authenticated">
+            ❌ Non connecté - Veuillez vous connecter en tant qu'administrateur
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Attention :</strong> Ces outils sont réservés aux administrateurs. Assurez-vous d'être connecté avec un compte admin ou GROUP_ADMIN.
+        </div>
+
+        <!-- Vérification -->
+        <div class="section">
+            <h2>1️⃣ Vérifier les noms (Sans modification)</h2>
+            <p>Vérifie tous les fournisseurs et identifie ceux qui ont un businessName incorrect.</p>
+            <button id="check-btn" onclick="checkSupplierNames()">
+                🔍 Vérifier les noms
+            </button>
+            <div id="check-results" class="results" style="display: none;"></div>
+        </div>
+
+        <!-- Correction -->
+        <div class="section">
+            <h2>2️⃣ Corriger les noms</h2>
+            <p>Corrige automatiquement tous les businessName incorrects en les remplaçant par les noms depuis la collection Supplier.</p>
+            <button id="fix-btn" onclick="fixSupplierNames()">
+                🔧 Corriger les noms
+            </button>
+            <div id="fix-results" class="results" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Vérifier l'authentification au chargement
+        window.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const authStatus = document.getElementById('auth-status');
+            
+            if (user.role === 'admin' || user.roles?.includes('GROUP_ADMIN')) {
+                authStatus.className = 'auth-status authenticated';
+                authStatus.innerHTML = `✅ Connecté en tant que: ${user.name || user.email}`;
+            } else {
+                authStatus.className = 'auth-status not-authenticated';
+                authStatus.innerHTML = '❌ Non connecté ou pas d\'accès admin - <a href="/index.html">Se connecter</a>';
+            }
+        });
+
+        async function checkSupplierNames() {
+            const btn = document.getElementById('check-btn');
+            const results = document.getElementById('check-results');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Vérification en cours...';
+            results.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/admin/check-supplier-names', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    results.style.display = 'block';
+                    results.innerHTML = `
+                        <h3 class="success">✅ Vérification terminée</h3>
+                        <p><strong>Total:</strong> ${data.summary.total} fournisseur(s)</p>
+                        <p><strong>✅ Corrects:</strong> ${data.summary.correct}</p>
+                        <p><strong>❌ Incorrects:</strong> ${data.summary.incorrect}</p>
+                        <p><strong>⚠️ Sans supplierId:</strong> ${data.summary.noSupplierId}</p>
+                        <p><strong>🔴 Erreurs:</strong> ${data.summary.errors}</p>
+                        
+                        ${data.details.incorrect.length > 0 ? `
+                            <h4>Fournisseurs à corriger:</h4>
+                            <pre>${JSON.stringify(data.details.incorrect, null, 2)}</pre>
+                        ` : ''}
+                    `;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de la vérification');
+                }
+            } catch (error) {
+                results.style.display = 'block';
+                results.innerHTML = `<p class="error">❌ Erreur: ${error.message}</p>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🔍 Vérifier les noms';
+            }
+        }
+
+        async function fixSupplierNames() {
+            if (!confirm('⚠️ Êtes-vous sûr de vouloir corriger tous les businessName incorrects ?\n\nCette action modifiera la base de données.')) {
+                return;
+            }
+            
+            const btn = document.getElementById('fix-btn');
+            const results = document.getElementById('fix-results');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Correction en cours...';
+            results.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/admin/fix-supplier-names', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    results.style.display = 'block';
+                    results.innerHTML = `
+                        <h3 class="success">✅ ${data.message}</h3>
+                        <p><strong>Total:</strong> ${data.summary.total} fournisseur(s)</p>
+                        <p><strong>🔧 Corrigés:</strong> ${data.summary.fixed}</p>
+                        <p><strong>✅ Déjà corrects:</strong> ${data.summary.skipped}</p>
+                        <p><strong>🔴 Erreurs:</strong> ${data.summary.errors}</p>
+                        
+                        ${data.details.fixed.length > 0 ? `
+                            <h4>Fournisseurs corrigés:</h4>
+                            <pre>${JSON.stringify(data.details.fixed, null, 2)}</pre>
+                        ` : ''}
+                        
+                        ${data.details.errors.length > 0 ? `
+                            <h4>Erreurs:</h4>
+                            <pre>${JSON.stringify(data.details.errors, null, 2)}</pre>
+                        ` : ''}
+                    `;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de la correction');
+                }
+            } catch (error) {
+                results.style.display = 'block';
+                results.innerHTML = `<p class="error">❌ Erreur: ${error.message}</p>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🔧 Corriger les noms';
+            }
+        }
+    </script>
+</body>
+</html>
+
