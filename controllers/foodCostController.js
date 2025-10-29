@@ -72,10 +72,13 @@ export const getFoodCostById = async (req, res) => {
     }
     
     // Vérifier les permissions
+    const allowedEstablishmentTypes = ['ehpad', 'hopital', 'maison_de_retraite', 'cantine_scolaire', 'cantine_entreprise'];
     const hasAccess = 
       req.user.role === 'admin' ||
       (req.user.role === 'GROUP_ADMIN' && foodCost.groupId.toString() === req.user.groupId.toString()) ||
-      (req.user.siteId && foodCost.siteId._id.toString() === req.user.siteId.toString());
+      (req.user.siteId && foodCost.siteId._id.toString() === req.user.siteId.toString()) ||
+      (req.user.establishmentType && allowedEstablishmentTypes.includes(req.user.establishmentType) && 
+       req.user.siteId && foodCost.siteId._id.toString() === req.user.siteId.toString());
     
     if (!hasAccess) {
       return res.status(403).json({ 
@@ -106,12 +109,29 @@ export const createFoodCost = async (req, res) => {
     const { siteId, period, startDate, endDate, budget } = req.body;
     
     // Vérifier les permissions
-    if (req.user.role !== 'admin' && req.user.role !== 'GROUP_ADMIN' && req.user.role !== 'SITE_MANAGER') {
+    const allowedEstablishmentTypes = ['ehpad', 'hopital', 'maison_de_retraite', 'cantine_scolaire', 'cantine_entreprise'];
+    const hasPermission = 
+      req.user.role === 'admin' ||
+      req.user.role === 'GROUP_ADMIN' ||
+      req.user.role === 'SITE_MANAGER' ||
+      (req.user.establishmentType && allowedEstablishmentTypes.includes(req.user.establishmentType) && req.user.siteId);
+    
+    if (!hasPermission) {
+      console.log('❌ Permission refusée pour:', { 
+        role: req.user.role, 
+        establishmentType: req.user.establishmentType,
+        siteId: req.user.siteId 
+      });
       return res.status(403).json({ 
         success: false,
         message: 'Vous n\'avez pas la permission de créer une période de food cost' 
       });
     }
+    
+    console.log('✅ Permission accordée pour:', { 
+      role: req.user.role, 
+      establishmentType: req.user.establishmentType 
+    });
     
     // Déterminer le site et le groupe
     let targetSiteId = siteId;
@@ -212,10 +232,13 @@ export const updateFoodCost = async (req, res) => {
     }
     
     // Vérifier les permissions
+    const allowedEstablishmentTypes = ['ehpad', 'hopital', 'maison_de_retraite', 'cantine_scolaire', 'cantine_entreprise'];
     const hasAccess = 
       req.user.role === 'admin' ||
       (req.user.role === 'GROUP_ADMIN' && foodCost.groupId.toString() === req.user.groupId.toString()) ||
-      (req.user.siteId && foodCost.siteId.toString() === req.user.siteId.toString());
+      (req.user.siteId && foodCost.siteId.toString() === req.user.siteId.toString()) ||
+      (req.user.establishmentType && allowedEstablishmentTypes.includes(req.user.establishmentType) && 
+       req.user.siteId && foodCost.siteId.toString() === req.user.siteId.toString());
     
     if (!hasAccess) {
       return res.status(403).json({ 
@@ -263,10 +286,13 @@ export const addManualExpense = async (req, res) => {
     }
     
     // Vérifier les permissions
+    const allowedEstablishmentTypes = ['ehpad', 'hopital', 'maison_de_retraite', 'cantine_scolaire', 'cantine_entreprise'];
     const hasAccess = 
       req.user.role === 'admin' ||
       (req.user.role === 'GROUP_ADMIN' && foodCost.groupId.toString() === req.user.groupId.toString()) ||
-      (req.user.siteId && foodCost.siteId.toString() === req.user.siteId.toString());
+      (req.user.siteId && foodCost.siteId.toString() === req.user.siteId.toString()) ||
+      (req.user.establishmentType && allowedEstablishmentTypes.includes(req.user.establishmentType) && 
+       req.user.siteId && foodCost.siteId.toString() === req.user.siteId.toString());
     
     if (!hasAccess) {
       return res.status(403).json({ 
@@ -337,10 +363,13 @@ export const deleteManualExpense = async (req, res) => {
     }
     
     // Vérifier les permissions
+    const allowedEstablishmentTypes = ['ehpad', 'hopital', 'maison_de_retraite', 'cantine_scolaire', 'cantine_entreprise'];
     const hasAccess = 
       req.user.role === 'admin' ||
       (req.user.role === 'GROUP_ADMIN' && foodCost.groupId.toString() === req.user.groupId.toString()) ||
-      (req.user.siteId && foodCost.siteId.toString() === req.user.siteId.toString());
+      (req.user.siteId && foodCost.siteId.toString() === req.user.siteId.toString()) ||
+      (req.user.establishmentType && allowedEstablishmentTypes.includes(req.user.establishmentType) && 
+       req.user.siteId && foodCost.siteId.toString() === req.user.siteId.toString());
     
     if (!hasAccess) {
       return res.status(403).json({ 
