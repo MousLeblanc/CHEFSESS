@@ -1548,9 +1548,14 @@ class GroupDashboard {
                 costsChart.innerHTML = '<div class="loader" style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
             }
             
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Non connecté. Veuillez vous reconnecter.');
+            }
+            
             const response = await fetch('/api/foodcost/reports', {
                 headers: {
-                    'Authorization': `Bearer ${this.getToken()}`,
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
