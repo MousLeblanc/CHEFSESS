@@ -180,7 +180,14 @@ export const createFoodCost = async (req, res) => {
       status: { $in: ['delivered', 'completed'] }
     });
     
-    const ordersTotal = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+    const ordersTotal = orders.reduce((sum, order) => {
+      // Utiliser pricing.total car le modèle Order stocke le total dans pricing.total
+      const orderTotal = order.pricing?.total || 0;
+      console.log(`📦 Commande ${order.orderNumber}: ${orderTotal}€`);
+      return sum + orderTotal;
+    }, 0);
+    
+    console.log(`💰 Total des commandes pour la période: ${ordersTotal}€`);
     
     // Créer la période
     const foodCost = await FoodCost.create({
@@ -424,7 +431,14 @@ export const recalculateOrders = async (req, res) => {
       status: { $in: ['delivered', 'completed'] }
     });
     
-    foodCost.expenses.orders = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+    foodCost.expenses.orders = orders.reduce((sum, order) => {
+      // Utiliser pricing.total car le modèle Order stocke le total dans pricing.total
+      const orderTotal = order.pricing?.total || 0;
+      console.log(`📦 Recalcul commande ${order.orderNumber}: ${orderTotal}€`);
+      return sum + orderTotal;
+    }, 0);
+    
+    console.log(`💰 Total recalculé: ${foodCost.expenses.orders}€ (${orders.length} commandes)`);
     foodCost.lastUpdatedBy = req.user._id;
     
     await foodCost.save();

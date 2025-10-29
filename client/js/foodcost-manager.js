@@ -406,9 +406,14 @@ class FoodCostManager {
             </table>
           ` : '<p style="color: #888; font-style: italic;">Aucune dépense manuelle</p>'}
           
-          <button onclick="foodCostManager.showAddExpenseModal('${period._id}')" class="btn btn-primary" style="margin-top: 1rem;">
-            <i class="fas fa-plus"></i> Ajouter une dépense manuelle
-          </button>
+          <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button onclick="foodCostManager.showAddExpenseModal('${period._id}')" class="btn btn-primary">
+              <i class="fas fa-plus"></i> Ajouter une dépense manuelle
+            </button>
+            <button onclick="foodCostManager.recalculateOrders('${period._id}')" class="btn" style="background: #17a2b8; color: white;">
+              <i class="fas fa-sync"></i> Recalculer les commandes
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -537,6 +542,45 @@ class FoodCostManager {
       await this.viewPeriodDetails(periodId);
     } catch (error) {
       console.error('Erreur addExpense:', error);
+      this.showToast(error.message, 'error');
+    }
+  }
+
+  // Recalculer les commandes d'une période
+  async recalculateOrders(periodId) {
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Confirmation
+      if (!confirm('Recalculer les commandes fournisseurs pour cette période ?\n\nCela mettra à jour le total en utilisant le bon champ pricing.total.')) {
+        return;
+      }
+      
+      const response = await fetch(`/api/foodcost/${periodId}/recalculate`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erreur lors du recalcul');
+      }
+
+      this.showToast('Commandes recalculées avec succès', 'success');
+      
+      // Recharger les données
+      await this.loadPeriods();
+      await this.loadStats();
+      
+      // Fermer les modals et rouvrir avec les nouvelles données
+      const modals = document.querySelectorAll('.modal');
+      modals.forEach(m => m.remove());
+      await this.viewPeriodDetails(periodId);
+    } catch (error) {
+      console.error('Erreur recalculateOrders:', error);
       this.showToast(error.message, 'error');
     }
   }
