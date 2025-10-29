@@ -4,6 +4,7 @@ import User from '../models/User.js';
 import Supplier from '../models/Supplier.js';
 import Site from '../models/Site.js';
 import Group from '../models/Group.js';
+import Product from '../models/Product.js';
 
 const router = express.Router();
 

@@ -52,20 +52,33 @@ export const createOrder = asyncHandler(async (req, res) => {
   const stockWarnings = []; // Pour stocker les alertes de stock bas
 
   for (const item of items) {
+    console.log(`\n🔍 Traitement item:`, {
+      productId: item.productId,
+      quantity: item.quantity
+    });
+    
     const product = await Product.findById(item.productId);
     if (!product) {
+      console.error(`❌ Produit non trouvé: ${item.productId}`);
       res.status(400);
       throw new Error(`Produit non trouvé: ${item.productId}`);
     }
 
+    console.log(`📦 Produit trouvé: ${product.name}`);
+    console.log(`   Prix: ${product.price}€/${product.unit}`);
+    console.log(`   Stock: ${product.stock} ${product.unit}`);
+
     // 🎯 VÉRIFIER LE STOCK DISPONIBLE CHEZ LE FOURNISSEUR
     if (product.stock < item.quantity) {
+      console.error(`❌ Stock insuffisant pour ${product.name}`);
       res.status(400);
       throw new Error(`Stock insuffisant pour ${product.name}. Disponible: ${product.stock} ${product.unit}, Demandé: ${item.quantity} ${product.unit}`);
     }
 
     const totalPrice = product.price * item.quantity;
     subtotal += totalPrice;
+
+    console.log(`💰 Prix unitaire: ${product.price}€, Quantité: ${item.quantity}, Total: ${totalPrice.toFixed(2)}€`);
 
     orderItems.push({
       product: product._id,
