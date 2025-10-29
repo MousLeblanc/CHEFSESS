@@ -342,7 +342,7 @@ async function loadStockFromAPI() {
             method: 'GET',
             headers: {
                 // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json',
+                'Content-Type': 'application/json',
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 'Pragma': 'no-cache',
                 'Expires': '0'

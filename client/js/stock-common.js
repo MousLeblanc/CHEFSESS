@@ -633,7 +633,7 @@ export async function loadDemoStock() {
       method: 'POST',
       headers: {
         // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+        'Content-Type': 'application/json'
       }
     });
     

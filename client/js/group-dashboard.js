@@ -1555,7 +1555,7 @@ class GroupDashboard {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 headers: {
                     // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 }
             });
             
@@ -2441,7 +2441,7 @@ class GroupDashboard {
                 method: 'GET',
                 headers: {
                     // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 }
             });
             
@@ -2961,7 +2961,7 @@ class GroupDashboard {
                 method: 'PUT',
                 headers: {
                     // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ itemsToDeduct: itemsToDeduct })
             });

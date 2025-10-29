@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'GET',
                 headers: {
                     // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 }
             });
 
@@ -660,7 +660,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: {
                     // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(stockData)
             });
@@ -740,7 +740,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'GET',
                 headers: {
                     // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 }
             });
 
@@ -750,7 +750,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'GET',
                 headers: {
                     // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 }
             });
 
@@ -1042,7 +1042,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: {
                     // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(supplierData)
             });
@@ -1106,7 +1106,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'GET',
                 headers: {
                     // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 }
             });
 
@@ -1247,7 +1247,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'PUT',
                 headers: {
                     // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(stockData)
             });
@@ -1311,7 +1311,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'DELETE',
                 headers: {
                     // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 }
             });
 
@@ -1357,7 +1357,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'GET',
                 headers: {
                     // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 }
             });
 
@@ -1452,7 +1452,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'PUT',
                 headers: {
                     // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(supplierData)
             });
@@ -1490,7 +1490,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'DELETE',
                 headers: {
                     // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 }
             });
 
@@ -2612,7 +2612,7 @@ window.showMyOrders = async function() {
             credentials: 'include', // 🍪 Cookie HTTP-Only
             headers: {
                 // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+                'Content-Type': 'application/json'
             }
         });
         
@@ -2792,7 +2792,7 @@ window.cancelMyOrder = async function(orderId) {
             method: 'PUT',
             headers: {
                 // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
+                'Content-Type': 'application/json'
             }
         });
         
