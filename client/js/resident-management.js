@@ -418,22 +418,28 @@ class ResidentManager {
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
             <div>
-              <label>Texture</label>
+              <label>Texture (IDDSI Aliments)</label>
               <select id="resident-texture" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
-                <option value="normale">Normale</option>
-                <option value="hachée">Hachée</option>
-                <option value="mixée">Mixée</option>
-                <option value="iddsi_4">IDDSI 4</option>
-                <option value="iddsi_5">IDDSI 5</option>
+                <option value="iddsi_7">IDDSI 7 - Normal facile à mastiquer</option>
+                <option value="iddsi_6">IDDSI 6 - Petites morceaux tendres</option>
+                <option value="iddsi_5">IDDSI 5 - Haché lubrifié</option>
+                <option value="iddsi_4">IDDSI 4 - Purée lisse</option>
+                <option value="iddsi_3">IDDSI 3 - Purée fluide</option>
+                <option value="finger_food">Finger Food</option>
               </select>
             </div>
             <div>
-              <label>Déglutition</label>
+              <label>Déglutition (IDDSI)</label>
               <select id="resident-swallowing" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
-                <option value="normale">Normale</option>
-                <option value="epaisse_nectar">Épaisse nectar</option>
-                <option value="epaisse_miel">Épaisse miel</option>
-                <option value="epaisse_pudding">Épaisse pudding</option>
+                <option value="iddsi_7">IDDSI 7 - Normal facile à mastiquer</option>
+                <option value="iddsi_6">IDDSI 6 - Petites morceaux tendres</option>
+                <option value="iddsi_5">IDDSI 5 - Haché lubrifié</option>
+                <option value="iddsi_4">IDDSI 4 - Purée lisse/Très épais (boisson)</option>
+                <option value="iddsi_3">IDDSI 3 - Purée fluide/Modérément épais (boisson)</option>
+                <option value="iddsi_2">IDDSI 2 - Légèrement épais (boisson)</option>
+                <option value="iddsi_1">IDDSI 1 - Très légèrement épais (boisson)</option>
+                <option value="iddsi_0">IDDSI 0 - Liquide</option>
+                <option value="finger_food">Finger Food</option>
               </select>
             </div>
           </div>
