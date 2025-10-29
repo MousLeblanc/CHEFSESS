@@ -4,6 +4,7 @@ import {
   getFoodCostById,
   createFoodCost,
   updateFoodCost,
+  deleteFoodCost,
   addManualExpense,
   deleteManualExpense,
   recalculateOrders,
@@ -27,7 +28,8 @@ router.route('/')
 
 router.route('/:id')
   .get(getFoodCostById)
-  .put(updateFoodCost);
+  .put(updateFoodCost)
+  .delete(deleteFoodCost);
 
 // Routes pour les dépenses manuelles
 router.post('/:id/expense', addManualExpense);

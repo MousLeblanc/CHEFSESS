@@ -308,6 +308,54 @@ export const updateFoodCost = async (req, res) => {
   }
 };
 
+// @desc    Supprimer une période de food cost
+// @route   DELETE /api/foodcost/:id
+// @access  Private
+export const deleteFoodCost = async (req, res) => {
+  try {
+    const foodCost = await FoodCost.findById(req.params.id);
+    
+    if (!foodCost) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Période de food cost non trouvée' 
+      });
+    }
+    
+    // Vérifier les permissions
+    const allowedEstablishmentTypes = ['ehpad', 'hopital', 'maison_de_retraite', 'cantine_scolaire', 'cantine_entreprise'];
+    const hasAccess = 
+      req.user.role === 'admin' ||
+      (req.user.role === 'GROUP_ADMIN' && foodCost.groupId.toString() === req.user.groupId.toString()) ||
+      (req.user.siteId && foodCost.siteId.toString() === req.user.siteId.toString()) ||
+      (req.user.establishmentType && allowedEstablishmentTypes.includes(req.user.establishmentType) && 
+       req.user.siteId && foodCost.siteId.toString() === req.user.siteId.toString());
+    
+    if (!hasAccess) {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Accès refusé' 
+      });
+    }
+    
+    await foodCost.deleteOne();
+    
+    console.log(`✅ Période Food Cost supprimée: ${foodCost.period} (${foodCost.startDate.toLocaleDateString('fr-FR')} - ${foodCost.endDate.toLocaleDateString('fr-FR')})`);
+    
+    res.json({
+      success: true,
+      message: 'Période supprimée avec succès'
+    });
+  } catch (error) {
+    console.error('Erreur deleteFoodCost:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Erreur lors de la suppression',
+      error: error.message 
+    });
+  }
+};
+
 // @desc    Ajouter une dépense manuelle
 // @route   POST /api/foodcost/:id/expense
 // @access  Private

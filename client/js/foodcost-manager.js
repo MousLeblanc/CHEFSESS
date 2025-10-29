@@ -406,12 +406,15 @@ class FoodCostManager {
             </table>
           ` : '<p style="color: #888; font-style: italic;">Aucune dépense manuelle</p>'}
           
-          <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+          <div style="display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;">
             <button onclick="foodCostManager.showAddExpenseModal('${period._id}')" class="btn btn-primary">
               <i class="fas fa-plus"></i> Ajouter une dépense manuelle
             </button>
             <button onclick="foodCostManager.recalculateOrders('${period._id}')" class="btn" style="background: #17a2b8; color: white;">
               <i class="fas fa-sync"></i> Recalculer les commandes
+            </button>
+            <button onclick="foodCostManager.deletePeriod('${period._id}')" class="btn" style="background: #dc3545; color: white;">
+              <i class="fas fa-trash"></i> Supprimer la période
             </button>
           </div>
         </div>
@@ -604,6 +607,60 @@ class FoodCostManager {
       await this.viewPeriodDetails(periodId);
     } catch (error) {
       console.error('Erreur recalculateOrders:', error);
+      this.showToast(error.message, 'error');
+    }
+  }
+
+  // Supprimer une période
+  async deletePeriod(periodId) {
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Confirmation
+      if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette période ?\n\nCette action est irréversible !')) {
+        return;
+      }
+      
+      console.log('🗑️ Suppression de la période:', periodId);
+      
+      const response = await fetch(`/api/foodcost/${periodId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('📡 Response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Erreur response:', errorText);
+        let errorMessage;
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || 'Erreur lors de la suppression';
+        } catch (e) {
+          errorMessage = errorText || 'Erreur lors de la suppression';
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      console.log('✅ Période supprimée:', data);
+
+      this.showToast('✅ Période supprimée avec succès', 'success');
+      
+      // Fermer toutes les modals
+      const modals = document.querySelectorAll('.modal');
+      modals.forEach(m => m.remove());
+      
+      // Recharger les données
+      console.log('🔄 Rechargement des périodes et stats...');
+      await this.loadPeriods();
+      await this.loadStats();
+    } catch (error) {
+      console.error('Erreur deletePeriod:', error);
       this.showToast(error.message, 'error');
     }
   }
