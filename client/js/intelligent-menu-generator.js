@@ -52,9 +52,6 @@ class IntelligentMenuGenerator {
       };
       
       // Ajouter le token seulement si présent
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
 
       const response = await fetch(`${this.apiUrl}${endpoint}`, {
         credentials: 'include', // 🍪 Cookie HTTP-Only

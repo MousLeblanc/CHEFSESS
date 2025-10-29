@@ -667,7 +667,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 if (response.status === 401) {
-                    console.log('🔄 Token invalide, passage en mode mock');
+                    console.log('🔐 Authentification via cookie HTTP-Only');
                     addMockStockItem(form);
                     return;
                 }
@@ -732,7 +732,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
                 // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
-            console.log('🔑 Token trouvé:', token.substring(0, 20) + '...');
+            console.log('🔐 Authentification via cookie HTTP-Only'); + '...');
 
             // Charger les fournisseurs enregistrés par les collectivités
             const suppliersResponse = await fetch('/api/suppliers', {
@@ -1049,7 +1049,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 if (response.status === 401) {
-                    console.log('🔄 Token invalide, passage en mode mock');
+                    console.log('🔐 Authentification via cookie HTTP-Only');
                     addMockSupplier(form);
                     return;
                 }
@@ -1112,7 +1112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 if (response.status === 401) {
-                    console.log('🔄 Token invalide, passage en mode mock');
+                    console.log('🔐 Authentification via cookie HTTP-Only');
                     editMockStockItem(id);
                     return;
                 }
@@ -1254,7 +1254,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 if (response.status === 401) {
-                    console.log('🔄 Token invalide, passage en mode mock');
+                    console.log('🔐 Authentification via cookie HTTP-Only');
                     updateMockStockItem(id, form);
                     return;
                 }
@@ -1317,7 +1317,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 if (response.status === 401) {
-                    console.log('🔄 Token invalide, passage en mode mock');
+                    console.log('🔐 Authentification via cookie HTTP-Only');
                     deleteMockStockItem(id);
                     return;
                 }
@@ -1496,7 +1496,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 if (response.status === 401) {
-                    console.log('🔄 Token invalide, passage en mode mock');
+                    console.log('🔐 Authentification via cookie HTTP-Only');
                     deleteMockSupplier(id);
                     return;
                 }

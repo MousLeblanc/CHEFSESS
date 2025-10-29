@@ -229,17 +229,10 @@ class GroupDashboard {
      */
     async checkAuthentication() {
         try {
-            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-            const headers = { 'Content-Type': 'application/json' };
-            
-            // Envoyer le token dans le header ET via cookies pour compatibilité
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
-            
+            // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
             const res = await fetch("/api/auth/me", { 
                 credentials: "include",
-                headers: headers
+                headers: { 'Content-Type': 'application/json' }
             });
             
             if (res.status === 401) {

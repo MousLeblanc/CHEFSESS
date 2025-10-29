@@ -11,9 +11,8 @@ export async function loadSuppliersData() {
   console.log('📦 Chargement des fournisseurs...');
   
   try {
-    // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-    console.log('🔑 Token présent:', token ? 'OUI' : 'NON');
-    console.log('🔑 Token (premiers caractères):', token ? token.substring(0, 20) + '...' : 'N/A');
+    // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
+    console.log('🔐 Authentification via cookie HTTP-Only');
     
     const response = await fetch('/api/users/suppliers', {
       headers: {
@@ -114,25 +113,17 @@ export async function browseSupplierProducts(supplierId, supplierName) {
   currentSupplierId = supplierId;
   
   try {
-    // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-    const headers = {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0'
-    };
-    
-    // Ajouter le token si disponible
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    console.log('🔑 Token présent:', !!token);
+    // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
     console.log('📡 Appel API:', `/api/products/supplier/${supplierId}`);
     
     const response = await fetch(`/api/products/supplier/${supplierId}`, {
-      headers: headers,
-      credentials: 'include' // 🔐 Envoie automatiquement le cookie
+      credentials: 'include', // 🔐 Envoie automatiquement le cookie
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
     });
     
     if (response.ok) {
