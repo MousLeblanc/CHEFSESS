@@ -408,17 +408,29 @@
             results.style.display = 'none';
             
             try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('Non connecté - veuillez vous reconnecter');
+                }
+                
                 const response = await fetch('/api/admin/fix-delivery-dates', {
                     method: 'POST',
                     headers: {
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    },
-                    credentials: 'include'
+                    }
                 });
+                
+                if (!response.ok) {
+                    const text = await response.text();
+                    console.error('Response status:', response.status);
+                    console.error('Response text:', text);
+                    throw new Error(`Erreur ${response.status}: ${text || 'Erreur serveur'}`);
+                }
                 
                 const data = await response.json();
                 
-                if (response.ok) {
+                if (data.success) {
                     results.style.display = 'block';
                     results.innerHTML = `
                         <h3 class="success">✅ ${data.message}</h3>
