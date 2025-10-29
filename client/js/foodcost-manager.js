@@ -583,16 +583,24 @@ class FoodCostManager {
 
       const data = await response.json();
       console.log('✅ Données recalculées:', data);
+      console.log('💰 Total des commandes:', data.data?.expenses?.orders || 0, '€');
 
-      this.showToast(`✅ Recalcul terminé ! Total: ${data.data?.expenses?.orders || 0}€`, 'success');
+      this.showToast(`✅ Recalcul terminé ! Total: ${(data.data?.expenses?.orders || 0).toFixed(2)}€`, 'success');
       
-      // Recharger les données
+      // Fermer la modal actuelle
+      const modals = document.querySelectorAll('.modal');
+      modals.forEach(m => m.remove());
+      
+      // Recharger les données AVANT de rouvrir la modal
+      console.log('🔄 Rechargement des périodes...');
       await this.loadPeriods();
       await this.loadStats();
       
-      // Fermer les modals et rouvrir avec les nouvelles données
-      const modals = document.querySelectorAll('.modal');
-      modals.forEach(m => m.remove());
+      // Attendre un peu pour être sûr que les données sont à jour
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Rouvrir la modal avec les nouvelles données
+      console.log('🔄 Réouverture de la modal...');
       await this.viewPeriodDetails(periodId);
     } catch (error) {
       console.error('Erreur recalculateOrders:', error);
