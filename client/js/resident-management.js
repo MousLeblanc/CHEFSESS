@@ -309,7 +309,45 @@ class ResidentManager {
     document.body.appendChild(modal);
   }
 
-  createResidentModal() {
+  async editResident(residentId) {
+    // Récupérer les données du résident
+    const resident = this.residents.find(r => r._id === residentId);
+    if (!resident) {
+      this.showToast('Résident non trouvé', 'error');
+      return;
+    }
+
+    // Créer et afficher le modal avec les données pré-remplies
+    const modal = this.createResidentModal(resident);
+    document.body.appendChild(modal);
+  }
+
+  async deleteResident(residentId) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce résident ?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/residents/${residentId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la suppression du résident');
+      }
+
+      this.showToast('Résident supprimé avec succès', 'success');
+      this.loadResidents();
+      this.loadStats();
+    } catch (error) {
+      console.error('Erreur:', error);
+      this.showToast('Erreur lors de la suppression du résident', 'error');
+    }
+  }
+
+  createResidentModal(resident = null) {
+    const isEdit = !!resident;
     const modal = document.createElement('div');
     modal.style.cssText = `
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -319,34 +357,34 @@ class ResidentManager {
 
     modal.innerHTML = `
       <div style="background: white; border-radius: 12px; padding: 2rem; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
-        <h2 style="margin: 0 0 1.5rem 0; color: #4caf50;">
-          <i class="fas fa-user-plus"></i> Ajouter un résident
+        <h2 style="margin: 0 0 1.5rem 0; color: ${isEdit ? '#3498db' : '#4caf50'};">
+          <i class="fas ${isEdit ? 'fa-edit' : 'fa-user-plus'}"></i> ${isEdit ? 'Modifier le résident' : 'Ajouter un résident'}
         </h2>
         
-        <form id="add-resident-form">
+        <form id="add-resident-form" data-resident-id="${isEdit ? resident._id : ''}">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
             <div>
               <label>Prénom *</label>
-              <input type="text" id="resident-firstname" required style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+              <input type="text" id="resident-firstname" required value="${isEdit ? resident.firstName : ''}" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
             </div>
             <div>
               <label>Nom *</label>
-              <input type="text" id="resident-lastname" required style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+              <input type="text" id="resident-lastname" required value="${isEdit ? resident.lastName : ''}" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
             </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
             <div>
               <label>Date de naissance *</label>
-              <input type="date" id="resident-birthdate" required style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+              <input type="date" id="resident-birthdate" required value="${isEdit && resident.dateOfBirth ? resident.dateOfBirth.split('T')[0] : ''}" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
             </div>
             <div>
               <label>Genre *</label>
               <select id="resident-gender" required style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
                 <option value="">Sélectionner...</option>
-                <option value="homme">Homme</option>
-                <option value="femme">Femme</option>
-                <option value="autre">Autre</option>
+                <option value="homme" ${isEdit && resident.gender === 'homme' ? 'selected' : ''}>Homme</option>
+                <option value="femme" ${isEdit && resident.gender === 'femme' ? 'selected' : ''}>Femme</option>
+                <option value="autre" ${isEdit && resident.gender === 'autre' ? 'selected' : ''}>Autre</option>
               </select>
             </div>
           </div>
@@ -354,14 +392,14 @@ class ResidentManager {
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
             <div>
               <label>Numéro de chambre</label>
-              <input type="text" id="resident-room" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+              <input type="text" id="resident-room" value="${isEdit && resident.roomNumber ? resident.roomNumber : ''}" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
             </div>
             <div>
               <label>Taille de portion</label>
               <select id="resident-portion" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
-                <option value="0.5">½ - Demi-portion</option>
-                <option value="1" selected>1 - Portion normale</option>
-                <option value="2">2 - Double portion</option>
+                <option value="0.5" ${isEdit && resident.portionSize === 0.5 ? 'selected' : ''}>½ - Demi-portion</option>
+                <option value="1" ${!isEdit || resident.portionSize === 1 ? 'selected' : ''}>1 - Portion normale</option>
+                <option value="2" ${isEdit && resident.portionSize === 2 ? 'selected' : ''}>2 - Double portion</option>
               </select>
             </div>
           </div>
@@ -429,6 +467,47 @@ class ResidentManager {
       </div>
     `;
 
+    // Pré-remplir les champs si c'est une édition
+    if (isEdit && resident.nutritionalProfile) {
+      const np = resident.nutritionalProfile;
+      
+      // Pré-cocher les conditions médicales
+      if (np.medicalConditions) {
+        np.medicalConditions.forEach(cond => {
+          const value = typeof cond === 'string' ? cond : cond.condition;
+          const checkbox = modal.querySelector(`.medical-condition[value="${value}"]`);
+          if (checkbox) checkbox.checked = true;
+        });
+      }
+      
+      // Pré-cocher les allergènes
+      if (np.allergies) {
+        np.allergies.forEach(allergy => {
+          const value = typeof allergy === 'string' ? allergy : allergy.allergen;
+          const checkbox = modal.querySelector(`.allergen[value="${value}"]`);
+          if (checkbox) checkbox.checked = true;
+        });
+      }
+      
+      // Sélectionner la texture
+      if (np.texturePreferences?.consistency) {
+        const textureSelect = modal.querySelector('#resident-texture');
+        if (textureSelect) textureSelect.value = np.texturePreferences.consistency;
+      }
+      
+      // Sélectionner la déglutition
+      if (np.texturePreferences?.notes) {
+        const swallowingSelect = modal.querySelector('#resident-swallowing');
+        if (swallowingSelect) swallowingSelect.value = np.texturePreferences.notes;
+      }
+      
+      // Notes
+      if (resident.generalNotes) {
+        const notesTextarea = modal.querySelector('#resident-notes');
+        if (notesTextarea) notesTextarea.value = resident.generalNotes;
+      }
+    }
+
     // Gérer la soumission du formulaire
     modal.querySelector('#add-resident-form').addEventListener('submit', (e) => {
       e.preventDefault();
@@ -447,6 +526,10 @@ class ResidentManager {
 
   async saveResident(modal) {
     try {
+      const form = modal.querySelector('#add-resident-form');
+      const residentId = form.dataset.residentId;
+      const isEdit = !!residentId;
+
       // Récupérer les conditions médicales cochées
       const medicalConditions = Array.from(modal.querySelectorAll('.medical-condition:checked'))
         .map(cb => ({
@@ -491,8 +574,11 @@ class ResidentManager {
 
       console.log('Envoi des données:', formData);
 
-      const response = await fetch('/api/residents', {
-        method: 'POST',
+      const url = isEdit ? `/api/residents/${residentId}` : '/api/residents';
+      const method = isEdit ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json'
         },
@@ -503,19 +589,19 @@ class ResidentManager {
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Erreur serveur:', errorData);
-        throw new Error(errorData.message || 'Erreur lors de la création du résident');
+        throw new Error(errorData.message || `Erreur lors de ${isEdit ? 'la modification' : 'la création'} du résident`);
       }
 
       const result = await response.json();
-      console.log('Résident créé:', result);
+      console.log(`Résident ${isEdit ? 'modifié' : 'créé'}:`, result);
 
-      this.showToast('Résident créé avec succès', 'success');
+      this.showToast(`Résident ${isEdit ? 'modifié' : 'créé'} avec succès`, 'success');
       modal.remove();
       this.loadResidents();
       this.loadStats();
     } catch (error) {
       console.error('Erreur:', error);
-      this.showToast(error.message || 'Erreur lors de la création du résident', 'error');
+      this.showToast(error.message || `Erreur lors de ${residentId ? 'la modification' : 'la création'} du résident`, 'error');
     }
   }
 
