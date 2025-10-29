@@ -52,7 +52,7 @@ async function loadUserAndSiteInfo() {
     }
 
     // Récupérer les informations utilisateur depuis localStorage
-    const userString = localStorage.getItem('user');
+    const userString = sessionStorage.getItem('user');
     if (userString) {
       currentUser = JSON.parse(userString);
       console.log('👤 Utilisateur chargé:', currentUser);
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
       // 🍪 Token supprimé via cookie (géré par le backend)
-      localStorage.removeItem('user');
+      sessionStorage.removeItem('user');
       window.location.href = 'index.html';
     });
   }

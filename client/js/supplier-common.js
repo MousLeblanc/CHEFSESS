@@ -563,7 +563,7 @@ async function checkoutCart() {
     
     // Créer une commande pour chaque fournisseur
     // IMPORTANT: Seules les collectivités peuvent créer des commandes
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     
     if (user.role === 'fournisseur') {
       console.error('❌ Les fournisseurs ne peuvent pas créer de commandes !');
@@ -708,7 +708,7 @@ async function showMyOrders() {
     }
     
     // Déterminer l'endpoint selon le rôle de l'utilisateur
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     const endpoint = user.role === 'fournisseur' ? '/api/orders/supplier' : '/api/orders';
     
     console.log(`📋 Chargement des commandes - Rôle: ${user.role}, Endpoint: ${endpoint}`);
@@ -859,7 +859,7 @@ let lastOrdersCheck = null;
 async function checkOrdersUpdates() {
   try {
     // Déterminer l'endpoint selon le rôle de l'utilisateur
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     const endpoint = user.role === 'fournisseur' ? '/api/orders/supplier' : '/api/orders';
     
     console.log(`🔍 Vérification des commandes - Rôle: ${user.role}, Endpoint: ${endpoint}`);

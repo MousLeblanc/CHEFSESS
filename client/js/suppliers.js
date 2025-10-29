@@ -20,7 +20,7 @@ class RestaurantSupplierManager {
 
     async init() {
         // Vérifier l'authentification et le rôle
-        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        const user = JSON.parse(sessionStorage.getItem('user') || 'null');
         if (!user || (user.role !== 'resto' && user.role !== 'collectivite')) {
             window.location.href = 'index.html';
             return;
@@ -47,7 +47,7 @@ class RestaurantSupplierManager {
         // Bouton de déconnexion
         document.querySelector('.logout-btn').addEventListener('click', () => {
             // 🍪 Token supprimé via cookie (géré par le backend)
-            localStorage.removeItem('user');
+            sessionStorage.removeItem('user');
             localStorage.removeItem('chaif-ses-session-start');
             window.location.href = 'index.html';
         });
@@ -99,7 +99,7 @@ class RestaurantSupplierManager {
                 this.showToast('Session expirée. Reconnexion nécessaire.', 'error');
                 setTimeout(() => {
                     // 🍪 Token supprimé via cookie (géré par le backend)
-                    localStorage.removeItem('user');
+                    sessionStorage.removeItem('user');
                     window.location.href = 'index.html';
                 }, 2000);
             } else {

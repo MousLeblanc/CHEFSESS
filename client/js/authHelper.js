@@ -5,7 +5,7 @@ export function getToken() {
 
 export function getCurrentUser() {
   try {
-    return JSON.parse(localStorage.getItem('user')) || null;
+    return JSON.parse(sessionStorage.getItem('user')) || null;
   } catch {
     return null;
   }
@@ -17,6 +17,6 @@ export function isAuthenticated() {
 
 export function logout() {
   // 🍪 Token supprimé via cookie (géré par le backend)
-  localStorage.removeItem('user');
+  sessionStorage.removeItem('user');
   window.location.href = 'index.html';
 }

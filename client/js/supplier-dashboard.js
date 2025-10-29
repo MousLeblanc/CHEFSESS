@@ -1,6 +1,6 @@
 // Fonction pour récupérer l'utilisateur connecté (version locale)
 function getCurrentUser() {
-    const user = localStorage.getItem('user');
+    const user = sessionStorage.getItem('user');
     return user ? JSON.parse(user) : null;
 }
 

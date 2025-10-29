@@ -1,5 +1,5 @@
 export function getCurrentUser() {
-  const user = localStorage.getItem('user');
+  const user = sessionStorage.getItem('user');
   return user ? JSON.parse(user) : null;
 }
 
@@ -20,7 +20,7 @@ export async function refreshUserData() {
 
     if (response.ok) {
       const userData = await response.json();
-      localStorage.setItem('user', JSON.stringify(userData));
+      sessionStorage.setItem('user', JSON.stringify(userData));
       return userData;
     }
   } catch (error) {
@@ -82,7 +82,7 @@ export async function logout() {
   }
   
   // Nettoyer localStorage
-  localStorage.removeItem('user');
+  sessionStorage.removeItem('user');
   // 🍪 Token supprimé via cookie (géré par le backend) // Supprimer le token si utilisé
   localStorage.removeItem('cart'); // Supprimer aussi le panier
   

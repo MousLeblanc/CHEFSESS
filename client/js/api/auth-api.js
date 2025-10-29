@@ -91,7 +91,7 @@ class AuthAPI {
      */
     logout() {
         // 🍪 Token supprimé via cookie (géré par le backend)
-        localStorage.removeItem('user');
+        sessionStorage.removeItem('user');
     }
 }
 

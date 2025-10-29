@@ -169,28 +169,19 @@ class NotificationClient {
 
   /**
    * Récupérer le token d'authentification
+   * ⚠️ Avec cookies HTTP-Only, le token n'est plus accessible en JavaScript
+   * Les WebSocket doivent être authentifiés via le backend
    */
   getToken() {
-    // Essayer de récupérer le token depuis localStorage
-    // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
+    // 🍪 Token géré via cookie HTTP-Only (inaccessible en JavaScript)
+    console.warn('⚠️ Les notifications WebSocket nécessitent une migration vers cookie-based auth');
+    console.warn('   Pour l\'instant, les notifications temps réel sont désactivées');
     
-    // Debug: décoder le token pour voir l'ID utilisateur
-    if (token) {
-      try {
-        const parts = token.split('.');
-        if (parts.length === 3) {
-          const payload = JSON.parse(atob(parts[1]));
-          console.log('🔑 Token JWT décodé (client):', payload);
-          console.log('   User ID dans token:', payload.id);
-        }
-      } catch (e) {
-        console.error('❌ Erreur décodage token:', e);
-      }
-    } else {
-      console.warn('⚠️ Pas de token dans localStorage');
-    }
+    // TODO: Implémenter authentification WebSocket via cookie
+    // Option 1: Endpoint backend qui gère les connexions WebSocket avec cookies
+    // Option 2: Utiliser Server-Sent Events (SSE) au lieu de WebSocket
     
-    return token;
+    return null;
   }
 
   /**
@@ -384,15 +375,16 @@ class NotificationClient {
 // Instance globale
 window.NotificationClient = NotificationClient;
 
-// Auto-initialisation si un token est disponible
+// Auto-initialisation désactivée (nécessite migration WebSocket vers cookies)
 if (typeof window !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
-    // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-    if (token) {
-      console.log('🔔 Initialisation automatique du client de notifications');
-      window.notificationClient = new NotificationClient();
-      window.notificationClient.connect();
-    }
+    // 🍪 Token géré via cookie HTTP-Only (inaccessible en JavaScript)
+    // Les notifications WebSocket sont temporairement désactivées
+    console.log('ℹ️ Notifications temps réel désactivées (migration vers cookie-based auth en cours)');
+    
+    // TODO: Réactiver après migration WebSocket
+    // window.notificationClient = new NotificationClient();
+    // window.notificationClient.connect();
   });
 }
 

@@ -25,7 +25,7 @@
   function clearLocalStorage() {
     console.log('🗑️ Nettoyage du localStorage...');
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('user');
     localStorage.removeItem('siteToken');
     console.log('✅ localStorage nettoyé');
   }

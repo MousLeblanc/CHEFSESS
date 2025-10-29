@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const user = JSON.parse(sessionStorage.getItem('user') || 'null');
   // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
   if (token && user) {
     switch (user.role) {

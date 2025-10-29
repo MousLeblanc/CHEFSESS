@@ -826,7 +826,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadMockSuppliersData() {
         // Récupérer les informations du fournisseur connecté depuis localStorage
-        const connectedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const connectedUser = JSON.parse(sessionStorage.getItem('user') || '{}');
         const connectedSupplier = connectedUser.role === 'fournisseur' ? {
             _id: connectedUser.id || 'connected-supplier',
             name: connectedUser.businessName || connectedUser.name || 'Fournisseur Connecté',

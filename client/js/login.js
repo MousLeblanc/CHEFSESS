@@ -19,7 +19,7 @@ async function handleLogin(email, password) {
 
     // 🍪 Token géré via cookie HTTP-Only (plus sécurisé)
     // On stocke uniquement les données utilisateur
-    localStorage.setItem('user', JSON.stringify(data.user));
+    sessionStorage.setItem('user', JSON.stringify(data.user));
 
     showToast("Connexion réussie!", "success");
 

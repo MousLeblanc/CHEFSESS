@@ -245,7 +245,7 @@ class GroupDashboard {
             if (res.status === 401) {
                 // Nettoyer localStorage avant de rediriger
                 // 🍪 Token supprimé via cookie (géré par le backend)
-                localStorage.removeItem('user');
+                sessionStorage.removeItem('user');
                 this.showToast("Session expirée, reconnexion nécessaire.", "warning");
                 setTimeout(() => window.location.href = "/", 1500);
                 return null;
@@ -2042,7 +2042,7 @@ class GroupDashboard {
         
         // 2️⃣ Nettoyer complètement le localStorage
         // 🍪 Token supprimé via cookie (géré par le backend)
-        localStorage.removeItem('user');
+        sessionStorage.removeItem('user');
         localStorage.removeItem('cart');
         
         // 3️⃣ Rediriger vers la page de connexion
