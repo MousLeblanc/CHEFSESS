@@ -586,19 +586,112 @@ async function checkoutCart() {
         },
         credentials: 'include', // 🔐 Envoie automatiquement le cookie
         body: JSON.stringify(orderData)
+      }).then(async response => {
+        const data = await response.json();
+        return { ok: response.ok, data, orderData };
       })
     );
     
     const responses = await Promise.all(orderPromises);
     const successCount = responses.filter(r => r.ok).length;
+    const failedOrders = responses.filter(r => !r.ok);
     
     if (successCount > 0) {
-      alert(`${successCount} commande(s) passée(s) avec succès !`);
+      // 🎉 Afficher un message de succès détaillé
+      let successMessage = `✅ ${successCount} commande(s) passée(s) avec succès !`;
+      
+      // 📦 Afficher un toast moderne au lieu d'un alert
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        z-index: 10000;
+        font-size: 1.1rem;
+        font-weight: 600;
+        animation: slideIn 0.3s ease;
+      `;
+      toast.innerHTML = `
+        <i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>
+        ${successMessage}
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+      
       cart = [];
       updateCartCount();
       document.getElementById('cart-modal').remove();
-    } else {
-      alert('Erreur lors de la création des commandes');
+    }
+    
+    // ⚠️ Afficher les erreurs de manière détaillée
+    if (failedOrders.length > 0) {
+      failedOrders.forEach(failed => {
+        const errorMessage = failed.data.message || 'Erreur inconnue';
+        
+        // Créer un toast d'erreur détaillé
+        const errorToast = document.createElement('div');
+        errorToast.style.cssText = `
+          position: fixed;
+          top: 80px;
+          right: 20px;
+          background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+          color: white;
+          padding: 1.5rem 2rem;
+          border-radius: 12px;
+          box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+          z-index: 10000;
+          max-width: 500px;
+          animation: slideIn 0.3s ease;
+        `;
+        
+        // 🎯 Extraire les informations du message d'erreur
+        const stockMatch = errorMessage.match(/Disponible:\s*(\d+)\s*(\w+),\s*Demandé:\s*(\d+)\s*(\w+)/);
+        const productMatch = errorMessage.match(/Stock insuffisant pour (.+?)\./);
+        
+        let displayMessage = errorMessage;
+        if (stockMatch && productMatch) {
+          const available = stockMatch[1];
+          const unit = stockMatch[2];
+          const requested = stockMatch[3];
+          const productName = productMatch[1];
+          
+          displayMessage = `
+            <div style="display: flex; align-items: start; gap: 1rem;">
+              <i class="fas fa-exclamation-triangle" style="font-size: 1.8rem; margin-top: 0.2rem;"></i>
+              <div>
+                <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem;">
+                  ⚠️ Stock insuffisant
+                </div>
+                <div style="font-size: 0.95rem; line-height: 1.6;">
+                  <strong>${productName}</strong><br>
+                  📦 Disponible : <strong>${available} ${unit}</strong><br>
+                  ❌ Demandé : ${requested} ${unit}<br>
+                  <br>
+                  <em style="opacity: 0.9;">💡 Ajustez votre quantité à ${available} ${unit} ou moins</em>
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          displayMessage = `
+            <div style="display: flex; align-items: start; gap: 1rem;">
+              <i class="fas fa-exclamation-circle" style="font-size: 1.8rem;"></i>
+              <div style="line-height: 1.6;">${errorMessage}</div>
+            </div>
+          `;
+        }
+        
+        errorToast.innerHTML = displayMessage;
+        document.body.appendChild(errorToast);
+        
+        // Retirer après 10 secondes (plus long pour lire les détails)
+        setTimeout(() => errorToast.remove(), 10000);
+      });
     }
   } catch (error) {
     console.error('Erreur lors de la validation du panier:', error);
