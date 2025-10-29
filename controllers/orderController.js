@@ -100,6 +100,7 @@ export const createOrder = asyncHandler(async (req, res) => {
     orderNumber: orderNumber,
     customer: req.user._id,
     supplier: supplierId,
+    siteId: req.user.siteId, // 🎯 AJOUT DU SITE ID pour Food Cost
     items: orderItems,
     delivery: {
       requestedDate: new Date(deliveryDate),
