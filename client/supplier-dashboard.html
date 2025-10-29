@@ -1153,6 +1153,14 @@
                     console.log('✅ Statut mis à jour');
                     showSupplierToast('✅ Statut de la commande mis à jour !', 'success');
                     
+                    // 💾 SAUVEGARDER l'onglet actuel avant le rechargement
+                    const activeTab = document.querySelector('.tab-btn.active');
+                    if (activeTab) {
+                        const currentTab = activeTab.dataset.tab;
+                        localStorage.setItem('supplier_active_tab', currentTab);
+                        console.log(`💾 Onglet actif sauvegardé: ${currentTab}`);
+                    }
+                    
                     // 🔄 Recharger automatiquement avec un hard refresh après 2 secondes
                     setTimeout(() => {
                         console.log('🔄 Rechargement automatique (hard refresh)...');
@@ -1698,6 +1706,9 @@
                     const targetTab = btn.dataset.tab;
                     console.log(`🔄 Changement d'onglet vers: ${targetTab}`);
                     
+                    // 💾 SAUVEGARDER l'onglet actif dans localStorage
+                    localStorage.setItem('supplier_active_tab', targetTab);
+                    
                     // Retirer la classe active de tous les boutons
                     tabBtns.forEach(b => {
                         b.classList.remove('active');
@@ -1726,6 +1737,17 @@
             });
             
             console.log(`✅ ${tabBtns.length} onglet(s) configuré(s)`);
+            
+            // 🔄 RESTAURER l'onglet sauvegardé (si disponible)
+            const savedTab = localStorage.getItem('supplier_active_tab');
+            if (savedTab) {
+                console.log(`🔄 Restauration de l'onglet: ${savedTab}`);
+                const savedBtn = document.querySelector(`[data-tab="${savedTab}"]`);
+                if (savedBtn) {
+                    // Simuler un clic pour activer l'onglet
+                    savedBtn.click();
+                }
+            }
             
             // Activer l'auto-détection de catégorie
             setTimeout(() => {
