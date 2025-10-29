@@ -1549,9 +1549,7 @@ class GroupDashboard {
             }
             
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-            if (!token) {
-                throw new Error('Non connecté. Veuillez vous reconnecter.');
-            }
+                // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
             
             const response = await fetch('/api/foodcost/reports', {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
@@ -2435,9 +2433,7 @@ class GroupDashboard {
     async checkStockAvailability(menuResult, numberOfPeople) {
         try {
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-            if (!token) {
-                return { allAvailable: false, missingCount: 0, items: [], message: 'Non connecté' };
-            }
+                // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
             
             // Récupérer le stock actuel
             const stockResponse = await fetch('/api/stock', {
@@ -2914,11 +2910,7 @@ class GroupDashboard {
             console.log('🔍 deductFromStock appelé avec:', stockItems);
             
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-            if (!token) {
-                console.error('❌ Token non disponible');
-                this.showToast('Vous devez être connecté', 'error');
-                return false;
-            }
+                // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
             
             // Préparer les éléments à déduire avec conversion d'unités
             const itemsToDeduct = stockItems

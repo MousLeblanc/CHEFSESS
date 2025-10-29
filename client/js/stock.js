@@ -335,10 +335,7 @@ const elements = {
 async function loadStockFromAPI() {
     try {
         // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-        if (!token) {
-            console.warn('❌ Pas de token - Utilisation du localStorage');
-            return JSON.parse(localStorage.getItem('stock') || "[]");
-        }
+            // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
         const response = await fetch('/api/stock', {
             credentials: 'include', // 🍪 Cookie HTTP-Only
@@ -597,10 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Authentification de la page
     const token = getToken();
-    if (!token) {
-        logout(); 
-        return; 
-    }
+        // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
     // Vous pouvez ajouter un appel à /api/auth/verify ici si vous voulez une validation serveur à chaque chargement
     
     // Attacher les écouteurs d'événements

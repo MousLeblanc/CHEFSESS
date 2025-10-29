@@ -623,11 +623,7 @@ export async function loadDemoStock() {
     console.log('📦 Chargement du stock de démonstration...');
     
     // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-    if (!token) {
-      console.error('❌ Token non trouvé');
-      showToast('Veuillez vous reconnecter', 'error');
-      return;
-    }
+      // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
     
     // Afficher un loader
     showToast('⏳ Chargement de 83 ingrédients en cours...', 'info');

@@ -43,24 +43,24 @@ const dietOptions = [
 // Fonction pour charger les informations de l'utilisateur et du site
 async function loadUserAndSiteInfo() {
   try {
-    // Récupérer le token d'authentification
-    // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-    if (!token) {
-      console.error('❌ Pas de token trouvé, redirection vers login');
+    // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
+    
+    // Récupérer les informations utilisateur depuis sessionStorage
+    const userString = sessionStorage.getItem('user');
+    if (!userString) {
+      console.error('❌ Pas de données utilisateur, redirection vers login');
       window.location.href = 'index.html';
       return;
     }
 
-    // Récupérer les informations utilisateur depuis localStorage
-    const userString = sessionStorage.getItem('user');
-    if (userString) {
-      currentUser = JSON.parse(userString);
-      console.log('👤 Utilisateur chargé:', currentUser);
+    currentUser = JSON.parse(userString);
+    console.log('👤 Utilisateur chargé:', currentUser);
 
-      // Si l'utilisateur a un siteId, charger les infos du site
-      if (currentUser.siteId) {
-        await loadSiteInfo(currentUser.siteId);
-      }
+    // Si l'utilisateur a un siteId, charger les infos du site
+    if (currentUser.siteId) {
+      await loadSiteInfo(currentUser.siteId);
+    } else {
+      console.warn('⚠️ Utilisateur sans siteId');
     }
   } catch (error) {
     console.error('❌ Erreur lors du chargement des infos utilisateur:', error);
@@ -70,21 +70,21 @@ async function loadUserAndSiteInfo() {
 // Fonction pour charger les informations du site
 async function loadSiteInfo(siteId) {
   try {
-    // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
+    console.log('🔍 Chargement du site:', siteId);
+    // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
     const response = await fetch(`/api/sites/${siteId}`, {
+      credentials: 'include', // 🍪 Cookie HTTP-Only
       headers: {
-        // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-'Content-Type': 'application/json'
-      },
-      credentials: 'include'
+        'Content-Type': 'application/json'
+      }
     });
 
     if (response.ok) {
       currentSite = await response.json();
-      console.log('🏥 Site chargé:', currentSite);
+      console.log('✅ Site chargé:', currentSite);
       updateSiteHeader();
     } else {
-      console.error('❌ Erreur lors du chargement du site');
+      console.error('❌ Erreur lors du chargement du site:', response.status);
     }
   } catch (error) {
     console.error('❌ Erreur lors du chargement du site:', error);

@@ -195,12 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadStockData() {
         try {
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-            if (!token) {
-                console.error('❌ Token d\'authentification manquant');
-                console.log('🔄 Utilisation des données mockées...');
-                loadMockStockData();
-                return;
-            }
+                // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
             console.log('🔄 Chargement du stock depuis l\'API...');
 
@@ -645,11 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function addStockItem(form) {
         try {
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-            if (!token) {
-                console.log('🔄 Mode mock: ajout d\'article local');
-                addMockStockItem(form);
-                return;
-            }
+                // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
             const formData = new FormData(form);
             const stockData = {
@@ -739,12 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('🔄 Chargement des fournisseurs depuis l\'API...');
         try {
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-            if (!token) {
-                console.error('❌ Token d\'authentification manquant');
-                console.log('🔄 Utilisation des données mockées...');
-                loadMockSuppliersData();
-                return;
-            }
+                // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
             console.log('🔑 Token trouvé:', token.substring(0, 20) + '...');
 
@@ -1039,11 +1025,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function addSupplier(form) {
         try {
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-            if (!token) {
-                console.log('🔄 Mode mock: ajout de fournisseur local');
-                addMockSupplier(form);
-                return;
-            }
+                // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
             const formData = new FormData(form);
             const supplierData = {
@@ -1116,11 +1098,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.editStockItem = async function(id) {
         try {
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-            if (!token) {
-                console.log('🔄 Mode mock: modification locale');
-                editMockStockItem(id);
-                return;
-            }
+                // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
             // Récupérer les données de l'article
             const response = await fetch(`/api/stock/${id}`, {
@@ -1249,11 +1227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function updateStockItem(id, form) {
         try {
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-            if (!token) {
-                console.log('🔄 Mode mock: modification locale');
-                updateMockStockItem(id, form);
-                return;
-            }
+                // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
             const formData = new FormData(form);
             const stockData = {
@@ -1330,11 +1304,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-            if (!token) {
-                console.log('🔄 Mode mock: suppression locale');
-                deleteMockStockItem(id);
-                return;
-            }
+                // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
             const response = await fetch(`/api/stock/${id}`, {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
@@ -1379,10 +1349,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.editSupplier = async function(id) {
         try {
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-            if (!token) {
-                alert('Token d\'authentification manquant');
-                return;
-            }
+                // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
             // Récupérer les données du fournisseur
             const response = await fetch(`/api/suppliers/${id}`, {
@@ -1468,10 +1435,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function updateSupplier(id, form) {
         try {
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-            if (!token) {
-                alert('Token d\'authentification manquant');
-                return;
-            }
+                // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
             const formData = new FormData(form);
             const supplierData = {
@@ -1519,11 +1483,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-            if (!token) {
-                console.log('🔄 Mode mock: suppression locale');
-                deleteMockSupplier(id);
-                return;
-            }
+                // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
             const response = await fetch(`/api/suppliers/${id}`, {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
@@ -2170,9 +2130,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Appel API pour générer le menu
         try {
                     const token = getToken();
-            if (!token) {
-                throw new Error('Token d\'authentification manquant');
-            }
+                // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
             const response = await fetch('/api/menus/generate-collectivite', {
                 credentials: 'include', // 🍪 Cookie HTTP-Only

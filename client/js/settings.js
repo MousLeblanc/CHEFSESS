@@ -6,10 +6,7 @@ import { apiRequest } from './apiHelper.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const token = StorageHelper.getItem('token');
-  if (!token) {
-    window.location.href = 'index.html'; // Redirect only if no token
-    return;
-  }
+    // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
   const user = await getCurrentUser();
   if (user) {

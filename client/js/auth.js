@@ -6,7 +6,6 @@ export function getCurrentUser() {
 // Fonction pour rafraîchir les données utilisateur depuis le serveur
 export async function refreshUserData() {
   const token = getToken();
-  if (!token) return null;
 
   try {
     const response = await fetch('/api/users/me', {

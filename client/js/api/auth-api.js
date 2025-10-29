@@ -70,7 +70,6 @@ class AuthAPI {
     async verifyToken() {
         try {
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-            if (!token) return false;
 
             const response = await fetch(`${this.baseURL}/verify`, {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
