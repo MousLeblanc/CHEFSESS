@@ -1,7 +1,11 @@
 // Affichage des notifications de promotions (super promo et produits à sauver)
 
+console.log('📦 promotion-notifications.js: Script chargé');
+
 class PromotionNotifications {
   constructor() {
+    console.log('🔔 PromotionNotifications: Constructeur appelé');
+    console.log('   Host:', typeof window !== 'undefined' ? window.location.host : 'N/A');
     this.notifications = [];
     this.unreadCount = 0;
     this.isSubscribed = false; // Flag pour éviter les abonnements multiples
@@ -12,23 +16,32 @@ class PromotionNotifications {
 
   async init() {
     console.log('🔔 PromotionNotifications: Initialisation...');
+    console.log('   URL:', window.location.href);
+    console.log('   Host:', window.location.host);
     
-    // Créer le bouton de notifications de promotions
-    this.createPromotionsButton();
-    
-    // Attendre un peu pour que le bouton soit bien créé
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    // Charger les notifications depuis le localStorage
-    this.loadNotificationsFromStorage();
-    
-    // Afficher le badge
-    setTimeout(() => {
-      this.displayBadge();
-    }, 200);
-    
-    // Attendre que le client de notifications soit disponible et connecté
-    this.setupNotificationsListener();
+    try {
+      // Charger les notifications depuis le localStorage EN PREMIER
+      // pour s'assurer qu'elles sont disponibles même si le reste échoue
+      this.loadNotificationsFromStorage();
+      
+      // Créer le bouton de notifications de promotions
+      this.createPromotionsButton();
+      
+      // Attendre un peu pour que le bouton soit bien créé
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Afficher le badge
+      setTimeout(() => {
+        this.displayBadge();
+      }, 200);
+      
+      // Attendre que le client de notifications soit disponible et connecté
+      this.setupNotificationsListener();
+      
+      console.log('✅ PromotionNotifications: Initialisation terminée');
+    } catch (error) {
+      console.error('❌ PromotionNotifications: Erreur lors de l\'initialisation:', error);
+    }
   }
 
   setupNotificationsListener() {
@@ -141,12 +154,24 @@ class PromotionNotifications {
       const stored = localStorage.getItem('promotionNotifications');
       if (stored) {
         const data = JSON.parse(stored);
-        this.notifications = data.notifications || [];
+        this.notifications = (data.notifications || []).map(notif => {
+          // Convertir les dates string en objets Date
+          if (notif.createdAt && typeof notif.createdAt === 'string') {
+            notif.createdAt = new Date(notif.createdAt);
+          }
+          return notif;
+        });
         // Calculer le nombre de non lues
         this.unreadCount = this.notifications.filter(n => !n.read).length;
+        console.log(`🔔 PromotionNotifications: ${this.notifications.length} notification(s) chargée(s) depuis le localStorage (${this.unreadCount} non lue(s))`);
+      } else {
+        console.log('🔔 PromotionNotifications: Aucune notification sauvegardée dans le localStorage');
       }
     } catch (error) {
       console.error('❌ Erreur lors du chargement des notifications:', error);
+      // En cas d'erreur, réinitialiser
+      this.notifications = [];
+      this.unreadCount = 0;
     }
   }
 
@@ -247,9 +272,13 @@ class PromotionNotifications {
     const header = document.querySelector('header');
     if (!header) {
       console.warn('⚠️ PromotionNotifications: Header non trouvé, retry dans 500ms...');
+      console.warn('   Document readyState:', document.readyState);
+      console.warn('   Body:', document.body ? 'existe' : 'n\'existe pas');
       setTimeout(() => this.createPromotionsButton(), 500);
       return;
     }
+    
+    console.log('✅ PromotionNotifications: Header trouvé, création du bouton...');
     
     // Chercher le conteneur des boutons (généralement dans le header)
     const userInfo = header.querySelector('div[style*="display: flex"]') || 
@@ -563,10 +592,59 @@ class PromotionNotifications {
 }
 
 // Instance globale
-const promotionNotifications = new PromotionNotifications();
+let promotionNotifications;
 
-// Export pour utilisation dans les dashboards
+// Fonction d'initialisation qui attend que le DOM soit prêt
+function initializePromotionNotifications() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  
+  console.log('🔔 PromotionNotifications: Tentative d\'initialisation...');
+  console.log('   Document readyState:', document.readyState);
+  console.log('   Host:', window.location.host);
+  
+  try {
+    // Si le DOM est déjà chargé, initialiser immédiatement
+    if (document.readyState === 'loading') {
+      console.log('⏳ PromotionNotifications: DOM en cours de chargement, attente...');
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('✅ PromotionNotifications: DOM chargé, initialisation...');
+        promotionNotifications = new PromotionNotifications();
+        window.promotionNotifications = promotionNotifications;
+      });
+    } else {
+      // DOM déjà chargé, initialiser immédiatement
+      console.log('✅ PromotionNotifications: DOM déjà chargé, initialisation immédiate...');
+      promotionNotifications = new PromotionNotifications();
+      window.promotionNotifications = promotionNotifications;
+    }
+  } catch (error) {
+    console.error('❌ PromotionNotifications: Erreur lors de la création de l\'instance:', error);
+    console.error('   Stack:', error.stack);
+    // Créer une instance vide pour éviter les erreurs
+    promotionNotifications = {
+      notifications: [],
+      unreadCount: 0,
+      showPromotionsModal: () => console.warn('PromotionNotifications non initialisé'),
+      markAllAsRead: () => {},
+      closeModal: () => {}
+    };
+    window.promotionNotifications = promotionNotifications;
+  }
+}
+
+// Initialiser seulement si on est dans un navigateur
 if (typeof window !== 'undefined') {
-  window.promotionNotifications = promotionNotifications;
+  // Essayer d'initialiser immédiatement
+  initializePromotionNotifications();
+  
+  // Aussi essayer après un court délai au cas où le script serait chargé avant le DOM
+  setTimeout(() => {
+    if (!window.promotionNotifications || !window.promotionNotifications.notifications) {
+      console.log('🔄 PromotionNotifications: Réinitialisation après délai...');
+      initializePromotionNotifications();
+    }
+  }, 1000);
 }
 

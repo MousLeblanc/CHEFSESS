@@ -85,14 +85,32 @@ document.addEventListener('DOMContentLoaded', () => {
   // Video fallback if video fails to load
   const heroVideo = document.getElementById('hero-video');
   if (heroVideo) {
-    heroVideo.addEventListener('error', () => {
-      console.warn('Video failed to load, using fallback');
+    // Vérifier si la vidéo se charge correctement
+    heroVideo.addEventListener('loadeddata', () => {
+      console.log('✅ Vidéo chargée avec succès');
+      heroVideo.style.opacity = '1';
+    });
+    
+    heroVideo.addEventListener('error', (e) => {
+      console.warn('⚠️ Erreur lors du chargement de la vidéo, utilisation du fallback');
+      console.warn('   Erreur:', e);
       heroVideo.style.display = 'none';
       const fallback = heroVideo.querySelector('.hero-fallback');
       if (fallback) {
         fallback.style.display = 'block';
       }
     });
+    
+    // Forcer la lecture si nécessaire (pour certains navigateurs)
+    heroVideo.addEventListener('canplay', () => {
+      heroVideo.play().catch(err => {
+        console.warn('⚠️ Impossible de lire la vidéo automatiquement:', err);
+      });
+    });
+    
+    // Initialiser l'opacité
+    heroVideo.style.opacity = '0';
+    heroVideo.style.transition = 'opacity 0.5s ease';
   }
 
   // Scroll indicator click
