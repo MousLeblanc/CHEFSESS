@@ -131,6 +131,8 @@ app.get("*", (req, res, next) => {
 // === CONNEXION MONGODB ===
 const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/chef-ses";
 mongoose.connect(mongoUri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
   serverSelectionTimeoutMS: 10000,
 })
   .then(() => console.log("✅ Connecté à MongoDB"))
