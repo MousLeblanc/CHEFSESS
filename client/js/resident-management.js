@@ -10,12 +10,185 @@ class ResidentManager {
     this.bindEvents();
     this.loadResidents();
     this.loadStats();
+    this.loadAllResidentsForSummary();
+  }
+
+  async loadAllResidentsForSummary() {
+    try {
+      const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
+      if (!storedUser) return;
+      const user = JSON.parse(storedUser);
+      const siteId = user?.siteId;
+      if (!siteId) return;
+
+      // Charger uniquement les résidents ACTIFS du site
+      const response = await fetch(`/api/residents/site/${siteId}?status=actif&limit=1000`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) return;
+      const data = await response.json();
+      const allResidents = data?.data || [];
+      
+      // Filtrer encore côté client : ACTIFS + du BON siteId
+      const siteIdStr = String(siteId);
+      const activeResidents = allResidents.filter(r => {
+        // Vérifier le statut
+        const status = r.status ? String(r.status).toLowerCase().trim() : '';
+        if (status !== 'actif') return false;
+        
+        // Vérifier que le résident appartient bien à ce site
+        const residentSiteId = r.siteId ? (r.siteId._id ? String(r.siteId._id) : String(r.siteId)) : null;
+        if (!residentSiteId || residentSiteId !== siteIdStr) {
+          console.warn(`⚠️ Résident ${r.firstName} ${r.lastName} appartient au site ${residentSiteId} mais on cherche ${siteIdStr}`);
+          return false;
+        }
+        
+        return true;
+      });
+      
+      console.log(`📊 Résidents chargés pour site ${siteIdStr}: ${allResidents.length} total retournés par API, ${activeResidents.length} actifs et du bon site`);
+      
+      this.displayResidentsSummary(activeResidents);
+    } catch (error) {
+      console.error('Erreur lors du chargement du résumé:', error);
+    }
+  }
+
+  displayResidentsSummary(allResidents) {
+    const summaryEl = document.getElementById('residents-summary');
+    if (!summaryEl) return;
+    
+    // Filtrer uniquement les résidents ACTIFS (s'assurer que le statut est exactement "actif")
+    const activeResidents = allResidents.filter(r => {
+      const status = r.status ? String(r.status).toLowerCase().trim() : '';
+      return status === 'actif';
+    });
+    
+    if (activeResidents.length === 0) {
+      summaryEl.style.display = 'none';
+      return;
+    }
+    
+    summaryEl.style.display = 'block';
+    
+    // 1. Total résidents ACTIFS uniquement
+    document.getElementById('summary-total-residents').textContent = activeResidents.length;
+    
+    // 2. Calculer les portions équivalentes
+    let totalPortions = 0;
+    activeResidents.forEach(resident => {
+      const ps = resident.portionSize;
+      if (ps === 0.5) totalPortions += 0.5;
+      else if (ps === 2) totalPortions += 1.5;
+      else totalPortions += 1;
+    });
+    document.getElementById('summary-total-portions').textContent = Math.round(totalPortions * 100) / 100;
+    
+    // 3. Compter allergies et restrictions (avec normalisation pour éviter les doublons)
+    const allergiesCount = {};
+    const restrictionsCount = {};
+    
+    // Fonction pour normaliser le nom d'allergène
+    const normalizeAllergen = (name) => {
+      const normalized = String(name).toLowerCase().trim();
+      // Normaliser les variantes
+      const variants = {
+        'oeufs': 'oeufs', 'oeuf': 'oeufs', 'eggs': 'oeufs',
+        'arachides': 'arachides', 'peanuts': 'arachides',
+        'fruits_a_coque': 'fruits_a_coque', 'nuts': 'fruits_a_coque', 'noix': 'fruits_a_coque',
+        'soja': 'soja', 'soy': 'soja',
+        'poisson': 'poisson', 'fish': 'poisson',
+        'crustaces': 'crustaces', 'shellfish': 'crustaces',
+        'mollusques': 'mollusques', 'molluscs': 'mollusques',
+        'celeri': 'celeri', 'celery': 'celeri',
+        'moutarde': 'moutarde', 'mustard': 'moutarde',
+        'gluten': 'gluten',
+        'lactose': 'lactose',
+        'sesame': 'sesame',
+        'sulfites': 'sulfites',
+        'lupin': 'lupin'
+      };
+      return variants[normalized] || normalized;
+    };
+    
+    activeResidents.forEach(resident => {
+      // Utiliser un Set pour éviter de compter deux fois le même résident pour le même allergène
+      const residentAllergens = new Set();
+      
+      if (resident.nutritionalProfile?.allergies?.length > 0) {
+        resident.nutritionalProfile.allergies.forEach(allergy => {
+          const allergen = allergy.allergen || allergy;
+          const normalized = normalizeAllergen(allergen);
+          residentAllergens.add(normalized);
+        });
+      }
+      if (resident.nutritionalProfile?.intolerances?.length > 0) {
+        resident.nutritionalProfile.intolerances.forEach(intolerance => {
+          const substance = intolerance.substance || intolerance;
+          const normalized = normalizeAllergen(substance);
+          residentAllergens.add(normalized);
+        });
+      }
+      
+      // Compter chaque allergène une seule fois par résident
+      residentAllergens.forEach(allergen => {
+        allergiesCount[allergen] = (allergiesCount[allergen] || 0) + 1;
+      });
+      
+      if (resident.nutritionalProfile?.dietaryRestrictions?.length > 0) {
+        resident.nutritionalProfile.dietaryRestrictions.forEach(restriction => {
+          const rn = restriction.restriction || restriction.type || restriction;
+          const normalized = String(rn).toLowerCase().trim();
+          restrictionsCount[normalized] = (restrictionsCount[normalized] || 0) + 1;
+        });
+      }
+    });
+    
+    const container = document.getElementById('summary-allergies-restrictions');
+    let html = '';
+    Object.entries(allergiesCount).sort((a, b) => b[1] - a[1]).forEach(([allergen, count]) => {
+      html += `<div style="background: rgba(255,255,255,0.15); padding: 0.75rem 1rem; border-radius: 8px; backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-weight: 500; font-size: 0.9rem;"><i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem; color: #ffc107;"></i>${this.formatAllergenName(allergen)}</span>
+        <span style="background: rgba(255,255,255,0.3); padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem;">${count}</span>
+      </div>`;
+    });
+    Object.entries(restrictionsCount).sort((a, b) => b[1] - a[1]).forEach(([restriction, count]) => {
+      html += `<div style="background: rgba(255,255,255,0.15); padding: 0.75rem 1rem; border-radius: 8px; backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-weight: 500; font-size: 0.9rem;"><i class="fas fa-ban" style="margin-right: 0.5rem; color: #e74c3c;"></i>${this.formatRestrictionName(restriction)}</span>
+        <span style="background: rgba(255,255,255,0.3); padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem;">${count}</span>
+      </div>`;
+    });
+    container.innerHTML = html || '<div style="grid-column: 1/-1; text-align: center; opacity: 0.8; padding: 1rem;">Aucune allergie ou restriction enregistrée</div>';
+  }
+
+  formatAllergenName(allergen) {
+    const names = {'gluten': 'Gluten', 'lactose': 'Lactose', 'oeufs': 'Œufs', 'oeuf': 'Œufs', 'eggs': 'Œufs',
+      'arachides': 'Arachides', 'peanuts': 'Arachides', 'fruits_a_coque': 'Fruits à coque', 'nuts': 'Fruits à coque',
+      'noix': 'Fruits à coque', 'soja': 'Soja', 'soy': 'Soja', 'poisson': 'Poisson', 'fish': 'Poisson',
+      'crustaces': 'Crustacés', 'shellfish': 'Crustacés', 'mollusques': 'Mollusques', 'molluscs': 'Mollusques',
+      'celeri': 'Céleri', 'celery': 'Céleri', 'moutarde': 'Moutarde', 'mustard': 'Moutarde',
+      'sesame': 'Sésame', 'sulfites': 'Sulfites', 'lupin': 'Lupin'};
+    return names[allergen.toLowerCase()] || allergen.charAt(0).toUpperCase() + allergen.slice(1);
+  }
+
+  formatRestrictionName(restriction) {
+    const names = {'vegetarien': 'Végétarien', 'vegan': 'Végan', 'sans_gluten': 'Sans gluten',
+      'gluten_free': 'Sans gluten', 'sans_lactose': 'Sans lactose', 'lactose_free': 'Sans lactose',
+      'halal': 'Halal', 'casher': 'Casher', 'kosher': 'Casher', 'sans_porc': 'Sans porc', 'no_pork': 'Sans porc',
+      'sans_viande_rouge': 'Sans viande rouge', 'no_red_meat': 'Sans viande rouge', 'sans_sel': 'Sans sel',
+      'salt_free': 'Sans sel', 'hyposode': 'Hyposodé', 'pauvre_en_sucre': 'Pauvre en sucre', 'low_sugar': 'Pauvre en sucre',
+      'sans_sucre': 'Sans sucre', 'diabetique': 'Diabétique', 'diabetic': 'Diabétique'};
+    return names[restriction.toLowerCase()] || restriction.charAt(0).toUpperCase() + restriction.slice(1);
   }
 
   bindEvents() {
     // Boutons d'action
     document.getElementById('add-resident-btn')?.addEventListener('click', () => this.showAddResidentModal());
-    document.getElementById('refresh-residents-btn')?.addEventListener('click', () => this.loadResidents());
+    document.getElementById('refresh-residents-btn')?.addEventListener('click', async () => {
+      await this.loadResidents();
+      await this.loadAllResidentsForSummary();
+    });
     document.getElementById('generate-menu-residents-btn')?.addEventListener('click', () => this.generateMenuForSelected());
 
     // Filtres
@@ -26,7 +199,22 @@ class ResidentManager {
 
   async loadResidents() {
     try {
-      const response = await fetch('/api/residents', {
+      // Récupérer le siteId depuis l'utilisateur connecté
+      const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
+      if (!storedUser) {
+        this.showToast('Erreur: Utilisateur non connecté', 'error');
+        return;
+      }
+      const user = JSON.parse(storedUser);
+      const siteId = user?.siteId;
+      
+      if (!siteId) {
+        this.showToast('Erreur: Site ID manquant', 'error');
+        return;
+      }
+
+      // Charger TOUS les résidents actifs du site (limit élevé pour être sûr)
+      const response = await fetch(`/api/residents/site/${siteId}?status=actif&limit=1000`, {
         credentials: 'include'
       });
 
@@ -35,7 +223,23 @@ class ResidentManager {
       }
 
       const data = await response.json();
-      this.residents = data.data || [];
+      const allResidents = data.data || [];
+      
+      // Filtrer côté client pour être absolument sûr
+      const siteIdStr = String(siteId);
+      this.residents = allResidents.filter(r => {
+        const status = r.status ? String(r.status).toLowerCase().trim() : '';
+        if (status !== 'actif') return false;
+        
+        // Vérifier que le résident appartient bien à ce site
+        const residentSiteId = r.siteId ? (r.siteId._id ? String(r.siteId._id) : String(r.siteId)) : null;
+        if (!residentSiteId || residentSiteId !== siteIdStr) return false;
+        
+        return true;
+      });
+      
+      console.log(`📊 loadResidents - Chargés: ${allResidents.length} retournés par API, ${this.residents.length} affichés`);
+      
       this.renderResidents();
     } catch (error) {
       console.error('Erreur:', error);
@@ -356,6 +560,7 @@ class ResidentManager {
       this.showToast('Résident supprimé avec succès', 'success');
       this.loadResidents();
       this.loadStats();
+      this.loadAllResidentsForSummary();
     } catch (error) {
       console.error('Erreur:', error);
       this.showToast('Erreur lors de la suppression du résident', 'error');
@@ -605,6 +810,7 @@ class ResidentManager {
       modal.remove();
       this.loadResidents();
       this.loadStats();
+      this.loadAllResidentsForSummary();
     } catch (error) {
       console.error('Erreur:', error);
       this.showToast(error.message || `Erreur lors de ${residentId ? 'la modification' : 'la création'} du résident`, 'error');

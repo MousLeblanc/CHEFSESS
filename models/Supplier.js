@@ -129,7 +129,20 @@ const supplierSchema = new mongoose.Schema({
   groupId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Group'
-  }
+  },
+  // Zones de livraison : villes et codes postaux où le fournisseur peut livrer
+  deliveryZones: [{
+    city: {
+      type: String,
+      trim: true
+    },
+    postalCode: {
+      type: String,
+      trim: true
+    },
+    // Si postalCode est fourni, on utilise le code postal
+    // Sinon, on utilise la ville entière
+  }]
 }, {
   timestamps: true
 });

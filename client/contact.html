@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact - Chef SES</title>
+  <link rel="stylesheet" href="css/landing.css" />
+  <link rel="stylesheet" href="css/contact.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="navbar-container"></div>
+
+  <!-- Hero Section -->
+  <section class="page-hero">
+    <div class="container">
+      <h1 class="page-title animate-on-scroll" data-i18n="contact.title">Contactez-nous</h1>
+      <p class="page-subtitle animate-on-scroll" data-i18n="contact.subtitle">
+        Intéressé par un partenariat, un test ou un investissement ?
+      </p>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="contact-main-section">
+    <div class="container">
+      <div class="contact-wrapper">
+        <!-- Contact Form -->
+        <div class="contact-form-container">
+          <h2>Envoyez-nous un message</h2>
+          <form class="contact-form" id="contact-form">
+            <div class="form-group">
+              <label for="contact-name" data-i18n="contact.name">Votre nom</label>
+              <input
+                type="text"
+                id="contact-name"
+                name="name"
+                required
+                class="form-input"
+                data-i18n="contact.name"
+                placeholder="Votre nom"
+              />
+            </div>
+            
+            <div class="form-group">
+              <label for="contact-email" data-i18n="contact.email">Votre email</label>
+              <input
+                type="email"
+                id="contact-email"
+                name="email"
+                required
+                class="form-input"
+                data-i18n="contact.email"
+                placeholder="Votre email"
+              />
+            </div>
+            
+            <div class="form-group">
+              <label for="contact-subject">Sujet</label>
+              <select id="contact-subject" name="subject" class="form-input" required>
+                <option value="">Sélectionnez un sujet</option>
+                <option value="demo">Demande de démo</option>
+                <option value="partnership">Partenariat</option>
+                <option value="supplier">Devenir fournisseur</option>
+                <option value="investment">Investissement</option>
+                <option value="other">Autre</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="contact-message" data-i18n="contact.message">Votre message</label>
+              <textarea
+                id="contact-message"
+                name="message"
+                rows="6"
+                required
+                class="form-textarea"
+                data-i18n="contact.message"
+                placeholder="Votre message"
+              ></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-large" data-i18n="contact.send">
+              Envoyer le message
+            </button>
+          </form>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="contact-info-container">
+          <h2>Informations de contact</h2>
+          
+          <div class="contact-info-item">
+            <div class="info-icon">📧</div>
+            <div class="info-content">
+              <h3>Email</h3>
+              <a href="mailto:info@chefses.com">info@chefses.com</a>
+            </div>
+          </div>
+          
+          <div class="contact-info-item">
+            <div class="info-icon">💼</div>
+            <div class="info-content">
+              <h3>LinkedIn</h3>
+              <a href="https://linkedin.com/company/chefses" target="_blank">Chef SES</a>
+            </div>
+          </div>
+          
+          <div class="contact-info-item">
+            <div class="info-icon">📍</div>
+            <div class="info-content">
+              <h3>Adresse</h3>
+              <p>Belgique<br>Europe</p>
+            </div>
+          </div>
+
+          <div class="contact-info-card">
+            <h3>Horaires</h3>
+            <p>Lundi - Vendredi<br>9h00 - 18h00</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="footer-container"></div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/contact.js"></script>
+</body>
+</html>
+

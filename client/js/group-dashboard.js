@@ -9,7 +9,7 @@ class GroupDashboard {
         this.user = null;
         this.sites = [];
         this.users = [];
-        this.currentTab = localStorage.getItem("gd_active_tab") || "overview";
+        this.currentTab = sessionStorage.getItem("gd_active_tab") || "overview";
         
         // Cache système
         this.cache = {
@@ -256,16 +256,22 @@ class GroupDashboard {
     }
 
     async loadUserInfo() {
-        if (this.user) return this.user;
-        
+        // TOUJOURS vérifier avec le serveur, même si this.user existe déjà
+        // Cela garantit que l'utilisateur est toujours authentifié après un rafraîchissement
         console.log('🔐 Vérification de l\'authentification...');
-        this.user = await this.checkAuthentication();
+        const user = await this.checkAuthentication();
         
-        if (!this.user) {
+        if (!user) {
             console.error('❌ Utilisateur non authentifié');
             return null;
         }
-
+        
+        // Mettre à jour this.user avec les données du serveur
+        this.user = user;
+        
+        // Mettre à jour sessionStorage pour la cohérence
+        sessionStorage.setItem('user', JSON.stringify(this.user));
+        
         console.log('✅ Utilisateur connecté:', this.user.name);
         
         // Récupérer le groupId
@@ -286,15 +292,24 @@ class GroupDashboard {
             return;
         }
 
-        // Cache (5 minutes)
+        // Cache (5 minutes) - MAIS restaurer depuis le cache si disponible ET si this.sites est vide
         const now = Date.now();
         if (!force && this.cache.sites && this.cache.sitesTimestamp && (now - this.cache.sitesTimestamp < 300000)) {
-            console.log('📦 Utilisation du cache pour les sites');
-            return;
+            // Si les sites ne sont pas chargés mais qu'on a un cache valide, restaurer depuis le cache
+            if (this.sites.length === 0 && this.cache.sites.length > 0) {
+                console.log('📦 Restauration des sites depuis le cache');
+                this.sites = this.cache.sites;
+                return;
+            }
+            // Si les sites sont déjà chargés, ne pas recharger
+            if (this.sites.length > 0) {
+                console.log('📦 Utilisation du cache pour les sites (déjà chargés)');
+                return;
+            }
         }
 
         try {
-            console.log('🔄 Chargement des données du groupe:', this.currentGroup);
+            console.log('🔄 Chargement des données du groupe depuis le serveur:', this.currentGroup);
             
             // Charger les sites
             const sitesResponse = await fetch(`/api/groups/${this.currentGroup}/sites`, {
@@ -308,7 +323,7 @@ class GroupDashboard {
             this.sites = await sitesResponse.json();
             this.cache.sites = this.sites;
             this.cache.sitesTimestamp = now;
-            console.log('✅ Sites chargés:', this.sites.length, `(${this.sites.filter(s => s.isActive).length} actifs)`);
+            console.log('✅ Sites chargés depuis le serveur:', this.sites.length, `(${this.sites.filter(s => s.isActive).length} actifs)`);
             
             // Charger les utilisateurs
             const usersResponse = await fetch(`/api/groups/${this.currentGroup}/users`, {
@@ -323,6 +338,11 @@ class GroupDashboard {
         } catch (error) {
             console.error('Erreur lors du chargement des données du groupe:', error);
             this.showToast('Erreur lors du chargement des données', 'error');
+            // En cas d'erreur, essayer de restaurer depuis le cache
+            if (this.cache.sites && this.cache.sites.length > 0) {
+                console.log('⚠️ Restauration depuis le cache en cas d\'erreur');
+                this.sites = this.cache.sites;
+            }
         }
     }
 
@@ -335,8 +355,8 @@ class GroupDashboard {
         const user = await this.loadUserInfo();
         if (!user) return;
 
-        // Load group data
-        await this.loadGroupData();
+        // Load group data - FORCER le rechargement au démarrage pour éviter les problèmes de cache
+        await this.loadGroupData(true);
 
         // UI bindings
         this.initEventListeners();
@@ -430,7 +450,7 @@ class GroupDashboard {
 
     async switchTab(tabName) {
         this.currentTab = tabName;
-        localStorage.setItem("gd_active_tab", tabName);
+        sessionStorage.setItem("gd_active_tab", tabName);
 
         // Désactiver tous les onglets
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -484,6 +504,12 @@ class GroupDashboard {
                 break;
             case 'users':
                 await this.loadUsersData();
+                break;
+            case 'messages':
+                // Le gestionnaire de messages se charge automatiquement
+                if (window.messagesManager) {
+                    await window.messagesManager.loadMessages();
+                }
                 break;
         }
     }
@@ -595,6 +621,9 @@ class GroupDashboard {
                             <i class="fas fa-check"></i>
                         </button>
                         ` : ''}
+                        <button class="btn btn-sm btn-danger" onclick="groupDashboard.deleteSite('${site._id}', '${site.siteName}')" title="Supprimer ce site" style="background-color: #e74c3c; color: white; border-color: #e74c3c;">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </td>
             </tr>
@@ -652,17 +681,20 @@ class GroupDashboard {
                     </div>
                 </div>
                 <div class="site-actions">
-                    <button class="btn btn-sm btn-primary" onclick="groupDashboard.viewSite('${site._id}')">
+                    <button class="btn btn-sm btn-primary" onclick="groupDashboard.viewSite('${site._id}')" style="flex: 0 0 auto;">
                         <i class="fas fa-eye"></i> Voir
                     </button>
-                    <button class="btn btn-sm btn-outline" onclick="groupDashboard.editSite('${site._id}')">
+                    <button class="btn btn-sm btn-outline" onclick="groupDashboard.editSite('${site._id}')" style="flex: 0 0 auto;">
                         <i class="fas fa-edit"></i> Modifier
                     </button>
                     ${!site.isActive ? `
-                    <button class="btn btn-sm btn-success" onclick="groupDashboard.activateSite('${site._id}')" title="Activer ce site">
+                    <button class="btn btn-sm btn-success" onclick="groupDashboard.activateSite('${site._id}')" title="Activer ce site" style="flex: 0 0 auto;">
                         <i class="fas fa-toggle-on"></i> Activer
                     </button>
                     ` : ''}
+                    <button class="btn btn-sm btn-danger" onclick="groupDashboard.deleteSite('${site._id}', '${site.siteName}')" title="Supprimer ce site" style="background-color: #e74c3c; color: white; border-color: #e74c3c; flex: 0 0 auto;">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
                 </div>
             </div>
         `).join('');
@@ -1562,6 +1594,9 @@ class GroupDashboard {
             // Afficher les statistiques générales
             this.displayReportsSummary(data.summary);
             
+            // Afficher le graphique comparatif de tous les sites
+            this.displaySitesComparisonChart(data.sites);
+            
             // Afficher le tableau des sites
             this.displaySitesTable(data.sites);
             
@@ -1670,11 +1705,11 @@ class GroupDashboard {
                                 const hasData = site.periods && site.periods.length > 0;
                                 
                                 return `
-                                    <tr style="background: ${bgColor}; border-bottom: 1px solid #e0e0e0;">
+                                    <tr style="background: ${bgColor}; border-bottom: 1px solid #e0e0e0; ${hasData ? 'cursor: pointer;' : ''}" ${hasData ? `onclick="groupDashboard.showSiteHistory('${site.siteId}', '${site.siteName}')"` : ''}>
                                         <td style="padding: 1rem;">
-                                            <strong>${site.siteName}</strong>
+                                            <strong style="${hasData ? 'color: #667eea; text-decoration: underline;' : ''}">${site.siteName}</strong>
                                             ${site.groupName ? `<br><small style="color: #666;">${site.groupName}</small>` : ''}
-                                            ${!hasData ? `<br><span style="color: #999; font-size: 0.85rem; font-style: italic;">⚠️ Pas de période Food Cost</span>` : ''}
+                                            ${!hasData ? `<br><span style="color: #999; font-size: 0.85rem; font-style: italic;">⚠️ Pas de période Food Cost</span>` : hasData ? `<br><small style="color: #667eea; font-size: 0.85rem;"><i class="fas fa-chart-line"></i> Cliquer pour voir l'historique</small>` : ''}
                                         </td>
                                         <td style="padding: 1rem;">${site.establishmentType}</td>
                                         <td style="padding: 1rem; text-align: right; font-weight: 600;">
@@ -1716,6 +1751,329 @@ class GroupDashboard {
         
         // Ajouter le tableau après les cartes
         costsChart.innerHTML += tableHTML;
+    }
+    
+    // Graphique comparatif de tous les sites
+    displaySitesComparisonChart(sites) {
+        const costsChart = document.getElementById('costs-chart');
+        if (!costsChart) return;
+        
+        // Filtrer les sites avec des données
+        const sitesWithData = sites.filter(s => s.totalExpenses > 0);
+        
+        if (sitesWithData.length === 0) {
+            return; // Pas de graphique si pas de données
+        }
+        
+        // Supprimer le graphique existant s'il existe
+        const existingChart = document.getElementById('sites-comparison-chart-container');
+        if (existingChart) {
+            existingChart.remove();
+        }
+        
+        // Créer le conteneur pour le graphique
+        const chartContainer = document.createElement('div');
+        chartContainer.id = 'sites-comparison-chart-container';
+        chartContainer.style.cssText = 'margin-top: 2rem; margin-bottom: 2rem; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);';
+        chartContainer.innerHTML = `
+            <h3 style="margin-bottom: 1rem; color: #2c3e50;"><i class="fas fa-chart-bar"></i> Comparaison des dépenses par site</h3>
+            <canvas id="sites-comparison-chart" style="max-height: 400px;"></canvas>
+        `;
+        
+        // Insérer le conteneur avant le tableau
+        const existingTable = costsChart.querySelector('div[style*="margin-top: 2rem"]');
+        if (existingTable) {
+            costsChart.insertBefore(chartContainer, existingTable);
+        } else {
+            costsChart.appendChild(chartContainer);
+        }
+        
+        // Créer le graphique après un court délai pour que le canvas soit dans le DOM
+        setTimeout(() => {
+            const ctx = document.getElementById('sites-comparison-chart');
+            if (!ctx) return;
+            
+            // Trier les sites par dépenses (décroissant)
+            const sortedSites = [...sitesWithData].sort((a, b) => b.totalExpenses - a.totalExpenses);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedSites.map(s => s.siteName),
+                    datasets: [{
+                        label: 'Dépenses (€)',
+                        data: sortedSites.map(s => s.totalExpenses),
+                        backgroundColor: sortedSites.map(s => {
+                            if (s.percentUsed > 100) return '#e74c3c';
+                            if (s.percentUsed > 90) return '#f39c12';
+                            return '#27ae60';
+                        }),
+                        borderColor: sortedSites.map(s => {
+                            if (s.percentUsed > 100) return '#c0392b';
+                            if (s.percentUsed > 90) return '#e67e22';
+                            return '#229954';
+                        }),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const site = sortedSites[context.dataIndex];
+                                    return [
+                                        `Dépenses: ${context.parsed.y.toLocaleString('fr-FR')}€`,
+                                        `Budget: ${site.totalBudget.toLocaleString('fr-FR')}€`,
+                                        `Utilisation: ${site.percentUsed}%`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString('fr-FR') + '€';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }, 100);
+    }
+    
+    // Afficher l'historique détaillé d'un site
+    async showSiteHistory(siteId, siteName) {
+        try {
+            this.showLoader('Chargement de l\'historique...');
+            
+            // Récupérer l'historique du site
+            const response = await fetch(`/api/foodcost/site/${siteId}/history`, {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Erreur lors du chargement de l\'historique');
+            }
+            
+            const data = await response.json();
+            this.hideLoader();
+            
+            // Créer la modal avec les graphiques
+            this.createSiteHistoryModal(siteName, data);
+            
+        } catch (error) {
+            console.error('Erreur showSiteHistory:', error);
+            this.showToast('Erreur lors du chargement de l\'historique: ' + error.message, 'error');
+            this.hideLoader();
+        }
+    }
+    
+    // Créer la modal avec les graphiques détaillés
+    createSiteHistoryModal(siteName, historyData) {
+        // Supprimer la modal existante si elle existe
+        const existingModal = document.getElementById('site-history-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Créer la modal
+        const modal = document.createElement('div');
+        modal.id = 'site-history-modal';
+        modal.className = 'modal-overlay';
+        modal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center; padding: 2rem; overflow-y: auto;';
+        
+        // Couleurs pour chaque mois (12 couleurs différentes)
+        const monthColors = [
+            '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
+            '#1abc9c', '#e67e22', '#34495e', '#16a085', '#c0392b',
+            '#8e44ad', '#27ae60'
+        ];
+        
+        // Préparer les données pour les graphiques
+        const monthlyLabels = historyData.monthly.map(m => {
+            const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 
+                               'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+            return `${monthNames[m.month - 1]} ${m.year}`;
+        });
+        const monthlyExpenses = historyData.monthly.map(m => m.expenses);
+        const monthlyBudgets = historyData.monthly.map(m => m.budget);
+        const monthlyColorsArray = historyData.monthly.map(m => monthColors[m.month - 1]);
+        
+        const yearlyLabels = historyData.yearly.map(y => String(y.year));
+        const yearlyExpenses = historyData.yearly.map(y => y.expenses);
+        const yearlyBudgets = historyData.yearly.map(y => y.budget);
+        
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 1200px; max-height: 90vh; overflow-y: auto; background: white; border-radius: 12px; padding: 2rem; position: relative;">
+                <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 2px solid #e0e0e0; padding-bottom: 1rem;">
+                    <h2 style="margin: 0; color: #2c3e50;"><i class="fas fa-chart-line"></i> Historique des dépenses - ${siteName}</h2>
+                    <button class="modal-close" onclick="document.getElementById('site-history-modal').remove()" style="background: none; border: none; font-size: 2rem; cursor: pointer; color: #999;">&times;</button>
+                </div>
+                
+                <div class="modal-body" style="display: grid; gap: 2rem;">
+                    <!-- Graphique mensuel (courbe) -->
+                    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                        <h3 style="margin-bottom: 1rem; color: #2c3e50;"><i class="fas fa-chart-line"></i> Évolution mensuelle des dépenses</h3>
+                        <canvas id="monthly-chart" style="max-height: 400px;"></canvas>
+                    </div>
+                    
+                    <!-- Graphique annuel (barres) -->
+                    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                        <h3 style="margin-bottom: 1rem; color: #2c3e50;"><i class="fas fa-chart-bar"></i> Comparaison annuelle</h3>
+                        <canvas id="yearly-chart" style="max-height: 400px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Créer les graphiques après un court délai
+        setTimeout(() => {
+            // Graphique mensuel (ligne)
+            const monthlyCtx = document.getElementById('monthly-chart');
+            if (monthlyCtx && historyData.monthly.length > 0) {
+                new Chart(monthlyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: monthlyLabels,
+                        datasets: [
+                            {
+                                label: 'Dépenses',
+                                data: monthlyExpenses,
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointRadius: 5,
+                                pointBackgroundColor: monthlyColorsArray,
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2
+                            },
+                            {
+                                label: 'Budget',
+                                data: monthlyBudgets,
+                                borderColor: '#95a5a6',
+                                backgroundColor: 'rgba(149, 165, 166, 0.1)',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                fill: false,
+                                pointRadius: 4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + context.parsed.y.toLocaleString('fr-FR') + '€';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toLocaleString('fr-FR') + '€';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Graphique annuel (barres)
+            const yearlyCtx = document.getElementById('yearly-chart');
+            if (yearlyCtx && historyData.yearly.length > 0) {
+                new Chart(yearlyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: yearlyLabels,
+                        datasets: [
+                            {
+                                label: 'Dépenses',
+                                data: yearlyExpenses,
+                                backgroundColor: '#3498db',
+                                borderColor: '#2980b9',
+                                borderWidth: 2
+                            },
+                            {
+                                label: 'Budget',
+                                data: yearlyBudgets,
+                                backgroundColor: '#95a5a6',
+                                borderColor: '#7f8c8d',
+                                borderWidth: 2
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const dataset = context.dataset;
+                                        const value = context.parsed.y;
+                                        const index = context.dataIndex;
+                                        const yearData = historyData.yearly[index];
+                                        return [
+                                            dataset.label + ': ' + value.toLocaleString('fr-FR') + '€',
+                                            'Utilisation: ' + yearData.percentUsed + '%'
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toLocaleString('fr-FR') + '€';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }, 200);
+        
+        // Fermer la modal en cliquant en dehors
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
     }
 
     async loadUsersData() {
@@ -1761,7 +2119,33 @@ class GroupDashboard {
     }
 
     async viewSite(siteId) {
-        const site = this.sites.find(s => s._id === siteId);
+        // Recharger les données du site depuis l'API pour avoir les dernières modifications
+        let site = null;
+        try {
+            const siteResponse = await fetch(`/api/sites/${siteId}`, {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (siteResponse.ok) {
+                site = await siteResponse.json();
+                // Mettre à jour le site dans la liste locale
+                const siteIndex = this.sites.findIndex(s => s._id === siteId);
+                if (siteIndex !== -1) {
+                    this.sites[siteIndex] = site;
+                }
+            } else {
+                // Fallback sur la liste locale si l'API échoue
+                site = this.sites.find(s => s._id === siteId);
+            }
+        } catch (error) {
+            console.error('Erreur lors du rechargement du site:', error);
+            // Fallback sur la liste locale
+            site = this.sites.find(s => s._id === siteId);
+        }
+        
         if (!site) {
             this.showToast('Site non trouvé', 'error');
             return;
@@ -1769,10 +2153,28 @@ class GroupDashboard {
 
         try {
             // Récupérer le nombre de résidents pour ce site
-            const response = await fetch(`/api/residents?siteId=${siteId}`, {
-                credentials: 'include'
-            });
-            const residents = response.ok ? await response.json() : [];
+            // Utiliser l'API de comptage pour avoir le nombre exact
+            let residentsCount = 0;
+            try {
+                const countResponse = await fetch(`/api/residents/group/${this.currentGroup}/counts`, {
+                    credentials: 'include'
+                });
+                if (countResponse.ok) {
+                    const countsData = await countResponse.json();
+                    residentsCount = countsData.data?.[siteId] || 0;
+                }
+            } catch (error) {
+                console.warn('Impossible de charger le nombre de résidents via l\'API de comptage, utilisation de la méthode alternative');
+                // Fallback : récupérer les résidents et compter
+                const response = await fetch(`/api/residents?siteId=${siteId}`, {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const residents = await response.json();
+                    // Si c'est un objet avec pagination, utiliser total, sinon length
+                    residentsCount = residents.total || (Array.isArray(residents) ? residents.length : 0);
+                }
+            }
 
             // Créer la modal de visualisation
             const modalHtml = `
@@ -1788,10 +2190,10 @@ class GroupDashboard {
                                 <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
                                     <h3 style="margin: 0 0 1rem 0; color: #495057;">ℹ️ Informations générales</h3>
                                     <div style="display: grid; gap: 0.75rem;">
-                                        <div><strong>Type:</strong> ${site.establishmentType || 'Non défini'}</div>
+                                        <div><strong>Type:</strong> ${this.formatSiteType(site.type || site.establishmentType) || 'Non défini'}</div>
                                         <div><strong>Statut:</strong> <span class="status-badge ${site.isActive ? 'status-synced' : 'status-error'}">${site.isActive ? 'ACTIF' : 'INACTIF'}</span></div>
                                         <div><strong>Synchronisation:</strong> ${site.syncMode === 'auto' ? 'Automatique' : 'Manuelle'}</div>
-                                        <div><strong>Résidents:</strong> ${residents.length || 0}</div>
+                                        <div><strong>Résidents:</strong> ${residentsCount || 0}</div>
                                     </div>
                                 </div>
 
@@ -1799,20 +2201,29 @@ class GroupDashboard {
                                 <div style="background: #e8f4f8; padding: 1.5rem; border-radius: 8px;">
                                     <h3 style="margin: 0 0 1rem 0; color: #2980b9;">📞 Coordonnées</h3>
                                     <div style="display: grid; gap: 0.75rem;">
-                                        <div><strong>Adresse:</strong> ${site.address || 'Non renseignée'}</div>
-                                        <div><strong>Téléphone:</strong> ${site.contact?.phone || 'Non renseigné'}</div>
+                                        <div><strong>Adresse:</strong> ${this.formatAddress(site.address) || 'Non renseignée'}</div>
+                                        <div><strong>Téléphone:</strong> ${site.contact?.phone || 'À définir'}</div>
                                         <div><strong>Email:</strong> ${site.contact?.email || 'Non renseigné'}</div>
                                     </div>
                                 </div>
 
                                 <!-- Responsable -->
-                                ${site.contact?.responsable ? `
+                                ${(site.responsables && site.responsables.length > 0) || site.contact?.responsable ? `
                                 <div style="background: #fff3cd; padding: 1.5rem; border-radius: 8px;">
                                     <h3 style="margin: 0 0 1rem 0; color: #856404;">👤 Responsable</h3>
                                     <div style="display: grid; gap: 0.75rem;">
-                                        <div><strong>Nom:</strong> ${site.contact.responsable.name || 'Non renseigné'}</div>
-                                        <div><strong>Téléphone:</strong> ${site.contact.responsable.phone || 'Non renseigné'}</div>
-                                        <div><strong>Email:</strong> ${site.contact.responsable.email || 'Non renseigné'}</div>
+                                        ${(() => {
+                                            const responsable = site.responsables && site.responsables.length > 0 
+                                                ? site.responsables[0] 
+                                                : site.contact?.responsable;
+                                            if (!responsable) return '<div>Aucun responsable défini</div>';
+                                            return `
+                                                <div><strong>Nom:</strong> ${responsable.name || 'Non renseigné'}</div>
+                                                <div><strong>Téléphone:</strong> ${responsable.phone || 'Non renseigné'}</div>
+                                                <div><strong>Email:</strong> ${responsable.email || 'Non renseigné'}</div>
+                                                ${responsable.position ? `<div><strong>Fonction:</strong> ${responsable.position}</div>` : ''}
+                                            `;
+                                        })()}
                                     </div>
                                 </div>
                                 ` : ''}
@@ -1821,18 +2232,23 @@ class GroupDashboard {
                                 <div style="background: #d4edda; padding: 1.5rem; border-radius: 8px;">
                                     <h3 style="margin: 0 0 1rem 0; color: #155724;">📊 Statistiques</h3>
                                     <div style="display: grid; gap: 0.75rem;">
-                                        <div><strong>Total résidents:</strong> ${residents.length || 0}</div>
+                                        <div><strong>Total résidents:</strong> ${residentsCount || 0}</div>
                                         <div><strong>Dernière mise à jour:</strong> ${site.updatedAt ? new Date(site.updatedAt).toLocaleDateString('fr-FR') : 'Non disponible'}</div>
                                         <div><strong>Créé le:</strong> ${site.createdAt ? new Date(site.createdAt).toLocaleDateString('fr-FR') : 'Non disponible'}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-outline" onclick="document.getElementById('view-site-modal').remove()">Fermer</button>
-                            <button class="btn btn-primary" onclick="groupDashboard.editSite('${siteId}'); document.getElementById('view-site-modal').remove();">
-                                <i class="fas fa-edit"></i> Modifier
+                        <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                            <button class="btn btn-danger" onclick="groupDashboard.deleteSite('${siteId}', '${site.siteName}'); document.getElementById('view-site-modal').remove();" style="background-color: #e74c3c; color: white; border-color: #e74c3c;">
+                                <i class="fas fa-trash"></i> Supprimer
                             </button>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-outline" onclick="document.getElementById('view-site-modal').remove()">Fermer</button>
+                                <button class="btn btn-primary" onclick="groupDashboard.editSite('${siteId}'); document.getElementById('view-site-modal').remove();">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1908,11 +2324,16 @@ class GroupDashboard {
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline" onclick="document.getElementById('edit-site-modal').remove()">Annuler</button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Enregistrer
+                        <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                            <button type="button" class="btn btn-danger" onclick="groupDashboard.deleteSite('${siteId}', '${site.siteName}'); document.getElementById('edit-site-modal').remove();" style="background-color: #e74c3c; color: white; border-color: #e74c3c;">
+                                <i class="fas fa-trash"></i> Supprimer
                             </button>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button type="button" class="btn btn-outline" onclick="document.getElementById('edit-site-modal').remove()">Annuler</button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Enregistrer
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -2012,12 +2433,103 @@ class GroupDashboard {
         }
     }
 
+    async deleteSite(siteId, siteName) {
+        // Demander confirmation avec des détails
+        const confirmMessage = `⚠️ Êtes-vous sûr de vouloir supprimer le site "${siteName}" ?\n\n` +
+                               `Cette action est irréversible et supprimera :\n` +
+                               `• Toutes les données du site\n` +
+                               `• Les résidents associés\n` +
+                               `• Les menus et historiques\n` +
+                               `• Les utilisateurs du site\n\n` +
+                               `⚠️ Cette action ne peut pas être annulée !\n\n` +
+                               `Tapez "SUPPRIMER" pour confirmer :`;
+        
+        const userConfirmation = prompt(confirmMessage);
+        
+        if (userConfirmation !== 'SUPPRIMER') {
+            if (userConfirmation !== null) {
+                this.showToast('Suppression annulée', 'info');
+            }
+            return;
+        }
+        
+        try {
+            this.showLoader('Suppression du site en cours...');
+            
+            // Récupérer le site pour obtenir le groupId
+            const site = this.sites.find(s => s._id === siteId);
+            if (!site) {
+                throw new Error('Site non trouvé');
+            }
+            
+            // Utiliser l'endpoint de suppression
+            const response = await fetch(`/api/groups/${this.currentGroup}/sites/${siteId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Erreur lors de la suppression');
+            }
+            
+            this.showToast(`Site "${siteName}" supprimé avec succès`, 'success');
+            
+            // Recharger les données
+            await this.loadGroupData(true);
+            await this.loadSitesData();
+            await this.loadSitesTable();
+            
+        } catch (error) {
+            console.error('Erreur lors de la suppression du site:', error);
+            this.showToast(error.message || 'Erreur lors de la suppression du site', 'error');
+        } finally {
+            this.hideLoader();
+        }
+    }
+
     showAddSiteModal() {
         this.showToast('Ajout de site - en cours de développement', 'info');
     }
 
     async syncAllSites() {
         this.showToast('Synchronisation - en cours de développement', 'info');
+    }
+
+    // Fonction pour formater l'adresse
+    formatAddress(address) {
+        if (!address) return null;
+        if (typeof address === 'string') return address;
+        if (typeof address === 'object') {
+            const parts = [];
+            if (address.street) parts.push(address.street);
+            if (address.postalCode) parts.push(address.postalCode);
+            if (address.city) parts.push(address.city);
+            if (address.country) parts.push(address.country);
+            return parts.length > 0 ? parts.join(', ') : null;
+        }
+        return null;
+    }
+
+    // Fonction pour formater le type de site
+    formatSiteType(type) {
+        if (!type) return null;
+        const typeMap = {
+            'ehpad': 'EHPAD',
+            'hopital': 'Hôpital',
+            'ecole': 'École',
+            'maison_de_retraite': 'Maison de Retraite',
+            'cantine_entreprise': 'Cantine Entreprise',
+            'cantine_scolaire': 'Cantine Scolaire',
+            'EHPAD': 'EHPAD',
+            'MRS': 'MRS',
+            'RESIDENCE_SENIOR': 'Résidence Senior',
+            'COLLECTIVITE': 'Collectivité'
+        };
+        return typeMap[type] || type;
     }
 
     async logout() {
@@ -2031,10 +2543,10 @@ class GroupDashboard {
             console.error('Erreur lors de la déconnexion:', error);
         }
         
-        // 2️⃣ Nettoyer complètement le localStorage
+        // 2️⃣ Nettoyer complètement le sessionStorage
         // 🍪 Token supprimé via cookie (géré par le backend)
         sessionStorage.removeItem('user');
-        localStorage.removeItem('cart');
+        sessionStorage.removeItem('cart');
         
         // 3️⃣ Rediriger vers la page de connexion
             window.location.href = '/';
@@ -2406,20 +2918,43 @@ class GroupDashboard {
     
     convertToGrams(quantity, unit) {
         // Convertir toutes les quantités en grammes pour comparaison uniforme
-        const unitLower = (unit || '').toLowerCase();
+        const unitLower = (unit || '').toLowerCase().trim();
         
-        if (unitLower === 'kg') {
+        // Conversions de poids
+        if (unitLower === 'kg' || unitLower === 'kilogramme' || unitLower === 'kilogrammes') {
             return quantity * 1000;
-        } else if (unitLower === 'l' || unitLower === 'litre' || unitLower === 'litres') {
-            return quantity * 1000; // 1L = 1000ml (traité comme grammes)
-        } else if (unitLower === 'ml') {
-            return quantity; // 1ml ≈ 1g pour simplification
         } else if (unitLower === 'g' || unitLower === 'gramme' || unitLower === 'grammes') {
             return quantity;
-        } else if (unitLower === 'pièce' || unitLower === 'pièces' || unitLower === 'unité' || unitLower === 'unités') {
-            return quantity * 100; // Approximation : 1 pièce ≈ 100g
-        } else {
-            return quantity; // Par défaut, traiter comme des grammes
+        }
+        
+        // Conversions de volume
+        else if (unitLower === 'l' || unitLower === 'litre' || unitLower === 'litres') {
+            return quantity * 1000; // Pour les liquides, on considère 1L = 1000g (eau)
+        } else if (unitLower === 'ml' || unitLower === 'millilitre' || unitLower === 'millilitres') {
+            return quantity; // Pour les liquides, on considère 1ml = 1g (eau)
+        } else if (unitLower === 'cl' || unitLower === 'centilitre' || unitLower === 'centilitres') {
+            return quantity * 10; // 1cl = 10ml = 10g
+        }
+        
+        // Mesures culinaires
+        else if (unitLower === 'pincée' || unitLower === 'pincées' || unitLower === 'pinch') {
+            return quantity * 1; // 1 pincée = 1 gramme
+        } else if (unitLower === 'cuillère à café' || unitLower === 'c. à c.' || unitLower === 'cac' || unitLower === 'tsp') {
+            return quantity * 5; // 1 cuillère à café = 5 grammes
+        } else if (unitLower === 'cuillère à soupe' || unitLower === 'c. à s.' || unitLower === 'cas' || unitLower === 'tbsp') {
+            return quantity * 15; // 1 cuillère à soupe = 15 grammes
+        } else if (unitLower === 'verre' || unitLower === 'verres') {
+            return quantity * 250; // 1 verre = 250ml = 250g (approximation)
+        }
+        
+        // Unités de comptage
+        else if (unitLower === 'pièce' || unitLower === 'pièces' || unitLower === 'unité' || unitLower === 'unités' || unitLower === 'un') {
+            return quantity * 100; // Estimation : 1 pièce = 100g
+        }
+        
+        // Par défaut, on retourne la quantité telle quelle (on suppose que c'est déjà en grammes)
+        else {
+            return quantity;
         }
     }
     

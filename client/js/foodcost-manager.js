@@ -16,33 +16,80 @@ class FoodCostManager {
   // Charger les statistiques globales
   async loadStats() {
     try {
+      // Récupérer le siteId depuis sessionStorage pour l'envoyer au serveur
+      const storedSiteId = sessionStorage.getItem('currentSiteId');
+      const userStr = sessionStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+      const userSiteId = user?.siteId;
+      const siteIdToSend = storedSiteId || userSiteId;
+      
       // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-      const response = await fetch('/api/foodcost/stats/summary', {
+      const url = `/api/foodcost/stats/summary${siteIdToSend ? `?siteId=${siteIdToSend}` : ''}`;
+      console.log('📤 Chargement des stats avec siteId:', siteIdToSend);
+      
+      const response = await fetch(url, {
         credentials: 'include', // 🍪 Cookie HTTP-Only
         headers: {
-          // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-}
+          'Content-Type': 'application/json'
+        }
       });
 
       if (!response.ok) throw new Error('Erreur lors du chargement des statistiques');
 
       const data = await response.json();
       this.stats = data.data;
-      this.displayStats();
+      await this.displayStats();
     } catch (error) {
       console.error('Erreur loadStats:', error);
       this.showToast('Erreur lors du chargement des statistiques', 'error');
     }
   }
 
+  // Calculer la valeur totale du stock
+  async calculateStockValue() {
+    try {
+      const response = await fetch('/api/stock', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        console.warn('Erreur lors du chargement du stock pour calculer la valeur');
+        return 0;
+      }
+
+      const result = await response.json();
+      const stockItems = result.data || [];
+      
+      let totalValue = 0;
+      
+      stockItems.forEach(item => {
+        // Calculer la valeur de chaque article (quantité × prix unitaire)
+        if (item.price && item.quantity) {
+          totalValue += parseFloat(item.price) * parseFloat(item.quantity);
+        }
+      });
+      
+      return totalValue;
+    } catch (error) {
+      console.error('Erreur lors du calcul de la valeur du stock:', error);
+      return 0;
+    }
+  }
+
   // Afficher les statistiques
-  displayStats() {
+  async displayStats() {
     if (!this.stats) return;
 
     const statsContainer = document.getElementById('foodcost-stats');
     if (!statsContainer) return;
 
     const alertsCount = this.stats.alerts.critical + this.stats.alerts.high + this.stats.alerts.medium + this.stats.alerts.low;
+    
+    // Calculer la valeur totale du stock
+    const stockValue = await this.calculateStockValue();
     
     statsContainer.innerHTML = `
       <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
@@ -84,6 +131,19 @@ class FoodCostManager {
               <p style="font-size: 1.8rem; font-weight: 700; margin: 0; color: ${this.stats.totals.variance > 0 ? '#dc3545' : '#28a745'};">
                 ${this.stats.totals.variance > 0 ? '+' : ''}${this.formatCurrency(this.stats.totals.variance)}
               </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Valeur du stock -->
+        <div class="stat-card" style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <div style="display: flex; align-items: center; gap: 0.8rem;">
+            <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+              <i class="fas fa-boxes" style="color: white; font-size: 1.5rem;"></i>
+            </div>
+            <div>
+              <p style="color: #888; font-size: 0.85rem; margin: 0;">Valeur du stock</p>
+              <p style="font-size: 1.8rem; font-weight: 700; margin: 0; color: #333;">${this.formatCurrency(stockValue)}</p>
             </div>
           </div>
         </div>
@@ -130,12 +190,22 @@ class FoodCostManager {
   // Charger les périodes de food cost
   async loadPeriods() {
     try {
+      // Récupérer le siteId depuis sessionStorage pour l'envoyer au serveur
+      const storedSiteId = sessionStorage.getItem('currentSiteId');
+      const userStr = sessionStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+      const userSiteId = user?.siteId;
+      const siteIdToSend = storedSiteId || userSiteId;
+      
       // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-      const response = await fetch('/api/foodcost', {
+      const url = `/api/foodcost${siteIdToSend ? `?siteId=${siteIdToSend}` : ''}`;
+      console.log('📤 Chargement des périodes avec siteId:', siteIdToSend);
+      
+      const response = await fetch(url, {
         credentials: 'include', // 🍪 Cookie HTTP-Only
         headers: {
-          // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-}
+          'Content-Type': 'application/json'
+        }
       });
 
       if (!response.ok) throw new Error('Erreur lors du chargement des périodes');
@@ -303,6 +373,13 @@ class FoodCostManager {
     try {
       // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
       
+      // Récupérer le siteId depuis sessionStorage pour l'envoyer au serveur
+      const storedSiteId = sessionStorage.getItem('currentSiteId');
+      const userStr = sessionStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+      const userSiteId = user?.siteId;
+      const siteIdToSend = storedSiteId || userSiteId;
+      
       const formData = {
         period: document.getElementById('period-type').value,
         startDate: document.getElementById('period-start').value,
@@ -313,8 +390,13 @@ class FoodCostManager {
           perMeal: document.getElementById('period-budget-meal').value ? parseFloat(document.getElementById('period-budget-meal').value) : undefined
         }
       };
+      
+      if (siteIdToSend) {
+        formData.siteId = siteIdToSend;
+        console.log('📤 Envoi du siteId pour création de période:', siteIdToSend);
+      }
 
-      const response = await fetch('/api/foodcost', {
+      const response = await fetch(`/api/foodcost${siteIdToSend ? `?siteId=${siteIdToSend}` : ''}`, {
         credentials: 'include', // 🍪 Cookie HTTP-Only
         method: 'POST',
         headers: {

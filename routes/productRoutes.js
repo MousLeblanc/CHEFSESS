@@ -42,11 +42,48 @@ const canViewProducts = (req, res, next) => {
   });
 };
 
+// Middleware pour vérifier si l'utilisateur est un fournisseur (plus flexible)
+const isSupplier = (req, res, next) => {
+  console.log('\n🔐 ===== Vérification fournisseur (produits) =====');
+  console.log('👤 User role:', req.user.role);
+  console.log('👤 User roles:', req.user.roles);
+  console.log('👤 User supplierId:', req.user.supplierId);
+  
+  // Vérifier le rôle principal
+  if (req.user.role === 'fournisseur' || req.user.role === 'SUPPLIER') {
+    console.log('✅ Accès autorisé - Rôle fournisseur');
+    return next();
+  }
+  
+  // Vérifier les rôles secondaires
+  if (req.user.roles && Array.isArray(req.user.roles)) {
+    const isSupplierRole = req.user.roles.some(r => 
+      r === 'fournisseur' || r === 'SUPPLIER' || r === 'supplier'
+    );
+    if (isSupplierRole) {
+      console.log('✅ Accès autorisé - Rôle fournisseur dans roles array');
+      return next();
+    }
+  }
+  
+  // Vérifier si l'utilisateur a un supplierId (il est associé à un Supplier)
+  if (req.user.supplierId) {
+    console.log('✅ Accès autorisé - Utilisateur avec supplierId');
+    return next();
+  }
+  
+  console.log('❌ Accès refusé - Utilisateur n\'est pas un fournisseur');
+  res.status(403).json({
+    success: false,
+    error: 'Accès refusé. Seuls les fournisseurs peuvent accéder à cette ressource.'
+  });
+};
+
 // --- Fournisseur : créer et gérer ses produits ---
-router.post('/', protect, authorize('fournisseur'), createProduct);
-router.get('/mine', protect, authorize('fournisseur'), getMyProducts);
-router.put('/:id', protect, authorize('fournisseur'), updateProduct);
-router.delete('/:id', protect, authorize('fournisseur'), deleteProduct);
+router.post('/', protect, isSupplier, createProduct);
+router.get('/mine', protect, isSupplier, getMyProducts);
+router.put('/:id', protect, isSupplier, updateProduct);
+router.delete('/:id', protect, isSupplier, deleteProduct);
 
 // --- Acheteur / Resto : voir tous les produits par fournisseur ---
 router.get('/', protect, getAllProducts); // optionnel (si tu veux montrer tous les produits)

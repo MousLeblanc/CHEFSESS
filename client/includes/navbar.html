@@ -1,0 +1,53 @@
+<!-- Navigation commune -->
+<nav class="navbar" id="navbar">
+  <div class="navbar-container">
+    <a href="landing.html" class="navbar-brand">
+      <span class="brand-icon">🍽️</span>
+      <span class="brand-name">Chef SES</span>
+    </a>
+    
+    <div class="navbar-links">
+      <a href="landing.html" class="nav-link" data-i18n="nav.home">Accueil</a>
+      <a href="features.html" class="nav-link" data-i18n="nav.features">Fonctionnalités</a>
+      <a href="about.html" class="nav-link" data-i18n="nav.about">À propos</a>
+      <a href="collectivites.html" class="nav-link" data-i18n="nav.collectivites">Collectivités</a>
+      <a href="suppliers.html" class="nav-link" data-i18n="nav.suppliers">Fournisseurs</a>
+      <a href="contact.html" class="nav-link" data-i18n="nav.contact">Contact</a>
+      <a href="demo.html" class="nav-link" data-i18n="nav.demo">Démo</a>
+      
+      <!-- Sélecteur de langue -->
+      <select id="lang-switcher" class="lang-switcher">
+        <option value="fr">FR</option>
+        <option value="en">EN</option>
+        <option value="nl">NL</option>
+      </select>
+      
+      <a href="index.html" class="nav-link nav-link-button" data-i18n="nav.login">Connexion</a>
+    </div>
+  </div>
+</nav>
+
+<style>
+.lang-switcher {
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--color-gray-300);
+  border-radius: 8px;
+  background: var(--color-white);
+  color: var(--color-gray-700);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: var(--font-poppins);
+}
+
+.lang-switcher:hover {
+  border-color: var(--color-primary);
+}
+
+.lang-switcher:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(103, 197, 135, 0.1);
+}
+</style>
+

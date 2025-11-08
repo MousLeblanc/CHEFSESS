@@ -1,0 +1,133 @@
+/* Contact page styles */
+
+.contact-main-section {
+  padding: 6rem 0;
+  background: var(--color-white);
+}
+
+.contact-wrapper {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.contact-form-container h2,
+.contact-info-container h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-gray-900);
+  margin-bottom: 2rem;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: var(--color-gray-700);
+  font-size: 0.95rem;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid var(--color-gray-300);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: var(--font-poppins);
+  transition: all var(--transition-fast);
+  background: var(--color-white);
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(103, 197, 135, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 150px;
+}
+
+.contact-info-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.contact-info-item {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  padding: 1.5rem;
+  background: var(--color-gray-50);
+  border-radius: 12px;
+}
+
+.info-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.info-content h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin-bottom: 0.5rem;
+}
+
+.info-content a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.info-content a:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+.info-content p {
+  color: var(--color-gray-600);
+  line-height: 1.6;
+}
+
+.contact-info-card {
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 100%);
+  border-radius: 12px;
+  color: var(--color-white);
+}
+
+.contact-info-card h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.contact-info-card p {
+  line-height: 1.8;
+  opacity: 0.95;
+}
+
+@media (max-width: 968px) {
+  .contact-wrapper {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+}
+

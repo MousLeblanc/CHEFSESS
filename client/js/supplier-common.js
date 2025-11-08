@@ -183,8 +183,25 @@ function renderProducts(products) {
   }
   
   return products.map(product => {
-    const hasPromo = product.promo > 0;
-    const promoPrice = hasPromo ? (product.price * (1 - product.promo / 100)).toFixed(2) : product.price.toFixed(2);
+    // Gestion des promotions (priorité: super promo > à sauver > promo normale)
+    const hasSuperPromo = product.superPromo?.active && product.superPromo.promoPrice;
+    const hasToSave = product.toSave?.active && product.toSave.savePrice;
+    const hasPromo = product.promo > 0 && !hasSuperPromo && !hasToSave;
+    
+    // Calculer le prix final
+    let finalPrice = product.price;
+    let priceDisplay = `${product.price.toFixed(2)}€`;
+    
+    if (hasSuperPromo) {
+      finalPrice = product.superPromo.promoPrice;
+      priceDisplay = `<span class="original-price" style="text-decoration: line-through; color: #999;">${product.price.toFixed(2)}€</span> <span class="promo-price" style="color: #f39c12; font-weight: bold; font-size: 1.2em;">${product.superPromo.promoPrice.toFixed(2)}€</span>`;
+    } else if (hasToSave) {
+      finalPrice = product.toSave.savePrice;
+      priceDisplay = `<span class="original-price" style="text-decoration: line-through; color: #999;">${product.price.toFixed(2)}€</span> <span class="save-price" style="color: #e74c3c; font-weight: bold; font-size: 1.2em;">${product.toSave.savePrice.toFixed(2)}€</span>`;
+    } else if (hasPromo) {
+      finalPrice = product.price * (1 - product.promo / 100);
+      priceDisplay = `<span class="original-price" style="text-decoration: line-through; color: #999;">${product.price.toFixed(2)}€</span> <span class="promo-price" style="color: #3498db; font-weight: bold;">${finalPrice.toFixed(2)}€</span>`;
+    }
     
     // Gestion de l'affichage du stock
     const stock = product.stock !== undefined ? product.stock : 0;
@@ -201,24 +218,48 @@ function renderProducts(products) {
       stockBadge = `<span style="background: #27ae60; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85em; font-weight: 600;">✓ Disponible</span>`;
     }
     
+    // Badges de promotion
+    const superPromoBadge = hasSuperPromo ? 
+      `<span class="super-promo-badge" style="background: #f39c12; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85em; font-weight: bold;"><i class="fas fa-star"></i> Super Promo</span>` : '';
+    
+    const toSaveBadge = hasToSave ? 
+      `<span class="to-save-badge" style="background: #e74c3c; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85em; font-weight: bold;"><i class="fas fa-exclamation-triangle"></i> À Sauver</span>` : '';
+    
+    const promoBadge = hasPromo ? 
+      `<span class="promo-badge" style="background: #3498db; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85em; font-weight: 600;">-${product.promo}%</span>` : '';
+    
+    const saveProductBadge = product.saveProduct ? 
+      `<span class="save-badge" style="background: #95a5a6; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85em;">Produit à sauver</span>` : '';
+    
     return `
-      <div class="product-card">
+      <div class="product-card" style="border: ${hasSuperPromo ? '2px solid #f39c12' : hasToSave ? '2px solid #e74c3c' : '1px solid #ddd'};">
         <div class="product-header">
           <h3>${product.name}</h3>
-          <div class="product-badges" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            ${hasPromo ? `<span class="promo-badge" style="background: #e74c3c; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85em; font-weight: 600;">-${product.promo}%</span>` : ''}
+          <div class="product-badges" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
+            ${superPromoBadge}
+            ${toSaveBadge}
+            ${promoBadge}
+            ${saveProductBadge}
             ${stockBadge}
           </div>
         </div>
         <div class="product-info">
           <p><strong>Catégorie:</strong> ${product.category}</p>
-          <p><strong>Prix:</strong> ${hasPromo ? `<span class="original-price">${product.price.toFixed(2)}€</span> <span class="promo-price">${promoPrice}€</span>` : `${product.price.toFixed(2)}€`}/${product.unit}</p>
+          <p><strong>Prix:</strong> ${priceDisplay}/${product.unit}</p>
+          ${hasSuperPromo ? `
+            <p style="color: #f39c12; font-weight: bold;"><i class="fas fa-star"></i> Super Promo: ${product.superPromo.promoQuantity || 'N/A'} ${product.unit} disponible(s)</p>
+            ${product.superPromo.endDate ? `<p style="font-size: 0.9em; color: #666;">Jusqu'au ${new Date(product.superPromo.endDate).toLocaleDateString('fr-FR')}</p>` : ''}
+          ` : ''}
+          ${hasToSave ? `
+            <p style="color: #e74c3c; font-weight: bold;"><i class="fas fa-exclamation-triangle"></i> À Sauver: ${product.toSave.saveQuantity || 'N/A'} ${product.unit}</p>
+            ${product.toSave.expirationDate ? `<p style="font-size: 0.9em; color: #666;">Expire le ${new Date(product.toSave.expirationDate).toLocaleDateString('fr-FR')}</p>` : ''}
+          ` : ''}
           <p><strong>Commande min:</strong> ${product.minOrder} ${product.unit}</p>
           ${product.description ? `<p>${product.description}</p>` : ''}
         </div>
         <div class="product-actions">
           <button class="btn-primary" 
-                  onclick="window.orderProductGlobal('${product._id}', '${product.name}', ${hasPromo ? promoPrice : product.price}, '${product.unit}', ${product.minOrder})" 
+                  onclick="window.orderProductGlobal('${product._id}', '${product.name}', ${finalPrice}, '${product.unit}', ${product.minOrder})" 
                   ${isOutOfStock ? 'disabled style="background-color: #ccc; cursor: not-allowed;" title="Rupture de stock"' : ''}>
             <i class="fas fa-cart-plus"></i> ${isOutOfStock ? 'Rupture de stock' : 'Commander'}
           </button>
@@ -558,10 +599,10 @@ async function checkoutCart() {
     
     if (user.role === 'fournisseur') {
       console.error('❌ Les fournisseurs ne peuvent pas créer de commandes !');
-      console.log('🔧 Nettoyage du localStorage et redirection...');
+      console.log('🔧 Nettoyage du sessionStorage et redirection...');
       
-      // Nettoyer le localStorage et rediriger
-      localStorage.clear();
+      // Nettoyer le sessionStorage et rediriger
+      sessionStorage.clear();
       alert('❌ Session incorrecte détectée. Nettoyage en cours... Redirection vers la page de connexion.');
       window.location.href = '/index.html';
       return;
@@ -690,7 +731,8 @@ async function checkoutCart() {
   }
 }
 
-async function showMyOrders() {
+// Exporter la fonction globalement pour qu'elle soit accessible depuis les notifications
+window.showMyOrders = async function showMyOrders() {
   try {
     // Fermer toute modal existante
     const existingModal = document.querySelector('.modal-overlay');
@@ -847,7 +889,8 @@ let autoRefreshInterval = null;
 let lastOrdersCheck = null;
 
 // Vérifier s'il y a des mises à jour de commandes
-async function checkOrdersUpdates() {
+// Exporter la fonction globalement pour qu'elle soit accessible depuis les notifications
+window.checkOrdersUpdates = async function checkOrdersUpdates() {
   try {
     // Déterminer l'endpoint selon le rôle de l'utilisateur
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -896,11 +939,23 @@ async function checkOrdersUpdates() {
     } else if (response.status === 401) {
       // Erreur 401 = non autorisé (normal si pas connecté)
       // On ne fait rien et on arrête le rafraîchissement automatique
+      console.log('⚠️ 401 - Non autorisé, arrêt du polling');
       if (autoRefreshInterval) {
         clearInterval(autoRefreshInterval);
         autoRefreshInterval = null;
       }
       return;
+    } else if (response.status === 403) {
+      // Erreur 403 = accès refusé (permissions insuffisantes)
+      // On arrête silencieusement le polling pour éviter les logs répétés
+      console.log('⚠️ 403 - Accès refusé pour les commandes, arrêt du polling');
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+      }
+      return;
+    } else {
+      console.error('❌ Erreur lors de la vérification des commandes:', response.status);
     }
   } catch (error) {
     // Ignorer les erreurs réseau silencieusement (l'utilisateur n'est probablement pas connecté)

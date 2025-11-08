@@ -66,7 +66,9 @@ export function redirectByRole(role, establishmentType) {
 }
 export function redirectToLogin() { window.location.href = '/'; }
 export function getToken() {
-  return localStorage.getItem('token');
+  // ❌ Plus de token dans localStorage - on utilise maintenant les cookies HTTP-only
+  // Cette fonction est conservée pour compatibilité mais retourne null
+  return null;
 }
 
 export async function logout() {
@@ -80,10 +82,11 @@ export async function logout() {
     console.error('Erreur lors de la déconnexion:', error);
   }
   
-  // Nettoyer localStorage
+  // Nettoyer sessionStorage
   sessionStorage.removeItem('user');
-  // 🍪 Token supprimé via cookie (géré par le backend) // Supprimer le token si utilisé
-  localStorage.removeItem('cart'); // Supprimer aussi le panier
+  sessionStorage.removeItem('currentSiteId'); // Supprimer aussi le siteId spécifique à cet onglet
+  // 🍪 Token supprimé via cookie (géré par le backend)
+  sessionStorage.removeItem('cart'); // Supprimer aussi le panier
   
   // Rediriger vers la page de connexion (chemin absolu)
   window.location.href = '/';

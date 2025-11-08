@@ -26,12 +26,14 @@ export async function loadStockData() {
     if (response.ok) {
       const result = await response.json();
       stockData = result.data || [];
+      originalStockData = [...stockData]; // Sauvegarder les données originales pour le filtrage
       console.log(`✅ ${stockData.length} articles en stock`);
       console.log('📊 Données stock:', stockData);
       
       if (stockData.length > 0) {
         console.log('📦 Premier article:', stockData[0]);
         console.log('📦 Nom:', stockData[0].name, '| Type:', typeof stockData[0].name);
+        console.log('📦 Seuil d\'alerte:', stockData[0].alertThreshold, '| Type:', typeof stockData[0].alertThreshold);
       }
       
       renderStockTable();
@@ -57,28 +59,32 @@ export async function loadStockData() {
 
 // ========== AFFICHAGE DU STOCK ==========
 
-export function renderStockTable() {
+export function renderStockTable(filteredData = null) {
   const stockTableBody = document.getElementById('stock-table-body');
   if (!stockTableBody) {
     console.warn('⚠️ Élément stock-table-body non trouvé');
     return;
   }
 
-  console.log('🎨 Rendu de la table stock, articles:', stockData.length);
+  // Utiliser les données filtrées si fournies, sinon utiliser stockData
+  const dataToRender = filteredData !== null ? filteredData : stockData;
   
-  if (stockData.length === 0) {
+  console.log('🎨 Rendu de la table stock, articles:', dataToRender.length);
+  console.log('🎨 Données à afficher:', dataToRender);
+  
+  if (dataToRender.length === 0) {
     stockTableBody.innerHTML = `
       <tr>
-        <td colspan="5" style="text-align: center; padding: 2rem; color: #6c757d;">
+        <td colspan="7" style="text-align: center; padding: 2rem; color: #6c757d;">
           <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-          Aucun article en stock
+          ${stockData.length === 0 ? 'Aucun article en stock' : 'Aucun article ne correspond aux filtres'}
         </td>
       </tr>
     `;
     return;
   }
 
-  stockTableBody.innerHTML = stockData.map((item, index) => {
+  stockTableBody.innerHTML = dataToRender.map((item, index) => {
     // Fonction pour extraire le nom de manière sûre
     const getName = (item) => {
       if (!item) return 'N/A';
@@ -99,15 +105,42 @@ export function renderStockTable() {
     
     const itemName = getName(item);
     
+    // Calculer le total (quantité × prix unitaire) et formater le prix
+    const unitPrice = item.price !== undefined && item.price !== null ? parseFloat(item.price) : 0;
+    const quantity = item.quantity !== undefined && item.quantity !== null ? parseFloat(item.quantity) : 0;
+    const totalPrice = unitPrice * quantity;
+    
+    // Formater le prix : afficher le total avec le prix unitaire entre parenthèses
+    const formattedPrice = unitPrice > 0
+      ? `<div style="font-weight: 700; color: #27ae60;">${totalPrice.toFixed(2)} €</div>
+         <small style="color: #6c757d; font-weight: 400;">(${unitPrice.toFixed(2)} €/${item.unit || 'unité'})</small>`
+      : '-';
+    
+    // Formater le seuil d'alerte
+    // Vérifier si alertThreshold existe et est valide (peut être 0, donc on vérifie !== undefined && !== null)
+    const alertThresholdValue = item.alertThreshold !== undefined && item.alertThreshold !== null ? parseFloat(item.alertThreshold) : null;
+    const formattedAlertThreshold = alertThresholdValue !== null && alertThresholdValue > 0
+      ? `${alertThresholdValue} ${item.unit || ''}`
+      : '-';
+    
+    // Vérifier si l'alerte est déclenchée (seulement si le seuil est défini et > 0)
+    const isAlertTriggered = alertThresholdValue !== null && alertThresholdValue > 0 && item.quantity < alertThresholdValue;
+    
     return `
       <tr>
         <td style="padding: 1rem;">${itemName}</td>
         <td style="padding: 1rem;">${formatCategory(item.category || 'autres')}</td>
         <td style="padding: 1rem; text-align: center;">
           <span style="font-weight: 600;">${item.quantity || 0} ${item.unit || ''}</span>
-          ${item.alertThreshold && item.quantity < item.alertThreshold ? 
+          ${isAlertTriggered ? 
             '<span style="margin-left: 0.5rem; color: #e74c3c;"><i class="fas fa-exclamation-triangle"></i></span>' : 
             ''}
+        </td>
+        <td style="padding: 1rem; text-align: center; ${isAlertTriggered ? 'color: #e74c3c; font-weight: 600;' : ''}">
+          ${formattedAlertThreshold}
+        </td>
+        <td style="padding: 1rem; text-align: center; font-weight: 600; color: #27ae60;">
+          ${formattedPrice}
         </td>
         <td style="padding: 1rem; text-align: center;">
           ${item.expirationDate ? 
@@ -134,64 +167,132 @@ export function showAddStockModal() {
   
   const modal = document.createElement('div');
   modal.id = 'add-stock-modal';
-  modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+  modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; overflow-y: auto;';
+  
+  // Définir la date d'aujourd'hui par défaut
+  const today = new Date().toISOString().split('T')[0];
   
   modal.innerHTML = `
-    <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 500px; width: 90%;">
+    <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 600px; width: 90%; margin: 2rem auto;">
       <h3 style="margin-top: 0; color: #ff6b6b;">
         <i class="fas fa-plus-circle"></i> Ajouter un article au stock
       </h3>
       
-      <div style="margin-bottom: 1rem;">
-        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Nom de l'article *</label>
-        <input type="text" id="new-stock-name" placeholder="Ex: Tomates" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box;">
+      <!-- Onglets -->
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e0e0e0;">
+        <button id="tab-manual" class="stock-tab-btn active" style="flex: 1; padding: 0.75rem; background: #f8f9fa; border: none; border-bottom: 3px solid #27ae60; cursor: pointer; font-weight: 600; color: #27ae60;">
+          <i class="fas fa-keyboard"></i> Saisie manuelle
+        </button>
+        <button id="tab-ocr" class="stock-tab-btn" style="flex: 1; padding: 0.75rem; background: #f8f9fa; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 600; color: #666;">
+          <i class="fas fa-camera"></i> Scanner OCR
+        </button>
       </div>
       
-      <div style="margin-bottom: 1rem;">
-        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Catégorie *</label>
-        <select id="new-stock-category" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
-          <option value="legumes">Légumes</option>
-          <option value="viandes">Viandes</option>
-          <option value="poissons">Poissons</option>
-          <option value="produits-laitiers">Produits laitiers</option>
-          <option value="cereales">Céréales</option>
-          <option value="fruits">Fruits</option>
-          <option value="epices">Épices</option>
-          <option value="boissons">Boissons</option>
-          <option value="autres">Autres</option>
-        </select>
-      </div>
-      
-      <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-        <div style="flex: 1;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Quantité *</label>
-          <input type="number" id="new-stock-quantity" min="0" step="0.1" placeholder="10" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box;">
+      <!-- Contenu Onglet Saisie manuelle -->
+      <div id="manual-tab-content" class="stock-tab-content">
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Nom de l'article *</label>
+          <input type="text" id="new-stock-name" placeholder="Ex: Tomates" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box;">
         </div>
-        <div style="flex: 1;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Unité *</label>
-          <select id="new-stock-unit" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
-            <option value="kg">kg</option>
-            <option value="g">g</option>
-            <option value="L">L</option>
-            <option value="cl">cl</option>
-            <option value="pièces">pièces</option>
-            <option value="boîtes">boîtes</option>
-            <option value="sachets">sachets</option>
+        
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Catégorie *</label>
+          <select id="new-stock-category" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+            <option value="legumes">Légumes</option>
+            <option value="viandes">Viandes</option>
+            <option value="poissons">Poissons</option>
+            <option value="produits-laitiers">Produits laitiers</option>
+            <option value="cereales">Céréales</option>
+            <option value="fruits">Fruits</option>
+            <option value="epices">Épices</option>
+            <option value="boissons">Boissons</option>
+            <option value="autres">Autres</option>
           </select>
         </div>
+        
+        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+          <div style="flex: 1;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Quantité *</label>
+            <input type="number" id="new-stock-quantity" min="0" step="0.1" placeholder="10" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box;">
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Unité *</label>
+            <select id="new-stock-unit" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+              <option value="kg">kg</option>
+              <option value="g">g</option>
+              <option value="L">L</option>
+              <option value="ml">ml</option>
+              <option value="cl">cl</option>
+              <option value="pièces">pièces</option>
+              <option value="boîtes">boîtes</option>
+              <option value="sachets">sachets</option>
+            </select>
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+          <div style="flex: 1;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Date d'achat *</label>
+            <input type="date" id="new-stock-purchase-date" value="${today}" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box;">
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Magasin/Fournisseur *</label>
+            <input type="text" id="new-stock-store" placeholder="Ex: Carrefour, Metro..." style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box;">
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Prix d'achat (€) *</label>
+          <input type="number" id="new-stock-price" min="0" step="0.01" placeholder="0.00" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box;">
+        </div>
+        
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Date d'expiration (optionnel)</label>
+          <input type="date" id="new-stock-expiration" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box;">
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Seuil d'alerte (optionnel)</label>
+          <input type="number" id="new-stock-alert" min="0" step="0.1" placeholder="5" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box;">
+        </div>
       </div>
       
-      <div style="margin-bottom: 1rem;">
-        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Date d'expiration (optionnel)</label>
-        <input type="date" id="new-stock-expiration" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box;">
+      <!-- Contenu Onglet OCR -->
+      <div id="ocr-tab-content" class="stock-tab-content" style="display: none;">
+        <div style="margin-bottom: 1.5rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px; border: 2px dashed #ced4da;">
+          <p style="margin: 0 0 1rem 0; color: #666; text-align: center;">
+            <i class="fas fa-info-circle"></i> Scannez un ticket de caisse ou une facture pour extraire automatiquement les informations
+          </p>
+          <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <input type="file" id="ocr-image-upload" accept="image/*" style="display: none;">
+            <button type="button" id="ocr-upload-btn" style="padding: 0.8rem 1.5rem; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+              <i class="fas fa-upload"></i> Choisir une image
+            </button>
+            <button type="button" id="ocr-camera-btn" style="padding: 0.8rem 1.5rem; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+              <i class="fas fa-camera"></i> Prendre une photo
+            </button>
+          </div>
+          <div id="ocr-preview" style="margin-top: 1rem; text-align: center; display: none;">
+            <img id="ocr-preview-img" style="max-width: 100%; max-height: 300px; border-radius: 8px; border: 2px solid #ced4da;">
+          </div>
+          <div id="ocr-loading" style="display: none; text-align: center; margin-top: 1rem; color: #3498db;">
+            <i class="fas fa-spinner fa-spin"></i> Traitement OCR en cours...
+          </div>
+          <div id="ocr-results" style="margin-top: 1rem; display: none;">
+            <h4 style="margin-bottom: 0.5rem; color: #27ae60;">
+              <i class="fas fa-check-circle"></i> Données extraites
+            </h4>
+            <div id="ocr-detected-items" style="padding: 1rem; background: white; border-radius: 8px; border: 1px solid #ced4da; max-height: 300px; overflow-y: auto;">
+              <!-- Les items détectés seront affichés ici -->
+            </div>
+            <button type="button" id="ocr-use-data-btn" style="width: 100%; margin-top: 1rem; padding: 0.8rem; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: none;">
+              <i class="fas fa-check"></i> Utiliser ces données
+            </button>
+          </div>
+        </div>
       </div>
       
-      <div style="margin-bottom: 1.5rem;">
-        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Seuil d'alerte (optionnel)</label>
-        <input type="number" id="new-stock-alert" min="0" step="0.1" placeholder="5" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box;">
-      </div>
-      
-      <div style="display: flex; gap: 1rem;">
+      <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
         <button onclick="window.saveNewStockItem()" style="flex: 1; background-color: #27ae60; color: white; border: none; padding: 0.9rem; border-radius: 8px; font-weight: 600; cursor: pointer;">
           <i class="fas fa-check"></i> Ajouter
         </button>
@@ -203,20 +304,207 @@ export function showAddStockModal() {
   `;
   
   document.body.appendChild(modal);
+  
+  // Initialiser les onglets
+  initStockModalTabs(modal);
+  
+  // Initialiser l'OCR
+  initStockOCR(modal);
 }
 
 // ========== SAUVEGARDER NOUVEL ARTICLE ==========
 
-window.saveNewStockItem = async function() {
-  const name = document.getElementById('new-stock-name').value.trim();
-  const category = document.getElementById('new-stock-category').value;
-  const quantity = parseFloat(document.getElementById('new-stock-quantity').value);
-  const unit = document.getElementById('new-stock-unit').value;
-  const expirationDate = document.getElementById('new-stock-expiration').value;
-  const alertThreshold = parseFloat(document.getElementById('new-stock-alert').value) || 0;
+// ========== GESTION DES ONGLETS ==========
+function initStockModalTabs(modal) {
+  const tabManual = modal.querySelector('#tab-manual');
+  const tabOcr = modal.querySelector('#tab-ocr');
+  const contentManual = modal.querySelector('#manual-tab-content');
+  const contentOcr = modal.querySelector('#ocr-tab-content');
+  
+  tabManual?.addEventListener('click', () => {
+    tabManual.classList.add('active');
+    tabManual.style.borderBottomColor = '#27ae60';
+    tabManual.style.color = '#27ae60';
+    tabOcr.classList.remove('active');
+    tabOcr.style.borderBottomColor = 'transparent';
+    tabOcr.style.color = '#666';
+    contentManual.style.display = 'block';
+    contentOcr.style.display = 'none';
+  });
+  
+  tabOcr?.addEventListener('click', () => {
+    tabOcr.classList.add('active');
+    tabOcr.style.borderBottomColor = '#27ae60';
+    tabOcr.style.color = '#27ae60';
+    tabManual.classList.remove('active');
+    tabManual.style.borderBottomColor = 'transparent';
+    tabManual.style.color = '#666';
+    contentManual.style.display = 'none';
+    contentOcr.style.display = 'block';
+  });
+}
 
-  if (!name || !category || isNaN(quantity) || quantity < 0 || !unit) {
-    alert('Veuillez remplir tous les champs obligatoires (nom, catégorie, quantité, unité)');
+// ========== GESTION OCR ==========
+function initStockOCR(modal) {
+  const uploadBtn = modal.querySelector('#ocr-upload-btn');
+  const cameraBtn = modal.querySelector('#ocr-camera-btn');
+  const fileInput = modal.querySelector('#ocr-image-upload');
+  const preview = modal.querySelector('#ocr-preview');
+  const previewImg = modal.querySelector('#ocr-preview-img');
+  const loading = modal.querySelector('#ocr-loading');
+  const results = modal.querySelector('#ocr-results');
+  const detectedItems = modal.querySelector('#ocr-detected-items');
+  const useDataBtn = modal.querySelector('#ocr-use-data-btn');
+  
+  // Upload fichier
+  uploadBtn?.addEventListener('click', () => fileInput?.click());
+  fileInput?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) handleOCRImage(file, modal);
+  });
+  
+  // Caméra
+  cameraBtn?.addEventListener('click', () => {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          const video = document.createElement('video');
+          video.srcObject = stream;
+          video.play();
+          
+          const captureModal = document.createElement('div');
+          captureModal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000;';
+          captureModal.innerHTML = `
+            <video id="capture-video" autoplay style="max-width: 90%; max-height: 70%; border-radius: 8px;"></video>
+            <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+              <button id="capture-btn" style="padding: 1rem 2rem; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer;">
+                <i class="fas fa-camera"></i> Capturer
+              </button>
+              <button id="cancel-capture-btn" style="padding: 1rem 2rem; background: #e74c3c; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer;">
+                Annuler
+              </button>
+            </div>
+          `;
+          document.body.appendChild(captureModal);
+          
+          const captureVideo = captureModal.querySelector('#capture-video');
+          captureVideo.srcObject = stream;
+          
+          captureModal.querySelector('#capture-btn')?.addEventListener('click', () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = captureVideo.videoWidth;
+            canvas.height = captureVideo.videoHeight;
+            canvas.getContext('2d').drawImage(captureVideo, 0, 0);
+            
+            canvas.toBlob((blob) => {
+              stream.getTracks().forEach(track => track.stop());
+              captureModal.remove();
+              handleOCRImage(blob, modal);
+            });
+          });
+          
+          captureModal.querySelector('#cancel-capture-btn')?.addEventListener('click', () => {
+            stream.getTracks().forEach(track => track.stop());
+            captureModal.remove();
+          });
+        })
+        .catch(err => {
+          console.error('Erreur caméra:', err);
+          alert('Impossible d\'accéder à la caméra');
+        });
+    } else {
+      alert('Votre navigateur ne supporte pas l\'accès à la caméra');
+    }
+  });
+  
+  async function handleOCRImage(file, modal) {
+    // Afficher la prévisualisation
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewImg.src = e.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+    
+    // Masquer les résultats précédents
+    results.style.display = 'none';
+    loading.style.display = 'block';
+    
+    try {
+      // Envoyer l'image au serveur pour OCR
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/stock/ocr', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error('Erreur lors du traitement OCR');
+      }
+      
+      const data = await response.json();
+      loading.style.display = 'none';
+      
+      if (data.items && data.items.length > 0) {
+        // Afficher les items détectés
+        detectedItems.innerHTML = data.items.map((item, index) => `
+          <div style="padding: 0.75rem; margin-bottom: 0.5rem; background: #f8f9fa; border-radius: 6px; border-left: 3px solid #27ae60;">
+            <strong>${item.name}</strong><br>
+            <small>Quantité: ${item.quantity} ${item.unit} | Catégorie: ${item.category} ${item.price ? '| Prix: ' + item.price + '€' : ''}</small>
+          </div>
+        `).join('');
+        
+        // Stocker les items pour utilisation
+        modal.ocrDetectedItems = data.items;
+        useDataBtn.style.display = 'block';
+        results.style.display = 'block';
+      } else {
+        detectedItems.innerHTML = '<p style="color: #e74c3c;">Aucun article détecté dans l\'image. Veuillez réessayer avec une image plus claire.</p>';
+        results.style.display = 'block';
+      }
+    } catch (error) {
+      console.error('Erreur OCR:', error);
+      loading.style.display = 'none';
+      detectedItems.innerHTML = `<p style="color: #e74c3c;">Erreur lors du traitement: ${error.message}</p>`;
+      results.style.display = 'block';
+    }
+  }
+  
+  // Utiliser les données OCR
+  useDataBtn?.addEventListener('click', () => {
+    const modal = document.getElementById('add-stock-modal');
+    if (modal.ocrDetectedItems && modal.ocrDetectedItems.length > 0) {
+      // Basculer vers l'onglet manuel et préremplir avec le premier item
+      const firstItem = modal.ocrDetectedItems[0];
+      document.getElementById('tab-manual')?.click();
+      document.getElementById('new-stock-name').value = firstItem.name || '';
+      document.getElementById('new-stock-category').value = firstItem.category?.toLowerCase() || 'autres';
+      document.getElementById('new-stock-quantity').value = firstItem.quantity || '';
+      document.getElementById('new-stock-unit').value = firstItem.unit || 'g';
+      if (firstItem.price) {
+        document.getElementById('new-stock-price').value = firstItem.price;
+      }
+    }
+  });
+}
+
+window.saveNewStockItem = async function() {
+  const name = document.getElementById('new-stock-name')?.value.trim();
+  const category = document.getElementById('new-stock-category')?.value;
+  const quantity = parseFloat(document.getElementById('new-stock-quantity')?.value);
+  const unit = document.getElementById('new-stock-unit')?.value;
+  const priceInput = document.getElementById('new-stock-price')?.value;
+  const price = priceInput ? parseFloat(priceInput) : null;
+  const purchaseDate = document.getElementById('new-stock-purchase-date')?.value;
+  const store = document.getElementById('new-stock-store')?.value.trim();
+  const expirationDate = document.getElementById('new-stock-expiration')?.value;
+  const alertThreshold = parseFloat(document.getElementById('new-stock-alert')?.value) || 0;
+
+  if (!name || !category || isNaN(quantity) || quantity < 0 || !unit || !purchaseDate || !store || !priceInput || isNaN(price) || price < 0) {
+    alert('Veuillez remplir tous les champs obligatoires (nom, catégorie, quantité, unité, date d\'achat, magasin, prix)');
     return;
   }
 
@@ -232,6 +520,9 @@ window.saveNewStockItem = async function() {
         category,
         quantity,
         unit,
+        price: price,
+        purchaseDate: purchaseDate || null,
+        store: store || null,
         expirationDate: expirationDate || null,
         alertThreshold,
         source: 'manual'
@@ -323,6 +614,11 @@ window.editStockItem = async function(itemId) {
       </div>
       
       <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Prix d'achat (€) (optionnel)</label>
+        <input type="number" id="edit-stock-price" value="${item.price !== undefined && item.price !== null ? item.price : ''}" min="0" step="0.01" placeholder="0.00" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box;">
+      </div>
+      
+      <div style="margin-bottom: 1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Date d'expiration (optionnel)</label>
         <input type="date" id="edit-stock-expiration" value="${item.expirationDate ? new Date(item.expirationDate).toISOString().split('T')[0] : ''}" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box;">
       </div>
@@ -351,13 +647,19 @@ window.saveEditedStockItem = async function(itemId) {
   const category = document.getElementById('edit-stock-category').value;
   const quantity = parseFloat(document.getElementById('edit-stock-quantity').value);
   const unit = document.getElementById('edit-stock-unit').value;
+  const price = parseFloat(document.getElementById('edit-stock-price').value) || null;
   const expirationDate = document.getElementById('edit-stock-expiration').value;
-  const alertThreshold = parseFloat(document.getElementById('edit-stock-alert').value) || 0;
+  const alertThresholdInput = document.getElementById('edit-stock-alert').value;
+  const alertThreshold = alertThresholdInput && alertThresholdInput.trim() !== '' 
+    ? parseFloat(alertThresholdInput) 
+    : 0;
 
   if (!name || !category || isNaN(quantity) || quantity < 0 || !unit) {
     alert('Veuillez remplir tous les champs obligatoires (nom, catégorie, quantité, unité)');
     return;
   }
+
+  console.log('💾 Modification article - alertThreshold:', alertThreshold, '| Type:', typeof alertThreshold);
 
   try {
     const response = await fetch(`/api/stock/${itemId}`, {
@@ -371,16 +673,21 @@ window.saveEditedStockItem = async function(itemId) {
         category,
         quantity,
         unit,
+        price: price !== null && !isNaN(price) ? price : null,
         expirationDate: expirationDate || null,
-        alertThreshold
+        alertThreshold: isNaN(alertThreshold) ? 0 : alertThreshold
       })
     });
 
     if (response.ok) {
+      const result = await response.json();
       console.log('✅ Article modifié avec succès');
+      console.log('📦 Données retournées:', result.data);
+      console.log('📦 alertThreshold retourné:', result.data?.alertThreshold);
       window.closeEditStockModal();
       showToast('✅ Article modifié avec succès !', 'success');
-      loadStockData();
+      // Forcer le rechargement complet
+      await loadStockData();
     } else {
       const error = await response.json();
       console.error('❌ Erreur:', error);
@@ -602,18 +909,35 @@ function isExpiringSoon(dateString) {
   return diffDays <= 7 && diffDays >= 0;
 }
 
+// Variable pour stocker les données originales (non filtrées)
+let originalStockData = [];
+
 export function filterStock() {
   const searchTerm = document.getElementById('stock-search')?.value.toLowerCase() || '';
   const categoryFilter = document.getElementById('stock-category-filter')?.value || '';
   
-  const filteredData = stockData.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm);
+  console.log(`🔍 Filtrage - Terme de recherche: "${searchTerm}", Catégorie: "${categoryFilter}"`);
+  console.log(`🔍 Total articles avant filtrage: ${stockData.length}`);
+  
+  // S'assurer que originalStockData est à jour
+  if (originalStockData.length === 0 && stockData.length > 0) {
+    originalStockData = [...stockData];
+  }
+  
+  // Utiliser originalStockData si disponible, sinon stockData
+  const sourceData = originalStockData.length > 0 ? originalStockData : stockData;
+  
+  const filteredData = sourceData.filter(item => {
+    const itemName = typeof item.name === 'string' ? item.name : (item.name?.value || item.name?.name || '');
+    const matchesSearch = !searchTerm || itemName.toLowerCase().includes(searchTerm);
     const matchesCategory = !categoryFilter || item.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
   
-  // Afficher les résultats filtrés (temporaire)
-  console.log(`🔍 Filtrage: ${filteredData.length} / ${stockData.length} articles`);
+  console.log(`🔍 Articles après filtrage: ${filteredData.length}`);
+  
+  // Afficher avec les données filtrées
+  renderStockTable(filteredData);
 }
 
 // ========== INITIALISATION ==========
@@ -666,9 +990,19 @@ export function initStockTab() {
   const stockSearch = document.getElementById('stock-search');
   const stockCategoryFilter = document.getElementById('stock-category-filter');
   
+  // Retirer les anciens event listeners pour éviter les doublons
   if (addStockItemBtn) {
-    addStockItemBtn.addEventListener('click', showAddStockModal);
+    const newBtn = addStockItemBtn.cloneNode(true);
+    addStockItemBtn.parentNode.replaceChild(newBtn, addStockItemBtn);
+    newBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('🖱️ Clic sur "Ajouter un article" détecté');
+      showAddStockModal();
+    });
     console.log('✅ Listener "Ajouter un article" ajouté');
+  } else {
+    console.warn('⚠️ Bouton "add-stock-item-btn" non trouvé dans le DOM');
   }
   
   if (loadDemoStockBtn) {
@@ -677,7 +1011,13 @@ export function initStockTab() {
   }
   
   if (refreshStockBtn) {
-    refreshStockBtn.addEventListener('click', loadStockData);
+    refreshStockBtn.addEventListener('click', async () => {
+      // Réinitialiser les filtres
+      if (stockSearch) stockSearch.value = '';
+      if (stockCategoryFilter) stockCategoryFilter.value = '';
+      originalStockData = []; // Réinitialiser les données originales
+      await loadStockData(); // Recharger les données
+    });
     console.log('✅ Listener "Actualiser" ajouté');
   }
   
@@ -698,5 +1038,24 @@ export function initStockTab() {
   loadStockData();
 }
 
-// 🌐 Exposer loadStockData à window pour les autres scripts
+// 🌐 Exposer les fonctions à window pour les autres scripts
 window.loadStockData = loadStockData;
+window.showAddStockModal = showAddStockModal;
+window.initStockTab = initStockTab;
+
+// Initialiser automatiquement si le bouton existe au chargement
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    const addStockItemBtn = document.getElementById('add-stock-item-btn');
+    if (addStockItemBtn && !addStockItemBtn.hasAttribute('data-listener-added')) {
+      addStockItemBtn.setAttribute('data-listener-added', 'true');
+      addStockItemBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🖱️ Clic sur "Ajouter un article" (fallback)');
+        showAddStockModal();
+      });
+      console.log('✅ Listener fallback "Ajouter un article" ajouté');
+    }
+  });
+}

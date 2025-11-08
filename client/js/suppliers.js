@@ -340,21 +340,43 @@ class RestaurantSupplierManager {
                             </tr>
                         </thead>
                         <tbody>
-                            ${products.map(product => `
+                            ${products.map(product => {
+                                // Gestion des promotions (priorité: super promo > à sauver > promo normale)
+                                const hasSuperPromo = product.superPromo?.active && product.superPromo.promoPrice;
+                                const hasToSave = product.toSave?.active && product.toSave.savePrice;
+                                const hasPromo = product.promo > 0 && !hasSuperPromo && !hasToSave;
+                                
+                                // Calculer le prix final
+                                let finalPrice = product.price;
+                                let priceDisplay = product.price ? `${product.price.toFixed(2)} €` : '-';
+                                
+                                if (hasSuperPromo) {
+                                  finalPrice = product.superPromo.promoPrice;
+                                  priceDisplay = `<span style="text-decoration: line-through; color: #999;">${product.price.toFixed(2)} €</span> <span style="color: #f39c12; font-weight: bold;">${product.superPromo.promoPrice.toFixed(2)} €</span> <span style="background: #f39c12; color: white; padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.8em; margin-left: 0.5rem;"><i class="fas fa-star"></i> Super Promo</span>`;
+                                } else if (hasToSave) {
+                                  finalPrice = product.toSave.savePrice;
+                                  priceDisplay = `<span style="text-decoration: line-through; color: #999;">${product.price.toFixed(2)} €</span> <span style="color: #e74c3c; font-weight: bold;">${product.toSave.savePrice.toFixed(2)} €</span> <span style="background: #e74c3c; color: white; padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.8em; margin-left: 0.5rem;"><i class="fas fa-exclamation-triangle"></i> À Sauver</span>`;
+                                } else if (hasPromo) {
+                                  finalPrice = product.price * (1 - product.promo / 100);
+                                  priceDisplay = `<span style="text-decoration: line-through; color: #999;">${product.price.toFixed(2)} €</span> <span style="color: #3498db; font-weight: bold;">${finalPrice.toFixed(2)} €</span> <span style="background: #3498db; color: white; padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.8em; margin-left: 0.5rem;">-${product.promo}%</span>`;
+                                }
+                                
+                                return `
                                 <tr>
                                     <td>
                                         <strong>${product.name}</strong>
                                         ${product.description ? `<br><small>${product.description}</small>` : ''}
                                     </td>
-                                    <td>${product.price ? `${product.price.toFixed(2)} €` : '-'}</td>
+                                    <td>${priceDisplay}</td>
                                     <td>${product.unit || '-'}</td>
                                     <td>${product.deliveryTime ? `${product.deliveryTime} jours` : '-'}</td>
                                     <td>${product.minOrder ? `${product.minOrder} ${product.unit || ''}` : '-'}</td>
                                     <td class="product-actions">
-                                        <button class="action-btn order" onclick="restaurantSupplierManager.orderProduct('${product._id}', '${product.name}', ${product.price}, '${product.unit}', ${product.minOrder}, '${supplier._id}', '${supplier.name}')">Commander</button>
+                                        <button class="action-btn order" onclick="restaurantSupplierManager.orderProduct('${product._id}', '${product.name}', ${finalPrice}, '${product.unit}', ${product.minOrder}, '${supplier._id}', '${supplier.name}')">Commander</button>
                                     </td>
                                 </tr>
-                            `).join('')}
+                            `;
+                            }).join('')}
                         </tbody>
                     </table>
                 ` : '<p>Aucun produit disponible pour ce fournisseur</p>'}

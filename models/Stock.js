@@ -57,6 +57,11 @@ const stockItemSchema = new mongoose.Schema({
     trim: true,
     maxlength: [500, 'Les notes ne peuvent pas dépasser 500 caractères']
   },
+  alertThreshold: {
+    type: Number,
+    min: [0, 'Le seuil d\'alerte ne peut pas être négatif'],
+    default: 0
+  },
   status: {
     type: String,
     enum: ['available', 'low_stock', 'expired', 'out_of_stock'],
@@ -83,7 +88,7 @@ const stockSchema = new mongoose.Schema({
 });
 
 // Index pour optimiser les recherches
-stockSchema.index({ createdBy: 1 });
+// Note: createdBy a déjà un index unique (ligne 78), pas besoin de le redéfinir
 stockSchema.index({ establishmentType: 1 });
 stockSchema.index({ groupId: 1 });
 stockSchema.index({ siteId: 1 });

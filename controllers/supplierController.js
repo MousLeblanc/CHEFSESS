@@ -132,6 +132,134 @@ const createSupplier = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Récupérer le fournisseur du fournisseur connecté
+// @route   GET /api/suppliers/me
+// @access  Private
+const getMySupplier = asyncHandler(async (req, res) => {
+  console.log('\n🔍 ===== GET MY SUPPLIER =====');
+  console.log('👤 User _id:', req.user._id);
+  console.log('👤 User supplierId:', req.user.supplierId);
+  
+  // Chercher le supplier par createdBy ou supplierId de l'utilisateur
+  // Utiliser req.user._id au lieu de req.user.id
+  let supplier = await Supplier.findOne({ createdBy: req.user._id });
+  
+  console.log('🔍 Supplier trouvé via createdBy:', supplier ? {
+    _id: supplier._id,
+    name: supplier.name,
+    deliveryZonesCount: supplier.deliveryZones?.length || 0
+  } : 'AUCUN');
+  
+  // Si pas trouvé, chercher via supplierId de l'utilisateur
+  if (!supplier && req.user.supplierId) {
+    supplier = await Supplier.findById(req.user.supplierId);
+    console.log('🔍 Supplier trouvé via supplierId:', supplier ? {
+      _id: supplier._id,
+      name: supplier.name,
+      deliveryZonesCount: supplier.deliveryZones?.length || 0
+    } : 'AUCUN');
+  }
+  
+  if (!supplier) {
+    console.log('✨ Création d\'un Supplier par défaut...');
+    // Créer un supplier par défaut si aucun n'existe
+    supplier = await Supplier.create({
+      name: req.user.businessName || req.user.name || 'Fournisseur',
+      contact: req.user.name,
+      email: req.user.email,
+      phone: req.user.phone || '',
+      address: req.user.address || {},
+      createdBy: req.user._id,
+      status: 'active'
+    });
+    console.log('✅ Nouveau Supplier créé:', supplier._id);
+  }
+  
+  console.log('📦 Supplier retourné:', {
+    _id: supplier._id,
+    name: supplier.name,
+    deliveryZonesCount: supplier.deliveryZones?.length || 0,
+    deliveryZones: supplier.deliveryZones
+  });
+  
+  res.json({
+    success: true,
+    data: supplier
+  });
+});
+
+// @desc    Mettre à jour le fournisseur du fournisseur connecté
+// @route   PUT /api/suppliers/me
+// @access  Private
+const updateMySupplier = asyncHandler(async (req, res) => {
+  console.log('\n💾 ===== UPDATE MY SUPPLIER =====');
+  console.log('👤 User _id:', req.user._id);
+  console.log('👤 User supplierId:', req.user.supplierId);
+  console.log('📦 Body reçu:', JSON.stringify(req.body, null, 2));
+  console.log('📦 deliveryZones reçues:', JSON.stringify(req.body.deliveryZones, null, 2));
+  
+  // Chercher le supplier par createdBy ou supplierId de l'utilisateur
+  // Utiliser req.user._id au lieu de req.user.id
+  let supplier = await Supplier.findOne({ createdBy: req.user._id });
+  
+  console.log('🔍 Supplier trouvé via createdBy:', supplier ? {
+    _id: supplier._id,
+    name: supplier.name,
+    deliveryZonesCount: supplier.deliveryZones?.length || 0
+  } : 'AUCUN');
+  
+  // Si pas trouvé, chercher via supplierId de l'utilisateur
+  if (!supplier && req.user.supplierId) {
+    supplier = await Supplier.findById(req.user.supplierId);
+    console.log('🔍 Supplier trouvé via supplierId:', supplier ? {
+      _id: supplier._id,
+      name: supplier.name,
+      deliveryZonesCount: supplier.deliveryZones?.length || 0
+    } : 'AUCUN');
+  }
+  
+  if (!supplier) {
+    console.log('✨ Création d\'un nouveau Supplier...');
+    // Créer un supplier si aucun n'existe
+    supplier = await Supplier.create({
+      name: req.body.name || req.user.businessName || req.user.name || 'Fournisseur',
+      contact: req.body.contact || req.user.name,
+      email: req.body.email || req.user.email,
+      phone: req.body.phone || req.user.phone || '',
+      address: req.body.address || req.user.address || {},
+      createdBy: req.user._id,
+      status: 'active',
+      ...req.body
+    });
+    console.log('✅ Nouveau Supplier créé:', supplier._id);
+  } else {
+    console.log('📝 Mise à jour du Supplier existant...');
+    console.log('   - deliveryZones avant:', JSON.stringify(supplier.deliveryZones, null, 2));
+    
+    // Mettre à jour le supplier
+    Object.assign(supplier, req.body);
+    
+    console.log('   - deliveryZones après assign:', JSON.stringify(supplier.deliveryZones, null, 2));
+    
+    await supplier.save();
+    
+    console.log('✅ Supplier sauvegardé');
+    console.log('   - deliveryZones après save:', JSON.stringify(supplier.deliveryZones, null, 2));
+  }
+  
+  // Vérifier que les zones sont bien sauvegardées
+  const savedSupplier = await Supplier.findById(supplier._id);
+  console.log('🔍 Vérification après sauvegarde:');
+  console.log('   - deliveryZonesCount:', savedSupplier.deliveryZones?.length || 0);
+  console.log('   - deliveryZones:', JSON.stringify(savedSupplier.deliveryZones, null, 2));
+  
+  res.json({
+    success: true,
+    message: 'Informations mises à jour avec succès',
+    data: savedSupplier
+  });
+});
+
 // @desc    Mettre à jour un fournisseur
 // @route   PUT /api/suppliers/:id
 // @access  Private
@@ -636,8 +764,10 @@ const seedSuppliers = asyncHandler(async (req, res) => {
 export {
   getSuppliers,
   getSupplier,
+  getMySupplier,
   createSupplier,
   updateSupplier,
+  updateMySupplier,
   deleteSupplier,
   getSupplierStats,
   seedSuppliers

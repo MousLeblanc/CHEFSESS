@@ -333,11 +333,11 @@ class SiteDashboard {
             });
             
             // Rediriger vers la page de connexion même en cas d'erreur
-            window.location.href = 'site-login.html';
+            window.location.href = 'index.html';
             
         } catch (error) {
             console.error('❌ Erreur lors de la déconnexion:', error);
-            window.location.href = 'site-login.html';
+            window.location.href = 'index.html';
         }
     }
 }

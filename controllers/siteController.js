@@ -269,15 +269,16 @@ export async function updateSite(req, res) {
         }
         
         console.log('✅ Site trouvé:', site.siteName);
-        console.log('👤 Utilisateur:', req.user.name, '- Rôles:', req.user.roles);
+        console.log('👤 Utilisateur:', req.user.name, '- Rôles:', req.user.roles, '- SiteId:', req.user.siteId);
         
-        // Vérifier que l'utilisateur a accès (GROUP_ADMIN ou SITE_MANAGER du site)
+        // Vérifier que l'utilisateur a accès (GROUP_ADMIN, SITE_MANAGER du site, ou utilisateur associé au site)
         const isGroupAdmin = req.user.roles && req.user.roles.includes('GROUP_ADMIN');
-        const isSiteManager = site.managers && site.managers.some(m => m.toString() === req.user._id.toString());
+        const isSiteManagerInArray = site.managers && site.managers.some(m => m.toString() === req.user._id.toString());
+        const isAssociatedUser = req.user.siteId && req.user.siteId.toString() === siteId;
         
-        console.log('🔐 Group Admin:', isGroupAdmin, '- Site Manager:', isSiteManager);
+        console.log('🔐 Group Admin:', isGroupAdmin, '- Site Manager (array):', isSiteManagerInArray, '- Associated User:', isAssociatedUser);
         
-        if (!isGroupAdmin && !isSiteManager) {
+        if (!isGroupAdmin && !isSiteManagerInArray && !isAssociatedUser) {
             console.log('❌ Accès refusé');
             return res.status(403).json({ message: 'Accès non autorisé' });
         }
@@ -285,6 +286,23 @@ export async function updateSite(req, res) {
         // Nettoyer les responsables vides
         if (updates.responsables) {
             updates.responsables = updates.responsables.filter(r => r.name && r.name.trim());
+        }
+        
+        // Gérer les mises à jour imbriquées (settings.notifications)
+        // Si settings est fourni, on merge avec les settings existants
+        if (updates.settings) {
+            if (!site.settings) {
+                site.settings = {};
+            }
+            // Merge profond des settings
+            updates.settings = {
+                ...site.settings,
+                ...updates.settings,
+                notifications: {
+                    ...(site.settings.notifications || {}),
+                    ...(updates.settings.notifications || {})
+                }
+            };
         }
         
         console.log('🔄 Début de la mise à jour...');

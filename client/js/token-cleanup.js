@@ -21,13 +21,12 @@
     console.log('✅ Tous les cookies supprimés');
   }
   
-  // Fonction pour nettoyer le localStorage
-  function clearLocalStorage() {
-    console.log('🗑️ Nettoyage du localStorage...');
-    localStorage.removeItem('token');
+  // Fonction pour nettoyer le sessionStorage
+  function clearSessionStorage() {
+    console.log('🗑️ Nettoyage du sessionStorage...');
     sessionStorage.removeItem('user');
-    localStorage.removeItem('siteToken');
-    console.log('✅ localStorage nettoyé');
+    sessionStorage.removeItem('siteToken');
+    console.log('✅ sessionStorage nettoyé');
   }
   
   // Vérifier s'il faut forcer un nettoyage
@@ -37,7 +36,7 @@
   if (forceCleanup === 'true') {
     console.log('⚠️ Nettoyage forcé détecté');
     deleteAllCookies();
-    clearLocalStorage();
+    clearSessionStorage();
     
     // Rediriger vers la page de connexion sans le paramètre
     const cleanUrl = window.location.pathname;
@@ -46,5 +45,8 @@
   
   console.log('✅ Vérification terminée');
 })();
+
+
+
 
 

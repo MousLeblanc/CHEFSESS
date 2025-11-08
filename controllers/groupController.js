@@ -248,21 +248,30 @@ export async function deleteSite(req, res) {
   try {
     const { groupId, siteId } = req.params;
     
-    const site = await Site.findOneAndUpdate(
-      { _id: siteId, groupId, isActive: true },
-      { isActive: false },
-      { new: true }
-    );
+    // Vérifier que le site existe et appartient au groupe
+    const site = await Site.findOne({ _id: siteId, groupId });
     
     if (!site) {
-      return res.status(404).json({ message: "Site non trouvé" });
+      return res.status(404).json({ message: "Site non trouvé ou n'appartient pas à ce groupe" });
     }
 
-    console.log(`🗑️ Site supprimé: ${site.siteName} par ${req.user.name}`);
-    res.json({ message: "Site supprimé avec succès" });
+    // Supprimer réellement le site de la base de données
+    // Note: On pourrait aussi supprimer les résidents, menus, etc. associés
+    // Pour l'instant, on supprime juste le site
+    await Site.findByIdAndDelete(siteId);
+
+    console.log(`🗑️ Site supprimé définitivement: ${site.siteName} par ${req.user.name}`);
+    res.json({ 
+      success: true,
+      message: "Site supprimé avec succès" 
+    });
   } catch (error) {
     console.error('Erreur lors de la suppression du site:', error);
-    res.status(500).json({ message: "Erreur serveur" });
+    res.status(500).json({ 
+      success: false,
+      message: "Erreur serveur",
+      error: error.message 
+    });
   }
 }
 

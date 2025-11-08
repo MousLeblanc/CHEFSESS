@@ -688,43 +688,6 @@
 
     <!-- Onglet Menus -->
     <div id="menus-tab" class="tab-content active">
-      <div class="card">
-      <h2><i class="fas fa-utensil-spoon"></i> Générateur de Menus pour Collectivités</h2>
-      <form id="collectivite-menu-form">
-        <div class="form-grid">
-          
-          <div class="form-group">
-            <label for="establishment-type-select">Type d'établissement</label>
-            <select id="establishment-type-select" name="establishment-type" class="form-control" aria-label="Type d'établissement">
-              <option value="cantine_scolaire">Cantine Scolaire</option>
-              <option value="maison_de_retraite">Maison de Retraite</option>
-              <option value="ehpad">EHPAD (Établissement d'Hébergement pour Personnes Âgées Dépendantes)</option>
-              <option value="cantine_entreprise">Cantine d'Entreprise</option>
-              <option value="hopital">Hôpital</option>
-              <option value="autre">Autre</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Groupes d'âge et restrictions :</label>
-            
-            <!-- Groupe 1 -->
-            <div class="age-group" id="group-1">
-              <div class="group-header">
-                <h4>Groupe 1</h4>
-                <button type="button" class="remove-group-btn" onclick="removeGroup(1)" style="background:none; color:#e74c3c; padding:0 5px;">&times;</button>
-              </div>
-              
-              <div class="group-content">
-                <div class="form-group">
-                  <label>Tranche d'âge :</label>
-                  <select name="group-1-age-range" class="form-control">
-                    <option value="2.5-5">Maternelle (2,5-5 ans)</option>
-                    <option value="6-10">Primaire (6-10 ans)</option>
-                    <option value="11-15">Collège (11-15 ans)</option>
-                    <option value="16-18">Lycée (16-18 ans)</option>
-                  </select>
-                </div>
                 
                 <div class="form-group">
                   <label>Nombre de personnes :</label>
@@ -1358,6 +1321,87 @@
       </form>
     </div>
 
+      <!-- Générateur IA Personnalisé avec Critères Nutritionnels -->
+      <div class="card" style="margin-bottom: 2rem; border: 2px solid #10b981;">
+        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 1.5rem; margin: -2rem -2rem 2rem -2rem; border-radius: 12px 12px 0 0;">
+          <h2 style="margin: 0; color: white;"><i class="fas fa-flask"></i> Générateur IA Personnalisé</h2>
+          <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.9;">Créez des menus sur-mesure avec des objectifs nutritionnels spécifiques</p>
+        </div>
+        
+        <form id="generate-custom-menu-form">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div class="form-group">
+              <label for="custom-menu-people"><i class="fas fa-users"></i> Nombre de personnes *</label>
+              <input type="number" id="custom-menu-people" min="1" max="100" value="4" required>
+            </div>
+            <div class="form-group">
+              <label for="custom-menu-type"><i class="fas fa-clock"></i> Type de repas *</label>
+              <select id="custom-menu-type" required>
+                <option value="déjeuner">Déjeuner</option>
+                <option value="dîner">Dîner</option>
+                <option value="petit-déjeuner">Petit-déjeuner</option>
+                <option value="collation">Collation</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;"><i class="fas fa-bullseye"></i> Objectifs Nutritionnels</label>
+            <div id="nutritional-goals-container" style="background: #f9fafb; padding: 1rem; border-radius: 8px; border: 1px solid #e5e7eb;">
+              <div id="nutritional-goals-list" style="margin-bottom: 1rem;">
+                <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">Aucun objectif ajouté. Cliquez sur "Ajouter un objectif" ci-dessous.</p>
+              </div>
+              <button type="button" id="add-goal-btn" class="btn btn-outline" style="width: 100%; border-style: dashed; background: white; color: #10b981; border-color: #10b981;">
+                <i class="fas fa-plus"></i> Ajouter un objectif nutritionnel
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label for="custom-menu-restrictions"><i class="fas fa-ban"></i> Restrictions alimentaires (optionnel)</label>
+            <select id="custom-menu-restrictions" multiple style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; min-height: 100px;">
+              <option value="sans lactose">Sans lactose</option>
+              <option value="sans gluten">Sans gluten</option>
+              <option value="végétarien">Végétarien</option>
+              <option value="végétalien">Végétalien</option>
+              <option value="sans porc">Sans porc</option>
+              <option value="sans arachides">Sans arachides</option>
+              <option value="sans fruits à coque">Sans fruits à coque</option>
+            </select>
+            <small style="color: #6b7280;">Maintenez Ctrl (Cmd sur Mac) pour sélectionner plusieurs options</small>
+          </div>
+
+          <div style="background: #f0fdf4; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #10b981;">
+            <p style="margin: 0; color: #047857; font-size: 0.9rem;">
+              <i class="fas fa-lightbulb"></i> 
+              <strong>Exemples d'utilisation :</strong><br>
+              • Menu riche en protéines (35g) pour seniors<br>
+              • Menu anti-anémie (Fer 10mg + Vitamine C 80mg)<br>
+              • Menu santé osseuse (Calcium 800mg + Vitamine D 15µg)<br>
+              • Menu digestif (Fibres 12g)<br>
+              • Menu immunitaire (Vitamine C 100mg + Zinc 8mg)
+            </p>
+          </div>
+
+          <div id="custom-menu-progress" style="display: none; background: #fef3c7; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; text-align: center;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: #92400e;"></i>
+            <p style="margin: 0.5rem 0 0 0; color: #92400e; font-weight: 600;">Génération en cours...</p>
+            <p style="margin: 0.25rem 0 0 0; color: #666; font-size: 0.85rem;" id="custom-progress-text">Analyse des ingrédients disponibles...</p>
+          </div>
+
+          <button type="submit" style="width: 100%; padding: 1rem; font-size: 1.1rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
+            <i class="fas fa-flask"></i> Générer le menu personnalisé
+          </button>
+        </form>
+
+        <div id="custom-menu-results" style="display: none; margin-top: 2rem;"></div>
+
+        <div id="generated-menus-list" style="margin-top: 2rem; display: none;">
+          <h3 style="margin-bottom: 1rem; color: #374151;"><i class="fas fa-list"></i> Menus générés récemment</h3>
+          <div id="generated-menus-container" style="display: grid; gap: 1rem;"></div>
+        </div>
+      </div>
+
       <div class="card">
         <h2><i class="fas fa-clipboard-list"></i> Suggestions de Menus pour votre Collectivité</h2>
         <div class="results" id="resultat-menu" aria-live="polite">
@@ -1404,6 +1448,8 @@
                   <th>Catégorie</th>
                   <th>Quantité</th>
                   <th>Unité</th>
+                  <th>Seuil d'alerte</th>
+                  <th>Prix d'achat</th>
                   <th>Date d'expiration</th>
                   <th>Actions</th>
                 </tr>
@@ -1438,6 +1484,82 @@
     </div>
   </div>
 
+  <!-- Modale pour ajouter les objectifs nutritionnels -->
+  <div id="add-nutritional-goal-modal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
+    <div class="modal-content" style="background: white; padding: 2rem; border-radius: 12px; max-width: 500px; width: 90%;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h3 style="margin: 0;">Ajouter un Objectif Nutritionnel</h3>
+        <button class="modal-close" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #999;">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-goals-list" style="margin-bottom: 1rem; display: none;">
+          <h4 style="font-size: 0.95rem; color: #374151; margin-bottom: 0.5rem;">
+            <i class="fas fa-check-circle" style="color: #10b981;"></i> Objectifs ajoutés :
+          </h4>
+          <div id="modal-goals-container" style="background: #f0fdf4; padding: 0.75rem; border-radius: 6px; border: 1px solid #86efac; margin-bottom: 1rem;"></div>
+        </div>
+        
+        <form id="add-nutritional-goal-form">
+          <div class="form-group">
+            <label for="goal-nutrient">Nutriment *</label>
+            <select id="goal-nutrient" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
+              <optgroup label="Protéines & Énergie">
+                <option value="proteins">Protéines (g)</option>
+                <option value="calories">Calories (kcal)</option>
+              </optgroup>
+              <optgroup label="Vitamines">
+                <option value="vitaminC">Vitamine C (mg)</option>
+                <option value="vitaminD">Vitamine D (µg)</option>
+                <option value="vitaminA">Vitamine A (µg)</option>
+                <option value="vitaminE">Vitamine E (mg)</option>
+                <option value="vitaminK">Vitamine K (µg)</option>
+                <option value="vitaminB6">Vitamine B6 (mg)</option>
+                <option value="vitaminB9">Vitamine B9 (µg)</option>
+                <option value="vitaminB12">Vitamine B12 (µg)</option>
+              </optgroup>
+              <optgroup label="Minéraux">
+                <option value="iron">Fer (mg)</option>
+                <option value="calcium">Calcium (mg)</option>
+                <option value="magnesium">Magnésium (mg)</option>
+                <option value="zinc">Zinc (mg)</option>
+                <option value="phosphore">Phosphore (mg)</option>
+                <option value="potassium">Potassium (mg)</option>
+              </optgroup>
+              <optgroup label="Autres">
+                <option value="fibers">Fibres (g)</option>
+                <option value="carbs">Glucides (g)</option>
+                <option value="lipids">Lipides (g)</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="goal-target">Objectif par personne *</label>
+            <input type="number" id="goal-target" min="0" step="0.1" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;" placeholder="Ex: 35">
+          </div>
+          <div style="background: #f3f4f6; padding: 1rem; border-radius: 6px; margin-top: 1rem;">
+            <p style="margin: 0; font-size: 0.85rem; color: #4b5563;">
+              <strong>💡 Exemples de valeurs recommandées :</strong><br>
+              • Protéines : 25-40g<br>
+              • Fer : 8-15mg<br>
+              • Calcium : 800-1200mg<br>
+              • Vitamine C : 80-120mg<br>
+              • Fibres : 10-15g
+            </p>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer" style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary modal-close" style="background-color: #6c757d;">Annuler</button>
+        <button type="submit" form="add-nutritional-goal-form" class="btn btn-outline" style="background: white; color: #10b981; border-color: #10b981;">
+          <i class="fas fa-plus"></i> Ajouter un autre
+        </button>
+        <button type="button" id="add-goal-and-close-btn" class="btn btn-primary" style="background-color: #10b981;">
+          <i class="fas fa-check"></i> Ajouter et fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast-container"></div>
 
   <script type="module" src="JS/collectivite-dashboard.js?v=3"></script>
@@ -1449,10 +1571,30 @@
     // Initialiser le système de génération de menus
     initDashboardMenuGenerator('collectivite');
   </script>
+
+  <!-- Générateur de menu personnalisé avec objectifs nutritionnels -->
+  <script src="js/custom-menu-generator.js"></script>
+  <script>
+    // Initialiser le générateur de menu personnalisé
+    document.addEventListener('DOMContentLoaded', () => {
+      customMenuGenerator.init();
+    });
+  </script>
   
   <!-- 🔔 Système de notifications en temps réel -->
   <script src="js/notification-client.js"></script>
+  <script src="js/promotion-notifications.js"></script>
   <script src="js/dashboard-notifications.js"></script>
+  
+  <!-- Système de messagerie -->
+  <script src="js/messages-display.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof MessagesDisplay !== 'undefined') {
+        window.messagesDisplay = new MessagesDisplay();
+      }
+    });
+  </script>
 
 </body>
 </html>

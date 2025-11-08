@@ -135,6 +135,9 @@
     padding: 1.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .site-card:hover {
@@ -167,6 +170,7 @@
     display: grid;
     gap: 0.5rem;
     margin-bottom: 1rem;
+    flex: 1;
 }
 
 .site-info-item {
@@ -187,6 +191,22 @@
 .site-actions {
     display: flex;
     gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.site-actions .btn {
+    flex: 0 0 auto;
+    min-width: 90px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
 }
 
 /* Header Actions */

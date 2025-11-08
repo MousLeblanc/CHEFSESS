@@ -2,8 +2,10 @@ import express from 'express';
 import {
   getSuppliers,
   getSupplier,
+  getMySupplier,
   createSupplier,
   updateSupplier,
+  updateMySupplier,
   deleteSupplier,
   getSupplierStats,
   seedSuppliers
@@ -25,6 +27,10 @@ router.route('/stats')
 
 router.route('/seed')
   .post(seedSuppliers);
+
+router.route('/me')
+  .get(getMySupplier)
+  .put(updateMySupplier);
 
 router.route('/:id')
   .get(getSupplier)

@@ -388,15 +388,29 @@ window.confirmDelivery = async function(orderId) {
   }
 
   try {
-    const response = await fetch(`/api/orders/${orderId}/customer-status`, {
+    // Récupérer le siteId depuis sessionStorage pour l'envoyer au serveur
+    const storedSiteId = sessionStorage.getItem('currentSiteId');
+    const userStr = sessionStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
+    const userSiteId = user?.siteId;
+    const siteIdToSend = storedSiteId || userSiteId;
+    
+    const requestBody = {
+      status: 'delivered'
+    };
+    
+    if (siteIdToSend) {
+      requestBody.siteId = siteIdToSend;
+      console.log('📤 Envoi du siteId pour confirmation de réception:', siteIdToSend);
+    }
+    
+    const response = await fetch(`/api/orders/${orderId}/customer-status${siteIdToSend ? `?siteId=${siteIdToSend}` : ''}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
       credentials: 'include', // 🔐 Envoie automatiquement le cookie
-      body: JSON.stringify({
-        status: 'delivered'
-      })
+      body: JSON.stringify(requestBody)
     });
 
     if (response.ok) {
@@ -436,12 +450,51 @@ window.confirmDelivery = async function(orderId) {
       // Recharger la liste des commandes
       loadCustomerOrders();
       
-      // 🔄 Recharger automatiquement la page avec un hard refresh après 3 secondes
+      // 🔄 Rafraîchir aussi la modale "Mes Commandes" si elle est ouverte
+      if (document.getElementById('orders-modal-open')) {
+        console.log('🔄 Rafraîchissement de la modale "Mes Commandes"...');
+        if (typeof window.showMyOrders === 'function') {
+          setTimeout(() => {
+            window.showMyOrders();
+          }, 800); // Délai pour laisser le temps au backend de sauvegarder
+        }
+      }
+      
+      // 🔄 Rafraîchir automatiquement le stock après ajout depuis commande
+      setTimeout(() => {
+        console.log('🔄 Rafraîchissement automatique du stock après ajout depuis commande...');
+        
+        // Essayer d'utiliser loadStockData depuis stock-common.js (disponible globalement)
+        if (typeof window.loadStockData === 'function') {
+          console.log('✅ Appel de window.loadStockData()');
+          window.loadStockData().catch(err => {
+            console.error('❌ Erreur lors du rafraîchissement du stock:', err);
+          });
+        } else {
+          console.log('⚠️ window.loadStockData() non disponible, tentative avec le bouton actualiser...');
+          
+          // Essayer de cliquer sur le bouton actualiser du stock
+          const refreshStockBtn = document.getElementById('refresh-stock-btn');
+          if (refreshStockBtn) {
+            refreshStockBtn.click();
+            console.log('✅ Bouton actualiser du stock cliqué');
+          } else {
+            console.warn('⚠️ Bouton refresh-stock-btn non trouvé');
+          }
+        }
+      }, 1000); // Délai de 1 seconde pour laisser le backend sauvegarder
+      
+      // 🔄 Recharger automatiquement la page avec un hard refresh après 8 secondes
+      // (augmenté pour laisser le temps de voir la mise à jour dans la modale)
       setTimeout(() => {
         console.log('🔄 Rechargement automatique (hard refresh) pour actualiser le stock...');
-        // Force un hard refresh en ajoutant un timestamp à l'URL
-        window.location.href = window.location.href.split('?')[0] + '?refresh=' + Date.now();
-      }, 3000);
+        // Ne rafraîchir que si la modale n'est pas ouverte, pour éviter de fermer la modale pendant que l'utilisateur la consulte
+        if (!document.getElementById('orders-modal-open')) {
+          window.location.href = window.location.href.split('?')[0] + '?refresh=' + Date.now();
+        } else {
+          console.log('⏸️ Rafraîchissement différé - la modale des commandes est ouverte');
+        }
+      }, 8000);
     } else {
       const error = await response.json();
       console.error('❌ Erreur:', error);
@@ -461,16 +514,30 @@ window.reportIssue = async function(orderId) {
   }
 
   try {
-    const response = await fetch(`/api/orders/${orderId}/customer-status`, {
+    // Récupérer le siteId depuis sessionStorage pour l'envoyer au serveur
+    const storedSiteId = sessionStorage.getItem('currentSiteId');
+    const userStr = sessionStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
+    const userSiteId = user?.siteId;
+    const siteIdToSend = storedSiteId || userSiteId;
+    
+    const requestBody = {
+      status: 'issue',
+      notes: notes
+    };
+    
+    if (siteIdToSend) {
+      requestBody.siteId = siteIdToSend;
+      console.log('📤 Envoi du siteId pour signalement de problème:', siteIdToSend);
+    }
+    
+    const response = await fetch(`/api/orders/${orderId}/customer-status${siteIdToSend ? `?siteId=${siteIdToSend}` : ''}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
       credentials: 'include', // 🔐 Envoie automatiquement le cookie
-      body: JSON.stringify({
-        status: 'issue',
-        notes: notes
-      })
+      body: JSON.stringify(requestBody)
     });
 
     if (response.ok) {

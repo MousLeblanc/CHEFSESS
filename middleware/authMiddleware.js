@@ -7,9 +7,13 @@ export const protect = async (req, res, next) => {
     let token;
     
     // 🔐 Priorité 1 : Lire le token depuis le cookie HttpOnly
+    // Support à la fois 'token' (connexion normale) et 'siteToken' (connexion site)
     if (req.cookies && req.cookies.token) {
       token = req.cookies.token;
-      console.log('🍪 Token lu depuis cookie');
+      console.log('🍪 Token lu depuis cookie "token"');
+    } else if (req.cookies && req.cookies.siteToken) {
+      token = req.cookies.siteToken;
+      console.log('🍪 Token lu depuis cookie "siteToken"');
     }
     // Fallback : Lire le token depuis le header Authorization (compatibilité)
     else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -35,13 +39,38 @@ export const protect = async (req, res, next) => {
       });
     }
     
+    // 🔑 Utiliser le siteId du token décodé si présent (pour les connexions site)
+    // Sinon, utiliser le siteId de la base de données
+    // Priorité au token, mais fallback sur la base de données
+    if (decoded.siteId) {
+      req.user.siteId = decoded.siteId;
+      console.log('🔧 SiteId ajouté depuis le token:', decoded.siteId);
+    } else if (req.user.siteId) {
+      // Le siteId existe déjà dans la base de données, le garder
+      console.log('🔧 SiteId utilisé depuis la base de données:', req.user.siteId);
+    }
+    
+    // Même chose pour groupId - TOUJOURS utiliser le groupId du token s'il existe
+    // Sinon, utiliser celui de la base de données
+    if (decoded.groupId) {
+      req.user.groupId = decoded.groupId;
+      console.log('🔧 GroupId ajouté depuis le token:', decoded.groupId);
+    } else if (req.user.groupId) {
+      // Le groupId existe déjà dans la base de données, le garder
+      console.log('🔧 GroupId utilisé depuis la base de données:', req.user.groupId);
+    }
+    
     // 🔍 Logs pour diagnostiquer les rôles
     console.log('👤 User chargé:', {
       id: req.user._id,
       email: req.user.email,
       role: req.user.role,
       roles: req.user.roles,
-      siteId: req.user.siteId
+      siteId: req.user.siteId ? req.user.siteId.toString() : 'undefined',
+      groupId: req.user.groupId ? req.user.groupId.toString() : 'undefined',
+      supplierId: req.user.supplierId ? req.user.supplierId.toString() : 'undefined',
+      siteIdFromToken: decoded.siteId ? decoded.siteId.toString() : 'undefined',
+      siteIdFromDB: req.user.siteId ? req.user.siteId.toString() : 'undefined'
     });
     
     next();

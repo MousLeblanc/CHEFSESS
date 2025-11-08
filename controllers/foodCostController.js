@@ -9,22 +9,44 @@ export const getFoodCostPeriods = async (req, res) => {
   try {
     const { siteId, period, startDate, endDate } = req.query;
     
+    // Récupérer le siteId depuis la query string si fourni (pour gérer les onglets multiples)
+    const siteIdFromQuery = req.query.siteId || siteId;
+    const userSiteId = siteIdFromQuery || (req.user.siteId ? req.user.siteId.toString() : null);
+    
+    // Vérifier les rôles dans le tableau roles aussi
+    const hasRoleInArray = req.user.roles && Array.isArray(req.user.roles) && (
+      req.user.roles.includes('GROUP_ADMIN') || 
+      req.user.roles.includes('SITE_MANAGER') ||
+      req.user.roles.includes('CHEF')
+    );
+    
     let query = {};
     
     // Filtrer par site ou groupe selon les permissions
-    if (req.user.role === 'SITE_MANAGER' || req.user.establishmentType) {
-      query.siteId = req.user.siteId;
+    if (req.user.role === 'SITE_MANAGER' || req.user.role === 'groupe' || hasRoleInArray || req.user.establishmentType) {
+      query.siteId = userSiteId || req.user.siteId;
     } else if (req.user.role === 'GROUP_ADMIN') {
-      if (siteId) {
-        query.siteId = siteId;
+      if (siteIdFromQuery) {
+        query.siteId = siteIdFromQuery;
       } else {
         query.groupId = req.user.groupId;
       }
     } else if (req.user.role === 'admin') {
-      if (siteId) query.siteId = siteId;
+      if (siteIdFromQuery) query.siteId = siteIdFromQuery;
+    } else if (userSiteId) {
+      // Si un siteId est fourni, l'utiliser même si le rôle n'est pas explicite
+      query.siteId = userSiteId;
     } else {
       return res.status(403).json({ message: 'Accès refusé' });
     }
+    
+    console.log('🔍 getFoodCostPeriods - Query:', {
+      query: query,
+      userRole: req.user.role,
+      userRoles: req.user.roles,
+      userSiteId: userSiteId,
+      siteIdFromQuery: siteIdFromQuery
+    });
     
     // Filtres optionnels
     if (period) query.period = period;
@@ -110,17 +132,59 @@ export const createFoodCost = async (req, res) => {
     
     // Vérifier les permissions
     const allowedEstablishmentTypes = ['ehpad', 'hopital', 'maison_de_retraite', 'cantine_scolaire', 'cantine_entreprise'];
+    
+    // Récupérer le siteId depuis la query string ou le body si fourni (pour gérer les onglets multiples)
+    const siteIdFromQuery = req.query.siteId || req.body.siteId;
+    const userSiteId = siteIdFromQuery || (req.user.siteId ? req.user.siteId.toString() : null);
+    
+    // Vérifier les rôles dans le tableau roles aussi
+    const hasRoleInArray = req.user.roles && Array.isArray(req.user.roles) && (
+      req.user.roles.includes('GROUP_ADMIN') || 
+      req.user.roles.includes('SITE_MANAGER') ||
+      req.user.roles.includes('CHEF')
+    );
+    
+    // Vérifier si l'utilisateur a un siteId (même si le rôle n'est pas explicite)
+    const hasSiteId = userSiteId || req.user.siteId;
+    
     const hasPermission = 
       req.user.role === 'admin' ||
       req.user.role === 'GROUP_ADMIN' ||
       req.user.role === 'SITE_MANAGER' ||
-      (req.user.establishmentType && allowedEstablishmentTypes.includes(req.user.establishmentType) && req.user.siteId);
+      req.user.role === 'groupe' ||
+      req.user.role === 'collectivite' ||
+      hasRoleInArray ||
+      (req.user.establishmentType && allowedEstablishmentTypes.includes(req.user.establishmentType) && hasSiteId) ||
+      (hasSiteId && req.user.establishmentType);
+    
+    console.log('🔐 Vérification des permissions pour créer une période:', {
+      userId: req.user._id ? req.user._id.toString() : 'undefined',
+      role: req.user.role,
+      roles: req.user.roles,
+      establishmentType: req.user.establishmentType,
+      siteId: req.user.siteId ? req.user.siteId.toString() : 'undefined',
+      siteIdFromQuery: siteIdFromQuery,
+      userSiteId: userSiteId,
+      hasSiteId: hasSiteId,
+      hasRoleInArray: hasRoleInArray,
+      hasPermission: hasPermission,
+      check1: req.user.role === 'admin',
+      check2: req.user.role === 'GROUP_ADMIN',
+      check3: req.user.role === 'SITE_MANAGER',
+      check4: req.user.role === 'groupe',
+      check5: req.user.role === 'collectivite',
+      check6: hasRoleInArray,
+      check7: (req.user.establishmentType && allowedEstablishmentTypes.includes(req.user.establishmentType) && hasSiteId),
+      check8: (hasSiteId && req.user.establishmentType)
+    });
     
     if (!hasPermission) {
       console.log('❌ Permission refusée pour:', { 
         role: req.user.role, 
+        roles: req.user.roles,
         establishmentType: req.user.establishmentType,
-        siteId: req.user.siteId 
+        siteId: req.user.siteId,
+        userSiteId: userSiteId
       });
       return res.status(403).json({ 
         success: false,
@@ -134,12 +198,22 @@ export const createFoodCost = async (req, res) => {
     });
     
     // Déterminer le site et le groupe
-    let targetSiteId = siteId;
+    // Utiliser le siteId de la query string/body en priorité, sinon celui de req.user
+    let targetSiteId = siteId || userSiteId || req.user.siteId;
     let groupId = req.user.groupId;
     
-    if (req.user.role === 'SITE_MANAGER' || req.user.establishmentType) {
-      targetSiteId = req.user.siteId;
+    // Si l'utilisateur a un siteId mais pas de siteId dans la requête, utiliser celui de l'utilisateur
+    if (!targetSiteId && (req.user.role === 'SITE_MANAGER' || req.user.establishmentType || userSiteId)) {
+      targetSiteId = userSiteId || req.user.siteId;
     }
+    
+    console.log('📋 Création de période avec:', {
+      targetSiteId: targetSiteId,
+      groupId: groupId,
+      period: period,
+      startDate: startDate,
+      endDate: endDate
+    });
     
     // Vérifier qu'une période n'existe pas déjà pour ces dates
     const existingPeriod = await FoodCost.findOne({
@@ -219,6 +293,79 @@ export const createFoodCost = async (req, res) => {
     
     console.log(`💰 Total des commandes pour la période: ${ordersTotal}€`);
     
+    // 🆕 Récupérer les achats directs du stock pour cette période
+    const Stock = (await import('../models/Stock.js')).default;
+    let userStock = await Stock.findOne({ createdBy: req.user._id });
+    
+    // Si pas trouvé par createdBy, chercher par siteId dans les items
+    if (!userStock) {
+      userStock = await Stock.findOne({ 'items.siteId': targetSiteId });
+    }
+    
+    const stockPurchasesItems = [];
+    
+    if (userStock && userStock.items && userStock.items.length > 0) {
+      console.log(`\n🛒 ========== RECHERCHE ACHATS STOCK ==========`);
+      
+      userStock.items.forEach((item) => {
+        if (item.purchaseDate && item.price && item.price > 0) {
+          const purchaseDate = new Date(item.purchaseDate);
+          
+          if (purchaseDate >= start && purchaseDate <= end) {
+            const itemTotal = (item.price || 0) * (item.quantity || 0);
+            
+            stockPurchasesItems.push({
+              name: item.name,
+              quantity: item.quantity,
+              unit: item.unit,
+              price: item.price,
+              total: itemTotal,
+              purchaseDate: purchaseDate,
+              store: item.supplier || 'Magasin inconnu',
+              category: item.category || 'autres'
+            });
+            
+            console.log(`   🛒 ${item.name}: ${item.quantity} ${item.unit} × ${item.price}€ = ${itemTotal.toFixed(2)}€ (achat le ${purchaseDate.toLocaleDateString('fr-FR')})`);
+          }
+        }
+      });
+      
+      if (stockPurchasesItems.length > 0) {
+        console.log(`💰 Total achats stock: ${stockPurchasesItems.reduce((sum, item) => sum + item.total, 0).toFixed(2)}€`);
+      }
+    }
+    
+    // Mapper les achats stock en dépenses manuelles
+    const categoryMap = {
+      'legumes': 'fruits_legumes',
+      'fruits': 'fruits_legumes',
+      'viandes': 'viandes_poissons',
+      'poissons': 'viandes_poissons',
+      'produits-laitiers': 'produits_laitiers',
+      'cereales': 'epicerie',
+      'epices': 'epicerie',
+      'boissons': 'boissons',
+      'autres': 'autres'
+    };
+    
+    const manualExpenses = stockPurchasesItems.map(item => ({
+      date: item.purchaseDate,
+      category: categoryMap[item.category] || 'autres',
+      description: `${item.name} (${item.quantity} ${item.unit})`,
+      supplier: item.store || 'Magasin',
+      amount: item.total,
+      notes: `[Achat Stock Auto] Acheté le ${item.purchaseDate.toLocaleDateString('fr-FR')}`,
+      addedBy: req.user._id
+    }));
+    
+    const manualTotal = manualExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const totalExpenses = ordersTotal + manualTotal;
+    
+    console.log(`\n💰 ========== TOTAUX ==========`);
+    console.log(`   Commandes fournisseurs: ${ordersTotal.toFixed(2)}€`);
+    console.log(`   Achats stock: ${manualTotal.toFixed(2)}€`);
+    console.log(`   TOTAL: ${totalExpenses.toFixed(2)}€`);
+    
     // Créer la période
     const foodCost = await FoodCost.create({
       siteId: targetSiteId,
@@ -229,8 +376,8 @@ export const createFoodCost = async (req, res) => {
       budget: budget || { planned: 0 },
       expenses: {
         orders: ordersTotal,
-        manual: [],
-        total: ordersTotal
+        manual: manualExpenses,
+        total: totalExpenses
       },
       metrics: {
         numberOfResidents: residentsCount,
@@ -538,7 +685,7 @@ export const recalculateOrders = async (req, res) => {
       ]
     });
     
-    console.log(`\n📦 ========== RÉSULTATS ==========`);
+    console.log(`\n📦 ========== RÉSULTATS COMMANDES ==========`);
     console.log(`✅ ${orders.length} commande(s) trouvée(s)`);
     
     if (orders.length === 0) {
@@ -559,7 +706,106 @@ export const recalculateOrders = async (req, res) => {
       return sum + orderTotal;
     }, 0);
     
-    console.log(`💰 Total recalculé: ${foodCost.expenses.orders}€`);
+    console.log(`💰 Total commandes: ${foodCost.expenses.orders}€`);
+    
+    // 🆕 Récupérer les achats directs du stock pour cette période
+    const Stock = (await import('../models/Stock.js')).default;
+    // Chercher le stock par utilisateur ET par siteId pour être sûr
+    let userStock = await Stock.findOne({ createdBy: req.user._id });
+    
+    // Si pas trouvé par createdBy, chercher par siteId dans les items
+    if (!userStock) {
+      userStock = await Stock.findOne({ 'items.siteId': foodCost.siteId });
+    }
+    
+    let stockPurchasesTotal = 0;
+    const stockPurchasesItems = [];
+    
+    if (userStock && userStock.items && userStock.items.length > 0) {
+      console.log(`\n🛒 ========== RECHERCHE ACHATS STOCK ==========`);
+      
+      userStock.items.forEach((item) => {
+        // Vérifier si l'item a une date d'achat et un prix dans la période
+        if (item.purchaseDate && item.price && item.price > 0) {
+          const purchaseDate = new Date(item.purchaseDate);
+          
+          // Vérifier si la date d'achat est dans la période
+          if (purchaseDate >= foodCost.startDate && purchaseDate <= foodCost.endDate) {
+            // Calculer le total de l'achat : prix unitaire * quantité
+            const itemTotal = (item.price || 0) * (item.quantity || 0);
+            stockPurchasesTotal += itemTotal;
+            
+            stockPurchasesItems.push({
+              name: item.name,
+              quantity: item.quantity,
+              unit: item.unit,
+              price: item.price,
+              total: itemTotal,
+              purchaseDate: purchaseDate,
+              store: item.supplier || 'Magasin inconnu',
+              category: item.category || 'autres'
+            });
+            
+            console.log(`   🛒 ${item.name}: ${item.quantity} ${item.unit} × ${item.price}€ = ${itemTotal.toFixed(2)}€ (achat le ${purchaseDate.toLocaleDateString('fr-FR')})`);
+          }
+        }
+      });
+      
+      console.log(`💰 Total achats stock: ${stockPurchasesTotal.toFixed(2)}€`);
+    }
+    
+    // Supprimer les anciennes dépenses auto de stock pour les recalculer (éviter les doublons)
+    foodCost.expenses.manual = foodCost.expenses.manual.filter(exp => 
+      !(exp.notes && exp.notes.includes('[Achat Stock Auto]'))
+    );
+    
+    // Ajouter les nouveaux achats stock comme dépenses manuelles automatiques
+    if (stockPurchasesItems.length > 0) {
+      // Mapper la catégorie du stock vers la catégorie Food Cost
+      const categoryMap = {
+        'legumes': 'fruits_legumes',
+        'fruits': 'fruits_legumes',
+        'viandes': 'viandes_poissons',
+        'poissons': 'viandes_poissons',
+        'produits-laitiers': 'produits_laitiers',
+        'cereales': 'epicerie',
+        'epices': 'epicerie',
+        'boissons': 'boissons',
+        'autres': 'autres'
+      };
+      
+      stockPurchasesItems.forEach(item => {
+        const foodCostCategory = categoryMap[item.category] || 'autres';
+        
+        foodCost.expenses.manual.push({
+          date: item.purchaseDate,
+          category: foodCostCategory,
+          description: `${item.name} (${item.quantity} ${item.unit})`,
+          supplier: item.store || 'Magasin',
+          amount: item.total,
+          notes: `[Achat Stock Auto] Acheté le ${item.purchaseDate.toLocaleDateString('fr-FR')}`,
+          addedBy: req.user._id
+        });
+      });
+      
+      console.log(`✅ ${stockPurchasesItems.length} achat(s) stock ajouté(s) comme dépenses`);
+    }
+    
+    // Recalculer le total en incluant les dépenses manuelles (y compris les achats stock)
+    const manualTotal = foodCost.expenses.manual.reduce((sum, exp) => sum + exp.amount, 0);
+    foodCost.expenses.total = foodCost.expenses.orders + manualTotal;
+    
+    console.log(`\n💰 ========== TOTAUX FINAUX ==========`);
+    console.log(`   Commandes fournisseurs: ${foodCost.expenses.orders.toFixed(2)}€`);
+    console.log(`   Achats stock: ${stockPurchasesTotal.toFixed(2)}€`);
+    console.log(`   Dépenses manuelles totales: ${manualTotal.toFixed(2)}€`);
+    console.log(`   TOTAL: ${foodCost.expenses.total.toFixed(2)}€`);
+    
+    // Appeler la méthode de calcul pour mettre à jour les métriques
+    if (typeof foodCost.calculateTotals === 'function') {
+      foodCost.calculateTotals();
+    }
+    
     foodCost.lastUpdatedBy = req.user._id;
     
     await foodCost.save();
@@ -583,18 +829,52 @@ export const recalculateOrders = async (req, res) => {
 // @access  Private
 export const getFoodCostStats = async (req, res) => {
   try {
+    // Récupérer le siteId depuis la query string si fourni (pour gérer les onglets multiples)
+    const siteIdFromQuery = req.query.siteId;
+    const userSiteId = siteIdFromQuery || (req.user.siteId ? req.user.siteId.toString() : null);
+    
+    // Vérifier les rôles dans le tableau roles aussi
+    const hasRoleInArray = req.user.roles && Array.isArray(req.user.roles) && (
+      req.user.roles.includes('GROUP_ADMIN') || 
+      req.user.roles.includes('SITE_MANAGER') ||
+      req.user.roles.includes('CHEF')
+    );
+    
     let query = {};
     
-    if (req.user.role === 'SITE_MANAGER' || req.user.establishmentType) {
-      query.siteId = req.user.siteId;
+    if (req.user.role === 'SITE_MANAGER' || req.user.role === 'groupe' || hasRoleInArray || req.user.establishmentType) {
+      query.siteId = userSiteId || req.user.siteId;
     } else if (req.user.role === 'GROUP_ADMIN') {
-      query.groupId = req.user.groupId;
-    } else if (req.user.role !== 'admin') {
+      if (siteIdFromQuery) {
+        query.siteId = siteIdFromQuery;
+      } else {
+        query.groupId = req.user.groupId;
+      }
+    } else if (req.user.role === 'admin') {
+      if (siteIdFromQuery) query.siteId = siteIdFromQuery;
+    } else if (userSiteId) {
+      // Si un siteId est fourni, l'utiliser même si le rôle n'est pas explicite
+      query.siteId = userSiteId;
+    } else {
+      console.log('❌ getFoodCostStats - Accès refusé:', {
+        role: req.user.role,
+        roles: req.user.roles,
+        userSiteId: userSiteId,
+        siteIdFromQuery: siteIdFromQuery
+      });
       return res.status(403).json({ 
         success: false,
         message: 'Accès refusé' 
       });
     }
+    
+    console.log('🔍 getFoodCostStats - Query:', {
+      query: query,
+      userRole: req.user.role,
+      userRoles: req.user.roles,
+      userSiteId: userSiteId,
+      siteIdFromQuery: siteIdFromQuery
+    });
     
     const foodCosts = await FoodCost.find(query);
     
@@ -905,6 +1185,128 @@ export const getAdminReports = async (req, res) => {
   }
 };
 
+// @desc    Obtenir l'historique mensuel des dépenses pour un site
+// @route   GET /api/foodcost/site/:siteId/history
+// @access  Private (Admin, Group Admin, Site Manager)
+export const getSiteHistory = async (req, res) => {
+  try {
+    const { siteId } = req.params;
+    const { year } = req.query; // Année optionnelle
+    
+    // Vérifier les permissions
+    const isAdmin = req.user.role === 'admin' || 
+                    req.user.role === 'GROUP_ADMIN' ||
+                    (req.user.roles && (req.user.roles.includes('admin') || req.user.roles.includes('GROUP_ADMIN')));
+    
+    const isSiteManager = req.user.siteId && req.user.siteId.toString() === siteId;
+    
+    if (!isAdmin && !isSiteManager) {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Accès refusé' 
+      });
+    }
+    
+    // Construire la requête
+    const query = { siteId };
+    
+    // Si une année est spécifiée, filtrer par année
+    if (year) {
+      const yearStart = new Date(parseInt(year), 0, 1);
+      const yearEnd = new Date(parseInt(year), 11, 31, 23, 59, 59, 999);
+      query.startDate = { $gte: yearStart, $lte: yearEnd };
+    }
+    
+    // Récupérer toutes les périodes Food Cost pour ce site
+    const foodCosts = await FoodCost.find(query)
+      .populate('siteId', 'name siteName establishmentType')
+      .sort({ startDate: 1 }); // Trier par date croissante
+    
+    // Organiser les données par mois et par année
+    const monthlyData = {}; // { "2024-01": { expenses: 1000, budget: 1200, ... }, ... }
+    const yearlyData = {}; // { "2024": { expenses: 12000, budget: 14400, ... }, ... }
+    
+    foodCosts.forEach(fc => {
+      const date = new Date(fc.startDate);
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+      const yearKey = String(year);
+      
+      // Données mensuelles
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = {
+          month: month,
+          year: year,
+          expenses: 0,
+          budget: 0,
+          percentUsed: 0,
+          periods: []
+        };
+      }
+      monthlyData[monthKey].expenses += fc.expenses.total;
+      monthlyData[monthKey].budget += fc.budget.planned;
+      monthlyData[monthKey].periods.push({
+        startDate: fc.startDate,
+        endDate: fc.endDate,
+        expenses: fc.expenses.total,
+        budget: fc.budget.planned
+      });
+      
+      // Données annuelles
+      if (!yearlyData[yearKey]) {
+        yearlyData[yearKey] = {
+          year: parseInt(yearKey),
+          expenses: 0,
+          budget: 0,
+          percentUsed: 0
+        };
+      }
+      yearlyData[yearKey].expenses += fc.expenses.total;
+      yearlyData[yearKey].budget += fc.budget.planned;
+    });
+    
+    // Calculer les pourcentages
+    Object.keys(monthlyData).forEach(key => {
+      const data = monthlyData[key];
+      if (data.budget > 0) {
+        data.percentUsed = Math.round((data.expenses / data.budget) * 100);
+      }
+    });
+    
+    Object.keys(yearlyData).forEach(key => {
+      const data = yearlyData[key];
+      if (data.budget > 0) {
+        data.percentUsed = Math.round((data.expenses / data.budget) * 100);
+      }
+    });
+    
+    // Convertir en arrays triés
+    const monthlyArray = Object.values(monthlyData).sort((a, b) => {
+      if (a.year !== b.year) return a.year - b.year;
+      return a.month - b.month;
+    });
+    
+    const yearlyArray = Object.values(yearlyData).sort((a, b) => a.year - b.year);
+    
+    res.json({
+      success: true,
+      siteId,
+      monthly: monthlyArray,
+      yearly: yearlyArray,
+      totalPeriods: foodCosts.length
+    });
+    
+  } catch (error) {
+    console.error('Erreur getSiteHistory:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Erreur lors de la récupération de l\'historique',
+      error: error.message 
+    });
+  }
+};
+
 export default {
   getFoodCostPeriods,
   getFoodCostById,
@@ -916,6 +1318,7 @@ export default {
   getFoodCostStats,
   acknowledgeAlert,
   getAdminReports,
-  deleteFoodCost
+  deleteFoodCost,
+  getSiteHistory
 };
 

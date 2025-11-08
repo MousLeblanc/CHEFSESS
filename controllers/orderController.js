@@ -175,11 +175,27 @@ export const createOrder = asyncHandler(async (req, res) => {
 // @route   GET /api/orders
 // @access  Private
 export const getCustomerOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({ customer: req.user._id })
+  console.log('📋 GET CUSTOMER ORDERS - User ID:', req.user._id);
+  console.log('📋 GET CUSTOMER ORDERS - User role:', req.user.role);
+  console.log('📋 GET CUSTOMER ORDERS - User establishmentType:', req.user.establishmentType);
+  
+  // Récupérer les commandes où l'utilisateur est le client
+  // Chercher les commandes où l'utilisateur est le client OU où l'utilisateur est associé au site de la commande
+  const query = {
+    $or: [
+      { customer: req.user._id },
+      ...(req.user.siteId ? [{ siteId: req.user.siteId }] : [])
+    ]
+  };
+  
+  console.log('🔍 Requête de recherche des commandes client:', JSON.stringify(query, null, 2));
+  
+  const orders = await Order.find(query)
     .populate('supplier', 'name businessName email phone')
     .populate('items.product', 'name category')
     .sort({ createdAt: -1 });
 
+  console.log(`✅ ${orders.length} commande(s) trouvée(s) pour l'utilisateur`);
   res.json({ success: true, count: orders.length, data: orders });
 });
 
@@ -187,12 +203,61 @@ export const getCustomerOrders = asyncHandler(async (req, res) => {
 // @route   GET /api/orders/supplier
 // @access  Private (fournisseur)
 export const getSupplierOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({ supplier: req.user._id })
-    .populate('customer', 'name businessName email phone')
-    .populate('items.product', 'name category')
-    .sort({ createdAt: -1 });
-
-  res.json({ success: true, count: orders.length, data: orders });
+  console.log('\n📋 ===== GET SUPPLIER ORDERS =====');
+  console.log('👤 User ID:', req.user._id);
+  console.log('👤 User role:', req.user.role);
+  console.log('👤 User roles:', req.user.roles);
+  console.log('👤 User supplierId:', req.user.supplierId);
+  console.log('👤 User email:', req.user.email);
+  
+  // Chercher les commandes où le supplier est soit l'ID du User, soit le supplierId du User
+  const query = {
+    $or: [
+      { supplier: req.user._id },
+      ...(req.user.supplierId ? [{ supplier: req.user.supplierId }] : [])
+    ]
+  };
+  
+  console.log('🔍 Requête de recherche:', JSON.stringify(query, null, 2));
+  
+  try {
+    const orders = await Order.find(query)
+      .populate('customer', 'name businessName email phone')
+      .populate('items.product', 'name category')
+      .sort({ createdAt: -1 });
+    
+    console.log(`✅ ${orders.length} commande(s) trouvée(s) pour le fournisseur`);
+    if (orders.length > 0) {
+      console.log('📦 Première commande:', {
+        orderNumber: orders[0].orderNumber,
+        supplier: orders[0].supplier,
+        customer: orders[0].customer?.businessName || orders[0].customer?.name,
+        status: orders[0].status
+      });
+    } else {
+      console.log('ℹ️ Aucune commande trouvée pour ce fournisseur');
+      // Vérifier s'il y a des commandes dans la base pour diagnostiquer
+      const allOrdersCount = await Order.countDocuments();
+      console.log(`ℹ️ Total de commandes dans la base: ${allOrdersCount}`);
+      if (allOrdersCount > 0) {
+        // Afficher quelques exemples de commandes pour voir comment le supplier est stocké
+        const sampleOrders = await Order.find().limit(3).select('orderNumber supplier');
+        console.log('ℹ️ Exemples de commandes dans la base:');
+        sampleOrders.forEach(order => {
+          console.log(`   - ${order.orderNumber}: supplier = ${order.supplier}`);
+        });
+      }
+    }
+    
+    res.json({ success: true, count: orders.length, data: orders });
+  } catch (error) {
+    console.error('❌ Erreur lors de la récupération des commandes:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erreur lors de la récupération des commandes',
+      message: error.message
+    });
+  }
 });
 
 // @desc    Récupérer une commande par ID
@@ -209,9 +274,26 @@ export const getOrder = asyncHandler(async (req, res) => {
     throw new Error('Commande non trouvée');
   }
 
+  // Extraire les IDs pour la comparaison
+  const customerId = order.customer?._id ? order.customer._id.toString() : order.customer?.toString();
+  const supplierId = order.supplier?._id ? order.supplier._id.toString() : order.supplier?.toString();
+  const userId = req.user._id.toString();
+  
   // Vérifier que l'utilisateur a le droit de voir cette commande
-  if (order.customer._id.toString() !== req.user._id.toString() && 
-      order.supplier._id.toString() !== req.user._id.toString()) {
+  // - Il est le client de la commande
+  // - Il est le fournisseur de la commande
+  // - Il est associé au site de la commande (pour les utilisateurs EHPAD)
+  const isCustomer = customerId === userId;
+  const isSupplier = supplierId === userId;
+  const isSiteUser = req.user.siteId && order.siteId && req.user.siteId.toString() === order.siteId.toString();
+  
+  if (!isCustomer && !isSupplier && !isSiteUser) {
+    console.log(`❌ Accès refusé pour voir la commande:`);
+    console.log(`   - customerId: ${customerId}`);
+    console.log(`   - supplierId: ${supplierId}`);
+    console.log(`   - userId: ${userId}`);
+    console.log(`   - user.siteId: ${req.user.siteId}`);
+    console.log(`   - order.siteId: ${order.siteId}`);
     res.status(403);
     throw new Error('Non autorisé à voir cette commande');
   }
@@ -297,7 +379,9 @@ export const updateCustomerOrderStatus = asyncHandler(async (req, res) => {
     throw new Error('Statut invalide. Utilisez "delivered" pour confirmer la réception ou "issue" pour signaler un problème');
   }
 
-  const order = await Order.findById(req.params.id).populate('supplier', 'businessName name');
+  const order = await Order.findById(req.params.id)
+    .populate('supplier', 'businessName name')
+    .populate('customer', 'name businessName email siteId');
 
   if (!order) {
     res.status(404);
@@ -306,29 +390,112 @@ export const updateCustomerOrderStatus = asyncHandler(async (req, res) => {
 
   console.log(`✅ Commande trouvée: ${order.orderNumber}`);
   console.log(`   • Status actuel: ${order.status}`);
-  console.log(`   • Client: ${order.customer}`);
+  console.log(`   • Client (raw): ${order.customer}`);
+  console.log(`   • Client (type): ${typeof order.customer}`);
+  console.log(`   • Client (toString): ${order.customer?.toString ? order.customer.toString() : 'N/A'}`);
+  console.log(`   • User ID: ${req.user._id}`);
+  console.log(`   • User siteId: ${req.user.siteId}`);
+  console.log(`   • Order siteId: ${order.siteId}`);
   console.log(`   • Nombre d'articles: ${order.items.length}`);
 
+  // Extraire l'ID du client (peut être un ObjectId ou un objet populate)
+  const customerId = order.customer?._id ? order.customer._id.toString() : order.customer?.toString();
+  const userId = req.user._id.toString();
+  
+  console.log(`🔍 Comparaison: customerId="${customerId}" vs userId="${userId}"`);
+
   // Vérifier que l'utilisateur est le client de cette commande
-  if (order.customer.toString() !== req.user._id.toString()) {
-    console.log(`❌ Erreur d'autorisation: ${order.customer} !== ${req.user._id}`);
+  // OU que l'utilisateur est associé au site de la commande (pour les utilisateurs EHPAD)
+  const isCustomer = customerId === userId;
+  
+  // Récupérer le siteId depuis la query string si fourni (pour gérer les onglets multiples)
+  const siteIdFromQuery = req.query.siteId || req.body.siteId;
+  const userSiteId = siteIdFromQuery || (req.user.siteId ? req.user.siteId.toString() : null);
+  const orderSiteId = order.siteId ? order.siteId.toString() : null;
+  
+  const isSiteUser = userSiteId && orderSiteId && userSiteId === orderSiteId;
+  
+  console.log(`🔍 isCustomer: ${isCustomer}, isSiteUser: ${isSiteUser}`);
+  console.log(`🔍 userSiteId: ${userSiteId}, orderSiteId: ${orderSiteId}`);
+
+  if (!isCustomer && !isSiteUser) {
+    console.log(`❌ Erreur d'autorisation:`);
+    console.log(`   - customerId: ${customerId}`);
+    console.log(`   - userId: ${userId}`);
+    console.log(`   - user.siteId: ${req.user.siteId}`);
+    console.log(`   - siteIdFromQuery: ${siteIdFromQuery}`);
+    console.log(`   - userSiteId: ${userSiteId}`);
+    console.log(`   - order.siteId: ${orderSiteId}`);
     res.status(403);
     throw new Error('Non autorisé à modifier cette commande');
   }
 
   console.log(`✅ Autorisation OK`);
 
+  // Vérifier si la commande est déjà marquée comme delivered
+  // Si oui, vérifier que les articles ont bien été ajoutés au stock
+  if (order.status === 'delivered' && status === 'delivered') {
+    console.log(`⚠️ Commande déjà marquée comme "delivered" - Vérification du stock...`);
+    
+    // Vérifier si les articles sont dans le stock
+    let stock = await Stock.findOne({ createdBy: req.user._id });
+    if (!stock && req.user.siteId) {
+      stock = await Stock.findOne({ 'items.siteId': req.user.siteId });
+    }
+    
+    if (stock) {
+      const userSiteId = req.user.siteId ? req.user.siteId.toString() : null;
+      let itemsInStock = 0;
+      let itemsMissing = [];
+      
+      for (const orderItem of order.items) {
+        const itemName = orderItem.productName;
+        const itemUnit = orderItem.unit;
+        const found = stock.items.some(item => {
+          const itemSiteId = item.siteId ? item.siteId.toString() : null;
+          return item.name.toLowerCase() === itemName.toLowerCase() && 
+                 item.unit === itemUnit &&
+                 (itemSiteId === userSiteId || !itemSiteId);
+        });
+        
+        if (found) {
+          itemsInStock++;
+        } else {
+          itemsMissing.push(`${itemName} (${orderItem.quantity} ${itemUnit})`);
+        }
+      }
+      
+      if (itemsMissing.length > 0) {
+        console.log(`⚠️ ${itemsMissing.length} article(s) manquant(s) dans le stock, ajout automatique...`);
+        // Les articles manquants seront ajoutés dans le bloc suivant
+      } else {
+        console.log(`✅ Tous les articles de la commande sont déjà dans le stock`);
+        // Retourner directement sans modifier le statut
+        return res.json({ success: true, data: order, message: 'Commande déjà traitée, tous les articles sont en stock' });
+      }
+    }
+  }
+
   // Vérifier que la commande a bien été confirmée/préparée avant de confirmer la réception
-  const validStatusForDelivery = ['confirmed', 'preparing', 'prepared', 'ready', 'shipped'];
+  // SAUF si elle est déjà delivered (pour permettre de rajouter au stock si nécessaire)
+  const validStatusForDelivery = ['confirmed', 'preparing', 'prepared', 'ready', 'shipped', 'delivered'];
   if (status === 'delivered' && !validStatusForDelivery.includes(order.status)) {
     console.log(`❌ Status invalide pour confirmation: ${order.status} (doit être l'un de: ${validStatusForDelivery.join(', ')})`);
     res.status(400);
     throw new Error('La commande doit d\'abord être confirmée et préparée par le fournisseur');
   }
 
-  console.log(`📝 Mise à jour du status vers: ${status}`);
-  await order.updateStatus(status);
-  console.log(`✅ Status mis à jour avec succès`);
+  // Sauvegarder l'ancien statut avant la mise à jour pour la notification
+  const oldStatus = order.status;
+  
+  // Ne mettre à jour le statut que si ce n'est pas déjà "delivered"
+  if (order.status !== 'delivered') {
+    console.log(`📝 Mise à jour du status vers: ${status}`);
+    await order.updateStatus(status);
+    console.log(`✅ Status mis à jour avec succès`);
+  } else {
+    console.log(`ℹ️ Commande déjà en statut "delivered", pas de mise à jour du statut`);
+  }
   
   // Ajouter les notes du client si fourni (pour signaler un problème)
   if (notes) {
@@ -343,6 +510,17 @@ export const updateCustomerOrderStatus = asyncHandler(async (req, res) => {
       console.log(`📬 Notification de problème envoyée au fournisseur ${order.supplier._id}`);
     } catch (notifError) {
       console.error('❌ Erreur lors de l\'envoi de la notification:', notifError);
+    }
+  }
+  
+  // 🔔 NOTIFIER LE FOURNISSEUR QUAND LE CLIENT CONFIRME LA RÉCEPTION
+  if (status === 'delivered' && oldStatus !== 'delivered') {
+    try {
+      const supplierId = order.supplier._id ? order.supplier._id.toString() : order.supplier.toString();
+      notificationService.notifyOrderStatusChange(supplierId, order, oldStatus, 'delivered');
+      console.log(`📬 Notification de réception confirmée envoyée au fournisseur ${supplierId}`);
+    } catch (notifError) {
+      console.error('❌ Erreur lors de l\'envoi de la notification de réception:', notifError);
     }
   }
 
@@ -361,7 +539,16 @@ export const updateCustomerOrderStatus = asyncHandler(async (req, res) => {
       });
       
       // Trouver ou créer le stock du client
+      // Chercher d'abord par createdBy
       let stock = await Stock.findOne({ createdBy: req.user._id });
+      
+      // Si pas trouvé et que l'utilisateur a un siteId, chercher dans les items du site
+      if (!stock && req.user.siteId) {
+        stock = await Stock.findOne({ 'items.siteId': req.user.siteId });
+        if (stock) {
+          console.log(`📦 Stock trouvé via siteId dans les items`);
+        }
+      }
       
       if (!stock) {
         // Créer un nouveau stock pour ce client
@@ -380,28 +567,53 @@ export const updateCustomerOrderStatus = asyncHandler(async (req, res) => {
       // Parcourir tous les articles de la commande
       for (const orderItem of order.items) {
         const itemName = orderItem.productName;
-        const itemQuantity = orderItem.quantity;
+        // S'assurer que la quantité est un nombre (conversion explicite)
+        const itemQuantity = typeof orderItem.quantity === 'string' ? parseFloat(orderItem.quantity) : Number(orderItem.quantity);
         const itemUnit = orderItem.unit;
-        const itemPrice = orderItem.unitPrice;
+        const itemPrice = typeof orderItem.unitPrice === 'string' ? parseFloat(orderItem.unitPrice) : Number(orderItem.unitPrice);
         
-        // Chercher si l'article existe déjà dans le stock (par nom ET unité)
-        // On consolide tous les articles avec le même nom et la même unité, peu importe le fournisseur
+        // Validation de la quantité
+        if (isNaN(itemQuantity) || itemQuantity <= 0) {
+          console.error(`❌ Quantité invalide pour ${itemName}: ${orderItem.quantity} (type: ${typeof orderItem.quantity})`);
+          continue; // Ignorer cet item plutôt que de tout bloquer
+        }
+        
+        console.log(`📦 Ajout au stock: ${itemName} - ${itemQuantity} ${itemUnit} (type quantité: ${typeof itemQuantity})`);
+        
+        // Chercher si l'article existe déjà dans le stock (par nom, unité ET siteId)
+        // On consolide les articles avec le même nom, unité et siteId
+        const userSiteId = req.user.siteId ? req.user.siteId.toString() : null;
         const existingItemIndex = stock.items.findIndex(
-          item => item.name.toLowerCase() === itemName.toLowerCase() && 
-                  item.unit === itemUnit
+          item => {
+            const itemSiteId = item.siteId ? item.siteId.toString() : null;
+            return item.name.toLowerCase() === itemName.toLowerCase() && 
+                   item.unit === itemUnit &&
+                   itemSiteId === userSiteId;
+          }
         );
         
         if (existingItemIndex !== -1) {
           // L'article existe déjà : augmenter la quantité
-          const oldQuantity = stock.items[existingItemIndex].quantity;
-          stock.items[existingItemIndex].quantity += itemQuantity;
-          stock.items[existingItemIndex].price = itemPrice; // Mettre à jour le prix
-          stock.items[existingItemIndex].purchaseDate = new Date(); // Mettre à jour la date
+          const existingItem = stock.items[existingItemIndex];
+          const oldQuantity = existingItem.quantity;
+          console.log(`   📊 Item existant trouvé: ${itemName}`);
+          console.log(`      - Stock actuel: ${oldQuantity} ${itemUnit}`);
+          console.log(`      - Quantité à ajouter: ${itemQuantity} ${itemUnit} (type: ${typeof itemQuantity})`);
+          console.log(`      - Quantité brute depuis commande: ${orderItem.quantity} (type: ${typeof orderItem.quantity})`);
+          
+          existingItem.quantity += itemQuantity;
+          existingItem.price = itemPrice; // Mettre à jour le prix
+          existingItem.purchaseDate = new Date(); // Mettre à jour la date
           // Mettre à jour le fournisseur avec le plus récent (ou combiner s'ils sont différents)
-          if (stock.items[existingItemIndex].supplier !== supplierName && !stock.items[existingItemIndex].supplier.includes(supplierName)) {
-            stock.items[existingItemIndex].supplier = `${stock.items[existingItemIndex].supplier}, ${supplierName}`;
+          if (existingItem.supplier !== supplierName && !existingItem.supplier.includes(supplierName)) {
+            existingItem.supplier = `${existingItem.supplier}, ${supplierName}`;
           }
-          console.log(`   ➕ ${itemName}: ${oldQuantity} → ${stock.items[existingItemIndex].quantity} ${itemUnit} (consolidé)`);
+          // S'assurer que le siteId est défini (rétrocompatibilité)
+          if (!existingItem.siteId && req.user.siteId) {
+            existingItem.siteId = req.user.siteId;
+            existingItem.groupId = req.user.groupId;
+          }
+          console.log(`   ✅ ${itemName}: ${oldQuantity} ${itemUnit} + ${itemQuantity} ${itemUnit} = ${existingItem.quantity} ${itemUnit}`);
         } else {
           // Nouvel article : l'ajouter au stock
           const categoryMap = {
@@ -425,6 +637,10 @@ export const updateCustomerOrderStatus = asyncHandler(async (req, res) => {
             }
           }
           
+          console.log(`   📊 Nouvel article à ajouter: ${itemName}`);
+          console.log(`      - Quantité: ${itemQuantity} ${itemUnit} (type: ${typeof itemQuantity})`);
+          console.log(`      - Quantité brute depuis commande: ${orderItem.quantity} (type: ${typeof orderItem.quantity})`);
+          
           stock.items.push({
             name: itemName,
             category: category,
@@ -434,9 +650,11 @@ export const updateCustomerOrderStatus = asyncHandler(async (req, res) => {
             supplier: supplierName,
             purchaseDate: new Date(),
             status: 'available',
-            notes: `Ajouté automatiquement depuis la commande ${order.orderNumber}`
+            notes: `Ajouté automatiquement depuis la commande ${order.orderNumber}`,
+            siteId: req.user.siteId || order.siteId || null, // Ajouter le siteId du site de l'utilisateur
+            groupId: req.user.groupId || null // Ajouter le groupId du groupe de l'utilisateur
           });
-          console.log(`   ✨ Nouvel article ajouté: ${itemName} (${itemQuantity} ${itemUnit})`);
+          console.log(`   ✅ Nouvel article ajouté: ${itemName} - ${itemQuantity} ${itemUnit}`);
         }
       }
       

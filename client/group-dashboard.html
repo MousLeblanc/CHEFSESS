@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="CSS/components/modal.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <!-- Header -->
@@ -63,6 +64,10 @@
         </button>
         <button class="tab-btn" data-tab="users">
             <i class="fas fa-users"></i> Utilisateurs
+        </button>
+        <button class="tab-btn" data-tab="messages">
+            <i class="fas fa-envelope"></i> Messages
+            <span id="messages-badge" class="badge" style="display: none;">0</span>
         </button>
     </nav>
 
@@ -381,13 +386,15 @@
                                 <th style="padding: 1rem; text-align: left;">Nom</th>
                                 <th style="padding: 1rem; text-align: left;">Catégorie</th>
                                 <th style="padding: 1rem; text-align: center;">Quantité</th>
+                                <th style="padding: 1rem; text-align: center;">Seuil d'alerte</th>
+                                <th style="padding: 1rem; text-align: center;">Prix d'achat</th>
                                 <th style="padding: 1rem; text-align: center;">Expiration</th>
                                 <th style="padding: 1rem; text-align: center;">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="stock-table-body">
                             <tr>
-                                <td colspan="5" style="text-align: center; padding: 2rem; color: #666;">
+                                <td colspan="6" style="text-align: center; padding: 2rem; color: #666;">
                                     <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i><br>
                                     Chargement du stock...
                                 </td>
@@ -475,6 +482,36 @@
             </div>
         </div>
 
+        <!-- Messages -->
+        <div id="messages-tab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-envelope"></i> Messagerie</h2>
+                    <button id="send-message-btn" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Envoyer un message
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="messages-container">
+                        <div class="messages-actions" style="margin-bottom: 2rem;">
+                            <button class="btn btn-outline active" data-filter="sent" onclick="filterMessages('sent')">
+                                <i class="fas fa-paper-plane"></i> Messages envoyés
+                            </button>
+                            <button class="btn btn-outline" data-filter="received" onclick="filterMessages('received')">
+                                <i class="fas fa-inbox"></i> Messages reçus
+                            </button>
+                        </div>
+                        <div id="messages-list">
+                            <p class="text-center" style="padding: 2rem; color: #666;">
+                                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i><br>
+                                Chargement des messages...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Gestion des utilisateurs -->
         <div id="users-tab" class="tab-content">
             <div class="card">
@@ -510,6 +547,62 @@
     </main>
 
     <!-- Modals -->
+    <!-- Modal Envoyer Message -->
+    <div id="send-message-modal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3><i class="fas fa-paper-plane"></i> Envoyer un message</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="send-message-form">
+                    <div class="form-group">
+                        <label for="message-recipients-type">Destinataires *</label>
+                        <select id="message-recipients-type" name="recipientsType" required onchange="handleRecipientTypeChange()">
+                            <option value="">Sélectionner...</option>
+                            <option value="all_sites">Tous les sites</option>
+                            <option value="site">Site(s) spécifique(s)</option>
+                            <option value="user">Utilisateur(s) spécifique(s)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="recipients-selection" style="display: none;">
+                        <label id="recipients-label">Sélectionner les destinataires *</label>
+                        <div id="recipients-checkboxes" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 1rem; border-radius: 8px;">
+                            <!-- Les cases à cocher seront ajoutées ici -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message-subject">Sujet *</label>
+                        <input type="text" id="message-subject" name="subject" required placeholder="Sujet du message">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message-priority">Priorité</label>
+                        <select id="message-priority" name="priority">
+                            <option value="normal">Normale</option>
+                            <option value="low">Basse</option>
+                            <option value="high">Haute</option>
+                            <option value="urgent">Urgente</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message-content">Message *</label>
+                        <textarea id="message-content" name="content" rows="8" required placeholder="Contenu du message..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary modal-close">Annuler</button>
+                <button type="submit" form="send-message-form" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Envoyer
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Ajouter Site -->
     <div id="add-site-modal" class="modal">
         <div class="modal-content">
@@ -715,6 +808,7 @@
     </script>
     
     <script src="js/group-dashboard.js"></script>
+    <script type="module" src="js/messages-manager.js"></script>
     <script src="js/modal.js"></script>
     <script src="js/toast.js"></script>
     

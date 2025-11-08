@@ -10,7 +10,8 @@ import {
   recalculateOrders,
   getFoodCostStats,
   acknowledgeAlert,
-  getAdminReports
+  getAdminReports,
+  getSiteHistory
 } from "../controllers/foodCostController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -24,6 +25,9 @@ router.get('/stats/summary', getFoodCostStats);
 
 // Route pour les rapports admin (tous les sites)
 router.get('/reports', getAdminReports);
+
+// Route pour l'historique d'un site
+router.get('/site/:siteId/history', getSiteHistory);
 
 // Routes CRUD de base
 router.route('/')

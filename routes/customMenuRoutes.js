@@ -4,6 +4,7 @@
 import express from 'express';
 import asyncHandler from 'express-async-handler';
 import { generateCustomMenu } from '../scripts/generate-custom-menu.js';
+import Stock from '../models/Stock.js';
 
 const router = express.Router();
 
@@ -12,7 +13,52 @@ const router = express.Router();
  * Génère un menu personnalisé selon les critères nutritionnels
  */
 router.post('/generate-custom', asyncHandler(async (req, res) => {
-    const { numberOfPeople, mealType, nutritionalGoals, dietaryRestrictions, avoidMenuName, forceVariation } = req.body;
+    const { 
+        numberOfPeople, 
+        mealType, 
+        nutritionalGoals, 
+        dietaryRestrictions, 
+        avoidMenuName, 
+        forceVariation,
+        filtersAsPreferences,
+        strictMode,
+        prioritizeVariety,
+        useFullRecipeCatalog,
+        weekdayTheme,
+        weeklyProteinPlan,
+        antiRepeat,
+        dynamicBanProteins,
+        periodDays,
+        dayIndex,
+        useStockOnly = false // Nouvelle option : utiliser uniquement le stock disponible
+    } = req.body;
+    
+    // Récupérer le stock si l'option est activée
+    let stockItems = [];
+    if (useStockOnly) {
+        const stock = await Stock.findOne({ createdBy: req.user._id });
+        if (stock) {
+            // Filtrer par siteId si l'utilisateur a un siteId
+            const userSiteId = req.user.siteId ? req.user.siteId.toString() : null;
+            if (userSiteId) {
+                stockItems = stock.items.filter(item => {
+                    const itemSiteId = item.siteId ? item.siteId.toString() : null;
+                    return itemSiteId === userSiteId || !itemSiteId;
+                });
+            } else {
+                stockItems = stock.items;
+            }
+            console.log(`📦 Mode stock activé: ${stockItems.length} articles disponibles`);
+        } else {
+            console.log(`⚠️ Mode stock activé mais aucun stock trouvé pour l'utilisateur`);
+            if (strictMode) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Aucun stock disponible. Veuillez ajouter des articles au stock ou désactiver le mode "Stock uniquement".'
+                });
+            }
+        }
+    }
     
     // Validation
     if (!numberOfPeople || numberOfPeople < 1) {
@@ -29,21 +75,28 @@ router.post('/generate-custom', asyncHandler(async (req, res) => {
         });
     }
     
-    if (!nutritionalGoals || nutritionalGoals.length === 0) {
-        return res.status(400).json({ 
-            success: false, 
-            message: 'Au moins un objectif nutritionnel est requis' 
-        });
-    }
+    // Les objectifs nutritionnels sont maintenant optionnels pour permettre une variété de menus
     
     try {
         const result = await generateCustomMenu({
             numberOfPeople,
             mealType,
-            nutritionalGoals,
+            nutritionalGoals: nutritionalGoals || [],
             dietaryRestrictions: dietaryRestrictions || [],
             avoidMenuName,
-            forceVariation
+            forceVariation,
+            filtersAsPreferences,
+            strictMode,
+            prioritizeVariety,
+            useFullRecipeCatalog,
+            weekdayTheme,
+            weeklyProteinPlan,
+            antiRepeat,
+            dynamicBanProteins,
+            periodDays,
+            dayIndex,
+            useStockOnly,
+            stockItems
         });
         
         res.status(200).json({

@@ -20,6 +20,13 @@ async function handleLogin(email, password) {
     // 🍪 Token géré via cookie HTTP-Only (plus sécurisé)
     // On stocke uniquement les données utilisateur
     sessionStorage.setItem('user', JSON.stringify(data.user));
+    
+    // Pour les utilisateurs de sites, stocker le siteId dans sessionStorage (spécifique à cet onglet)
+    // Cela permet d'avoir plusieurs onglets avec des sites différents
+    if (data.user.siteId) {
+      sessionStorage.setItem('currentSiteId', data.user.siteId);
+      console.log('✅ SiteId stocké dans sessionStorage pour cet onglet:', data.user.siteId);
+    }
 
     showToast("Connexion réussie!", "success");
 

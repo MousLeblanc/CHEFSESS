@@ -51,17 +51,18 @@ class NotificationService {
       try {
         // Vérifier le token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const userId = decoded.id;
+        const userId = decoded.id ? decoded.id.toString() : decoded.id;
         
         console.log(`✅ Client WebSocket connecté:`);
-        console.log(`   User ID: ${userId}`);
+        console.log(`   User ID: ${userId} (type: ${typeof userId})`);
         console.log(`   Token décodé:`, JSON.stringify(decoded, null, 2));
         
-        // Associer la connexion à l'utilisateur
-        if (!this.clients.has(userId)) {
-          this.clients.set(userId, new Set());
+        // Associer la connexion à l'utilisateur (toujours utiliser string pour la clé)
+        const userIdStr = userId.toString ? userId.toString() : String(userId);
+        if (!this.clients.has(userIdStr)) {
+          this.clients.set(userIdStr, new Set());
         }
-        this.clients.get(userId).add(ws);
+        this.clients.get(userIdStr).add(ws);
         
         // Envoyer un message de confirmation
         ws.send(JSON.stringify({
@@ -71,19 +72,19 @@ class NotificationService {
         
         // Gérer la déconnexion
         ws.on('close', () => {
-          console.log(`🔌 Client déconnecté: ${userId}`);
-          const userConnections = this.clients.get(userId);
+          console.log(`🔌 Client déconnecté: ${userIdStr}`);
+          const userConnections = this.clients.get(userIdStr);
           if (userConnections) {
             userConnections.delete(ws);
             if (userConnections.size === 0) {
-              this.clients.delete(userId);
+              this.clients.delete(userIdStr);
             }
           }
         });
         
         // Gérer les erreurs
         ws.on('error', (error) => {
-          console.error(`❌ Erreur WebSocket pour ${userId}:`, error.message);
+          console.error(`❌ Erreur WebSocket pour ${userIdStr}:`, error.message);
         });
         
       } catch (error) {
@@ -120,6 +121,14 @@ class NotificationService {
     console.log(`   Titre: ${notification.title}`);
     console.log(`   Clients connectés au total: ${this.clients.size}`);
     console.log(`   IDs connectés: ${Array.from(this.clients.keys()).join(', ')}`);
+    
+    // Log détaillé des utilisateurs connectés pour debug
+    if (this.clients.size > 0) {
+      console.log(`   🔍 Détails des utilisateurs connectés:`);
+      for (const [connectedUserId, connections] of this.clients.entries()) {
+        console.log(`      - User ID: ${connectedUserId} (${connections.size} connexion(s))`);
+      }
+    }
     
     if (!userConnections || userConnections.size === 0) {
       console.log(`❌ Utilisateur ${userIdStr} n'est pas connecté au WebSocket`);
@@ -263,6 +272,87 @@ class NotificationService {
       sound: false,
       priority: 'low'
     });
+  }
+
+  /**
+   * Notifier une promotion produit (super promo ou produit à sauver) à tous les utilisateurs du groupe
+   * @param {string} groupId - ID du groupe
+   * @param {object} product - Détails du produit
+   * @param {string} promotionType - 'super_promo' ou 'to_save'
+   * @param {object} supplier - Détails du fournisseur
+   */
+  notifyProductPromotion(groupId, product, promotionType, supplier) {
+    if (!groupId) {
+      console.log('⚠️ Pas de groupId fourni, notification ignorée');
+      return false;
+    }
+
+    // Notifier tous les utilisateurs du groupe (collectivites, resto)
+    // Cette fonction sera appelée après avoir trouvé les utilisateurs dans le controller
+    // Pour l'instant, on retourne juste true pour indiquer que c'est prêt
+    return true;
+  }
+
+  /**
+   * Notifier une promotion produit à une liste d'utilisateurs
+   * @param {Array} userIds - Liste des IDs des utilisateurs à notifier
+   * @param {object} product - Détails du produit
+   * @param {string} promotionType - 'super_promo' ou 'to_save'
+   * @param {object} supplier - Détails du fournisseur
+   */
+  notifyProductPromotionToUsers(userIds, product, promotionType, supplier) {
+    console.log(`🔔 [notifyProductPromotionToUsers] Appelé avec:`);
+    console.log(`   - userIds: ${userIds.length} utilisateur(s)`);
+    console.log(`   - product: ${product.name} (${product._id})`);
+    console.log(`   - promotionType: ${promotionType}`);
+    console.log(`   - supplier: ${supplier.businessName || supplier.name} (${supplier._id})`);
+    
+    const isSuperPromo = promotionType === 'super_promo';
+    const title = isSuperPromo 
+      ? '⭐ Super Promo disponible !' 
+      : '🚨 Produit à sauver disponible !';
+    
+    const message = isSuperPromo
+      ? `${supplier.businessName || supplier.name} propose une super promo sur ${product.name}`
+      : `${supplier.businessName || supplier.name} propose un produit à sauver: ${product.name}`;
+
+    console.log(`🔔 [notifyProductPromotionToUsers] Notification à envoyer:`);
+    console.log(`   - title: ${title}`);
+    console.log(`   - message: ${message}`);
+
+    let notificationsSent = 0;
+    userIds.forEach(userId => {
+      const userIdStr = userId.toString();
+      console.log(`🔔 [notifyProductPromotionToUsers] Envoi notification à l'utilisateur ${userIdStr}...`);
+      const success = this.sendToUser(userIdStr, {
+        type: 'product_promotion',
+        title: title,
+        message: message,
+        data: {
+          productId: product._id ? product._id.toString() : product._id,
+          productName: product.name,
+          supplierId: supplier._id ? supplier._id.toString() : supplier._id,
+          supplierName: supplier.businessName || supplier.name,
+          promotionType: promotionType,
+          superPromo: isSuperPromo ? product.superPromo : null,
+          toSave: !isSuperPromo ? product.toSave : null,
+          price: product.price,
+          unit: product.unit
+        },
+        sound: true,
+        priority: 'medium',
+        color: isSuperPromo ? '#f39c12' : '#e74c3c' // Orange pour super promo, rouge pour à sauver
+      });
+      if (success) {
+        notificationsSent++;
+        console.log(`✅ [notifyProductPromotionToUsers] Notification envoyée avec succès à ${userIdStr}`);
+      } else {
+        console.log(`⚠️ [notifyProductPromotionToUsers] Échec de l'envoi de notification à ${userIdStr} (utilisateur non connecté)`);
+      }
+    });
+
+    console.log(`✅ ${notificationsSent}/${userIds.length} notification(s) de promotion envoyée(s)`);
+    return notificationsSent;
   }
 }
 

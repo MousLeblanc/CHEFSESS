@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collectivités - Chef SES</title>
+  <link rel="stylesheet" href="css/landing.css" />
+  <link rel="stylesheet" href="css/collectivites.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="navbar-container"></div>
+
+  <!-- Hero Section -->
+  <section class="page-hero">
+    <div class="container">
+      <h1 class="page-title animate-on-scroll" data-i18n="nav.collectivites">Collectivités</h1>
+      <p class="page-subtitle animate-on-scroll">
+        Des solutions adaptées à chaque type d'établissement
+      </p>
+    </div>
+  </section>
+
+  <!-- Tabs Section -->
+  <section class="tabs-section">
+    <div class="container">
+      <div class="tabs-container">
+        <button class="tab-button active" data-tab="ecole" onclick="switchTab('ecole')">
+          <span class="tab-icon">🏫</span>
+          <span class="tab-label">Écoles</span>
+        </button>
+        <button class="tab-button" data-tab="hopital" onclick="switchTab('hopital')">
+          <span class="tab-icon">🏥</span>
+          <span class="tab-label">Hôpitaux</span>
+        </button>
+        <button class="tab-button" data-tab="ehpad" onclick="switchTab('ehpad')">
+          <span class="tab-icon">🏡</span>
+          <span class="tab-label">EHPAD</span>
+        </button>
+      </div>
+
+      <!-- Ecole Tab -->
+      <div class="tab-content active" id="tab-ecole">
+        <div class="tab-content-grid">
+          <div class="tab-content-visual">
+            <div class="visual-placeholder">
+              <div class="visual-icon">🏫</div>
+              <p>Gestion des cantines scolaires</p>
+            </div>
+          </div>
+          <div class="tab-content-text">
+            <h2>Solutions pour les Écoles</h2>
+            <p class="tab-description">
+              Simplifiez la gestion de votre cantine scolaire avec des menus adaptés aux enfants,
+              la gestion des allergies et des restrictions alimentaires.
+            </p>
+            <ul class="tab-features-list">
+              <li>Menus adaptés aux enfants (équilibre nutritionnel)</li>
+              <li>Gestion des allergies (gluten, lactose, œufs, etc.)</li>
+              <li>Planning des menus sur la semaine/mois</li>
+              <li>Calcul automatique des portions par tranche d'âge</li>
+              <li>Suivi des préférences alimentaires</li>
+              <li>Rapports nutritionnels pour les parents</li>
+            </ul>
+            <a href="contact.html" class="btn btn-primary btn-large">Demander une présentation</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hopital Tab -->
+      <div class="tab-content" id="tab-hopital">
+        <div class="tab-content-grid">
+          <div class="tab-content-visual">
+            <div class="visual-placeholder">
+              <div class="visual-icon">🏥</div>
+              <p>Gestion des régimes médicaux</p>
+            </div>
+          </div>
+          <div class="tab-content-text">
+            <h2>Solutions pour les Hôpitaux</h2>
+            <p class="tab-description">
+              Optimisez la restauration hospitalière avec la gestion des régimes médicaux,
+              textures adaptées et suivi nutritionnel des patients.
+            </p>
+            <ul class="tab-features-list">
+              <li>Gestion des régimes médicaux (sans sel, diabétique, etc.)</li>
+              <li>Textures adaptées (mixé, haché, normal)</li>
+              <li>Suivi nutritionnel par patient</li>
+              <li>Respect des protocoles sanitaires</li>
+              <li>Coordination avec les services de soins</li>
+              <li>Traçabilité complète des repas</li>
+            </ul>
+            <a href="contact.html" class="btn btn-primary btn-large">Demander une présentation</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- EHPAD Tab -->
+      <div class="tab-content" id="tab-ehpad">
+        <div class="tab-content-grid">
+          <div class="tab-content-visual">
+            <div class="visual-placeholder">
+              <div class="visual-icon">🏡</div>
+              <p>Gestion des résidents</p>
+            </div>
+          </div>
+          <div class="tab-content-text">
+            <h2>Solutions pour les EHPAD</h2>
+            <p class="tab-description">
+              Personnalisez l'alimentation de chaque résident avec des profils nutritionnels détaillés,
+              gestion des portions et textures adaptées.
+            </p>
+            <ul class="tab-features-list">
+              <li>Profils nutritionnels par résident</li>
+              <li>Gestion des portions (normal, demi, double)</li>
+              <li>Textures adaptées (normal, mixé, haché)</li>
+              <li>Suivi des allergies et restrictions</li>
+              <li>Calcul automatique des besoins nutritionnels</li>
+              <li>Rapports de consommation et statistiques</li>
+            </ul>
+            <a href="contact.html" class="btn btn-primary btn-large">Demander une présentation</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Benefits Section -->
+  <section class="benefits-section">
+    <div class="container">
+      <h2 class="section-title">Avantages pour tous les établissements</h2>
+      <div class="benefits-grid">
+        <div class="benefit-card animate-on-scroll">
+          <div class="benefit-icon">⏱️</div>
+          <h3>Gain de temps</h3>
+          <p>Réduction significative du temps passé sur la gestion administrative</p>
+        </div>
+        <div class="benefit-card animate-on-scroll">
+          <div class="benefit-icon">💰</div>
+          <h3>Optimisation des coûts</h3>
+          <p>Meilleure gestion du budget et réduction du gaspillage alimentaire</p>
+        </div>
+        <div class="benefit-card animate-on-scroll">
+          <div class="benefit-icon">✅</div>
+          <h3>Conformité</h3>
+          <p>Respect des normes sanitaires et nutritionnelles en vigueur</p>
+        </div>
+        <div class="benefit-card animate-on-scroll">
+          <div class="benefit-icon">📊</div>
+          <h3>Traçabilité</h3>
+          <p>Suivi complet des repas, stocks et commandes</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="footer-container"></div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/collectivites.js"></script>
+</body>
+</html>
+

@@ -36,6 +36,7 @@ import initRoutes from "./routes/initRoutes.js";
 import customMenuRoutes from "./routes/customMenuRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import foodCostRoutes from "./routes/foodCostRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
 
 // --- OpenAI client ---
 import openai from "./services/openaiClient.js";
@@ -100,6 +101,7 @@ app.use("/api/sites", siteRoutes);
 app.use("/api/init", initRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/foodcost", foodCostRoutes);
+app.use("/api/messages", messageRoutes);
 
 // === HEALTH CHECK ===
 app.get("/api/health", (req, res) => {
@@ -129,8 +131,6 @@ app.get("*", (req, res, next) => {
 // === CONNEXION MONGODB ===
 const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/chef-ses";
 mongoose.connect(mongoUri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
   serverSelectionTimeoutMS: 10000,
 })
   .then(() => console.log("✅ Connecté à MongoDB"))

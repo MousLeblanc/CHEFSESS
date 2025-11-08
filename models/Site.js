@@ -71,6 +71,26 @@ const siteSchema = new mongoose.Schema({
     capacity: {
       lunch: { type: Number, default: 100 },
       dinner: { type: Number, default: 50 }
+    },
+    notifications: {
+      soundEnabled: {
+        type: Boolean,
+        default: true
+      },
+      badgeEnabled: {
+        type: Boolean,
+        default: true
+      },
+      soundVolume: {
+        type: Number,
+        default: 50,
+        min: 0,
+        max: 100
+      },
+      soundUrl: {
+        type: String,
+        default: "/sounds/notification.mp3"
+      }
     }
   },
   lastSyncAt: Date,

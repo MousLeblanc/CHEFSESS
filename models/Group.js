@@ -61,7 +61,7 @@ const groupSchema = new mongoose.Schema({
 });
 
 // Index pour les recherches rapides
-groupSchema.index({ code: 1 }, { unique: true });
+// Note: code a déjà un index unique (ligne 13), pas besoin de le redéfinir
 groupSchema.index({ isActive: 1 });
 groupSchema.index({ "subscription.expiresAt": 1 });
 

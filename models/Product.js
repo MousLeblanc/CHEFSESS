@@ -63,6 +63,40 @@ const productSchema = new mongoose.Schema({
   saveProduct: {
     type: Boolean,
     default: false
+  },
+  superPromo: {
+    active: {
+      type: Boolean,
+      default: false
+    },
+    promoPrice: {
+      type: Number,
+      min: [0, 'Le prix promotionnel ne peut pas être négatif']
+    },
+    promoQuantity: {
+      type: Number,
+      min: [0, 'La quantité ne peut pas être négative']
+    },
+    endDate: {
+      type: Date
+    }
+  },
+  toSave: {
+    active: {
+      type: Boolean,
+      default: false
+    },
+    savePrice: {
+      type: Number,
+      min: [0, 'Le prix ne peut pas être négatif']
+    },
+    saveQuantity: {
+      type: Number,
+      min: [0, 'La quantité ne peut pas être négative']
+    },
+    expirationDate: {
+      type: Date
+    }
   }
 }, {
   timestamps: true

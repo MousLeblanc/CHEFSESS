@@ -1,12 +1,50 @@
 // collectivite-dashboard.js
 import { logout, getToken, getCurrentUser } from './auth.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Protection de la page
-    const user = getCurrentUser();
-    if (!user || (user.role !== 'collectivite' && user.role !== 'resto' && user.role !== 'admin')) {
-        logout();
-        return;
+document.addEventListener('DOMContentLoaded', async () => {
+    // TOUJOURS vérifier avec le serveur pour garantir que l'utilisateur est toujours authentifié
+    console.log('🔐 Vérification de l\'authentification avec le serveur...');
+    
+    try {
+        const response = await fetch('/api/auth/me', {
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.status === 401) {
+            console.error('❌ Session expirée, redirection vers login');
+            sessionStorage.removeItem('user');
+            logout();
+            return;
+        }
+        
+        if (!response.ok) {
+            throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        const user = data?.user || data;
+        
+        if (!user || (user.role !== 'collectivite' && user.role !== 'resto' && user.role !== 'admin')) {
+            console.error('❌ Utilisateur non autorisé');
+            logout();
+            return;
+        }
+        
+        // Mettre à jour sessionStorage avec les données du serveur
+        sessionStorage.setItem('user', JSON.stringify(user));
+        console.log('✅ Utilisateur authentifié:', user.name);
+    } catch (error) {
+        console.error('❌ Erreur lors de la vérification de l\'authentification:', error);
+        // En cas d'erreur réseau, essayer de récupérer depuis sessionStorage comme fallback
+        const user = getCurrentUser();
+        if (!user || (user.role !== 'collectivite' && user.role !== 'resto' && user.role !== 'admin')) {
+            logout();
+            return;
+        }
+        console.warn('⚠️ Utilisation des données en cache (sessionStorage)');
     }
 
     console.log('🚀 Collectivite Dashboard chargé');
@@ -261,11 +299,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 'autres': 'Autres'
             };
             
+            // Calculer le total (quantité × prix unitaire) et formater le prix
+            const unitPrice = item.price !== undefined && item.price !== null ? parseFloat(item.price) : 0;
+            const quantity = item.quantity !== undefined && item.quantity !== null ? parseFloat(item.quantity) : 0;
+            const totalPrice = unitPrice * quantity;
+            
+            // Formater le prix : afficher le total avec le prix unitaire entre parenthèses
+            const formattedPrice = unitPrice > 0
+                ? `<div style="font-weight: 700; color: #27ae60;">${totalPrice.toFixed(2)} €</div>
+                   <small style="color: #6c757d; font-weight: 400;">(${unitPrice.toFixed(2)} €/${item.unit || 'unité'})</small>`
+                : '-';
+            
+            // Formater le seuil d'alerte
+            const alertThresholdValue = item.alertThreshold !== undefined && item.alertThreshold !== null ? parseFloat(item.alertThreshold) : null;
+            const formattedAlertThreshold = alertThresholdValue !== null && alertThresholdValue > 0
+                ? `${alertThresholdValue} ${item.unit || ''}`
+                : '-';
+            
+            // Vérifier si l'alerte est déclenchée (seulement si le seuil est défini et > 0)
+            const isAlertTriggered = alertThresholdValue !== null && alertThresholdValue > 0 && item.quantity < alertThresholdValue;
+            
             row.innerHTML = `
                 <td><strong>${item.name}</strong>${item.supplier ? `<br><small style="color: #666;">${item.supplier}</small>` : ''}</td>
                 <td><span class="category-badge" style="background: #e3f2fd; color: #1976d2; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8em;">${categoryLabels[item.category] || item.category}</span></td>
-                <td><strong>${item.quantity}</strong></td>
+                <td><strong>${item.quantity}</strong>${isAlertTriggered ? ' <span style="color: #e74c3c;"><i class="fas fa-exclamation-triangle"></i></span>' : ''}</td>
                 <td>${item.unit}</td>
+                <td style="${isAlertTriggered ? 'color: #e74c3c; font-weight: 600;' : ''}">${formattedAlertThreshold}</td>
+                <td style="font-weight: 600; color: #27ae60;">${formattedPrice}</td>
                 <td>${item.expiration || item.expirationDate}</td>
                 <td>
                     <button class="btn-small btn-primary" onclick="editStockItem('${item._id}')">Modifier</button>
@@ -1671,25 +1731,46 @@ document.addEventListener('DOMContentLoaded', () => {
         return `
             <div class="products-grid">
                 ${products.map(product => {
-                    const finalPrice = product.promo > 0 ? 
-                        (product.price * (1 - product.promo / 100)).toFixed(2) : 
-                        product.price;
+                    // Gestion des promotions (priorité: super promo > à sauver > promo normale)
+                    const hasSuperPromo = product.superPromo?.active && product.superPromo.promoPrice;
+                    const hasToSave = product.toSave?.active && product.toSave.savePrice;
+                    const hasPromo = product.promo > 0 && !hasSuperPromo && !hasToSave;
                     
-                    const promoBadge = product.promo > 0 ? 
-                        `<span class="promo-badge">-${product.promo}%</span>` : '';
+                    // Calculer le prix final
+                    let finalPrice = product.price;
+                    let priceDisplay = `${product.price.toFixed(2)}€`;
+                    
+                    if (hasSuperPromo) {
+                      finalPrice = product.superPromo.promoPrice;
+                      priceDisplay = `<span class="original-price" style="text-decoration: line-through; color: #999;">${product.price.toFixed(2)}€</span> <span class="promo-price" style="color: #f39c12; font-weight: bold; font-size: 1.2em;">${product.superPromo.promoPrice.toFixed(2)}€</span>`;
+                    } else if (hasToSave) {
+                      finalPrice = product.toSave.savePrice;
+                      priceDisplay = `<span class="original-price" style="text-decoration: line-through; color: #999;">${product.price.toFixed(2)}€</span> <span class="save-price" style="color: #e74c3c; font-weight: bold; font-size: 1.2em;">${product.toSave.savePrice.toFixed(2)}€</span>`;
+                    } else if (hasPromo) {
+                      finalPrice = product.price * (1 - product.promo / 100);
+                      priceDisplay = `<span class="original-price" style="text-decoration: line-through; color: #999;">${product.price.toFixed(2)}€</span> <span class="promo-price" style="color: #3498db; font-weight: bold;">${finalPrice.toFixed(2)}€</span>`;
+                    }
+                    
+                    // Badges de promotion
+                    const superPromoBadge = hasSuperPromo ? 
+                      `<span class="super-promo-badge" style="background: #f39c12; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85em; font-weight: bold; margin-right: 0.5rem;"><i class="fas fa-star"></i> Super Promo</span>` : '';
+                    
+                    const toSaveBadge = hasToSave ? 
+                      `<span class="to-save-badge" style="background: #e74c3c; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85em; font-weight: bold; margin-right: 0.5rem;"><i class="fas fa-exclamation-triangle"></i> À Sauver</span>` : '';
+                    
+                    const promoBadge = hasPromo ? 
+                      `<span class="promo-badge" style="background: #3498db; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85em; font-weight: 600; margin-right: 0.5rem;">-${product.promo}%</span>` : '';
                     
                     const saveBadge = product.saveProduct ? 
-                        `<span class="save-badge">Produit à sauver</span>` : '';
-                    
-                    const priceDisplay = product.promo > 0 ? 
-                        `<span class="original-price">${product.price}€</span> <span class="promo-price">${finalPrice}€</span>` :
-                        `${product.price}€`;
+                      `<span class="save-badge" style="background: #95a5a6; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85em; margin-right: 0.5rem;">Produit à sauver</span>` : '';
                     
                     return `
-                        <div class="product-card">
+                        <div class="product-card" style="border: ${hasSuperPromo ? '2px solid #f39c12' : hasToSave ? '2px solid #e74c3c' : '1px solid #ddd'};">
                             <div class="product-header">
                                 <h3>${product.name}</h3>
-                                <div class="product-badges">
+                                <div class="product-badges" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
+                                    ${superPromoBadge}
+                                    ${toSaveBadge}
                                     ${promoBadge}
                                     ${saveBadge}
                                 </div>
@@ -1698,13 +1779,21 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="product-info">
                                 <p><strong>Catégorie:</strong> ${product.category}</p>
                                 <p><strong>Prix:</strong> ${priceDisplay}/${product.unit}</p>
+                                ${hasSuperPromo ? `
+                                    <p style="color: #f39c12; font-weight: bold;"><i class="fas fa-star"></i> Super Promo: ${product.superPromo.promoQuantity || 'N/A'} ${product.unit} disponible(s)</p>
+                                    ${product.superPromo.endDate ? `<p style="font-size: 0.9em; color: #666;">Jusqu'au ${new Date(product.superPromo.endDate).toLocaleDateString('fr-FR')}</p>` : ''}
+                                ` : ''}
+                                ${hasToSave ? `
+                                    <p style="color: #e74c3c; font-weight: bold;"><i class="fas fa-exclamation-triangle"></i> À Sauver: ${product.toSave.saveQuantity || 'N/A'} ${product.unit}</p>
+                                    ${product.toSave.expirationDate ? `<p style="font-size: 0.9em; color: #666;">Expire le ${new Date(product.toSave.expirationDate).toLocaleDateString('fr-FR')}</p>` : ''}
+                                ` : ''}
                                 <p><strong>Délai de livraison:</strong> ${product.deliveryTime} jour(s)</p>
                                 <p><strong>Commande minimum:</strong> ${product.minOrder} ${product.unit}</p>
                                 ${product.description ? `<p><strong>Description:</strong> ${product.description}</p>` : ''}
                             </div>
                             
                             <div class="product-actions">
-                                <button class="btn-primary" onclick="orderProduct('${product._id}', '${product.name}', ${product.price}, '${product.unit}', ${product.minOrder})">
+                                <button class="btn-primary" onclick="orderProduct('${product._id}', '${product.name}', ${finalPrice}, '${product.unit}', ${product.minOrder})">
                                     <i class="fas fa-shopping-cart"></i> Commander
                                 </button>
                             </div>

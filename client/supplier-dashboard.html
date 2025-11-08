@@ -452,12 +452,33 @@
         
         <script>
             // Gérer la déconnexion
-            document.getElementById('logout-btn')?.addEventListener('click', () => {
+            document.getElementById('logout-btn')?.addEventListener('click', async () => {
                 console.log('🚪 Déconnexion...');
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                localStorage.removeItem('cart');
-                window.location.href = '/index.html';
+                
+                // 1️⃣ Nettoyer IMMÉDIATEMENT le sessionStorage AVANT l'API
+                // Cela évite la redirection automatique dans index.html
+                sessionStorage.clear();
+                
+                try {
+                    // 2️⃣ Appeler l'API pour supprimer le cookie côté serveur
+                    await fetch('/api/auth/logout', {
+                        method: 'POST',
+                        credentials: 'include', // Important pour envoyer le cookie
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    console.log('✅ Cookie supprimé côté serveur');
+                } catch (error) {
+                    console.error('❌ Erreur lors de la déconnexion API:', error);
+                    // Continuer quand même la déconnexion même si l'API échoue
+                }
+                
+                // 3️⃣ Forcer un délai minimal pour s'assurer que tout est nettoyé
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // 4️⃣ Rediriger vers la page de connexion avec un paramètre pour éviter la redirection auto
+                window.location.replace('/?logout=true');
             });
         </script>
 
@@ -471,6 +492,9 @@
             </button>
             <button class="tab-btn" data-tab="stats" style="padding: 1rem 2rem; background: white; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 600; transition: all 0.3s; color: #2c3e50;">
                 <i class="fas fa-chart-bar"></i> Statistiques
+            </button>
+            <button class="tab-btn" data-tab="profile" style="padding: 1rem 2rem; background: white; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 600; transition: all 0.3s; color: #2c3e50;">
+                <i class="fas fa-user-cog"></i> Mon Profil
             </button>
         </div>
         
@@ -576,6 +600,64 @@
                         </select>
                     </div>
                 </div>
+                
+                <!-- Super Promo -->
+                <div class="form-section" style="border: 2px solid #f39c12; padding: 1rem; border-radius: 8px; margin: 1rem 0; background: #fff9e6;">
+                    <h4 style="margin-top: 0; color: #f39c12;"><i class="fas fa-star"></i> Super Promo</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="super-promo-active" style="margin-right: 0.5rem;">
+                                Activer la super promo
+                            </label>
+                        </div>
+                    </div>
+                    <div id="super-promo-fields" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="super-promo-price">Prix promotionnel (€)</label>
+                                <input type="number" id="super-promo-price" min="0" step="0.01" placeholder="0.00">
+                            </div>
+                            <div class="form-group">
+                                <label for="super-promo-quantity">Quantité disponible</label>
+                                <input type="number" id="super-promo-quantity" min="0" step="1" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="super-promo-end-date">Date de fin (optionnel)</label>
+                            <input type="date" id="super-promo-end-date">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Article à Sauver -->
+                <div class="form-section" style="border: 2px solid #e74c3c; padding: 1rem; border-radius: 8px; margin: 1rem 0; background: #ffe6e6;">
+                    <h4 style="margin-top: 0; color: #e74c3c;"><i class="fas fa-exclamation-triangle"></i> Article à Sauver</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="to-save-active" style="margin-right: 0.5rem;">
+                                Activer "À sauver"
+                            </label>
+                        </div>
+                    </div>
+                    <div id="to-save-fields" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="to-save-price">Prix réduit (€)</label>
+                                <input type="number" id="to-save-price" min="0" step="0.01" placeholder="0.00">
+                            </div>
+                            <div class="form-group">
+                                <label for="to-save-quantity">Quantité à sauver</label>
+                                <input type="number" id="to-save-quantity" min="0" step="1" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="to-save-expiration">Date d'expiration (optionnel)</label>
+                            <input type="date" id="to-save-expiration">
+                        </div>
+                    </div>
+                </div>
                 <div class="action-buttons">
                     <button type="submit" class="btn btn-primary">Ajouter le produit</button>
                     <button type="button" id="cancel-add-product" class="btn btn-secondary">Annuler</button>
@@ -621,15 +703,153 @@
             </div>
         </div><!-- Fin onglet Statistiques -->
 
+        <!-- Onglet Mon Profil -->
+        <div id="profile-tab" class="tab-content">
+            <div class="section">
+                <h2><i class="fas fa-user-cog"></i> Mon Profil Fournisseur</h2>
+                <p style="color: #7f8c8d; margin-bottom: 2rem;">Gérez vos informations de contact, vos coordonnées et vos zones de livraison.</p>
+                
+                <!-- Formulaire de profil -->
+                <form id="supplier-profile-form">
+                    <!-- Coordonnées -->
+                    <div class="form-section" style="border: 2px solid #16a085; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; background: #f8f9fa;">
+                        <h3 style="margin-top: 0; color: #16a085; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-address-card"></i> Coordonnées
+                        </h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="supplier-name">Nom du fournisseur *</label>
+                                <input type="text" id="supplier-name" required placeholder="Ex: Épicerie Bio">
+                            </div>
+                            <div class="form-group">
+                                <label for="supplier-contact">Contact *</label>
+                                <input type="text" id="supplier-contact" required placeholder="Nom du responsable">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="supplier-email">Email *</label>
+                                <input type="email" id="supplier-email" required placeholder="contact@example.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="supplier-phone">Téléphone *</label>
+                                <input type="tel" id="supplier-phone" required placeholder="+32 2 123 45 67">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="supplier-address-street">Adresse</label>
+                            <input type="text" id="supplier-address-street" placeholder="Rue et numéro">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="supplier-address-city">Ville</label>
+                                <input type="text" id="supplier-address-city" placeholder="Bruxelles">
+                            </div>
+                            <div class="form-group">
+                                <label for="supplier-address-postalCode">Code postal</label>
+                                <input type="text" id="supplier-address-postalCode" placeholder="1000">
+                            </div>
+                            <div class="form-group">
+                                <label for="supplier-address-country">Pays</label>
+                                <input type="text" id="supplier-address-country" placeholder="Belgique" value="Belgique">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Informations pratiques -->
+                    <div class="form-section" style="border: 2px solid #3498db; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; background: #f8f9fa;">
+                        <h3 style="margin-top: 0; color: #3498db; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-info-circle"></i> Informations pratiques
+                        </h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="supplier-type">Type de fournisseur</label>
+                                <select id="supplier-type">
+                                    <option value="">Sélectionner...</option>
+                                    <option value="poissonnier">Poissonnier</option>
+                                    <option value="boucher">Boucher</option>
+                                    <option value="epicier">Épicier</option>
+                                    <option value="primeur">Primeur</option>
+                                    <option value="cremier">Crémer</option>
+                                    <option value="boulanger">Boulanger</option>
+                                    <option value="grossiste">Grossiste</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="supplier-isBio" style="margin-right: 0.5rem;">
+                                    Produits bio
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="supplier-notes">Notes / Description</label>
+                            <textarea id="supplier-notes" rows="3" placeholder="Informations complémentaires sur votre activité..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Zones de livraison -->
+                    <div class="form-section" style="border: 2px solid #e74c3c; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; background: #fff5f5;">
+                        <h3 style="margin-top: 0; color: #e74c3c; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-truck"></i> Zones de livraison
+                        </h3>
+                        <p style="color: #7f8c8d; font-size: 0.9rem; margin-bottom: 1rem;">
+                            Définissez les villes et codes postaux où vous pouvez livrer. Les notifications de promotions seront envoyées uniquement aux sites situés dans ces zones.
+                        </p>
+                        
+                        <div id="delivery-zones-list" style="margin-bottom: 1.5rem;">
+                            <!-- Les zones seront ajoutées ici dynamiquement -->
+                        </div>
+                        
+                        <div style="border: 2px dashed #e74c3c; padding: 1rem; border-radius: 8px; background: white;">
+                            <h4 style="margin-top: 0; color: #e74c3c;">Ajouter une zone de livraison</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="new-zone-city">Ville</label>
+                                    <input type="text" id="new-zone-city" placeholder="Ex: Bruxelles">
+                                </div>
+                                <div class="form-group">
+                                    <label for="new-zone-postalCode">Code postal</label>
+                                    <input type="text" id="new-zone-postalCode" placeholder="Ex: 1000">
+                                    <small style="color: #7f8c8d;">Si rempli, seule cette zone sera couverte. Sinon, toute la ville sera couverte.</small>
+                                </div>
+                                <div class="form-group" style="display: flex; align-items: flex-end;">
+                                    <button type="button" id="add-delivery-zone-btn" class="btn btn-primary" style="width: 100%;">
+                                        <i class="fas fa-plus"></i> Ajouter
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Boutons d'action -->
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                        <button type="button" id="cancel-profile-btn" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Annuler
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Enregistrer les modifications
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div><!-- Fin onglet Mon Profil -->
+
     </div>
 
     <!-- Toast container -->
     <div id="toast-container" class="toast-container"></div>
 
     <script>
-        // Fonction pour récupérer l'utilisateur connecté
+        // Fonction pour récupérer l'utilisateur connecté (depuis sessionStorage uniquement, pas localStorage)
         function getCurrentUser() {
-            const user = localStorage.getItem('user');
+            const user = sessionStorage.getItem('user');
             return user ? JSON.parse(user) : null;
         }
 
@@ -638,27 +858,105 @@
         class SupplierDashboard {
             constructor() {
                 console.log('🏗️ Construction de SupplierDashboard');
+                this.deliveryZones = []; // Zones de livraison temporaires
+                this.isDemoMode = false; // Mode démo par défaut
                 this.init();
                 this.setupEventListeners();
             }
 
             async init() {
+                // TOUJOURS vérifier avec le serveur pour garantir que l'utilisateur est toujours authentifié
+                console.log('🔐 Vérification de l\'authentification avec le serveur...');
+                
+                let user = null;
+                try {
+                    console.log('🔍 Appel /api/auth/me avec credentials: include...');
+                    const response = await fetch('/api/auth/me', {
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    console.log('📡 Réponse /api/auth/me:', response.status, response.statusText);
+                    
+                    if (response.status === 401) {
+                        console.error('❌ Session expirée (401 Unauthorized)');
+                        sessionStorage.removeItem('user');
+                        // Ne PAS rediriger automatiquement - laisser l'utilisateur sur la page
+                        // Ne pas utiliser redirectByRole car cela pourrait rediriger vers un autre dashboard
+                        console.warn('⚠️ Session expirée - Affichage du message d\'erreur sans redirection');
+                        // Afficher un message à l'utilisateur mais ne pas rediriger
+                        const errorMsg = document.createElement('div');
+                        errorMsg.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; padding: 1rem; text-align: center; z-index: 10000;';
+                        errorMsg.innerHTML = '⚠️ Votre session a expiré. <a href="/index.html?sessionExpired=true" style="color: white; text-decoration: underline; margin-left: 1rem;">Se reconnecter</a>';
+                        document.body.prepend(errorMsg);
+                        return; // Arrêter l'initialisation
+                    } else if (response.ok) {
+                        const data = await response.json();
+                        console.log('📦 Données reçues:', data);
+                        user = data?.user || data;
+                        
+                        if (user) {
+                            // Mettre à jour sessionStorage uniquement (cache temporaire, pas localStorage)
+                            // L'authentification réelle est gérée via cookie HTTP-Only côté serveur
+                            sessionStorage.setItem('user', JSON.stringify(user));
+                            console.log('✅ Utilisateur authentifié:', user.name || user.businessName, '- Role:', user.role, '- Roles:', user.roles);
+                        } else {
+                            console.warn('⚠️ Aucun utilisateur dans la réponse');
+                        }
+                    } else {
+                        console.warn('⚠️ Réponse non-OK:', response.status);
+                        // Essayer de récupérer depuis sessionStorage comme fallback (cache temporaire)
+                        user = getCurrentUser();
+                        if (user) {
+                            console.warn('⚠️ Utilisation des données en cache (sessionStorage)');
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur lors de la vérification de l\'authentification:', error);
+                    // En cas d'erreur réseau, essayer de récupérer depuis sessionStorage comme fallback
+                    user = getCurrentUser();
+                    if (user) {
+                        console.warn('⚠️ Utilisation des données en cache (sessionStorage) après erreur');
+                    }
+                }
+                
                 // Vérifier l'authentification et le rôle
-                const user = getCurrentUser();
                 console.log('🔍 Utilisateur connecté:', user);
+                console.log('🔍 Type de user:', typeof user);
+                console.log('🔍 user.role:', user?.role);
+                console.log('🔍 user.roles:', user?.roles);
+                
+                // Vérifier si l'utilisateur est un fournisseur (vérifier à la fois role et roles)
+                // Les fournisseurs ont role='fournisseur' ET/OU roles=['SUPPLIER']
+                const isSupplier = user && (
+                    user.role === 'fournisseur' || 
+                    (user.roles && (user.roles.includes('fournisseur') || user.roles.includes('SUPPLIER')))
+                );
+                
+                console.log('🔍 isSupplier:', isSupplier);
                 
                 if (!user) {
                     console.error('❌ Aucun utilisateur connecté - Mode démo activé');
                     // Mode démo - permettre l'accès même sans authentification
                     document.getElementById('business-name').textContent = 'Mode Démo';
-                } else if (user.role !== 'fournisseur') {
-                    console.error('❌ Rôle incorrect:', user.role, 'attendu: fournisseur - Mode démo activé');
+                    this.isDemoMode = true;
+                } else if (!isSupplier) {
+                    console.error('❌ Rôle incorrect:', user.role, user.roles, 'attendu: fournisseur ou SUPPLIER - Mode démo activé');
                     // Mode démo - permettre l'accès même avec le mauvais rôle
                     document.getElementById('business-name').textContent = user.businessName || 'Mode Démo';
+                    this.isDemoMode = true;
                 } else {
                     console.log('✅ Utilisateur fournisseur connecté:', user.businessName);
                     // Afficher le nom de l'entreprise
                     document.getElementById('business-name').textContent = user.businessName;
+                    this.isDemoMode = false;
+                    
+                    // Charger le profil fournisseur (inclut les zones de livraison)
+                    if (typeof this.loadSupplierProfile === 'function') {
+                        await this.loadSupplierProfile();
+                    }
                 }
 
                 // Charger les données initiales (même en mode démo)
@@ -722,6 +1020,30 @@
                         e.preventDefault();
                         console.log('📝 Soumission du formulaire');
                         await this.handleAddProduct(e);
+                    });
+                }
+                
+                // Gestion du profil fournisseur
+                const profileForm = document.getElementById('supplier-profile-form');
+                const addDeliveryZoneBtn = document.getElementById('add-delivery-zone-btn');
+                const cancelProfileBtn = document.getElementById('cancel-profile-btn');
+                
+                if (profileForm) {
+                    profileForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        await this.saveSupplierProfile();
+                    });
+                }
+                
+                if (addDeliveryZoneBtn) {
+                    addDeliveryZoneBtn.addEventListener('click', () => {
+                        this.addDeliveryZone();
+                    });
+                }
+                
+                if (cancelProfileBtn) {
+                    cancelProfileBtn.addEventListener('click', () => {
+                        this.loadSupplierProfile(); // Recharger les valeurs originales
                     });
                 }
 
@@ -838,9 +1160,32 @@
             async loadOrders() {
                 console.log('📋 Chargement des commandes...');
                 const ordersList = document.getElementById('orders-list');
-                if (!ordersList) return;
+                if (!ordersList) {
+                    console.error('❌ Element orders-list non trouvé');
+                    return;
+                }
 
                 try {
+                    // Vérifier l'authentification avant de charger les commandes
+                    console.log('🔐 Vérification de l\'authentification...');
+                    const authCheck = await fetch('/api/auth/me', {
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (!authCheck.ok) {
+                        console.error('❌ Session expirée ou invalide');
+                        ordersList.innerHTML = '<p style="color: #e74c3c; padding: 2rem; text-align: center;">Session expirée. <a href="/index.html?sessionExpired=true" style="color: #e74c3c; text-decoration: underline;">Cliquez ici pour vous reconnecter</a></p>';
+                        // NE PAS rediriger automatiquement - laisser l'utilisateur choisir
+                        return;
+                    }
+                    
+                    const userData = await authCheck.json();
+                    const user = userData?.user || userData;
+                    console.log('✅ Utilisateur authentifié:', user.role, user.roles);
+                    
                     const response = await fetch('/api/orders/supplier', {
                         headers: {
                             'Content-Type': 'application/json',
@@ -851,6 +1196,8 @@
                         credentials: 'include' // 🔐 Envoie automatiquement le cookie
                     });
 
+                    console.log('📡 Réponse API:', response.status, response.statusText);
+
                     if (response.ok) {
                         const result = await response.json();
                         const orders = result.data || [];
@@ -859,14 +1206,29 @@
                         
                         // Mettre à jour le compteur
                         const pendingOrders = orders.filter(o => o.status === 'pending').length;
-                        document.getElementById('pending-orders-count').textContent = pendingOrders;
+                        const pendingCountEl = document.getElementById('pending-orders-count');
+                        if (pendingCountEl) {
+                            pendingCountEl.textContent = pendingOrders;
+                        }
                     } else {
-                        console.error('❌ Erreur lors du chargement des commandes:', response.status);
-                        ordersList.innerHTML = '<p>Erreur lors du chargement des commandes</p>';
+                        const errorData = await response.json().catch(() => ({ message: 'Erreur inconnue' }));
+                        console.error('❌ Erreur lors du chargement des commandes:', response.status, errorData);
+                        const errorMessage = errorData.message || errorData.error || `Erreur ${response.status}: ${response.statusText}`;
+                        ordersList.innerHTML = `<p style="color: #e74c3c; padding: 2rem; text-align: center;">Erreur lors du chargement des commandes: ${errorMessage}</p>`;
+                        
+                        // Si erreur 401 ou 403, afficher un message sans redirection automatique
+                        if (response.status === 401 || response.status === 403) {
+                            console.warn('⚠️ Erreur d\'authentification - Session peut-être expirée');
+                            ordersList.innerHTML = `<p style="color: #e74c3c; padding: 2rem; text-align: center;">
+                                ⚠️ Votre session a peut-être expiré. 
+                                <a href="/index.html?sessionExpired=true" style="color: #e74c3c; text-decoration: underline; margin-left: 0.5rem;">Cliquez ici pour vous reconnecter</a>
+                            </p>`;
+                            // NE PAS rediriger automatiquement - laisser l'utilisateur choisir
+                        }
                     }
                 } catch (error) {
                     console.error('❌ Erreur lors du chargement des commandes:', error);
-                    ordersList.innerHTML = '<p>Erreur lors du chargement des commandes</p>';
+                    ordersList.innerHTML = `<p style="color: #e74c3c; padding: 2rem; text-align: center;">Erreur réseau: ${error.message}</p>`;
                 }
             }
 
@@ -996,6 +1358,58 @@
             async handleAddProduct(e) {
                 console.log('🔄 Tentative d\'ajout de produit...');
                 
+                // Vérifier l'authentification avant d'ajouter le produit
+                try {
+                    console.log('🔐 Vérification de l\'authentification avant ajout...');
+                    const authCheck = await fetch('/api/auth/me', {
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (!authCheck.ok) {
+                        console.error('❌ Session expirée ou invalide');
+                        // Afficher un message d'erreur sans redirection automatique
+                        this.showToast('⚠️ Votre session a expiré. Veuillez vous reconnecter.', 'error');
+                        // NE PAS rediriger automatiquement - laisser l'utilisateur choisir
+                        return;
+                    }
+                    
+                    const userData = await authCheck.json();
+                    const user = userData?.user || userData;
+                    console.log('✅ Utilisateur authentifié:', user.role, user.roles);
+                    
+                    // Vérifier que l'utilisateur est bien un fournisseur
+                    const isSupplier = user.role === 'fournisseur' || 
+                                      user.role === 'SUPPLIER' ||
+                                      (user.roles && Array.isArray(user.roles) && user.roles.some(r => 
+                                        r === 'fournisseur' || r === 'SUPPLIER' || r === 'supplier'
+                                      )) ||
+                                      user.supplierId;
+                    
+                    if (!isSupplier) {
+                        console.error('❌ Utilisateur n\'est pas un fournisseur');
+                        this.showToast('Vous devez être connecté en tant que fournisseur pour ajouter des produits', 'error');
+                        return;
+                    }
+                    
+                    // Mettre à jour sessionStorage avec les données fraîches
+                    sessionStorage.setItem('user', JSON.stringify(user));
+                    console.log('✅ Session vérifiée et mise à jour');
+                } catch (authError) {
+                    console.error('❌ Erreur lors de la vérification de l\'authentification:', authError);
+                    this.showToast('Erreur de connexion. Veuillez réessayer.', 'error');
+                    return;
+                }
+                
+                // Récupérer les valeurs du formulaire
+                const superPromoActive = document.getElementById('super-promo-active')?.checked || false;
+                const toSaveActive = document.getElementById('to-save-active')?.checked || false;
+                const promoValue = parseInt(document.getElementById('product-promo').value) || 0;
+                // Utiliser la checkbox to-save-active si disponible, sinon le select product-save
+                const saveProductValue = toSaveActive || (document.getElementById('product-save')?.value === 'true');
+                
                 const formData = {
                     name: document.getElementById('product-name').value,
                     category: document.getElementById('product-category').value,
@@ -1004,11 +1418,30 @@
                     deliveryTime: parseInt(document.getElementById('delivery-time').value),
                     minOrder: parseInt(document.getElementById('min-order').value),
                     description: document.getElementById('product-description').value,
-                    promo: parseInt(document.getElementById('product-promo').value) || 0,
-                    saveProduct: document.getElementById('product-save').value === 'true'
+                    promo: promoValue,
+                    saveProduct: saveProductValue,
+                    // Construire les objets superPromo et toSave correctement
+                    superPromo: superPromoActive ? {
+                        active: true,
+                        promoPrice: null,
+                        promoQuantity: null,
+                        endDate: null
+                    } : {
+                        active: false
+                    },
+                    toSave: saveProductValue ? {
+                        active: true,
+                        savePrice: null,
+                        saveQuantity: null,
+                        expirationDate: null
+                    } : {
+                        active: false
+                    }
                 };
 
                 console.log('📝 Données du formulaire:', formData);
+                console.log('📝 Super Promo active:', superPromoActive);
+                console.log('📝 Save Product:', saveProductValue);
 
                 // Validation simple
                 if (!formData.name || !formData.category || !formData.price || !formData.unit) {
@@ -1016,9 +1449,22 @@
                     return;
                 }
 
+                // Vérifier si c'est une édition ou une création
+                const form = document.getElementById('add-product-form');
+                const productId = form?.dataset?.productId;
+                const isEdit = !!productId;
+                
+                console.log('🔍 Vérification type de requête:');
+                console.log('   - productId:', productId);
+                console.log('   - isEdit:', isEdit);
+                console.log('   - Méthode:', isEdit ? 'PUT' : 'POST');
+                
                 try {
-                    const response = await fetch('/api/products', {
-                        method: 'POST',
+                    const url = isEdit ? `/api/products/${productId}` : '/api/products';
+                    const method = isEdit ? 'PUT' : 'POST';
+                    
+                    const response = await fetch(url, {
+                        method: method,
                         headers: {
                             'Content-Type': 'application/json'
                         },
@@ -1030,18 +1476,265 @@
 
                     if (response.ok) {
                         const result = await response.json();
-                        console.log('✅ Produit ajouté:', result);
-                        alert('Produit ajouté avec succès !');
-                        document.getElementById('add-product-form').classList.remove('show');
-                        document.getElementById('add-product-form').reset();
+                        console.log(`✅ Produit ${isEdit ? 'modifié' : 'ajouté'}:`, result);
+                        this.showToast(`Produit ${isEdit ? 'modifié' : 'ajouté'} avec succès !`, 'success');
+                        
+                        // Fermer et réinitialiser le formulaire
+                        const form = document.getElementById('add-product-form');
+                        form.classList.remove('show');
+                        form.reset();
+                        
+                        // IMPORTANT: Supprimer le productId du dataset pour éviter les confusions
+                        if (form.dataset.productId) {
+                            delete form.dataset.productId;
+                            console.log('🧹 productId supprimé du dataset');
+                        }
+                        
+                        // Réinitialiser le titre et le bouton
+                        const titleEl = form.querySelector('h3');
+                        const submitBtn = form.querySelector('button[type="submit"]');
+                        if (titleEl) titleEl.textContent = 'Ajouter un nouveau produit';
+                        if (submitBtn) submitBtn.textContent = 'Ajouter le produit';
+                        
+                        // Réinitialiser les checkboxes de promotion
+                        const superPromoCheckbox = document.getElementById('super-promo-active');
+                        const toSaveCheckbox = document.getElementById('to-save-active');
+                        if (superPromoCheckbox) superPromoCheckbox.checked = false;
+                        if (toSaveCheckbox) toSaveCheckbox.checked = false;
+                        
                         await this.loadProducts(); // Recharger la liste
                     } else {
-                        const error = await response.json();
-                        throw new Error(error.message || 'Erreur lors de l\'ajout du produit');
+                        const errorData = await response.json().catch(() => ({ message: 'Erreur inconnue' }));
+                        console.error('❌ Erreur lors de l\'ajout:', errorData);
+                        const errorMessage = errorData.message || errorData.error || `Erreur ${response.status}: ${response.statusText}`;
+                        this.showToast(`Erreur: ${errorMessage}`, 'error');
+                        
+                        // Si erreur 401 ou 403, vérifier la session
+                        if (response.status === 401 || response.status === 403) {
+                            console.warn('⚠️ Erreur d\'authentification - Vérification de la session...');
+                            const checkSession = await fetch('/api/auth/me', {
+                                credentials: 'include'
+                            });
+                            if (!checkSession.ok) {
+                                console.error('❌ Session expirée');
+                                // Afficher un message d'erreur sans redirection automatique
+                                this.showToast('⚠️ Votre session a expiré. Veuillez vous reconnecter.', 'error');
+                                // NE PAS rediriger automatiquement - laisser l'utilisateur choisir
+                            } else {
+                                const userData = await checkSession.json();
+                                console.log('✅ Session valide, utilisateur:', userData.user?.role, userData.user?.roles);
+                                // Si la session est valide mais l'erreur persiste, c'est un problème de permissions
+                                this.showToast('Erreur de permissions. Vérifiez que vous êtes bien connecté en tant que fournisseur.', 'error');
+                            }
+                        }
                     }
                 } catch (error) {
                     console.error('❌ Erreur lors de l\'ajout:', error);
-                    alert('Erreur: ' + error.message);
+                    this.showToast(`Erreur: ${error.message || 'Erreur lors de l\'ajout du produit'}`, 'error');
+                }
+            }
+
+            // ========== GESTION DU PROFIL FOURNISSEUR ==========
+            
+            async loadSupplierProfile() {
+                try {
+                    console.log('📋 Chargement du profil fournisseur...');
+                    const response = await fetch('/api/suppliers/me', {
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const supplier = data.data;
+                        
+                        console.log('✅ Profil chargé:', supplier);
+                        
+                        // Remplir le formulaire
+                        const nameEl = document.getElementById('supplier-name');
+                        const contactEl = document.getElementById('supplier-contact');
+                        const emailEl = document.getElementById('supplier-email');
+                        const phoneEl = document.getElementById('supplier-phone');
+                        const streetEl = document.getElementById('supplier-address-street');
+                        const cityEl = document.getElementById('supplier-address-city');
+                        const postalCodeEl = document.getElementById('supplier-address-postalCode');
+                        const countryEl = document.getElementById('supplier-address-country');
+                        const typeEl = document.getElementById('supplier-type');
+                        const isBioEl = document.getElementById('supplier-isBio');
+                        const notesEl = document.getElementById('supplier-notes');
+                        
+                        if (nameEl) nameEl.value = supplier.name || '';
+                        if (contactEl) contactEl.value = supplier.contact || '';
+                        if (emailEl) emailEl.value = supplier.email || '';
+                        if (phoneEl) phoneEl.value = supplier.phone || '';
+                        if (streetEl) streetEl.value = supplier.address?.street || '';
+                        if (cityEl) cityEl.value = supplier.address?.city || '';
+                        if (postalCodeEl) postalCodeEl.value = supplier.address?.postalCode || '';
+                        if (countryEl) countryEl.value = supplier.address?.country || 'Belgique';
+                        if (typeEl) typeEl.value = supplier.type || '';
+                        if (isBioEl) isBioEl.checked = supplier.isBio || false;
+                        if (notesEl) notesEl.value = supplier.notes || '';
+                        
+                        // Charger les zones de livraison
+                        this.deliveryZones = supplier.deliveryZones || [];
+                        this.renderDeliveryZones();
+                    } else {
+                        console.error('❌ Erreur lors du chargement du profil');
+                        this.showToast('Erreur lors du chargement du profil', 'error');
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur:', error);
+                    this.showToast('Erreur lors du chargement du profil', 'error');
+                }
+            }
+
+            addDeliveryZone() {
+                // Empêcher l'ajout en mode démo
+                if (this.isDemoMode) {
+                    this.showToast('Veuillez vous connecter pour ajouter des zones de livraison', 'error');
+                    return;
+                }
+                
+                const cityEl = document.getElementById('new-zone-city');
+                const postalCodeEl = document.getElementById('new-zone-postalCode');
+                
+                if (!cityEl || !postalCodeEl) {
+                    console.error('❌ Champs de zone de livraison non trouvés');
+                    return;
+                }
+                
+                const city = cityEl.value.trim();
+                const postalCode = postalCodeEl.value.trim();
+                
+                if (!city && !postalCode) {
+                    this.showToast('Veuillez renseigner au moins une ville ou un code postal', 'error');
+                    return;
+                }
+
+                // Vérifier si la zone existe déjà
+                const exists = this.deliveryZones.some(zone => 
+                    zone.city === city && zone.postalCode === postalCode
+                );
+
+                if (exists) {
+                    this.showToast('Cette zone de livraison existe déjà', 'error');
+                    return;
+                }
+
+                // Ajouter la zone
+                this.deliveryZones.push({
+                    city: city || undefined,
+                    postalCode: postalCode || undefined
+                });
+
+                // Réinitialiser les champs
+                cityEl.value = '';
+                postalCodeEl.value = '';
+
+                // Re-rendre la liste
+                this.renderDeliveryZones();
+                this.showToast('Zone de livraison ajoutée', 'success');
+            }
+
+            removeDeliveryZone(index) {
+                this.deliveryZones.splice(index, 1);
+                this.renderDeliveryZones();
+                this.showToast('Zone de livraison supprimée', 'success');
+            }
+
+            renderDeliveryZones() {
+                const container = document.getElementById('delivery-zones-list');
+                if (!container) return;
+
+                if (this.deliveryZones.length === 0) {
+                    container.innerHTML = '<p style="color: #7f8c8d; font-style: italic;">Aucune zone de livraison définie</p>';
+                    return;
+                }
+
+                container.innerHTML = this.deliveryZones.map((zone, index) => {
+                    const zoneText = zone.postalCode 
+                        ? `${zone.city || 'Ville'} (${zone.postalCode})`
+                        : zone.city || 'Code postal ' + zone.postalCode;
+                    
+                    return `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: white; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 0.5rem;">
+                            <span style="font-weight: 500;">
+                                <i class="fas fa-map-marker-alt" style="color: #e74c3c; margin-right: 0.5rem;"></i>
+                                ${zoneText}
+                            </span>
+                            <button type="button" class="btn btn-danger" onclick="window.dashboard.removeDeliveryZone(${index})" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            async saveSupplierProfile() {
+                // Empêcher la sauvegarde en mode démo
+                if (this.isDemoMode) {
+                    this.showToast('Veuillez vous connecter pour sauvegarder les modifications', 'error');
+                    return;
+                }
+                
+                try {
+                    console.log('💾 Sauvegarde du profil fournisseur...');
+                    
+                    const supplierData = {
+                        name: document.getElementById('supplier-name')?.value || '',
+                        contact: document.getElementById('supplier-contact')?.value || '',
+                        email: document.getElementById('supplier-email')?.value || '',
+                        phone: document.getElementById('supplier-phone')?.value || '',
+                        address: {
+                            street: document.getElementById('supplier-address-street')?.value || '',
+                            city: document.getElementById('supplier-address-city')?.value || '',
+                            postalCode: document.getElementById('supplier-address-postalCode')?.value || '',
+                            country: document.getElementById('supplier-address-country')?.value || 'Belgique'
+                        },
+                        type: document.getElementById('supplier-type')?.value || '',
+                        isBio: document.getElementById('supplier-isBio')?.checked || false,
+                        notes: document.getElementById('supplier-notes')?.value || '',
+                        deliveryZones: this.deliveryZones
+                    };
+
+                    console.log('📦 Données à sauvegarder:', supplierData);
+
+                    const response = await fetch('/api/suppliers/me', {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(supplierData)
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('✅ Profil sauvegardé:', data);
+                        console.log('📦 Zones de livraison sauvegardées:', data.data?.deliveryZones || []);
+                        console.log('📦 Nombre de zones:', data.data?.deliveryZones?.length || 0);
+                        
+                        // Mettre à jour les zones de livraison locales
+                        if (data.data?.deliveryZones) {
+                            this.deliveryZones = data.data.deliveryZones;
+                            this.renderDeliveryZones();
+                        }
+                        
+                        this.showToast('Profil sauvegardé avec succès', 'success');
+                        
+                        // Recharger le profil pour vérifier que tout est bien sauvegardé
+                        setTimeout(() => {
+                            this.loadSupplierProfile();
+                        }, 500);
+                    } else {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Erreur lors de la sauvegarde');
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur lors de la sauvegarde:', error);
+                    this.showToast(error.message || 'Erreur lors de la sauvegarde', 'error');
                 }
             }
 
@@ -1157,7 +1850,7 @@
                     const activeTab = document.querySelector('.tab-btn.active');
                     if (activeTab) {
                         const currentTab = activeTab.dataset.tab;
-                        localStorage.setItem('supplier_active_tab', currentTab);
+                        sessionStorage.setItem('supplier_active_tab', currentTab);
                         console.log(`💾 Onglet actif sauvegardé: ${currentTab}`);
                     }
                     
@@ -1706,8 +2399,8 @@
                     const targetTab = btn.dataset.tab;
                     console.log(`🔄 Changement d'onglet vers: ${targetTab}`);
                     
-                    // 💾 SAUVEGARDER l'onglet actif dans localStorage
-                    localStorage.setItem('supplier_active_tab', targetTab);
+                    // 💾 SAUVEGARDER l'onglet actif dans sessionStorage
+                    sessionStorage.setItem('supplier_active_tab', targetTab);
                     
                     // Retirer la classe active de tous les boutons
                     tabBtns.forEach(b => {
@@ -1732,6 +2425,11 @@
                     if (targetContent) {
                         targetContent.classList.add('active');
                         targetContent.style.display = 'block';
+                        
+                        // Charger les données spécifiques à l'onglet
+                        if (targetTab === 'profile' && window.dashboard) {
+                            window.dashboard.loadSupplierProfile();
+                        }
                     }
                 });
             });
@@ -1739,7 +2437,7 @@
             console.log(`✅ ${tabBtns.length} onglet(s) configuré(s)`);
             
             // 🔄 RESTAURER l'onglet sauvegardé (si disponible)
-            const savedTab = localStorage.getItem('supplier_active_tab');
+            const savedTab = sessionStorage.getItem('supplier_active_tab');
             if (savedTab) {
                 console.log(`🔄 Restauration de l'onglet: ${savedTab}`);
                 const savedBtn = document.querySelector(`[data-tab="${savedTab}"]`);
@@ -1767,8 +2465,14 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Le client se connecte automatiquement si un token est présent
             
-            // Écouter les événements de notification
-            if (window.notificationClient) {
+            // Attendre que le client de notifications soit disponible
+            const initNotifications = () => {
+                if (!window.notificationClient) {
+                    console.log('⏳ En attente du client de notifications...');
+                    setTimeout(initNotifications, 500);
+                    return;
+                }
+                
                 console.log('🔔 Configuration des gestionnaires de notifications fournisseur');
                 
                 // Nouvelle commande reçue
@@ -1812,6 +2516,29 @@
                     }
                 });
                 
+                // Changement de statut de commande (notamment quand le client confirme la réception)
+                window.notificationClient.on('order_status_change', (notification) => {
+                    console.log('🔄 CHANGEMENT DE STATUT DE COMMANDE (WebSocket)!', notification);
+                    
+                    // Si le nouveau statut est "delivered", c'est que le client a confirmé la réception
+                    if (notification.data && notification.data.newStatus === 'delivered') {
+                        console.log('✅ Réception confirmée par le client - Rechargement des commandes...');
+                        showSupplierToast('✅ Le client a confirmé la réception de la commande !', 'success');
+                    }
+                    
+                    // Recharger les commandes pour afficher le nouveau statut
+                    if (window.dashboard && typeof window.dashboard.loadOrders === 'function') {
+                        console.log('   → Rechargement des commandes...');
+                        window.dashboard.loadOrders();
+                    }
+                    
+                    // Recharger les stats
+                    if (window.dashboard && typeof window.dashboard.loadStats === 'function') {
+                        console.log('   → Rechargement des stats...');
+                        window.dashboard.loadStats();
+                    }
+                });
+                
                 // Connexion établie
                 window.notificationClient.on('connected', () => {
                     console.log('✅ Service de notifications en temps réel actif pour FOURNISSEUR');
@@ -1821,9 +2548,18 @@
                 window.notificationClient.on('disconnected', () => {
                     console.warn('⚠️ Service de notifications déconnecté');
                 });
-            } else {
-                console.error('❌ notificationClient non disponible!');
-            }
+                
+                // Gestionnaire générique pour toutes les notifications
+                window.notificationClient.on('notification', (notification) => {
+                    console.log('🔔 Notification générique reçue:', notification.type);
+                    // Ce gestionnaire est appelé pour toutes les notifications
+                    // Les gestionnaires spécifiques (new_order, etc.) sont appelés en premier
+                });
+                
+                console.log('✅ Gestionnaires de notifications configurés');
+            };
+            
+            initNotifications();
         });
     </script>
     

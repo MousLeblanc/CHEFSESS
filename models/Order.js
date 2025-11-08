@@ -143,10 +143,7 @@ const orderSchema = new mongoose.Schema({
 });
 
 // Index pour optimiser les recherches
-orderSchema.index({ orderNumber: 1 });
-orderSchema.index({ customer: 1 });
-orderSchema.index({ supplier: 1 });
-orderSchema.index({ status: 1 });
+// Note: orderNumber a déjà un index unique (ligne 18), pas besoin de le redéfinir
 orderSchema.index({ 'delivery.requestedDate': 1 });
 orderSchema.index({ establishmentType: 1 });
 
@@ -203,5 +200,6 @@ orderSchema.index({ customer: 1 });
 orderSchema.index({ supplier: 1 });
 orderSchema.index({ status: 1 });
 orderSchema.index({ createdAt: -1 });
+// Note: orderNumber, customer, supplier, status sont déjà indexés ci-dessus ou via unique:true
 
 export default mongoose.model('Order', orderSchema);

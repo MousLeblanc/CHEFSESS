@@ -90,18 +90,100 @@
     </div>
   </div>
 <script src="js/init.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
-  const token = localStorage.getItem('token');
-  if (token && user) {
-    // Redirection intelligente
-    switch (user.role) {
-      case 'maison': window.location.href = 'maison-dashboard.html'; break;
-      case 'resto': window.location.href = 'accueil.html'; break;
-      case 'fournisseur': window.location.href = 'supplier-dashboard.html'; break;
-      case 'groupe': window.location.href = 'group-dashboard.html'; break;
+<script type="module">
+// Utiliser sessionStorage au lieu de localStorage pour la cohérence
+document.addEventListener('DOMContentLoaded', async () => {
+  // Vérifier si on vient d'une déconnexion
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('logout') === 'true') {
+    console.log('✅ Déconnexion détectée - pas de redirection automatique');
+    // Nettoyer l'URL
+    window.history.replaceState({}, document.title, '/');
+    return;
+  }
+  
+  const userStr = sessionStorage.getItem('user');
+  if (!userStr) {
+    // Pas de vérification localStorage - on utilise uniquement sessionStorage
+    return;
+  }
+  
+  try {
+    const user = JSON.parse(userStr);
+    
+    // Vérifier si on vient d'une déconnexion explicite ou d'une erreur de session
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('logout') === 'true' || urlParams.get('sessionExpired') === 'true') {
+      console.log('✅ Déconnexion ou session expirée détectée - pas de redirection automatique');
+      // Nettoyer l'URL
+      window.history.replaceState({}, document.title, '/');
+      sessionStorage.removeItem('user');
+      return;
     }
+    
+    // Vérifier que l'utilisateur est toujours authentifié avant de rediriger
+    // Cela évite les redirections automatiques vers d'autres dashboards après un hard refresh
+    try {
+      const authCheck = await fetch('/api/auth/me', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!authCheck.ok) {
+        console.log('⚠️ Session expirée - pas de redirection automatique');
+        sessionStorage.removeItem('user');
+        return; // Ne pas rediriger si la session est expirée
+      }
+      
+      const authData = await authCheck.json();
+      const currentUser = authData?.user || authData;
+      
+      // Vérifier que le rôle correspond toujours
+      if (currentUser.role !== user.role) {
+        console.log('⚠️ Rôle changé - pas de redirection automatique');
+        sessionStorage.removeItem('user');
+        return;
+      }
+      
+      // Vérifier que l'utilisateur est sur la page de connexion (pas déjà sur un dashboard)
+      // Si l'utilisateur est déjà sur un dashboard, ne pas rediriger
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/' && currentPath !== '/index.html') {
+        console.log('⚠️ Utilisateur déjà sur une page - pas de redirection automatique');
+        return;
+      }
+      
+      // Pour les utilisateurs de sites (collectivite avec siteId), vérifier si on a déjà un siteId stocké
+      // Cela permet d'avoir plusieurs onglets avec des sites différents
+      if (currentUser.role === 'collectivite' && currentUser.siteId) {
+        const storedSiteId = sessionStorage.getItem('currentSiteId');
+        if (storedSiteId && storedSiteId !== currentUser.siteId) {
+          console.log('⚠️ SiteId stocké diffère du siteId du token - pas de redirection automatique');
+          console.log('   - SiteId stocké:', storedSiteId);
+          console.log('   - SiteId du token:', currentUser.siteId);
+          console.log('   - L\'utilisateur est probablement déjà sur un autre site dans cet onglet');
+          return; // Ne pas rediriger pour permettre à l'utilisateur de choisir
+        }
+        // Stocker le siteId pour cet onglet seulement si pas déjà stocké
+        if (!storedSiteId) {
+          sessionStorage.setItem('currentSiteId', currentUser.siteId);
+          console.log('✅ SiteId stocké pour cet onglet:', currentUser.siteId);
+        }
+      }
+      
+      // Importer la fonction de redirection
+      const { redirectByRole } = await import('./js/auth.js');
+      // Redirection intelligente selon le role et establishmentType
+      redirectByRole(currentUser.role, currentUser.establishmentType);
+    } catch (authError) {
+      console.error('❌ Erreur lors de la vérification de l\'authentification:', authError);
+      // En cas d'erreur, ne pas rediriger automatiquement
+      sessionStorage.removeItem('user');
+    }
+  } catch (error) {
+    console.error('Erreur lors de la redirection:', error);
   }
 });
 </script>

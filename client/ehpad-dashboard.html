@@ -33,6 +33,73 @@
     .tab-btn.active { background: #9c27b0; color: white; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
+    
+    /* Styles pour les switches */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #9c27b0;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    input:focus + .slider {
+      box-shadow: 0 0 1px #9c27b0;
+    }
+    
+    /* Animations pour les toasts */
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -65,40 +132,184 @@
       <button class="tab-btn" data-tab="stock"><i class="fas fa-boxes"></i> Stock</button>
       <button class="tab-btn" data-tab="suppliers"><i class="fas fa-truck"></i> Fournisseurs</button>
       <button class="tab-btn" data-tab="foodcost"><i class="fas fa-chart-line"></i> Food Cost</button>
+      <button class="tab-btn" data-tab="settings"><i class="fas fa-cog"></i> Paramètres</button>
     </div>
 
     <!-- Onglet Menus -->
     <div id="menus-tab" class="tab-content active">
-      <div class="card">
-        <h2><i class="fas fa-magic"></i> Générateur de Menus AI - EHPAD</h2>
-        <form id="menu-form">
-          <input type="hidden" id="establishment-type" value="ehpad">
-          
+      <!-- Calculateur de portions (au-dessus du générateur) -->
+      <div class="card" style="margin-bottom: 1.5rem; border: 2px solid #9c27b0;">
+        <div style="background: linear-gradient(135deg, #9c27b0 0%, #ba68c8 100%); color: white; padding: 1.25rem; margin: -2rem -2rem 1.5rem -2rem; border-radius: 12px 12px 0 0;">
+          <h2 style="margin: 0; color: white; font-size: 1.2rem; display: flex; align-items: center; gap: .5rem;">
+            <i class="fas fa-scale-balanced"></i>
+            Calculateur de portions
+          </h2>
+          <p style="margin: .35rem 0 0 0; font-size: .9rem; opacity: .95;">Renseignez le nombre de résidents par type de portion. Nous calculons les portions équivalentes.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
           <div class="form-group">
-            <label for="num-days">Nombre de jours :</label>
-            <input type="number" id="num-days" name="numDays" min="1" max="14" value="7" required>
+            <label for="portion-normal">Portion normale (auto)</label>
+            <input type="number" id="portion-normal" min="0" value="0" readonly>
           </div>
-
-          <h3 style="color: #9c27b0; margin-top: 2rem;"><i class="fas fa-notes-medical"></i> Groupes de résidents et besoins spécifiques</h3>
-          
-          <div id="resident-groups-container">
-            <!-- Les groupes seront ajoutés dynamiquement ici -->
-          </div>
-          
-          <button type="button" id="add-group-btn" style="width: 100%; margin-top: 1rem; background: #9c27b0;">
-            <i class="fas fa-plus"></i> Ajouter un groupe de résidents
-          </button>
-
           <div class="form-group">
-            <label for="priority-ingredients">Ingrédients à utiliser en priorité :</label>
-            <textarea id="priority-ingredients" name="priorityIngredients" rows="3" placeholder="Ex: Légumes frais, viandes tendres..."></textarea>
+            <label for="portion-demi">Demi-portion (×0,5) (auto)</label>
+            <input type="number" id="portion-demi" min="0" value="0" readonly>
+          </div>
+          <div class="form-group">
+            <label for="portion-double">Double portion (×1.5) (auto)</label>
+            <input type="number" id="portion-double" min="0" value="0" readonly>
+          </div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; justify-content: space-between;">
+          <div style="display: flex; gap: 1.25rem; flex-wrap: wrap;">
+            <div style="background:#f8f5fb; padding:.75rem 1rem; border-radius:8px; border:1px solid #e5d7f3;">
+              <strong>Total résidents:</strong>
+              <span id="calc-total-residents">0</span>
+            </div>
+            <div style="background:#f3e5f5; padding:.75rem 1rem; border-radius:8px; border:1px solid #e1bee7;">
+              <strong>Total portions équivalentes:</strong>
+              <span id="calc-total-portions">0</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: .75rem;">
+            <button id="calc-refresh" style="background:#9c27b0;">
+              <i class="fas fa-rotate"></i> Recalculer depuis résidents
+            </button>
+            <button id="calc-apply-to-generator" style="background:#9c27b0;">
+              <i class="fas fa-arrow-down"></i> Appliquer au générateur
+            </button>
+            <button id="calc-reset" style="background:#6c757d;">
+              Réinitialiser
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Générateur IA Personnalisé avec Critères Nutritionnels -->
+      <div class="card" style="margin-bottom: 2rem; border: 2px solid #10b981;">
+        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 1.5rem; margin: -2rem -2rem 2rem -2rem; border-radius: 12px 12px 0 0;">
+          <h2 style="margin: 0; color: white;"><i class="fas fa-flask"></i> Générateur IA Personnalisé</h2>
+          <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.9;">Créez des menus sur-mesure avec des objectifs nutritionnels spécifiques</p>
+        </div>
+        
+        <form id="generate-custom-menu-form">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div class="form-group">
+              <label for="custom-menu-people"><i class="fas fa-users"></i> Nombre de personnes *</label>
+              <input type="number" id="custom-menu-people" min="1" max="100" value="4" required>
+            </div>
+            <div class="form-group">
+              <label for="custom-menu-type"><i class="fas fa-clock"></i> Type de repas *</label>
+              <select id="custom-menu-type" required>
+                <option value="déjeuner">Déjeuner</option>
+                <option value="dîner">Dîner</option>
+                <option value="petit-déjeuner">Petit-déjeuner</option>
+                <option value="collation">Collation</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="custom-menu-period"><i class="fas fa-calendar-week"></i> Période</label>
+              <select id="custom-menu-period">
+                <option value="1">Un jour</option>
+                <option value="7">Semaine (7 jours)</option>
+                <option value="30">Mois (30 jours)</option>
+              </select>
+            </div>
           </div>
 
-          <button type="submit" style="width: 100%; margin-top: 1.5rem; padding: 1.2rem; font-size: 1.1rem;">
-            <i class="fas fa-wand-magic-sparkles"></i> Générer les menus
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;"><i class="fas fa-bullseye"></i> Objectifs Nutritionnels</label>
+            <div id="nutritional-goals-container" style="background: #f9fafb; padding: 1rem; border-radius: 8px; border: 1px solid #e5e7eb;">
+              <div id="nutritional-goals-list" style="margin-bottom: 1rem;">
+                <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">Aucun objectif ajouté. Cliquez sur "Ajouter un objectif" ci-dessous.</p>
+              </div>
+              <button type="button" id="add-goal-btn" class="btn btn-outline" style="width: 100%; border-style: dashed; background: white; color: #10b981; border-color: #10b981;">
+                <i class="fas fa-plus"></i> Ajouter un objectif nutritionnel
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label for="custom-menu-restrictions"><i class="fas fa-ban"></i> Restrictions alimentaires (optionnel)</label>
+            <select id="custom-menu-restrictions" multiple style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; min-height: 100px;">
+              <option value="sans lactose">Sans lactose</option>
+              <option value="sans gluten">Sans gluten</option>
+              <option value="végétarien">Végétarien</option>
+              <option value="végétalien">Végétalien</option>
+              <option value="sans porc">Sans porc</option>
+              <option value="sans arachides">Sans arachides</option>
+              <option value="sans fruits à coque">Sans fruits à coque</option>
+            </select>
+            <small style="color: #6b7280;">Maintenez Ctrl (Cmd sur Mac) pour sélectionner plusieurs options</small>
+          </div>
+
+          <div style="background: #f0fdf4; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #10b981;">
+            <p style="margin: 0; color: #047857; font-size: 0.9rem;">
+              <i class="fas fa-lightbulb"></i> 
+              <strong>Exemples d'utilisation :</strong><br>
+              • Menu riche en protéines (35g) pour seniors<br>
+              • Menu anti-anémie (Fer 10mg + Vitamine C 80mg)<br>
+              • Menu santé osseuse (Calcium 800mg + Vitamine D 15µg)<br>
+              • Menu digestif (Fibres 12g)<br>
+              • Menu immunitaire (Vitamine C 100mg + Zinc 8mg)
+            </p>
+          </div>
+
+          <!-- Suggestions rapides d'objectifs -->
+          <div style="margin-bottom: 1rem;">
+            <label style="font-weight: 600; margin-bottom: .5rem; display: block; color:#374151;">Suggestions rapides</label>
+            <div id="quick-goal-suggestions" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .5rem;">
+              <button type="button" class="btn btn-outline quick-goal" data-goals='[{"nutrient":"proteins","label":"Protéines","target":35,"unit":"g"}]'>
+                🥩 Riche en protéines (35g)
+              </button>
+              <button type="button" class="btn btn-outline quick-goal" data-goals='[{"nutrient":"iron","label":"Fer","target":10,"unit":"mg"},{"nutrient":"vitaminC","label":"Vitamine C","target":80,"unit":"mg"}]'>
+                🩸 Anti-anémie (Fer 10mg + Vit C 80mg)
+              </button>
+              <button type="button" class="btn btn-outline quick-goal" data-goals='[{"nutrient":"calcium","label":"Calcium","target":800,"unit":"mg"},{"nutrient":"vitaminD","label":"Vitamine D","target":15,"unit":"µg"}]'>
+                🦴 Santé osseuse (Ca 800mg + Vit D 15µg)
+              </button>
+              <button type="button" class="btn btn-outline quick-goal" data-goals='[{"nutrient":"fibers","label":"Fibres","target":12,"unit":"g"}]'>
+                🌾 Digestif (Fibres 12g)
+              </button>
+              <button type="button" class="btn btn-outline quick-goal" data-goals='[{"nutrient":"vitaminC","label":"Vitamine C","target":100,"unit":"mg"},{"nutrient":"zinc","label":"Zinc","target":8,"unit":"mg"}]'>
+                🛡️ Immunité (Vit C 100mg + Zinc 8mg)
+              </button>
+              <button type="button" class="btn btn-outline quick-goal" data-goals='[{"nutrient":"calories","label":"Calories","target":500,"unit":"kcal"},{"nutrient":"proteins","label":"Protéines","target":25,"unit":"g"}]'>
+                ⚖️ Énergie légère (500 kcal + 25g prot)
+              </button>
+              <button type="button" class="btn btn-outline quick-goal" data-goals='[{"nutrient":"calories","label":"Calories","target":800,"unit":"kcal"},{"nutrient":"proteins","label":"Protéines","target":35,"unit":"g"}]'>
+                🔋 Énergie élevée (800 kcal + 35g prot)
+              </button>
+              <button type="button" class="btn btn-outline quick-goal" data-goals='[{"nutrient":"carbs","label":"Glucides","target":50,"unit":"g"},{"nutrient":"fibers","label":"Fibres","target":10,"unit":"g"}]'>
+                🍞 Diabète (Glucides 50g + Fibres ≥10g)
+              </button>
+            </div>
+          </div>
+
+          <div id="custom-menu-progress" style="display: none; background: #fef3c7; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; text-align: center;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: #92400e;"></i>
+            <p style="margin: 0.5rem 0 0 0; color: #92400e; font-weight: 600;">Génération en cours...</p>
+            <p style="margin: 0.25rem 0 0 0; color: #666; font-size: 0.85rem;" id="custom-progress-text">Analyse des ingrédients disponibles...</p>
+          </div>
+
+          <button type="submit" style="width: 100%; padding: 1rem; font-size: 1.1rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
+            <i class="fas fa-flask"></i> Générer le menu personnalisé
           </button>
         </form>
-        <div id="menu-results" class="results" style="display: none;"></div>
+
+        <div id="custom-menu-results" style="display: none; margin-top: 2rem;"></div>
+
+        <div id="generated-menus-list" style="margin-top: 2rem; display: none;">
+          <h3 style="margin-bottom: 1rem; color: #374151;"><i class="fas fa-list"></i> Menus générés récemment</h3>
+          <div id="generated-menus-container" style="display: grid; gap: 1rem;"></div>
+        </div>
+        
+        <!-- Bouton pour générer menu pour tous les résidents -->
+        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #e5e7eb;">
+          <button id="generate-menu-all-residents-btn" style="background: linear-gradient(135deg, #9c27b0 0%, #ba68c8 100%); color: white; padding: 1rem 2rem; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
+            <i class="fas fa-users"></i>
+            Générer menu pour tous les résidents
+          </button>
+        </div>
       </div>
     </div>
 
@@ -133,6 +344,8 @@
               <th style="padding: 1rem; text-align: left;">Nom</th>
               <th style="padding: 1rem; text-align: left;">Catégorie</th>
               <th style="padding: 1rem; text-align: center;">Quantité</th>
+              <th style="padding: 1rem; text-align: center;">Seuil d'alerte</th>
+              <th style="padding: 1rem; text-align: center;">Prix d'achat</th>
               <th style="padding: 1rem; text-align: center;">Expiration</th>
               <th style="padding: 1rem; text-align: center;">Actions</th>
             </tr>
@@ -158,6 +371,27 @@
     <div id="residents-tab" class="tab-content">
       <div class="card">
         <h2><i class="fas fa-users"></i> Gestion des Résidents</h2>
+        
+        <!-- Résumé statistiques -->
+        <div id="residents-summary" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; display: none;">
+          <h3 style="margin: 0 0 1rem 0; color: white; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-chart-pie"></i> Résumé des Résidents
+          </h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+            <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 8px; backdrop-filter: blur(10px);">
+              <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">Total Résidents</div>
+              <div style="font-size: 2rem; font-weight: 700;" id="summary-total-residents">0</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 8px; backdrop-filter: blur(10px);">
+              <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">Total Portions</div>
+              <div style="font-size: 2rem; font-weight: 700;" id="summary-total-portions">0</div>
+            </div>
+          </div>
+          <div id="summary-allergies-restrictions" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.75rem;">
+            <!-- Les allergies et restrictions seront générées dynamiquement -->
+          </div>
+        </div>
+        
         <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
           <button id="add-resident-btn" style="background-color: #4caf50;">
             <i class="fas fa-user-plus"></i> Ajouter un résident
@@ -333,6 +567,314 @@
         </div>
       </div>
     </div>
+
+    <!-- Onglet Paramètres -->
+    <div id="settings-tab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-cog"></i> Paramètres du Site</h2>
+        <p style="color: #7f8c8d; margin-bottom: 2rem;">Configurez les informations de votre site et les préférences de notifications.</p>
+        
+        <form id="site-settings-form">
+          <!-- Informations du site -->
+          <div class="form-section" style="border: 2px solid #9c27b0; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; background: #f8f9fa;">
+            <h3 style="margin-top: 0; color: #9c27b0; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fas fa-building"></i> Informations du Site
+            </h3>
+            
+            <div class="form-group">
+              <label for="site-name">Nom du site *</label>
+              <input type="text" id="site-name" required placeholder="Ex: EHPAD Saint-Michel">
+            </div>
+            
+            <div class="form-group">
+              <label for="site-address-street">Adresse</label>
+              <input type="text" id="site-address-street" placeholder="Rue et numéro">
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label for="site-address-city">Ville</label>
+                <input type="text" id="site-address-city" placeholder="Ville">
+              </div>
+              <div class="form-group">
+                <label for="site-address-postalCode">Code postal</label>
+                <input type="text" id="site-address-postalCode" placeholder="Code postal">
+              </div>
+              <div class="form-group">
+                <label for="site-address-country">Pays</label>
+                <input type="text" id="site-address-country" placeholder="Pays" value="Belgique">
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+              <div class="form-group">
+                <label for="site-contact-phone">Téléphone</label>
+                <input type="tel" id="site-contact-phone" placeholder="+32 2 123 45 67">
+              </div>
+              <div class="form-group">
+                <label for="site-contact-email">Email</label>
+                <input type="email" id="site-contact-email" placeholder="contact@example.com">
+              </div>
+            </div>
+          </div>
+          
+          <!-- Responsable -->
+          <div class="form-section" style="border: 2px solid #3498db; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; background: #f8f9fa;">
+            <h3 style="margin-top: 0; color: #3498db; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fas fa-user-tie"></i> Responsable
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label for="responsable-name">Nom du responsable *</label>
+                <input type="text" id="responsable-name" required placeholder="Nom complet">
+              </div>
+              <div class="form-group">
+                <label for="responsable-phone">Téléphone</label>
+                <input type="tel" id="responsable-phone" placeholder="+32 2 123 45 67">
+              </div>
+              <div class="form-group">
+                <label for="responsable-email">Email</label>
+                <input type="email" id="responsable-email" placeholder="email@example.com">
+              </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 1rem;">
+              <label for="responsable-position">Fonction</label>
+              <input type="text" id="responsable-position" placeholder="Ex: Directeur, Responsable cuisine, etc.">
+            </div>
+          </div>
+          
+          <!-- Paramètres de notifications -->
+          <div class="form-section" style="border: 2px solid #e74c3c; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; background: #fff5f5;">
+            <h3 style="margin-top: 0; color: #e74c3c; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fas fa-bell"></i> Notifications
+            </h3>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: white; border-radius: 8px; border: 1px solid #ddd;">
+                <div>
+                  <label for="notification-badge" style="font-weight: 600; margin-bottom: 0.25rem; display: block;">
+                    <i class="fas fa-badge-check" style="color: #3498db; margin-right: 0.5rem;"></i>
+                    Badge de notification
+                  </label>
+                  <small style="color: #7f8c8d;">Afficher un badge sur les icônes lors de nouvelles notifications</small>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="notification-badge">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: white; border-radius: 8px; border: 1px solid #ddd;">
+                <div>
+                  <label for="notification-sound" style="font-weight: 600; margin-bottom: 0.25rem; display: block;">
+                    <i class="fas fa-volume-up" style="color: #e74c3c; margin-right: 0.5rem;"></i>
+                    Sonnerie de notification
+                  </label>
+                  <small style="color: #7f8c8d;">Jouer un son lors de nouvelles notifications</small>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="notification-sound">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              
+              <div id="sound-volume-container" style="display: none; padding: 1rem; background: white; border-radius: 8px; border: 1px solid #ddd;">
+                <label for="sound-volume" style="font-weight: 600; margin-bottom: 0.5rem; display: block;">
+                  <i class="fas fa-sliders-h" style="color: #e74c3c; margin-right: 0.5rem;"></i>
+                  Volume du son (%)
+                </label>
+                <input type="range" id="sound-volume" min="0" max="100" value="50" style="width: 100%;">
+                <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.85rem; color: #7f8c8d;">
+                  <span>0%</span>
+                  <span id="sound-volume-value">50%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Boutons d'action -->
+          <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+            <button type="button" id="cancel-settings-btn" style="background-color: #6c757d;">
+              <i class="fas fa-times"></i> Annuler
+            </button>
+            <button type="submit" style="background-color: #9c27b0;">
+              <i class="fas fa-save"></i> Enregistrer les modifications
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale pour ajouter les objectifs nutritionnels -->
+  <div id="add-nutritional-goal-modal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
+    <div class="modal-content" style="background: white; padding: 2rem; border-radius: 12px; max-width: 500px; width: 90%;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h3 style="margin: 0;">Ajouter un Objectif Nutritionnel</h3>
+        <button class="modal-close" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #999;">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Liste des objectifs déjà ajoutés -->
+        <div id="modal-goals-list" style="margin-bottom: 1rem; display: none;">
+          <h4 style="font-size: 0.95rem; color: #374151; margin-bottom: 0.5rem;">
+            <i class="fas fa-check-circle" style="color: #10b981;"></i> Objectifs ajoutés :
+          </h4>
+          <div id="modal-goals-container" style="background: #f0fdf4; padding: 0.75rem; border-radius: 6px; border: 1px solid #86efac; margin-bottom: 1rem;"></div>
+        </div>
+        
+        <form id="add-nutritional-goal-form">
+          <div class="form-group">
+            <label for="goal-nutrient">Nutriment *</label>
+            <select id="goal-nutrient" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
+              <optgroup label="Protéines & Énergie">
+                <option value="proteins">Protéines (g)</option>
+                <option value="calories">Calories (kcal)</option>
+              </optgroup>
+              <optgroup label="Vitamines">
+                <option value="vitaminC">Vitamine C (mg)</option>
+                <option value="vitaminD">Vitamine D (µg)</option>
+                <option value="vitaminA">Vitamine A (µg)</option>
+                <option value="vitaminE">Vitamine E (mg)</option>
+                <option value="vitaminK">Vitamine K (µg)</option>
+                <option value="vitaminB6">Vitamine B6 (mg)</option>
+                <option value="vitaminB9">Vitamine B9 (µg)</option>
+                <option value="vitaminB12">Vitamine B12 (µg)</option>
+              </optgroup>
+              <optgroup label="Minéraux">
+                <option value="iron">Fer (mg)</option>
+                <option value="calcium">Calcium (mg)</option>
+                <option value="magnesium">Magnésium (mg)</option>
+                <option value="zinc">Zinc (mg)</option>
+                <option value="phosphore">Phosphore (mg)</option>
+                <option value="potassium">Potassium (mg)</option>
+              </optgroup>
+              <optgroup label="Autres">
+                <option value="fibers">Fibres (g)</option>
+                <option value="carbs">Glucides (g)</option>
+                <option value="lipids">Lipides (g)</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="goal-target">Objectif par personne *</label>
+            <input type="number" id="goal-target" min="0" step="0.1" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;" placeholder="Ex: 35">
+          </div>
+          <div style="background: #f3f4f6; padding: 1rem; border-radius: 6px; margin-top: 1rem;">
+            <p style="margin: 0; font-size: 0.85rem; color: #4b5563;">
+              <strong>💡 Exemples de valeurs recommandées :</strong><br>
+              • Protéines : 25-40g<br>
+              • Fer : 8-15mg<br>
+              • Calcium : 800-1200mg<br>
+              • Vitamine C : 80-120mg<br>
+              • Fibres : 10-15g
+            </p>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer" style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary modal-close" style="background-color: #6c757d;">Annuler</button>
+        <button type="submit" form="add-nutritional-goal-form" class="btn btn-outline" style="background: white; color: #10b981; border-color: #10b981;">
+          <i class="fas fa-plus"></i> Ajouter un autre
+        </button>
+        <button type="button" id="add-goal-and-close-btn" class="btn btn-primary" style="background-color: #10b981;">
+          <i class="fas fa-check"></i> Ajouter et fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+  <!-- Modal Générer menu pour résidents -->
+  <div id="generate-menu-residents-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; overflow-y: auto; padding: 2rem;">
+    <div style="background: white; max-width: 900px; margin: 2rem auto; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); position: relative;">
+      <!-- Header -->
+      <div style="background: linear-gradient(135deg, #9c27b0 0%, #ba68c8 100%); color: white; padding: 1.5rem 2rem; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="margin: 0; color: white; display: flex; align-items: center; gap: 0.75rem;">
+          <i class="fas fa-users"></i>
+          Générer un menu pour les résidents
+        </h2>
+        <button onclick="closeGenerateMenuResidentsModal()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">
+          &times;
+        </button>
+      </div>
+      
+      <!-- Contenu -->
+      <div style="padding: 2rem;">
+        <!-- Résumé des résidents -->
+        <div id="residents-summary-modal" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+          <h3 style="margin: 0 0 1rem 0; color: white; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-chart-pie"></i> Résumé des Résidents
+          </h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+            <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 8px; backdrop-filter: blur(10px);">
+              <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">Total Résidents</div>
+              <div style="font-size: 2rem; font-weight: 700;" id="modal-summary-total-residents">0</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 8px; backdrop-filter: blur(10px);">
+              <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">Total Portions</div>
+              <div style="font-size: 2rem; font-weight: 700;" id="modal-summary-total-portions">0</div>
+            </div>
+          </div>
+          <div style="margin-top: 1rem;">
+            <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.75rem; font-weight: 600;">Allergies et Restrictions</div>
+            <div id="modal-summary-allergies-restrictions" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; max-height: 300px; overflow-y: auto;">
+              <!-- Les allergies et restrictions seront générées dynamiquement -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Options de génération -->
+        <div style="background: #f9fafb; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+          <h3 style="margin: 0 0 1rem 0; color: #111827;">Options de génération</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-group">
+              <label for="modal-menu-type"><i class="fas fa-clock"></i> Type de repas *</label>
+              <select id="modal-menu-type" required style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+                <option value="déjeuner">Déjeuner</option>
+                <option value="dîner">Dîner</option>
+                <option value="petit-déjeuner">Petit-déjeuner</option>
+                <option value="collation">Collation</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="modal-menu-period"><i class="fas fa-calendar-week"></i> Période</label>
+              <select id="modal-menu-period" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
+                <option value="1">Un jour</option>
+                <option value="7">Semaine (7 jours)</option>
+                <option value="30">Mois (30 jours)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;"><i class="fas fa-bullseye"></i> Objectifs Nutritionnels (optionnel)</label>
+            <div id="modal-nutritional-goals-container" style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid #e5e7eb;">
+              <div id="modal-nutritional-goals-list" style="margin-bottom: 1rem;">
+                <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">Aucun objectif ajouté (optionnel). Les menus seront générés avec une grande variété.</p>
+              </div>
+              <button type="button" id="modal-add-goal-btn" class="btn btn-outline" style="width: 100%; border-style: dashed; background: white; color: #10b981; border-color: #10b981;">
+                <i class="fas fa-plus"></i> Ajouter un objectif nutritionnel
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Actions -->
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+          <button onclick="closeGenerateMenuResidentsModal()" style="background: #6c757d; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer;">
+            Annuler
+          </button>
+          <button id="generate-menu-residents-confirm-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-magic"></i>
+            Générer le menu
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- 🧹 Script de nettoyage des anciens tokens (doit être chargé en premier) -->
@@ -346,17 +888,493 @@
   <script src="js/recipe-generator.js"></script>
   <script src="js/foodcost-manager.js"></script>
   <script src="js/init.js"></script>
-  <!-- Système de génération intelligente de menus -->
-  <script src="js/intelligent-menu-generator.js"></script>
-  <script src="js/dashboard-menu-integration.js"></script>
+  <!-- Générateur de menu personnalisé avec objectifs nutritionnels -->
+  <script src="js/custom-menu-generator.js"></script>
   <script>
-    // Initialiser le système de génération de menus
-    initDashboardMenuGenerator('ehpad');
+    // Initialiser le générateur de menu personnalisé
+    document.addEventListener('DOMContentLoaded', () => {
+      customMenuGenerator.init();
+
+      // ===== Calculateur de portions → synchronisation avec le générateur =====
+      const $n = document.getElementById('portion-normal');
+      const $h = document.getElementById('portion-demi');
+      const $d = document.getElementById('portion-double');
+      const $totalResidents = document.getElementById('calc-total-residents');
+      const $totalPortions = document.getElementById('calc-total-portions');
+      const $apply = document.getElementById('calc-apply-to-generator');
+      const $refresh = document.getElementById('calc-refresh');
+      const $reset = document.getElementById('calc-reset');
+
+      function toNum(el){ return Math.max(0, parseFloat(el?.value || '0') || 0); }
+
+      function refreshTotals(){
+        const normal = toNum($n);
+        const demi = toNum($h);
+        const dbl = toNum($d);
+        const residents = normal + demi + dbl;
+        const portions = normal + 0.5 * demi + 1.5 * dbl;
+        $totalResidents.textContent = residents.toString();
+        $totalPortions.textContent = (Math.round(portions * 100) / 100).toString();
+        return { residents, portions };
+      }
+
+      // Les champs sont en lecture seule: calculés automatiquement depuis les fiches résidents
+      refreshTotals();
+
+      if ($apply) {
+        $apply.addEventListener('click', (e) => {
+          e.preventDefault();
+          const { portions } = refreshTotals();
+          const target = document.getElementById('custom-menu-people');
+          if (target) {
+            target.value = Math.max(1, Math.round(portions));
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        });
+      }
+
+      if ($reset) {
+        $reset.addEventListener('click', (e) => {
+          e.preventDefault();
+          [$n, $h, $d].forEach(el => { if (el) el.value = '0'; });
+          refreshTotals();
+        });
+      }
+
+      // ===== Pré-remplissage depuis les fiches résidents =====
+      function getPortionMultiplier(raw) {
+        if (raw == null) return 1;
+        const s = String(raw).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+        // numeric
+        const num = parseFloat(s.replace(',', '.'));
+        if (!isNaN(num) && num > 0) {
+          if (num <= 0.6) return 0.5; // treat ~0.5 as demi
+          if (num >= 1.4) return 1.5; // treat ~1.5-2 as double (×1.5)
+          return 1;
+        }
+        // keywords
+        if (/(demi|1\/2|half|½)/.test(s)) return 0.5;
+        if (/(double|x2|2x|\b2\b)/.test(s)) return 1.5; // Double portion = ×1.5
+        return 1;
+      }
+
+      async function prefillFromResidents() {
+        try {
+          const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
+          if (!storedUser) return;
+          const user = JSON.parse(storedUser);
+          const siteId = user?.siteId;
+          if (!siteId) return;
+
+          const resp = await fetch(`/api/residents/site/${siteId}`, {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          if (!resp.ok) return;
+          const data = await resp.json();
+          const residents = data?.data || [];
+
+          let normal = 0, demi = 0, dbl = 0;
+          residents.forEach(r => {
+            const portionRaw = r?.nutritionalProfile?.portionSize ?? r?.portion ?? r?.portionSize;
+            const mult = getPortionMultiplier(portionRaw);
+            if (mult === 1.5) dbl++; // Double portion = 1.5
+            else if (mult === 0.5) demi++;
+            else normal++;
+          });
+
+          if ($n) $n.value = String(normal);
+          if ($h) $h.value = String(demi);
+          if ($d) $d.value = String(dbl);
+
+          const totals = refreshTotals();
+          // Mettre aussi à jour le générateur directement
+          const target = document.getElementById('custom-menu-people');
+          if (target) target.value = Math.max(1, Math.round(totals.portions));
+        } catch (e) {
+          // silencieux: on ne bloque pas l'UI si l'appel échoue
+          console.warn('Prefill residents failed', e);
+        }
+      }
+
+      prefillFromResidents();
+
+      if ($refresh) {
+        $refresh.addEventListener('click', (e) => {
+          e.preventDefault();
+          prefillFromResidents();
+        });
+      }
+
+      // ===== Suggestions rapides: appliquer des objectifs prédéfinis =====
+      const suggestionButtons = document.querySelectorAll('.quick-goal');
+      suggestionButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          try {
+            const goals = JSON.parse(btn.getAttribute('data-goals') || '[]');
+            if (!Array.isArray(goals) || goals.length === 0) return;
+            // Remplacer les objectifs actuels par la suggestion
+            customMenuGenerator.nutritionalGoals = goals.map(g => ({
+              nutrient: g.nutrient,
+              label: g.label,
+              target: g.target,
+              unit: g.unit,
+              minIngredientValue: customMenuGenerator.getMinIngredientValue ? customMenuGenerator.getMinIngredientValue(g.nutrient) : 0
+            }));
+            if (typeof customMenuGenerator.renderNutritionalGoals === 'function') {
+              customMenuGenerator.renderNutritionalGoals();
+            }
+            if (typeof customMenuGenerator.showToast === 'function') {
+              customMenuGenerator.showToast('✅ Objectifs appliqués: ' + goals.map(g=>g.label+" "+g.target+g.unit).join(' • '), 'success');
+            }
+          } catch (e) {
+            console.warn('Suggestion parse error', e);
+          }
+        });
+      });
+
+      // ===== Modal Générer menu pour résidents =====
+      const generateMenuResidentsBtn = document.getElementById('generate-menu-all-residents-btn');
+      const generateMenuResidentsModal = document.getElementById('generate-menu-residents-modal');
+      const generateMenuResidentsConfirmBtn = document.getElementById('generate-menu-residents-confirm-btn');
+
+      // Ouvrir la modal
+      if (generateMenuResidentsBtn) {
+        generateMenuResidentsBtn.addEventListener('click', async () => {
+          await openGenerateMenuResidentsModal();
+        });
+      }
+
+      // Fonction pour ouvrir la modal et charger les données
+      async function openGenerateMenuResidentsModal() {
+        if (!generateMenuResidentsModal) return;
+        generateMenuResidentsModal.style.display = 'block';
+        
+        try {
+          const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
+          if (!storedUser) {
+            showToast('Erreur: Utilisateur non connecté', 'error');
+            return;
+          }
+          const user = JSON.parse(storedUser);
+          const siteId = user?.siteId;
+          if (!siteId) {
+            showToast('Erreur: Site ID manquant', 'error');
+            return;
+          }
+
+          // Charger uniquement les résidents ACTIFS du site
+          const response = await fetch(`/api/residents/site/${siteId}?status=actif&limit=1000`, {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          });
+
+          if (!response.ok) throw new Error('Erreur lors du chargement des résidents');
+          const data = await response.json();
+          // Filtrer encore côté client : ACTIFS + du BON siteId
+          const allResidents = data?.data || [];
+          const siteIdStr = String(siteId);
+          const activeResidents = allResidents.filter(r => {
+            // Vérifier le statut
+            const status = r.status ? String(r.status).toLowerCase().trim() : '';
+            if (status !== 'actif') return false;
+            
+            // Vérifier que le résident appartient bien à ce site
+            const residentSiteId = r.siteId ? (r.siteId._id ? String(r.siteId._id) : String(r.siteId)) : null;
+            if (!residentSiteId || residentSiteId !== siteIdStr) {
+              console.warn(`⚠️ Modal - Résident ${r.firstName} ${r.lastName} appartient au site ${residentSiteId} mais on cherche ${siteIdStr}`);
+              return false;
+            }
+            
+            return true;
+          });
+          
+          console.log(`📊 Modal - Résidents chargés pour site ${siteIdStr}: ${allResidents.length} total retournés, ${activeResidents.length} actifs et du bon site`);
+          
+          displayResidentsSummaryInModal(activeResidents);
+        } catch (error) {
+          console.error('Erreur:', error);
+          showToast('Erreur lors du chargement des résidents', 'error');
+        }
+      }
+
+      window.closeGenerateMenuResidentsModal = function() {
+        if (generateMenuResidentsModal) generateMenuResidentsModal.style.display = 'none';
+      };
+
+      if (generateMenuResidentsModal) {
+        generateMenuResidentsModal.addEventListener('click', (e) => {
+          if (e.target === generateMenuResidentsModal) closeGenerateMenuResidentsModal();
+        });
+      }
+
+      function displayResidentsSummaryInModal(residents) {
+        // Filtrer uniquement les résidents ACTIFS (double sécurité)
+        const activeResidents = (residents || []).filter(r => {
+          const status = r.status ? String(r.status).toLowerCase().trim() : '';
+          return status === 'actif';
+        });
+        
+        if (activeResidents.length === 0) {
+          document.getElementById('modal-summary-total-residents').textContent = '0';
+          document.getElementById('modal-summary-total-portions').textContent = '0';
+          document.getElementById('modal-summary-allergies-restrictions').innerHTML = 
+            '<div style="grid-column: 1/-1; text-align: center; opacity: 0.8; padding: 1rem;">Aucun résident actif trouvé</div>';
+          return;
+        }
+
+        document.getElementById('modal-summary-total-residents').textContent = activeResidents.length;
+
+        let totalPortions = 0;
+        activeResidents.forEach(resident => {
+          const ps = resident.portionSize;
+          if (ps === 0.5) totalPortions += 0.5;
+          else if (ps === 2) totalPortions += 1.5;
+          else totalPortions += 1;
+        });
+        document.getElementById('modal-summary-total-portions').textContent = Math.round(totalPortions * 100) / 100;
+
+        // Fonction pour normaliser le nom d'allergène (éviter les doublons)
+        const normalizeAllergen = (name) => {
+          const normalized = String(name).toLowerCase().trim();
+          const variants = {
+            'oeufs': 'oeufs', 'oeuf': 'oeufs', 'eggs': 'oeufs',
+            'arachides': 'arachides', 'peanuts': 'arachides',
+            'fruits_a_coque': 'fruits_a_coque', 'nuts': 'fruits_a_coque', 'noix': 'fruits_a_coque',
+            'soja': 'soja', 'soy': 'soja',
+            'poisson': 'poisson', 'fish': 'poisson',
+            'crustaces': 'crustaces', 'shellfish': 'crustaces',
+            'mollusques': 'mollusques', 'molluscs': 'mollusques',
+            'celeri': 'celeri', 'celery': 'celeri',
+            'moutarde': 'moutarde', 'mustard': 'moutarde',
+            'gluten': 'gluten',
+            'lactose': 'lactose',
+            'sesame': 'sesame',
+            'sulfites': 'sulfites',
+            'lupin': 'lupin'
+          };
+          return variants[normalized] || normalized;
+        };
+
+        const allergiesCount = {}, restrictionsCount = {};
+        activeResidents.forEach(resident => {
+          // Utiliser un Set pour éviter de compter deux fois le même résident pour le même allergène
+          const residentAllergens = new Set();
+          
+          if (resident.nutritionalProfile?.allergies?.length > 0) {
+            resident.nutritionalProfile.allergies.forEach(allergy => {
+              const allergen = allergy.allergen || allergy;
+              const normalized = normalizeAllergen(allergen);
+              residentAllergens.add(normalized);
+            });
+          }
+          if (resident.nutritionalProfile?.intolerances?.length > 0) {
+            resident.nutritionalProfile.intolerances.forEach(intolerance => {
+              const substance = intolerance.substance || intolerance;
+              const normalized = normalizeAllergen(substance);
+              residentAllergens.add(normalized);
+            });
+          }
+          
+          // Compter chaque allergène une seule fois par résident
+          residentAllergens.forEach(allergen => {
+            allergiesCount[allergen] = (allergiesCount[allergen] || 0) + 1;
+          });
+          
+          if (resident.nutritionalProfile?.dietaryRestrictions?.length > 0) {
+            resident.nutritionalProfile.dietaryRestrictions.forEach(restriction => {
+              const rn = restriction.restriction || restriction.type || restriction;
+              const normalized = String(rn).toLowerCase().trim();
+              restrictionsCount[normalized] = (restrictionsCount[normalized] || 0) + 1;
+            });
+          }
+        });
+
+        const container = document.getElementById('modal-summary-allergies-restrictions');
+        let html = '';
+        Object.entries(allergiesCount).sort((a, b) => b[1] - a[1]).forEach(([allergen, count]) => {
+          html += `<div style="background: rgba(255,255,255,0.15); padding: 0.75rem 1rem; border-radius: 8px; backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 500; font-size: 0.9rem;"><i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem; color: #ffc107;"></i>${formatAllergenName(allergen)}</span>
+            <span style="background: rgba(255,255,255,0.3); padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem;">${count}</span>
+          </div>`;
+        });
+        Object.entries(restrictionsCount).sort((a, b) => b[1] - a[1]).forEach(([restriction, count]) => {
+          html += `<div style="background: rgba(255,255,255,0.15); padding: 0.75rem 1rem; border-radius: 8px; backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 500; font-size: 0.9rem;"><i class="fas fa-ban" style="margin-right: 0.5rem; color: #e74c3c;"></i>${formatRestrictionName(restriction)}</span>
+            <span style="background: rgba(255,255,255,0.3); padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem;">${count}</span>
+          </div>`;
+        });
+        container.innerHTML = html || '<div style="grid-column: 1/-1; text-align: center; opacity: 0.8; padding: 1rem;">Aucune allergie ou restriction enregistrée</div>';
+      }
+
+      function formatAllergenName(allergen) {
+        const names = {'gluten': 'Gluten', 'lactose': 'Lactose', 'oeufs': 'Œufs', 'oeuf': 'Œufs', 'eggs': 'Œufs',
+          'arachides': 'Arachides', 'peanuts': 'Arachides', 'fruits_a_coque': 'Fruits à coque', 'nuts': 'Fruits à coque',
+          'noix': 'Fruits à coque', 'soja': 'Soja', 'soy': 'Soja', 'poisson': 'Poisson', 'fish': 'Poisson',
+          'crustaces': 'Crustacés', 'shellfish': 'Crustacés', 'mollusques': 'Mollusques', 'molluscs': 'Mollusques',
+          'celeri': 'Céleri', 'celery': 'Céleri', 'moutarde': 'Moutarde', 'mustard': 'Moutarde',
+          'sesame': 'Sésame', 'sulfites': 'Sulfites', 'lupin': 'Lupin'};
+        return names[allergen.toLowerCase()] || allergen.charAt(0).toUpperCase() + allergen.slice(1);
+      }
+
+      function formatRestrictionName(restriction) {
+        const names = {'vegetarien': 'Végétarien', 'vegan': 'Végan', 'sans_gluten': 'Sans gluten',
+          'gluten_free': 'Sans gluten', 'sans_lactose': 'Sans lactose', 'lactose_free': 'Sans lactose',
+          'halal': 'Halal', 'casher': 'Casher', 'kosher': 'Casher', 'sans_porc': 'Sans porc', 'no_pork': 'Sans porc',
+          'sans_viande_rouge': 'Sans viande rouge', 'no_red_meat': 'Sans viande rouge', 'sans_sel': 'Sans sel',
+          'salt_free': 'Sans sel', 'hyposode': 'Hyposodé', 'pauvre_en_sucre': 'Pauvre en sucre', 'low_sugar': 'Pauvre en sucre',
+          'diabetique': 'Diabétique', 'diabetic': 'Diabétique'};
+        return names[restriction.toLowerCase()] || restriction.charAt(0).toUpperCase() + restriction.slice(1);
+      }
+
+      if (generateMenuResidentsConfirmBtn) {
+        generateMenuResidentsConfirmBtn.addEventListener('click', async () => {
+          const mealType = document.getElementById('modal-menu-type')?.value;
+          const period = document.getElementById('modal-menu-period')?.value || '1';
+          if (!mealType) {
+            showToast('Veuillez sélectionner un type de repas', 'error');
+            return;
+          }
+          closeGenerateMenuResidentsModal();
+          try {
+            const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
+            const user = JSON.parse(storedUser);
+            const siteId = user?.siteId;
+            const response = await fetch(`/api/residents/site/${siteId}?status=actif&limit=1000`, { credentials: 'include' });
+            if (!response.ok) throw new Error('Erreur lors du chargement des résidents');
+            const data = await response.json();
+            // Filtrer encore côté client : ACTIFS + du BON siteId
+            const allResidents = data?.data || [];
+            const siteIdStr = String(siteId);
+            const residents = allResidents.filter(r => {
+              // Vérifier le statut
+              const status = r.status ? String(r.status).toLowerCase().trim() : '';
+              if (status !== 'actif') return false;
+              
+              // Vérifier que le résident appartient bien à ce site
+              const residentSiteId = r.siteId ? (r.siteId._id ? String(r.siteId._id) : String(r.siteId)) : null;
+              if (!residentSiteId || residentSiteId !== siteIdStr) return false;
+              
+              return true;
+            });
+            console.log(`📊 Génération menu - Résidents pour site ${siteIdStr}: ${allResidents.length} total, ${residents.length} actifs et du bon site`);
+            let totalPortions = 0;
+            residents.forEach(resident => {
+              const ps = resident.portionSize;
+              if (ps === 0.5) totalPortions += 0.5;
+              else if (ps === 2) totalPortions += 1.5;
+              else totalPortions += 1;
+            });
+            const peopleInput = document.getElementById('custom-menu-people');
+            const typeSelect = document.getElementById('custom-menu-type');
+            const periodSelect = document.getElementById('custom-menu-period');
+            if (peopleInput) peopleInput.value = Math.max(1, Math.round(totalPortions));
+            if (typeSelect) typeSelect.value = mealType;
+            if (periodSelect) periodSelect.value = period;
+            if (typeof customMenuGenerator !== 'undefined' && customMenuGenerator.generateCustomMenu) {
+              await customMenuGenerator.generateCustomMenu();
+            }
+            const resultsDiv = document.getElementById('custom-menu-results');
+            if (resultsDiv) resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } catch (error) {
+            console.error('Erreur:', error);
+            showToast('Erreur lors de la génération du menu', 'error');
+          }
+        });
+      }
+    });
   </script>
 
   <!--  Syst�me de notifications en temps r�el -->
   <script src="js/notification-client.js"></script>
+  <!-- supplier-common.js est déjà chargé plus haut en tant que module -->
+  <script>
+    // Initialiser les notifications pour le dashboard EHPAD
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('🔔 Initialisation des notifications EHPAD');
+      
+      // Attendre que le client de notifications et supplier-common.js soient chargés
+      const initNotifications = () => {
+        if (!window.notificationClient) {
+          console.log('⏳ En attente du client de notifications...');
+          setTimeout(initNotifications, 500);
+          return;
+        }
+        
+        if (typeof window.showMyOrders !== 'function') {
+          console.log('⏳ En attente de supplier-common.js...');
+          setTimeout(initNotifications, 500);
+          return;
+        }
+        
+        console.log('✅ Client de notifications et supplier-common.js chargés');
+        
+        // Écouter les changements de statut de commande
+        window.notificationClient.on('order_status_change', (notification) => {
+          console.log('📦 CHANGEMENT DE STATUT (WebSocket):', notification);
+          console.log('   Commande:', notification.data?.orderNumber);
+          console.log('   Nouveau statut:', notification.data?.newStatus);
+          
+          // Recharger les commandes si la fonction existe
+          if (typeof window.showMyOrders === 'function') {
+            console.log('   → Rechargement des commandes (showMyOrders)...');
+            setTimeout(() => {
+              window.showMyOrders();
+            }, 500); // Petit délai pour laisser le backend sauvegarder
+          } else if (typeof loadCustomerOrders === 'function') {
+            console.log('   → Rechargement des commandes (loadCustomerOrders)...');
+            setTimeout(() => {
+              loadCustomerOrders();
+            }, 500);
+          } else {
+            console.warn('   ⚠️ Aucune fonction de rechargement trouvée');
+          }
+          
+          // Recharger aussi le badge des commandes
+          if (typeof loadOrdersBadgeOnly === 'function') {
+            setTimeout(() => {
+              loadOrdersBadgeOnly();
+            }, 1000);
+          }
+        });
+        
+        // Écouter les nouvelles commandes (pour le fournisseur, mais aussi utile pour le site)
+        window.notificationClient.on('new_order', (notification) => {
+          console.log('🛒 NOUVELLE COMMANDE (WebSocket):', notification);
+          
+          // Recharger les commandes
+          if (typeof window.showMyOrders === 'function') {
+            setTimeout(() => {
+              window.showMyOrders();
+            }, 500);
+          } else if (typeof loadCustomerOrders === 'function') {
+            setTimeout(() => {
+              loadCustomerOrders();
+            }, 500);
+          }
+        });
+      };
+      
+      initNotifications();
+      
+      // Démarrer la vérification périodique des commandes (toutes les 10 secondes)
+      // Attendre que checkOrdersUpdates soit disponible
+      const startPeriodicCheck = () => {
+        if (typeof window.checkOrdersUpdates === 'function') {
+          console.log('🔄 Démarrage de la vérification périodique des commandes...');
+          setInterval(window.checkOrdersUpdates, 10000); // Vérifier toutes les 10 secondes
+        } else {
+          console.log('⏳ En attente de checkOrdersUpdates...');
+          setTimeout(startPeriodicCheck, 500);
+        }
+      };
+      
+      startPeriodicCheck();
+    });
+  </script>
   <script src="js/dashboard-notifications.js"></script>
+  <script type="module" src="js/messages-display.js"></script>
+  <script src="js/promotion-notifications.js"></script>
 
 </body>
 </html>

@@ -268,10 +268,11 @@ export const getMe = asyncHandler(async (req, res) => {
     }
   }
   
-  res.json({
+  const userData = {
     success: true,
     user: {
-      id: req.user._id,
+      _id: req.user._id, // ✅ Utiliser _id pour être cohérent avec MongoDB
+      id: req.user._id, // ✅ Garder aussi id pour compatibilité
       name: req.user.name,
       email: req.user.email,
       role: req.user.role,
@@ -283,7 +284,10 @@ export const getMe = asyncHandler(async (req, res) => {
       phone: req.user.phone,
       address: req.user.address
     }
-  });
+  };
+  
+  console.log('📤 Envoi réponse /api/auth/me:', JSON.stringify(userData, null, 2));
+  res.json(userData);
 });
 
 // Fonction de déconnexion
