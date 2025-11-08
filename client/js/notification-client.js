@@ -229,6 +229,7 @@ class NotificationClient {
       order_status_change: '📦',
       order_issue: '⚠️',
       low_stock: '📊',
+      product_promotion: '⭐',
       connected: '✅',
       default: '🔔'
     };
@@ -348,11 +349,29 @@ class NotificationClient {
   }
 
   /**
+   * Supprimer un gestionnaire d'événements
+   */
+  off(eventType, handler) {
+    const handlers = this.eventHandlers.get(eventType);
+    if (handlers) {
+      const index = handlers.indexOf(handler);
+      if (index > -1) {
+        handlers.splice(index, 1);
+      }
+      if (handlers.length === 0) {
+        this.eventHandlers.delete(eventType);
+      }
+    }
+  }
+
+  /**
    * Déclencher un événement
    */
   triggerEvent(eventType, data) {
+    console.log(`🔔 [triggerEvent] Déclenchement de l'événement "${eventType}"`);
     const handlers = this.eventHandlers.get(eventType);
-    if (handlers) {
+    if (handlers && handlers.length > 0) {
+      console.log(`   ✓ ${handlers.length} gestionnaire(s) trouvé(s) pour "${eventType}"`);
       handlers.forEach(handler => {
         try {
           handler(data);
@@ -360,6 +379,8 @@ class NotificationClient {
           console.error(`❌ Erreur dans le gestionnaire d'événement ${eventType}:`, error);
         }
       });
+    } else {
+      console.log(`   ⚠️ Aucun gestionnaire trouvé pour "${eventType}"`);
     }
   }
 }
