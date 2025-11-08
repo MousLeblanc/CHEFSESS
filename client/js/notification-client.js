@@ -85,6 +85,9 @@ class NotificationClient {
   connect() {
     // 🍪 Plus besoin de token - Les cookies sont envoyés automatiquement
     console.log('🔌 Connexion au service de notifications (authentification via cookie)...');
+    console.log('   Host:', window.location.host);
+    console.log('   Protocol:', window.location.protocol);
+    console.log('   Cookies disponibles:', document.cookie);
 
     // Déterminer le protocole WebSocket
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -94,6 +97,8 @@ class NotificationClient {
     
     try {
       // Les cookies sont envoyés automatiquement par le navigateur
+      // Note: Les cookies HTTP-Only ne sont pas accessibles via document.cookie
+      // mais sont envoyés automatiquement avec les requêtes WebSocket
       this.ws = new WebSocket(wsUrl);
       
       this.ws.onopen = () => {

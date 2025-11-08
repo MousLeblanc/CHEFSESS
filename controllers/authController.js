@@ -110,9 +110,10 @@ export const register = asyncHandler(async (req, res) => {
     
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 jours
+      secure: process.env.NODE_ENV === 'production' || process.env.RENDER === 'true',
+      sameSite: process.env.NODE_ENV === 'production' || process.env.RENDER === 'true' ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
+      domain: process.env.RENDER === 'true' ? undefined : undefined // Laisser le navigateur gérer le domaine
     });
     
     res.status(201).json({
@@ -146,8 +147,8 @@ export const login = asyncHandler(async (req, res) => {
     // 🔐 Envoyer le token dans un cookie HttpOnly (sécurisé)
     res.cookie('token', token, {
       httpOnly: true,        // Inaccessible en JavaScript (protection XSS)
-      secure: process.env.NODE_ENV === 'production', // HTTPS en production
-      sameSite: 'lax',       // Plus permissif que 'strict', mais toujours sécurisé
+      secure: process.env.NODE_ENV === 'production' || process.env.RENDER === 'true', // HTTPS en production
+      sameSite: process.env.NODE_ENV === 'production' || process.env.RENDER === 'true' ? 'none' : 'lax', // 'none' pour Render (HTTPS requis)
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 jours
     });
     

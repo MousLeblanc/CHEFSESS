@@ -19,18 +19,25 @@ class NotificationService {
 
     this.wss.on('connection', (ws, req) => {
       console.log('🔌 Nouvelle connexion WebSocket');
+      console.log('   Headers:', JSON.stringify(req.headers, null, 2));
+      console.log('   URL:', req.url);
+      console.log('   Host:', req.headers.host);
+      console.log('   Origin:', req.headers.origin);
       
       // 🍪 Extraire le token depuis les cookies HTTP-Only
       let token = null;
       
       // Parser les cookies depuis le header
       const cookies = req.headers.cookie;
+      console.log('   Cookies bruts:', cookies);
+      
       if (cookies) {
         const cookieArray = cookies.split(';');
         for (const cookie of cookieArray) {
           const [name, value] = cookie.trim().split('=');
           if (name === 'token') {
             token = value;
+            console.log('   ✅ Token trouvé dans les cookies');
             break;
           }
         }
@@ -38,12 +45,21 @@ class NotificationService {
       
       // Fallback : essayer depuis la query string (compatibilité)
       if (!token) {
-        const url = new URL(req.url, `http://${req.headers.host}`);
-        token = url.searchParams.get('token');
+        try {
+          const protocol = req.headers['x-forwarded-proto'] || 'https';
+          const url = new URL(req.url, `${protocol}://${req.headers.host}`);
+          token = url.searchParams.get('token');
+          if (token) {
+            console.log('   ✅ Token trouvé dans la query string');
+          }
+        } catch (error) {
+          console.log('   ⚠️ Erreur lors de la création de l\'URL:', error.message);
+        }
       }
       
       if (!token) {
         console.log('❌ Pas de token fourni (ni cookie ni query string)');
+        console.log('   Cookies disponibles:', cookies || 'aucun');
         ws.close(1008, 'Token requis');
         return;
       }
