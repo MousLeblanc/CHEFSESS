@@ -93,11 +93,16 @@ class PromotionNotifications {
     // Créer le handler une seule fois
     this.promotionHandler = (notification) => {
       console.log('🔔 PromotionNotifications: Nouvelle notification de promotion reçue:', notification);
+      console.log('   Type:', notification.type);
+      console.log('   Titre:', notification.title);
+      console.log('   Host:', window.location.host);
+      console.log('   Protocol:', window.location.protocol);
       this.handleNewNotification(notification);
     };
     
     // S'abonner UNIQUEMENT à 'product_promotion' (pas à 'notification' générique pour éviter les doublons)
     window.notificationClient.on('product_promotion', this.promotionHandler);
+    console.log('✅ PromotionNotifications: Abonné à product_promotion');
     
     this.isSubscribed = true;
     console.log('✅ PromotionNotifications: Abonnement effectué');

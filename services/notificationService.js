@@ -60,9 +60,13 @@ class NotificationService {
       if (!token) {
         console.log('❌ Pas de token fourni (ni cookie ni query string)');
         console.log('   Cookies disponibles:', cookies || 'aucun');
+        console.log('   Headers complets:', JSON.stringify(req.headers, null, 2));
+        console.log('   URL complète:', req.url);
         ws.close(1008, 'Token requis');
         return;
       }
+      
+      console.log('   ✅ Token trouvé, longueur:', token.length);
 
       try {
         // Vérifier le token

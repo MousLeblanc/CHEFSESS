@@ -126,6 +126,9 @@ class NotificationClient {
       
       this.ws.onerror = (error) => {
         console.error('❌ Erreur WebSocket:', error);
+        console.error('   Type:', error.type);
+        console.error('   Target:', error.target);
+        console.error('   URL:', wsUrl);
         this.isConnected = false;
       };
       
