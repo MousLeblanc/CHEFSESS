@@ -112,7 +112,7 @@ messageSchema.statics.getMessagesForUser = async function(userId, siteId = null,
   const siteIdObj = siteId && mongoose.default.Types.ObjectId.isValid(siteId) ? new mongoose.default.Types.ObjectId(siteId) : siteId;
   const groupIdObj = groupId && mongoose.default.Types.ObjectId.isValid(groupId) ? new mongoose.default.Types.ObjectId(groupId) : groupId;
   
-  const queryOr = [
+  let queryOr = [
     // Messages pour tous les sites
     { 'recipients.type': 'all_sites' },
     // Messages pour un utilisateur spécifique
