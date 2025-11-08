@@ -1,5 +1,6 @@
 // server.js (Version Finale Stable pour Render + Local)
-// Force redeploy: 2025-10-25 11:25
+// Force redeploy: 2025-01-28 15:30
+// Version: 1.0.0 - Notifications WebSocket + Cookies Render
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -153,6 +154,24 @@ const server = http.createServer(app);
 // Initialiser le service de notifications WebSocket
 notificationService.initialize(server);
 
-server.listen(PORT, "0.0.0.0", () =>
-  console.log(`🚀 Chef SES prêt sur le port ${PORT} (${process.env.NODE_ENV || "dev"})`)
-);
+server.listen(PORT, "0.0.0.0", () => {
+  console.log('\n' + '='.repeat(60));
+  console.log('🚀 CHEF SES - SERVEUR DÉMARRÉ');
+  console.log('='.repeat(60));
+  console.log(`📅 Date: ${new Date().toISOString()}`);
+  console.log(`🌐 Port: ${PORT}`);
+  console.log(`🔧 Environnement: ${process.env.NODE_ENV || "dev"}`);
+  console.log(`📦 Version: 1.0.0 - Notifications WebSocket + Cookies Render`);
+  
+  // Afficher la configuration Render
+  const isRender = process.env.RENDER_SERVICE_ID || 
+                   process.env.RENDER === 'true' || 
+                   process.env.NODE_ENV === 'production';
+  console.log(`\n📊 Configuration Render:`);
+  console.log(`   - RENDER_SERVICE_ID: ${process.env.RENDER_SERVICE_ID || 'non défini'}`);
+  console.log(`   - RENDER: ${process.env.RENDER || 'non défini'}`);
+  console.log(`   - NODE_ENV: ${process.env.NODE_ENV || 'non défini'}`);
+  console.log(`   - isRender détecté: ${isRender}`);
+  console.log(`   - Cookies: secure=${isRender}, sameSite=${isRender ? 'none' : 'lax'}`);
+  console.log('='.repeat(60) + '\n');
+});
