@@ -404,7 +404,10 @@ window.confirmDelivery = async function(orderId) {
       console.log('📤 Envoi du siteId pour confirmation de réception:', siteIdToSend);
     }
     
-    const response = await fetch(`/api/orders/${orderId}/customer-status${siteIdToSend ? `?siteId=${siteIdToSend}` : ''}`, {
+    // 🔒 Utiliser fetchWithCSRF pour la protection CSRF
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+    
+    const response = await fetchFn(`/api/orders/${orderId}/customer-status${siteIdToSend ? `?siteId=${siteIdToSend}` : ''}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -531,7 +534,10 @@ window.reportIssue = async function(orderId) {
       console.log('📤 Envoi du siteId pour signalement de problème:', siteIdToSend);
     }
     
-    const response = await fetch(`/api/orders/${orderId}/customer-status${siteIdToSend ? `?siteId=${siteIdToSend}` : ''}`, {
+    // 🔒 Utiliser fetchWithCSRF pour la protection CSRF
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+    
+    const response = await fetchFn(`/api/orders/${orderId}/customer-status${siteIdToSend ? `?siteId=${siteIdToSend}` : ''}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
