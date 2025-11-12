@@ -6,6 +6,7 @@ class NotificationService {
   constructor() {
     this.wss = null;
     this.clients = new Map(); // Map userId -> Set of WebSocket connections
+    this.siteConnections = new Map(); // Map<siteId, Set<WebSocket>> - Pour notifier tous les utilisateurs d'un site
   }
 
   initialize(server) {
@@ -104,6 +105,17 @@ class NotificationService {
         }
         this.clients.get(userIdStr).add(ws);
         
+        // Stocker le siteId pour la déconnexion
+        let siteIdStr = null;
+        if (decoded.siteId) {
+          siteIdStr = decoded.siteId.toString ? decoded.siteId.toString() : String(decoded.siteId);
+          if (!this.siteConnections.has(siteIdStr)) {
+            this.siteConnections.set(siteIdStr, new Set());
+          }
+          this.siteConnections.get(siteIdStr).add(ws);
+          console.log(`   Site ID: ${siteIdStr} (connexion associée)`);
+        }
+        
         // Envoyer un message de confirmation
         ws.send(JSON.stringify({
           type: 'connected',
@@ -118,6 +130,17 @@ class NotificationService {
             userConnections.delete(ws);
             if (userConnections.size === 0) {
               this.clients.delete(userIdStr);
+            }
+          }
+          
+          // Retirer aussi de siteConnections si présent
+          if (siteIdStr) {
+            const siteConnections = this.siteConnections.get(siteIdStr);
+            if (siteConnections) {
+              siteConnections.delete(ws);
+              if (siteConnections.size === 0) {
+                this.siteConnections.delete(siteIdStr);
+              }
             }
           }
         });
@@ -239,6 +262,48 @@ class NotificationService {
   }
 
   /**
+   * Envoyer une notification à tous les utilisateurs connectés d'un site
+   * @param {string} siteId - ID du site
+   * @param {object} notification - Objet de notification
+   */
+  sendToSite(siteId, notification) {
+    if (!this.wss) {
+      console.log('⚠️ WebSocket non disponible, notification de site ignorée');
+      return false;
+    }
+    
+    const siteIdStr = siteId.toString ? siteId.toString() : String(siteId);
+    const siteConnections = this.siteConnections.get(siteIdStr);
+    
+    console.log(`\n📤 Tentative d'envoi notification au site ${siteIdStr}`);
+    console.log(`   Type: ${notification.type}`);
+    console.log(`   Sites avec connexions: ${Array.from(this.siteConnections.keys()).join(', ')}`);
+    
+    if (!siteConnections || siteConnections.size === 0) {
+      console.log(`❌ Aucun utilisateur connecté pour le site ${siteIdStr}`);
+      return false;
+    }
+
+    console.log(`✅ Site ${siteIdStr} trouvé avec ${siteConnections.size} connexion(s)`);
+    
+    const message = JSON.stringify(notification);
+    let sent = 0;
+    
+    siteConnections.forEach((ws) => {
+      if (ws.readyState === 1) { // 1 = OPEN
+        ws.send(message);
+        sent++;
+        console.log(`   ✓ Message envoyé sur connexion ${sent}`);
+      } else {
+        console.log(`   ✗ Connexion fermée (readyState: ${ws.readyState})`);
+      }
+    });
+
+    console.log(`📤 Notification envoyée à ${sent}/${siteConnections.size} connexion(s) du site ${siteIdStr}\n`);
+    return sent > 0;
+  }
+
+  /**
    * Notifier un changement de statut de commande au client
    * @param {string} customerId - ID du client
    * @param {object} order - Détails de la commande
@@ -255,7 +320,7 @@ class NotificationService {
       'cancelled': 'Votre commande a été annulée'
     };
 
-    return this.sendToUser(customerId, {
+    const notification = {
       type: 'order_status_change',
       title: 'Mise à jour de commande',
       message: statusMessages[newStatus] || `Statut de commande mis à jour: ${newStatus}`,
@@ -268,7 +333,20 @@ class NotificationService {
       },
       sound: true,
       priority: 'medium'
-    });
+    };
+
+    // Envoyer au client principal
+    const sentToCustomer = this.sendToUser(customerId, notification);
+    
+    // Si la commande a un siteId, envoyer aussi à tous les utilisateurs du site
+    if (order.siteId) {
+      const siteIdStr = order.siteId.toString ? order.siteId.toString() : String(order.siteId);
+      console.log(`📬 Envoi de notification aux utilisateurs du site ${siteIdStr}`);
+      const sentToSite = this.sendToSite(siteIdStr, notification);
+      return sentToCustomer || sentToSite;
+    }
+    
+    return sentToCustomer;
   }
 
   /**
