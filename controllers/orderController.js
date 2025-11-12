@@ -565,11 +565,29 @@ export const updateCustomerOrderStatus = asyncHandler(async (req, res) => {
       // Chercher d'abord par createdBy
       let stock = await Stock.findOne({ createdBy: req.user._id });
       
-      // Si pas trouvé et que l'utilisateur a un siteId, chercher dans les items du site
+      // Si pas trouvé et que l'utilisateur a un siteId, chercher un stock qui a des items avec ce siteId
+      // ou trouver un utilisateur du même site qui a déjà un stock
       if (!stock && req.user.siteId) {
+        // D'abord, chercher un stock qui a des items avec ce siteId
         stock = await Stock.findOne({ 'items.siteId': req.user.siteId });
         if (stock) {
           console.log(`📦 Stock trouvé via siteId dans les items`);
+        } else {
+          // Si toujours pas trouvé, chercher un utilisateur du même site qui a un stock
+          const siteUser = await User.findOne({ 
+            siteId: req.user.siteId,
+            _id: { $ne: req.user._id } // Exclure l'utilisateur actuel
+          });
+          if (siteUser) {
+            stock = await Stock.findOne({ createdBy: siteUser._id });
+            if (stock) {
+              console.log(`📦 Stock trouvé via utilisateur du même site (${siteUser._id})`);
+              // Mettre à jour le createdBy pour que ce soit le stock de l'utilisateur actuel
+              // Non, on ne peut pas car createdBy est unique. On va plutôt utiliser ce stock partagé.
+              // Mais le modèle Stock a un index unique sur createdBy, donc on ne peut pas avoir plusieurs stocks.
+              // Solution: utiliser le stock existant du site même s'il appartient à un autre utilisateur
+            }
+          }
         }
       }
       

@@ -1040,6 +1040,18 @@ export function initStockTab() {
 
 // 🌐 Exposer les fonctions à window pour les autres scripts
 window.loadStockData = loadStockData;
+
+// Écouter l'événement de rafraîchissement du stock
+if (typeof window !== 'undefined') {
+  window.addEventListener('stockNeedsRefresh', () => {
+    console.log('🔄 Événement stockNeedsRefresh reçu, rechargement du stock...');
+    if (typeof window.loadStockData === 'function') {
+      window.loadStockData().catch(err => {
+        console.error('❌ Erreur lors du rechargement du stock:', err);
+      });
+    }
+  });
+}
 window.showAddStockModal = showAddStockModal;
 window.initStockTab = initStockTab;
 

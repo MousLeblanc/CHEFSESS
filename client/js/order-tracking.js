@@ -483,9 +483,31 @@ window.confirmDelivery = async function(orderId) {
             console.log('✅ Bouton actualiser du stock cliqué');
           } else {
             console.warn('⚠️ Bouton refresh-stock-btn non trouvé');
+            // Dernière tentative : forcer un rechargement via fetch direct
+            console.log('🔄 Tentative de rechargement direct du stock...');
+            fetch('/api/stock', {
+              headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache, no-store, must-revalidate'
+              },
+              credentials: 'include'
+            }).then(response => {
+              if (response.ok) {
+                console.log('✅ Stock rechargé directement via fetch');
+                // Si l'onglet Stock est actif, déclencher un événement pour forcer le rechargement
+                const stockTab = document.querySelector('[data-tab="stock"]');
+                if (stockTab && stockTab.classList.contains('active')) {
+                  console.log('✅ Onglet Stock actif, déclenchement du rechargement...');
+                  // Déclencher un événement personnalisé pour forcer le rechargement
+                  window.dispatchEvent(new CustomEvent('stockNeedsRefresh'));
+                }
+              }
+            }).catch(err => {
+              console.error('❌ Erreur lors du rechargement direct du stock:', err);
+            });
           }
         }
-      }, 1000); // Délai de 1 seconde pour laisser le backend sauvegarder
+      }, 1500); // Délai de 1.5 secondes pour laisser le backend sauvegarder
       
       // 🔄 Recharger automatiquement la page avec un hard refresh après 8 secondes
       // (augmenté pour laisser le temps de voir la mise à jour dans la modale)
