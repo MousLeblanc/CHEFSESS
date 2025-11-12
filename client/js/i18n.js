@@ -1262,7 +1262,7 @@ class I18n {
 
   init() {
     // Sauvegarder la langue détectée
-      localStorage.setItem('chefses-lang', this.currentLang);
+    localStorage.setItem('chefses-lang', this.currentLang);
     
     // Mettre à jour l'URL si nécessaire
     const urlParams = new URLSearchParams(window.location.search);
@@ -1273,7 +1273,19 @@ class I18n {
     
     this.translate();
     this.setupLanguageSwitcher();
-    this.createLanguageSwitcher();
+    
+    // Attendre un peu pour que la navbar soit chargée avant de créer le sélecteur flottant
+    // Si navbar-container existe, la navbar sera chargée de manière asynchrone
+    const navbarContainer = document.getElementById('navbar-container');
+    if (navbarContainer) {
+      // Attendre que la navbar soit chargée
+      setTimeout(() => {
+        this.createLanguageSwitcher();
+      }, 500);
+    } else {
+      // Pas de navbar-container, créer le sélecteur immédiatement
+      this.createLanguageSwitcher();
+    }
   }
 
   setLanguage(lang) {
@@ -1282,6 +1294,8 @@ class I18n {
       return;
     }
     
+    console.log(`🌐 Changement de langue de ${this.currentLang} vers ${lang}`);
+    const oldLang = this.currentLang;
     this.currentLang = lang;
     localStorage.setItem('chefses-lang', this.currentLang);
     
@@ -1290,19 +1304,36 @@ class I18n {
     url.searchParams.set('lang', this.currentLang);
     window.history.pushState({}, '', url);
     
+    // Traduire immédiatement
+    console.log(`🌐 Appel de translate() pour la langue: ${this.currentLang}`);
     this.translate();
     
+    // Mettre à jour la valeur du sélecteur (sans reconfigurer complètement)
+    const langSwitcher = document.getElementById('lang-switcher');
+    if (langSwitcher) {
+      langSwitcher.value = this.currentLang;
+      console.log(`✅ Sélecteur mis à jour vers: ${this.currentLang}`);
+    }
+    
     // Déclencher un événement personnalisé pour notifier le changement
-    window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang: this.currentLang } }));
+    window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang: this.currentLang, oldLang } }));
   }
 
   translate() {
     const t = translations[this.currentLang];
-    if (!t) return;
+    if (!t) {
+      console.error(`❌ Traductions non trouvées pour la langue: ${this.currentLang}`);
+      return;
+    }
+
+    console.log(`🌐 Traduction de la page en: ${this.currentLang}`);
+    let translatedCount = 0;
 
     // Traduire tous les éléments avec data-i18n
     document.querySelectorAll('[data-i18n]').forEach(element => {
       const key = element.getAttribute('data-i18n');
+      if (!key) return;
+      
       const keys = key.split('.');
       let value = t;
       
@@ -1310,14 +1341,24 @@ class I18n {
         value = value?.[k];
       }
       
-      if (value !== undefined) {
+      if (value !== undefined && value !== null) {
         if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
           element.placeholder = value;
+          translatedCount++;
+        } else if (element.tagName === 'OPTION') {
+          // Pour les options de select, mettre à jour le textContent
+          element.textContent = value;
+          translatedCount++;
         } else {
           element.textContent = value;
+          translatedCount++;
         }
+      } else {
+        console.warn(`⚠️ Clé de traduction non trouvée: ${key} pour la langue ${this.currentLang}`);
       }
     });
+    
+    console.log(`✅ ${translatedCount} éléments traduits en ${this.currentLang}`);
 
     // Mettre à jour l'attribut lang du HTML
     document.documentElement.lang = this.currentLang;
@@ -1339,10 +1380,18 @@ class I18n {
   setupLanguageSwitcher() {
     const langSwitcher = document.getElementById('lang-switcher');
     if (langSwitcher) {
+      // Mettre à jour la valeur sans cloner (pour éviter de perdre la sélection)
       langSwitcher.value = this.currentLang;
-      langSwitcher.addEventListener('change', (e) => {
-        this.setLanguage(e.target.value);
-      });
+      
+      // Vérifier si l'event listener est déjà attaché
+      if (!langSwitcher.hasAttribute('data-i18n-listener')) {
+        // Ajouter l'event listener une seule fois
+        langSwitcher.addEventListener('change', (e) => {
+          console.log('🌐 Changement de langue demandé:', e.target.value);
+          this.setLanguage(e.target.value);
+        });
+        langSwitcher.setAttribute('data-i18n-listener', 'true');
+      }
     }
   }
 
@@ -1366,10 +1415,23 @@ class I18n {
       }
       
       langSwitcher.value = this.currentLang;
+      
+      // Supprimer le sélecteur flottant s'il existe
+      const floatingContainer = document.getElementById('language-switcher-container');
+      if (floatingContainer) {
+        floatingContainer.remove();
+      }
+      
       return; // Ne pas créer de nouveau sélecteur
     }
     
     // Créer le sélecteur de langue flottant si aucun n'existe
+    // Vérifier aussi qu'il n'y a pas déjà un conteneur flottant
+    const existingFloatingContainer = document.getElementById('language-switcher-container');
+    if (existingFloatingContainer) {
+      return; // Un sélecteur flottant existe déjà
+    }
+    
     if (!langSwitcher) {
       // Créer un conteneur pour le sélecteur de langue
       const langContainer = document.createElement('div');

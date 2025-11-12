@@ -17,20 +17,23 @@ document.addEventListener('DOMContentLoaded', () => {
   // Le système i18n se réinitialisera automatiquement après le chargement de la navbar
   setTimeout(() => {
     if (window.i18n) {
-      window.i18n.translate();
       // S'assurer que le sélecteur de langue dans la navbar est configuré
       const langSwitcher = document.getElementById('lang-switcher');
       if (langSwitcher && window.i18n) {
-        langSwitcher.value = window.i18n.currentLang;
-        if (!langSwitcher.hasAttribute('data-i18n-initialized')) {
-          langSwitcher.addEventListener('change', (e) => {
-            window.i18n.setLanguage(e.target.value);
-          });
-          langSwitcher.setAttribute('data-i18n-initialized', 'true');
+        // Configurer le sélecteur via la méthode setupLanguageSwitcher
+        window.i18n.setupLanguageSwitcher();
+        
+        // Supprimer le sélecteur flottant s'il existe maintenant que la navbar est chargée
+        const floatingContainer = document.getElementById('language-switcher-container');
+        if (floatingContainer) {
+          floatingContainer.remove();
         }
       }
+      
+      // Retraduire la page après le chargement de la navbar
+      window.i18n.translate();
     }
-  }, 300);
+  }, 500);
   
   // Navbar scroll effect
   initNavbarScroll();

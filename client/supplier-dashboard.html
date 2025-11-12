@@ -846,6 +846,9 @@
     <!-- Toast container -->
     <div id="toast-container" class="toast-container"></div>
 
+    <!-- 🔒 Helper CSRF (doit être chargé avant les autres scripts qui font des requêtes) -->
+    <script type="module" src="js/csrf-helper.js"></script>
+    
     <script>
         // Fonction pour récupérer l'utilisateur connecté (depuis sessionStorage uniquement, pas localStorage)
         function getCurrentUser() {
@@ -1701,7 +1704,10 @@
 
                     console.log('📦 Données à sauvegarder:', supplierData);
 
-                    const response = await fetch('/api/suppliers/me', {
+                    // 🔒 Utiliser fetchWithCSRF pour la protection CSRF
+                    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+                    
+                    const response = await fetchFn('/api/suppliers/me', {
                         method: 'PUT',
                         credentials: 'include',
                         headers: {
@@ -1804,7 +1810,10 @@
             }
             
             try {
-                const response = await fetch(`/api/products/${productId}`, {
+                // 🔒 Utiliser fetchWithCSRF pour la protection CSRF
+                const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+                
+                const response = await fetchFn(`/api/products/${productId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1833,7 +1842,10 @@
             console.log('🔄 Mise à jour du statut de la commande:', orderId, newStatus);
             
             try {
-                const response = await fetch(`/api/orders/${orderId}/status`, {
+                // 🔒 Utiliser fetchWithCSRF pour la protection CSRF
+                const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+                
+                const response = await fetchFn(`/api/orders/${orderId}/status`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1877,7 +1889,10 @@
             }
             
             try {
-                const response = await fetch(`/api/orders/${orderId}/cancel`, {
+                // 🔒 Utiliser fetchWithCSRF pour la protection CSRF
+                const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+                
+                const response = await fetchFn(`/api/orders/${orderId}/cancel`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -2075,7 +2090,10 @@
             console.log(`📦 Mise à jour du stock: ${currentStock} → ${newStock}`);
             
             try {
-                const response = await fetch(`/api/products/${productId}`, {
+                // 🔒 Utiliser fetchWithCSRF pour la protection CSRF
+                const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+                
+                const response = await fetchFn(`/api/products/${productId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
