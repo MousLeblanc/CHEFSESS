@@ -29,7 +29,7 @@
       <div class="contact-wrapper">
         <!-- Contact Form -->
         <div class="contact-form-container">
-          <h2>Envoyez-nous un message</h2>
+          <h2 data-i18n="contact.formTitle">Envoyez-nous un message</h2>
           <form class="contact-form" id="contact-form">
             <div class="form-group">
               <label for="contact-name" data-i18n="contact.name">Votre nom</label>
@@ -58,14 +58,14 @@
             </div>
             
             <div class="form-group">
-              <label for="contact-subject">Sujet</label>
+              <label for="contact-subject" data-i18n="contact.subject">Sujet</label>
               <select id="contact-subject" name="subject" class="form-input" required>
-                <option value="">Sélectionnez un sujet</option>
-                <option value="demo">Demande de démo</option>
-                <option value="partnership">Partenariat</option>
-                <option value="supplier">Devenir fournisseur</option>
-                <option value="investment">Investissement</option>
-                <option value="other">Autre</option>
+                <option value="" data-i18n="contact.subjectSelect">Sélectionnez un sujet</option>
+                <option value="demo" data-i18n="contact.subjectDemo">Demande de démo</option>
+                <option value="partnership" data-i18n="contact.subjectPartnership">Partenariat</option>
+                <option value="supplier" data-i18n="contact.subjectSupplier">Devenir fournisseur</option>
+                <option value="investment" data-i18n="contact.subjectInvestment">Investissement</option>
+                <option value="other" data-i18n="contact.subjectOther">Autre</option>
               </select>
             </div>
             
@@ -90,12 +90,12 @@
 
         <!-- Contact Info -->
         <div class="contact-info-container">
-          <h2>Informations de contact</h2>
+          <h2 data-i18n="contact.infoTitle">Informations de contact</h2>
           
           <div class="contact-info-item">
             <div class="info-icon">📧</div>
             <div class="info-content">
-              <h3>Email</h3>
+              <h3 data-i18n="contact.emailLabel">Email</h3>
               <a href="mailto:info@chefses.com">info@chefses.com</a>
             </div>
           </div>
@@ -103,7 +103,7 @@
           <div class="contact-info-item">
             <div class="info-icon">💼</div>
             <div class="info-content">
-              <h3>LinkedIn</h3>
+              <h3 data-i18n="contact.linkedinLabel">LinkedIn</h3>
               <a href="https://linkedin.com/company/chefses" target="_blank">Chef SES</a>
             </div>
           </div>
@@ -111,14 +111,14 @@
           <div class="contact-info-item">
             <div class="info-icon">📍</div>
             <div class="info-content">
-              <h3>Adresse</h3>
-              <p>Belgique<br>Europe</p>
+              <h3 data-i18n="contact.addressLabel">Adresse</h3>
+              <p data-i18n="contact.address">Belgique<br>Europe</p>
             </div>
           </div>
 
           <div class="contact-info-card">
-            <h3>Horaires</h3>
-            <p>Lundi - Vendredi<br>9h00 - 18h00</p>
+            <h3 data-i18n="contact.hoursTitle">Horaires</h3>
+            <p data-i18n="contact.hours">Lundi - Vendredi<br>9h00 - 18h00</p>
           </div>
         </div>
       </div>

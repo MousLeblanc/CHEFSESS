@@ -14,10 +14,33 @@ export const createOrder = asyncHandler(async (req, res) => {
   
   const { supplier, items, deliveryDate, notes } = req.body;
 
-  if (!supplier || !items || !Array.isArray(items) || items.length === 0) {
-    console.log('❌ CREATE ORDER - Validation échouée:', { supplier, items });
+  // ✅ VALIDATION : Valider le fournisseur
+  if (!supplier || (typeof supplier !== 'string' && !isValidObjectId(supplier))) {
+    console.log('❌ CREATE ORDER - Validation échouée: fournisseur invalide');
     res.status(400);
-    throw new Error('Fournisseur et articles requis');
+    throw new Error('Fournisseur requis et doit être un ID ou un nom valide');
+  }
+
+  // ✅ VALIDATION : Valider les articles
+  if (!items || !isValidArray(items, 1, 100)) {
+    console.log('❌ CREATE ORDER - Validation échouée: articles invalides');
+    res.status(400);
+    throw new Error('Articles requis et doivent être un tableau non vide (max 100 articles)');
+  }
+  
+  // ✅ VALIDATION : Valider chaque article
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (!item.productId || !isValidObjectId(item.productId)) {
+      res.status(400);
+      throw new Error(`Article ${i + 1}: productId invalide (doit être un ObjectId valide)`);
+    }
+    if (!item.quantity || !isValidInteger(item.quantity, 1, 10000)) {
+      res.status(400);
+      throw new Error(`Article ${i + 1}: quantité invalide (doit être un entier entre 1 et 10000)`);
+    }
+    // Sanitizer la quantité
+    items[i].quantity = sanitizeInteger(item.quantity, 1, 1, 10000);
   }
 
   // Déterminer si supplier est un ID ou un nom

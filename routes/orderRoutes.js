@@ -1,5 +1,6 @@
 import express from 'express';
 import { protect, authorize } from '../middleware/authMiddleware.js';
+import { csrfProtection } from '../middleware/csrfMiddleware.js';
 import { 
   createOrder, 
   getCustomerOrders, 
@@ -97,7 +98,8 @@ router.use(protect);
 // @desc    Créer une nouvelle commande
 // @route   POST /api/orders
 // @access  Private (collectivite, restaurant, resto, GROUP_ADMIN, SITE_MANAGER)
-router.post('/', canManageOrders, createOrder);
+// Note: protect est déjà appliqué par router.use(protect) ci-dessus
+router.post('/', csrfProtection, canManageOrders, createOrder);
 
 // @desc    Récupérer les commandes du client connecté
 // @route   GET /api/orders
@@ -154,16 +156,16 @@ router.get('/:id', getOrder);
 // @desc    Mettre à jour le statut d'une commande (par le fournisseur)
 // @route   PUT /api/orders/:id/status
 // @access  Private (fournisseur)
-router.put('/:id/status', isSupplier, updateOrderStatus);
+router.put('/:id/status', protect, csrfProtection, isSupplier, updateOrderStatus);
 
 // @desc    Mettre à jour le statut d'une commande (par le client)
 // @route   PUT /api/orders/:id/customer-status
 // @access  Private (collectivite, restaurant, resto, GROUP_ADMIN, SITE_MANAGER)
-router.put('/:id/customer-status', canManageOrders, updateCustomerOrderStatus);
+router.put('/:id/customer-status', protect, csrfProtection, canManageOrders, updateCustomerOrderStatus);
 
 // @desc    Annuler une commande
 // @route   PUT /api/orders/:id/cancel
 // @access  Private (client ou fournisseur)
-router.put('/:id/cancel', cancelOrder);
+router.put('/:id/cancel', protect, csrfProtection, cancelOrder);
 
 export default router;

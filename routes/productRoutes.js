@@ -8,6 +8,7 @@ import {
   deleteProduct,
 } from '../controllers/productController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
+import { csrfProtection } from '../middleware/csrfMiddleware.js';
 
 const router = express.Router();
 
@@ -80,10 +81,10 @@ const isSupplier = (req, res, next) => {
 };
 
 // --- Fournisseur : créer et gérer ses produits ---
-router.post('/', protect, isSupplier, createProduct);
+router.post('/', protect, csrfProtection, isSupplier, createProduct);
 router.get('/mine', protect, isSupplier, getMyProducts);
-router.put('/:id', protect, isSupplier, updateProduct);
-router.delete('/:id', protect, isSupplier, deleteProduct);
+router.put('/:id', protect, csrfProtection, isSupplier, updateProduct);
+router.delete('/:id', protect, csrfProtection, isSupplier, deleteProduct);
 
 // --- Acheteur / Resto : voir tous les produits par fournisseur ---
 router.get('/', protect, getAllProducts); // optionnel (si tu veux montrer tous les produits)

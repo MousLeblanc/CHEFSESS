@@ -1,6 +1,7 @@
 import express from 'express';
 import multer from 'multer'; // Importation de multer pour la gestion des fichiers
 import { protect } from '../middleware/authMiddleware.js';
+import { csrfProtection } from '../middleware/csrfMiddleware.js';
 import {
   getUserStock,
   updateUserStock,
@@ -25,11 +26,11 @@ const router = express.Router();
 
 // Routes de base
 router.get('/', protect, getUserStock);
-router.put('/', protect, updateUserStock); // Pour les mises à jour en masse du stock
-router.post('/', protect, addItemToStock); // Pour ajouter un seul nouvel ingrédient
+router.put('/', protect, csrfProtection, updateUserStock); // Pour les mises à jour en masse du stock
+router.post('/', protect, csrfProtection, addItemToStock); // Pour ajouter un seul nouvel ingrédient
 
 // Route OCR
-router.post('/ocr', protect, upload.single('file'), processOcrDeliveryNote); // Utilise 'upload' avec memoryStorage
+router.post('/ocr', protect, csrfProtection, upload.single('file'), processOcrDeliveryNote); // Utilise 'upload' avec memoryStorage
 
 // Routes pour les fonctionnalités avancées
 router.get('/category/:category', protect, getStockByCategory);
@@ -63,13 +64,13 @@ router.get('/:id', protect, async (req, res) => {
 
 // Route pour déduire des éléments du stock (utilisé après la génération de menu)
 // ⚠️ DOIT ÊTRE AVANT /:id pour éviter que "deduct" soit interprété comme un ID
-router.put('/deduct', protect, deductStockItems);
+router.put('/deduct', protect, csrfProtection, deductStockItems);
 
 // Route pour mettre à jour un ingrédient spécifique par ID
-router.put('/:id', protect, updateStockItem);
+router.put('/:id', protect, csrfProtection, updateStockItem);
 
 // Route pour supprimer un ingrédient spécifique
-router.delete('/:id', protect, async (req, res) => {
+router.delete('/:id', protect, csrfProtection, async (req, res) => {
   try {
     const userId = req.user._id;
     const itemId = req.params.id;

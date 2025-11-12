@@ -281,11 +281,14 @@ class CustomMenuGenerator {
             
             // Helper to call backend once
             const callOnce = async () => {
-                const response = await fetch('/api/menu/generate-custom', {
+                // 🔒 Utiliser fetchWithCSRF pour la protection CSRF automatique
+                const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+                const response = await fetchFn('/api/menu/generate-custom', {
                 credentials: 'include',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
+                    // Le header X-CSRF-Token sera ajouté automatiquement par fetchWithCSRF si fetchWithCSRF est utilisé
                 },
                 body: JSON.stringify(payload)
                 });
@@ -894,7 +897,9 @@ class CustomMenuGenerator {
                 return true;
             }
             
-            const response = await fetch('/api/stock/deduct', {
+            // 🔒 Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+            const response = await fetchFn('/api/stock/deduct', {
                 credentials: 'include',
                 method: 'PUT',
                 headers: {

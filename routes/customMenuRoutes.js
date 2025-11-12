@@ -5,6 +5,8 @@ import express from 'express';
 import asyncHandler from 'express-async-handler';
 import { generateCustomMenu } from '../scripts/generate-custom-menu.js';
 import Stock from '../models/Stock.js';
+import { protect } from '../middleware/authMiddleware.js';
+import { csrfProtection } from '../middleware/csrfMiddleware.js';
 
 const router = express.Router();
 
@@ -12,7 +14,7 @@ const router = express.Router();
  * POST /api/menu/generate-custom
  * Génère un menu personnalisé selon les critères nutritionnels
  */
-router.post('/generate-custom', asyncHandler(async (req, res) => {
+router.post('/generate-custom', protect, csrfProtection, asyncHandler(async (req, res) => {
     const { 
         numberOfPeople, 
         mealType, 

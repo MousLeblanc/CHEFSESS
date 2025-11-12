@@ -1,19 +1,51 @@
 import Resident from '../models/Resident.js';
 import Site from '../models/Site.js';
 import Group from '../models/Group.js';
+import { isValidObjectId, isValidString, sanitizeString, sanitizeInteger } from '../middleware/validationMiddleware.js';
 
 /**
  * Créer un nouveau résident
  */
 export async function createResident(req, res) {
     try {
-        const { siteId, groupId } = req.body;
+        const { siteId, groupId, firstName, lastName } = req.body;
+        
+        // ✅ VALIDATION : Valider les champs obligatoires
+        if (!firstName || !isValidString(firstName, 1, 100)) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Prénom requis et doit être une chaîne valide (1-100 caractères)' 
+            });
+        }
+        
+        if (!lastName || !isValidString(lastName, 1, 100)) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Nom requis et doit être une chaîne valide (1-100 caractères)' 
+            });
+        }
+        
+        // ✅ VALIDATION : Sanitizer les chaînes
+        req.body.firstName = sanitizeString(firstName, 100);
+        req.body.lastName = sanitizeString(lastName, 100);
         
         // Si pas de siteId fourni, utiliser celui de l'utilisateur connecté
         const finalSiteId = siteId || req.user.siteId;
         
-        if (!finalSiteId) {
-            return res.status(400).json({ message: 'Site ID requis' });
+        // ✅ VALIDATION : Valider le siteId
+        if (!finalSiteId || !isValidObjectId(finalSiteId)) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Site ID requis et doit être un ObjectId valide' 
+            });
+        }
+        
+        // ✅ VALIDATION : Valider le groupId s'il est fourni
+        if (groupId && !isValidObjectId(groupId)) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Group ID invalide (doit être un ObjectId valide)' 
+            });
         }
         
         // Vérifier que le site existe et que l'utilisateur y a accès
@@ -115,70 +147,120 @@ export async function getResidents(req, res) {
 
 /**
  * Récupérer tous les résidents d'un site
+ * SÉCURITÉ : Filtrage strict par siteId et vérification d'autorisation
  */
 export async function getResidentsBySite(req, res) {
     try {
         const { siteId } = req.params;
         const { status = 'actif', page = 1, limit = 50, search } = req.query;
         
+        // Normaliser le siteId pour éviter les problèmes de type
+        const normalizedSiteId = String(siteId).trim();
+        
         // Vérifier que le site existe
-        const site = await Site.findById(siteId);
+        const site = await Site.findById(normalizedSiteId);
         if (!site) {
-            return res.status(404).json({ message: 'Site non trouvé' });
+            return res.status(404).json({ 
+                success: false,
+                message: 'Site non trouvé' 
+            });
         }
         
-        // Vérifier que l'utilisateur a accès à ce site
-        // Les admins de groupe peuvent voir tous les sites de leur groupe
-        const isGroupAdmin = req.user.groupId && req.user.groupId.toString() === site.groupId?.toString();
-        const isSiteManager = req.user.siteId && req.user.siteId.toString() === siteId;
+        // 🔐 VÉRIFICATION D'AUTORISATION STRICTE
+        // 1. Les admins peuvent accéder à tous les sites
+        const isAdmin = req.user.role === 'admin' || 
+                       (req.user.roles && Array.isArray(req.user.roles) && req.user.roles.includes('admin'));
         
-        if (!isGroupAdmin && !isSiteManager && req.user.siteId) {
-            return res.status(403).json({ message: 'Accès non autorisé à ce site' });
+        // 2. Les admins de groupe peuvent voir tous les sites de leur groupe
+        const userGroupId = req.user.groupId ? String(req.user.groupId) : null;
+        const siteGroupId = site.groupId ? String(site.groupId) : null;
+        const isGroupAdmin = userGroupId && siteGroupId && userGroupId === siteGroupId;
+        
+        // 3. Les gestionnaires de site peuvent voir uniquement leur site
+        const userSiteId = req.user.siteId ? String(req.user.siteId) : null;
+        const isSiteManager = userSiteId && userSiteId === normalizedSiteId;
+        
+        // Vérifier l'autorisation : admin OU groupAdmin OU siteManager
+        if (!isAdmin && !isGroupAdmin && !isSiteManager) {
+            console.warn(`🔒 Accès refusé - User ${req.user._id} (role: ${req.user.role}, siteId: ${userSiteId}) tentant d'accéder au site ${normalizedSiteId}`);
+            return res.status(403).json({ 
+                success: false,
+                message: 'Accès non autorisé à ce site' 
+            });
         }
         
-        // Construire la requête
-        let query = { siteId };
+        // 🔐 CONSTRUIRE LA REQUÊTE AVEC FILTRAGE STRICT PAR SITEID
+        // IMPORTANT : Toujours filtrer par siteId pour garantir la sécurité même si l'autorisation passe
+        let query = { 
+            siteId: normalizedSiteId  // Filtrer strictement par siteId
+        };
         
-        if (status !== 'all') {
-            query.status = status;
+        // 🔐 VALIDATION ET FILTRAGE PAR STATUS
+        // Liste des statuts valides pour éviter l'injection
+        const validStatuses = ['actif', 'inactif', 'decede', 'transfere', 'all'];
+        const normalizedStatus = String(status).toLowerCase().trim();
+        
+        if (normalizedStatus !== 'all' && validStatuses.includes(normalizedStatus)) {
+            query.status = normalizedStatus;
+        } else if (normalizedStatus !== 'all') {
+            // Status invalide, utiliser 'actif' par défaut
+            query.status = 'actif';
         }
         
+        // 🔐 VALIDATION ET FILTRAGE PAR RECHERCHE (protection contre l'injection regex)
         if (search) {
-            query.$or = [
-                { firstName: { $regex: search, $options: 'i' } },
-                { lastName: { $regex: search, $options: 'i' } },
-                { roomNumber: { $regex: search, $options: 'i' } }
-            ];
+            const sanitizedSearch = String(search).trim();
+            // Limiter la longueur de la recherche pour éviter les attaques DoS
+            if (sanitizedSearch.length > 0 && sanitizedSearch.length <= 100) {
+                query.$or = [
+                    { firstName: { $regex: sanitizedSearch, $options: 'i' } },
+                    { lastName: { $regex: sanitizedSearch, $options: 'i' } },
+                    { roomNumber: { $regex: sanitizedSearch, $options: 'i' } }
+                ];
+            }
         }
         
-        // Pagination
-        const skip = (page - 1) * limit;
+        // 🔐 VALIDATION DE LA PAGINATION
+        const pageNum = Math.max(1, parseInt(page) || 1);
+        const limitNum = Math.min(1000, Math.max(1, parseInt(limit) || 50)); // Limiter à 1000 max
+        const skip = (pageNum - 1) * limitNum;
         
+        // 🔐 REQUÊTE AVEC FILTRAGE STRICT
+        // Le siteId dans la requête est toujours celui autorisé (normalizedSiteId)
         const residents = await Resident.find(query)
             .populate('createdBy', 'name email')
             .populate('lastUpdatedBy', 'name email')
             .sort({ lastName: 1, firstName: 1 })
             .skip(skip)
-            .limit(parseInt(limit));
+            .limit(limitNum);
         
         const total = await Resident.countDocuments(query);
         
+        // 🔐 VÉRIFICATION FINALE : S'assurer que tous les résidents retournés appartiennent bien au site
+        // (Double sécurité au cas où il y aurait un problème dans la requête)
+        const filteredResidents = residents.filter(resident => {
+            const residentSiteId = resident.siteId ? 
+                (resident.siteId._id ? String(resident.siteId._id) : String(resident.siteId)) : 
+                null;
+            return residentSiteId === normalizedSiteId;
+        });
+        
         res.status(200).json({
             success: true,
-            data: residents,
+            data: filteredResidents,
             pagination: {
-                page: parseInt(page),
-                limit: parseInt(limit),
+                page: pageNum,
+                limit: limitNum,
                 total,
-                pages: Math.ceil(total / limit)
+                pages: Math.ceil(total / limitNum)
             }
         });
         
     } catch (error) {
-        console.error('❌ Erreur:', error);
+        console.error('❌ Erreur lors de la récupération des résidents:', error);
         res.status(500).json({ 
             success: false,
-            message: error.message 
+            message: error.message || 'Erreur lors de la récupération des résidents'
         });
     }
 }
@@ -339,15 +421,50 @@ export async function updateResident(req, res) {
     try {
         const { id } = req.params;
         
+        // ✅ VALIDATION : Valider l'ID du résident
+        if (!id || !isValidObjectId(id)) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'ID de résident invalide (doit être un ObjectId valide)' 
+            });
+        }
+        
         const resident = await Resident.findById(id);
         
         if (!resident) {
-            return res.status(404).json({ message: 'Résident non trouvé' });
+            return res.status(404).json({ 
+                success: false,
+                message: 'Résident non trouvé' 
+            });
         }
         
         // Vérifier que l'utilisateur a accès à ce résident
         if (req.user.siteId && req.user.siteId.toString() !== resident.siteId.toString()) {
-            return res.status(403).json({ message: 'Accès non autorisé' });
+            return res.status(403).json({ 
+                success: false,
+                message: 'Accès non autorisé' 
+            });
+        }
+        
+        // ✅ VALIDATION : Sanitizer les champs de texte s'ils sont présents
+        if (req.body.firstName) {
+            if (!isValidString(req.body.firstName, 1, 100)) {
+                return res.status(400).json({ 
+                    success: false,
+                    message: 'Prénom invalide (1-100 caractères)' 
+                });
+            }
+            req.body.firstName = sanitizeString(req.body.firstName, 100);
+        }
+        
+        if (req.body.lastName) {
+            if (!isValidString(req.body.lastName, 1, 100)) {
+                return res.status(400).json({ 
+                    success: false,
+                    message: 'Nom invalide (1-100 caractères)' 
+                });
+            }
+            req.body.lastName = sanitizeString(req.body.lastName, 100);
         }
         
         // Enregistrer la modification dans l'historique

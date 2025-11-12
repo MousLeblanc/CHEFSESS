@@ -13,6 +13,7 @@ import cookieParser from "cookie-parser";
 
 import { errorHandler } from "./middleware/errorHandler.js";
 import { protect as authMiddleware } from "./middleware/authMiddleware.js";
+import { generateCSRFTokenMiddleware } from "./middleware/csrfMiddleware.js";
 
 // --- Import Routes ---
 import authRoutes from "./routes/authRoutes.js";
@@ -52,7 +53,7 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || "*",
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-CSRF-Token'], // 🔒 Ajout du header CSRF
 }));
 app.use(express.json());
 app.use(cookieParser());
@@ -80,6 +81,10 @@ app.use(express.static(clientPath, {
 app.use('/js', express.static(path.join(clientPath, 'js')));
 app.use('/css', express.static(path.join(clientPath, 'css')));
 app.use('/img', express.static(path.join(clientPath, 'img')));
+
+// === MIDDLEWARE CSRF ===
+// Générer un token CSRF pour toutes les requêtes GET authentifiées
+app.use("/api", generateCSRFTokenMiddleware);
 
 // === ROUTES API ===
 app.use("/api/auth", authRoutes);

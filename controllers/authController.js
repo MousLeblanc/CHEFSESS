@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import Group from '../models/Group.js';
 import jwt from 'jsonwebtoken';
 import asyncHandler from 'express-async-handler';
+import { generateCSRFToken } from '../middleware/csrfMiddleware.js';
 
 // Fonction utilitaire pour générer un token JWT
 const generateToken = (user) => {
@@ -122,6 +123,17 @@ export const register = asyncHandler(async (req, res) => {
       // Ne pas spécifier domain pour laisser le navigateur gérer
     });
     
+    // 🔒 Générer et envoyer un token CSRF
+    const csrfToken = generateCSRFToken(user._id);
+    res.cookie('csrf-token', csrfToken, {
+      httpOnly: true,
+      secure: isRender,
+      sameSite: isRender ? 'none' : 'lax',
+      maxAge: 24 * 60 * 60 * 1000, // 24 heures
+      path: '/'
+    });
+    res.setHeader('X-CSRF-Token', csrfToken);
+    
     res.status(201).json({
       success: true,
       message: 'Compte créé avec succès !',
@@ -144,10 +156,42 @@ export const register = asyncHandler(async (req, res) => {
 });
 
 export const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
-
-  if (user && (await user.matchPassword(password))) {
+  try {
+    console.log('🔐 Tentative de connexion pour:', req.body.email);
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      console.error('❌ Email ou mot de passe manquant');
+      res.status(400);
+      throw new Error('Email et mot de passe requis.');
+    }
+    
+    const user = await User.findOne({ email });
+    console.log('👤 Utilisateur trouvé:', user ? 'Oui' : 'Non');
+    
+    if (!user) {
+      console.log('❌ Utilisateur non trouvé pour:', email);
+      res.status(401);
+      throw new Error('Email ou mot de passe incorrect.');
+    }
+    
+    const isPasswordValid = await user.matchPassword(password);
+    console.log('🔑 Mot de passe valide:', isPasswordValid);
+    
+    if (!isPasswordValid) {
+      console.log('❌ Mot de passe incorrect pour:', email);
+      res.status(401);
+      throw new Error('Email ou mot de passe incorrect.');
+    }
+    
+    // Vérifier que l'utilisateur a un _id valide
+    if (!user._id) {
+      console.error('❌ Erreur: user._id est undefined lors de la connexion');
+      res.status(500);
+      throw new Error('Erreur interne: identifiant utilisateur invalide.');
+    }
+    
+    console.log('✅ Génération du token JWT pour user._id:', user._id);
     const token = generateToken(user);
     
     // 🔐 Envoyer le token dans un cookie HttpOnly (sécurisé)
@@ -162,6 +206,26 @@ export const login = asyncHandler(async (req, res) => {
       sameSite: isRender ? 'none' : 'lax', // 'none' pour Render (cross-site)
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 jours
     });
+    
+    // 🔒 Générer et envoyer un token CSRF
+    console.log('🔒 Génération du token CSRF pour user._id:', user._id);
+    try {
+      const csrfToken = generateCSRFToken(user._id);
+      console.log('✅ Token CSRF généré avec succès');
+      res.cookie('csrf-token', csrfToken, {
+        httpOnly: true,        // Inaccessible en JavaScript
+        secure: isRender,
+        sameSite: isRender ? 'none' : 'lax',
+        maxAge: 24 * 60 * 60 * 1000, // 24 heures
+        path: '/'
+      });
+      // Envoyer aussi dans le header pour que le client puisse le lire
+      res.setHeader('X-CSRF-Token', csrfToken);
+    } catch (csrfError) {
+      console.error('❌ Erreur lors de la génération du token CSRF:', csrfError);
+      res.status(500);
+      throw new Error('Erreur lors de la génération du token de sécurité.');
+    }
     
     // 🔧 Pour les fournisseurs, récupérer le nom depuis Supplier si disponible
     let businessName = user.businessName;
@@ -195,9 +259,11 @@ export const login = asyncHandler(async (req, res) => {
       },
       message: 'Connexion réussie'
     });
-  } else {
-    res.status(401);
-    throw new Error('Email ou mot de passe incorrect.');
+    console.log('✅ Connexion réussie pour:', email);
+  } catch (error) {
+    console.error('❌ Erreur dans login:', error.message);
+    console.error('Stack:', error.stack);
+    throw error; // Laisser asyncHandler gérer l'erreur
   }
 });
 
@@ -298,8 +364,46 @@ export const getMe = asyncHandler(async (req, res) => {
     }
   };
   
+  // 🔒 Générer ou régénérer un token CSRF pour cet utilisateur
+  const csrfToken = generateCSRFToken(req.user._id);
+  const isRender = process.env.RENDER_SERVICE_ID || 
+                   process.env.RENDER === 'true' || 
+                   process.env.NODE_ENV === 'production';
+  
+  res.cookie('csrf-token', csrfToken, {
+    httpOnly: true,
+    secure: isRender,
+    sameSite: isRender ? 'none' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000, // 24 heures
+    path: '/'
+  });
+  res.setHeader('X-CSRF-Token', csrfToken);
+  
   console.log('📤 Envoi réponse /api/auth/me:', JSON.stringify(userData, null, 2));
   res.json(userData);
+});
+
+// Fonction pour obtenir le token CSRF
+export const getCSRFToken = asyncHandler(async (req, res) => {
+  // Si on arrive ici, c'est que le middleware protect a validé le token
+  const csrfToken = generateCSRFToken(req.user._id);
+  const isRender = process.env.RENDER_SERVICE_ID || 
+                   process.env.RENDER === 'true' || 
+                   process.env.NODE_ENV === 'production';
+  
+  res.cookie('csrf-token', csrfToken, {
+    httpOnly: true,
+    secure: isRender,
+    sameSite: isRender ? 'none' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000, // 24 heures
+    path: '/'
+  });
+  res.setHeader('X-CSRF-Token', csrfToken);
+  
+  res.json({
+    success: true,
+    message: 'Token CSRF généré'
+  });
 });
 
 // Fonction de déconnexion

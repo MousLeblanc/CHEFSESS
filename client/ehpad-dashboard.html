@@ -880,23 +880,76 @@
   <!-- 🧹 Script de nettoyage des anciens tokens (doit être chargé en premier) -->
   <script src="js/token-cleanup.js"></script>
   
-  <script type="module" src="JS/supplier-common.js"></script>
-  <script type="module" src="JS/order-tracking.js"></script>
-  <script type="module" src="JS/stock-common.js"></script>
-  <script type="module" src="JS/ehpad-dashboard.js"></script>
-  <script type="module" src="JS/resident-management.js"></script>
+  <!-- 🔒 Helper CSRF (doit être chargé avant les autres scripts qui font des requêtes) -->
+  <script type="module" src="js/csrf-helper.js"></script>
+  
+  <!-- ✅ Helper de validation (doit être chargé avant les scripts qui utilisent les données utilisateur) -->
+  <script type="module" src="js/validation-helper.js"></script>
+  
+  <script type="module" src="js/supplier-common.js"></script>
+  <script type="module" src="js/order-tracking.js"></script>
+  <script type="module" src="js/stock-common.js"></script>
+  <script type="module" src="js/ehpad-dashboard.js"></script>
+  <script type="module" src="js/resident-management.js"></script>
   <script src="js/recipe-generator.js"></script>
   <script src="js/foodcost-manager.js"></script>
   <script src="js/init.js"></script>
   <!-- Générateur de menu personnalisé avec objectifs nutritionnels -->
   <script src="js/custom-menu-generator.js"></script>
-  <script>
-    // Initialiser le générateur de menu personnalisé
-    document.addEventListener('DOMContentLoaded', () => {
-      customMenuGenerator.init();
+  <!-- Module pour le calculateur de portions et la génération de menu pour résidents -->
+  <script src="js/ehpad-menu-calculator.js"></script>
+      // ===== Helper pour la gestion cohérente des erreurs =====
+      /**
+       * Gère les erreurs de manière cohérente : log + toast utilisateur
+       * @param {Error|string} error - L'erreur ou le message d'erreur
+       * @param {string} userMessage - Message à afficher à l'utilisateur (optionnel)
+       * @param {boolean} showToast - Si true, affiche un toast à l'utilisateur (défaut: true)
+       * @param {string} context - Contexte de l'erreur pour le log (optionnel)
+       */
+      function handleError(error, userMessage = null, showToast = true, context = '') {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const fullContext = context ? `[${context}] ` : '';
+        
+        // Toujours logger l'erreur
+        console.error(`❌ ${fullContext}${errorMessage}`, error instanceof Error ? error : '');
+        
+        // Afficher un toast si demandé et si showToast est disponible
+        if (showToast && typeof window.showToast === 'function') {
+          const message = userMessage || errorMessage || 'Une erreur est survenue';
+          window.showToast(message, 'error');
+        }
+      }
 
-      // ===== Calculateur de portions → synchronisation avec le générateur =====
-      const $n = document.getElementById('portion-normal');
+      /**
+       * Gère les erreurs API de manière cohérente
+       * @param {Response} response - La réponse fetch
+       * @param {string} context - Contexte de l'erreur
+       * @param {string} userMessage - Message à afficher à l'utilisateur
+       * @returns {Promise<{success: boolean, data: any, error: string}>}
+       */
+      async function handleAPIResponse(response, context = '', userMessage = null) {
+        try {
+          if (!response.ok) {
+            const errorText = await response.text();
+            let errorData;
+            try {
+              errorData = JSON.parse(errorText);
+            } catch {
+              errorData = { error: errorText || `Erreur HTTP ${response.status}` };
+            }
+            const errorMsg = errorData.error || errorData.message || `Erreur HTTP ${response.status}`;
+            handleError(errorMsg, userMessage || `Erreur lors de la requête: ${errorMsg}`, true, context);
+            return { success: false, data: null, error: errorMsg };
+          }
+
+          const data = await response.json();
+          return { success: true, data, error: null };
+        } catch (error) {
+          handleError(error, userMessage || 'Erreur lors du traitement de la réponse', true, context);
+          return { success: false, data: null, error: error.message };
+        }
+      }
+
       const $h = document.getElementById('portion-demi');
       const $d = document.getElementById('portion-double');
       const $totalResidents = document.getElementById('calc-total-residents');
@@ -941,7 +994,61 @@
         });
       }
 
-      // ===== Pré-remplissage depuis les fiches résidents =====
+      // ===== Helpers pour la normalisation des données de portion =====
+      /**
+       * Obtient la taille de portion normalisée d'un résident
+       * Selon le modèle Resident, portionSize est au niveau racine : 0.5, 1, ou 2
+       * @param {Object} resident - L'objet résident
+       * @returns {number} - La taille de portion (0.5, 1, ou 2), par défaut 1
+       */
+      function getPortionSize(resident) {
+        if (!resident) return 1;
+        
+        // ✅ NORMALISÉ : Utiliser uniquement resident.portionSize (selon le modèle)
+        const portionSize = resident.portionSize;
+        
+        // Valider que c'est une valeur valide (0.5, 1, ou 2)
+        if (portionSize === 0.5 || portionSize === 1 || portionSize === 2) {
+          return portionSize;
+        }
+        
+        // Si la valeur est null/undefined ou invalide, retourner la valeur par défaut
+        return 1;
+      }
+
+      /**
+       * Calcule le multiplicateur de portion équivalente
+       * - 0.5 (demi-portion) = 0.5 portions équivalentes
+       * - 1 (portion normale) = 1 portion équivalente
+       * - 2 (double portion) = 1.5 portions équivalentes (×1.5)
+       * @param {number} portionSize - La taille de portion (0.5, 1, ou 2)
+       * @returns {number} - Le multiplicateur de portions équivalentes
+       */
+      function calculatePortionEquivalent(portionSize) {
+        if (portionSize === 0.5) return 0.5;
+        if (portionSize === 2) return 1.5; // Double portion = ×1.5
+        return 1; // Portion normale ou valeur par défaut
+      }
+
+      /**
+       * Calcule le total de portions équivalentes pour un tableau de résidents
+       * @param {Array} residents - Tableau de résidents
+       * @returns {number} - Total de portions équivalentes
+       */
+      function calculateTotalPortions(residents) {
+        if (!Array.isArray(residents)) return 0;
+        
+        return residents.reduce((total, resident) => {
+          const portionSize = getPortionSize(resident);
+          return total + calculatePortionEquivalent(portionSize);
+        }, 0);
+      }
+
+      // ===== Fonction de compatibilité (dépréciée, à supprimer progressivement) =====
+      /**
+       * @deprecated Utiliser getPortionSize() et calculatePortionEquivalent() à la place
+       * Fonction conservée temporairement pour compatibilité avec l'ancien code
+       */
       function getPortionMultiplier(raw) {
         if (raw == null) return 1;
         const s = String(raw).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
@@ -960,27 +1067,60 @@
 
       async function prefillFromResidents() {
         try {
-          const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
-          if (!storedUser) return;
-          const user = JSON.parse(storedUser);
+          // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+          const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+          if (!user) {
+            // Fonction non-bloquante : pas de toast, juste un log de debug
+            console.debug('⚠️ [prefillFromResidents] Utilisateur non connecté, pré-remplissage ignoré');
+            return;
+          }
+          
           const siteId = user?.siteId;
-          if (!siteId) return;
+          if (!siteId || (typeof isValidObjectId === 'function' && !isValidObjectId(siteId))) {
+            // Fonction non-bloquante : pas de toast, juste un log
+            console.warn('⚠️ [prefillFromResidents] SiteId invalide ou manquant');
+            return;
+          }
 
+          // 🔐 SÉCURITÉ : Le backend filtre déjà par siteId
           const resp = await fetch(`/api/residents/site/${siteId}`, {
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' }
           });
-          if (!resp.ok) return;
-          const data = await resp.json();
-          const residents = data?.data || [];
+          
+          // ✅ VALIDATION : Parser la réponse de manière sécurisée
+          let data;
+          if (typeof safeAPIParse === 'function') {
+            const parsed = await safeAPIParse(resp, {
+              required: ['success', 'data'],
+              types: { success: 'boolean', data: 'object' }
+            });
+            if (!parsed.success) {
+              // Fonction non-bloquante : pas de toast, juste un log
+              console.warn('⚠️ [prefillFromResidents] Réponse API invalide:', parsed.error);
+              return;
+            }
+            data = parsed.data;
+          } else {
+            if (!resp.ok) {
+              // Fonction non-bloquante : pas de toast, mais log l'erreur
+              const errorText = await resp.text().catch(() => 'Erreur inconnue');
+              console.warn(`⚠️ [prefillFromResidents] Erreur HTTP ${resp.status}:`, errorText);
+              return;
+            }
+            data = await resp.json();
+          }
+          
+          // Le backend a déjà filtré par siteId, les résidents retournés sont sécurisés
+          const residents = Array.isArray(data?.data) ? data.data : [];
 
+          // ✅ NORMALISÉ : Utiliser getPortionSize() pour accéder de manière cohérente à portionSize
           let normal = 0, demi = 0, dbl = 0;
-          residents.forEach(r => {
-            const portionRaw = r?.nutritionalProfile?.portionSize ?? r?.portion ?? r?.portionSize;
-            const mult = getPortionMultiplier(portionRaw);
-            if (mult === 1.5) dbl++; // Double portion = 1.5
-            else if (mult === 0.5) demi++;
-            else normal++;
+          residents.forEach(resident => {
+            const portionSize = getPortionSize(resident);
+            if (portionSize === 2) dbl++; // Double portion
+            else if (portionSize === 0.5) demi++; // Demi-portion
+            else normal++; // Portion normale (1 ou valeur par défaut)
           });
 
           if ($n) $n.value = String(normal);
@@ -991,9 +1131,9 @@
           // Mettre aussi à jour le générateur directement
           const target = document.getElementById('custom-menu-people');
           if (target) target.value = Math.max(1, Math.round(totals.portions));
-        } catch (e) {
-          // silencieux: on ne bloque pas l'UI si l'appel échoue
-          console.warn('Prefill residents failed', e);
+        } catch (error) {
+          // Fonction non-bloquante : pas de toast, mais log l'erreur pour le débogage
+          handleError(error, null, false, 'prefillFromResidents');
         }
       }
 
@@ -1011,7 +1151,10 @@
       suggestionButtons.forEach(btn => {
         btn.addEventListener('click', () => {
           try {
-            const goals = JSON.parse(btn.getAttribute('data-goals') || '[]');
+            // ✅ VALIDATION : Parser JSON de manière sécurisée
+            const goals = typeof safeJSONParse === 'function' 
+              ? safeJSONParse(btn.getAttribute('data-goals') || '[]', [], (val) => Array.isArray(val))
+              : JSON.parse(btn.getAttribute('data-goals') || '[]');
             if (!Array.isArray(goals) || goals.length === 0) return;
             // Remplacer les objectifs actuels par la suggestion
             customMenuGenerator.nutritionalGoals = goals.map(g => ({
@@ -1027,8 +1170,9 @@
             if (typeof customMenuGenerator.showToast === 'function') {
               customMenuGenerator.showToast('✅ Objectifs appliqués: ' + goals.map(g=>g.label+" "+g.target+g.unit).join(' • '), 'success');
             }
-          } catch (e) {
-            console.warn('Suggestion parse error', e);
+          } catch (error) {
+            // Erreur non-critique : log mais pas de toast pour ne pas perturber l'utilisateur
+            handleError(error, null, false, 'quick-goal-suggestion');
           }
         });
       });
@@ -1047,54 +1191,81 @@
 
       // Fonction pour ouvrir la modal et charger les données
       async function openGenerateMenuResidentsModal() {
-        if (!generateMenuResidentsModal) return;
+        if (!generateMenuResidentsModal) {
+          handleError('Modal non trouvée', 'Erreur: Impossible d\'ouvrir la modal', true, 'openGenerateMenuResidentsModal');
+          return;
+        }
         generateMenuResidentsModal.style.display = 'block';
         
         try {
-          const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
-          if (!storedUser) {
-            showToast('Erreur: Utilisateur non connecté', 'error');
+          // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+          const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+          if (!user) {
+            handleError('Utilisateur non connecté', 'Erreur: Utilisateur non connecté', true, 'openGenerateMenuResidentsModal');
             return;
           }
-          const user = JSON.parse(storedUser);
           const siteId = user?.siteId;
-          if (!siteId) {
-            showToast('Erreur: Site ID manquant', 'error');
+          if (!siteId || (typeof isValidObjectId === 'function' && !isValidObjectId(siteId))) {
+            handleError('Site ID invalide ou manquant', 'Erreur: Site ID invalide ou manquant', true, 'openGenerateMenuResidentsModal');
             return;
           }
 
-          // Charger uniquement les résidents ACTIFS du site
+          // 🔐 SÉCURITÉ : Le backend filtre déjà par siteId et statut
+          // Le filtrage côté client est une double sécurité pour l'UI uniquement
           const response = await fetch(`/api/residents/site/${siteId}?status=actif&limit=1000`, {
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' }
           });
-
-          if (!response.ok) throw new Error('Erreur lors du chargement des résidents');
-          const data = await response.json();
-          // Filtrer encore côté client : ACTIFS + du BON siteId
+          
+          // ✅ VALIDATION : Parser la réponse de manière sécurisée
+          let data;
+          if (typeof safeAPIParse === 'function') {
+            const parsed = await safeAPIParse(response, {
+              required: ['success', 'data'],
+              types: { success: 'boolean', data: 'object' }
+            });
+            if (!parsed.success) {
+              handleError(parsed.error || 'Réponse API invalide', 'Erreur lors du chargement des résidents', true, 'openGenerateMenuResidentsModal');
+              return;
+            }
+            data = parsed.data;
+          } else {
+            if (!response.ok) {
+              const apiResult = await handleAPIResponse(response, 'openGenerateMenuResidentsModal', 'Erreur lors du chargement des résidents');
+              if (!apiResult.success) return;
+              data = apiResult.data;
+            } else {
+              data = await response.json();
+            }
+          }
+          
+          // Le backend a déjà filtré par siteId et statut 'actif'
+          // Filtrage côté client : double sécurité pour l'UI (ne devrait jamais filtrer si le backend fonctionne correctement)
           const allResidents = data?.data || [];
           const siteIdStr = String(siteId);
           const activeResidents = allResidents.filter(r => {
-            // Vérifier le statut
+            // Vérifier le statut (déjà fait par le backend, mais double sécurité)
             const status = r.status ? String(r.status).toLowerCase().trim() : '';
-            if (status !== 'actif') return false;
+            if (status !== 'actif') {
+              console.warn(`⚠️ [openGenerateMenuResidentsModal] Résident ${r.firstName} ${r.lastName} avec statut "${status}" retourné par le backend (devrait être filtré)`);
+              return false;
+            }
             
-            // Vérifier que le résident appartient bien à ce site
+            // Vérifier que le résident appartient bien à ce site (déjà fait par le backend, mais double sécurité)
             const residentSiteId = r.siteId ? (r.siteId._id ? String(r.siteId._id) : String(r.siteId)) : null;
             if (!residentSiteId || residentSiteId !== siteIdStr) {
-              console.warn(`⚠️ Modal - Résident ${r.firstName} ${r.lastName} appartient au site ${residentSiteId} mais on cherche ${siteIdStr}`);
+              console.error(`🚨 [openGenerateMenuResidentsModal] SÉCURITÉ - Résident ${r.firstName} ${r.lastName} du site ${residentSiteId} retourné pour le site ${siteIdStr} (le backend devrait avoir filtré)`);
               return false;
             }
             
             return true;
           });
           
-          console.log(`📊 Modal - Résidents chargés pour site ${siteIdStr}: ${allResidents.length} total retournés, ${activeResidents.length} actifs et du bon site`);
+          console.log(`📊 [openGenerateMenuResidentsModal] Résidents chargés pour site ${siteIdStr}: ${allResidents.length} retournés par le backend, ${activeResidents.length} après filtrage client (double sécurité)`);
           
           displayResidentsSummaryInModal(activeResidents);
         } catch (error) {
-          console.error('Erreur:', error);
-          showToast('Erreur lors du chargement des résidents', 'error');
+          handleError(error, 'Erreur lors du chargement des résidents', true, 'openGenerateMenuResidentsModal');
         }
       }
 
@@ -1118,20 +1289,20 @@
         if (activeResidents.length === 0) {
           document.getElementById('modal-summary-total-residents').textContent = '0';
           document.getElementById('modal-summary-total-portions').textContent = '0';
-          document.getElementById('modal-summary-allergies-restrictions').innerHTML = 
-            '<div style="grid-column: 1/-1; text-align: center; opacity: 0.8; padding: 1rem;">Aucun résident actif trouvé</div>';
+          const container = document.getElementById('modal-summary-allergies-restrictions');
+          // Sécurisé : utilisation de createElement et textContent au lieu de innerHTML
+          container.textContent = ''; // Vider le conteneur
+          const emptyDiv = document.createElement('div');
+          emptyDiv.style.cssText = 'grid-column: 1/-1; text-align: center; opacity: 0.8; padding: 1rem;';
+          emptyDiv.textContent = 'Aucun résident actif trouvé';
+          container.appendChild(emptyDiv);
           return;
         }
 
         document.getElementById('modal-summary-total-residents').textContent = activeResidents.length;
 
-        let totalPortions = 0;
-        activeResidents.forEach(resident => {
-          const ps = resident.portionSize;
-          if (ps === 0.5) totalPortions += 0.5;
-          else if (ps === 2) totalPortions += 1.5;
-          else totalPortions += 1;
-        });
+        // ✅ NORMALISÉ : Utiliser calculateTotalPortions() pour un calcul cohérent
+        const totalPortions = calculateTotalPortions(activeResidents);
         document.getElementById('modal-summary-total-portions').textContent = Math.round(totalPortions * 100) / 100;
 
         // Fonction pour normaliser le nom d'allergène (éviter les doublons)
@@ -1191,20 +1362,79 @@
         });
 
         const container = document.getElementById('modal-summary-allergies-restrictions');
-        let html = '';
-        Object.entries(allergiesCount).sort((a, b) => b[1] - a[1]).forEach(([allergen, count]) => {
-          html += `<div style="background: rgba(255,255,255,0.15); padding: 0.75rem 1rem; border-radius: 8px; backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 500; font-size: 0.9rem;"><i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem; color: #ffc107;"></i>${formatAllergenName(allergen)}</span>
-            <span style="background: rgba(255,255,255,0.3); padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem;">${count}</span>
-          </div>`;
-        });
-        Object.entries(restrictionsCount).sort((a, b) => b[1] - a[1]).forEach(([restriction, count]) => {
-          html += `<div style="background: rgba(255,255,255,0.15); padding: 0.75rem 1rem; border-radius: 8px; backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 500; font-size: 0.9rem;"><i class="fas fa-ban" style="margin-right: 0.5rem; color: #e74c3c;"></i>${formatRestrictionName(restriction)}</span>
-            <span style="background: rgba(255,255,255,0.3); padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem;">${count}</span>
-          </div>`;
-        });
-        container.innerHTML = html || '<div style="grid-column: 1/-1; text-align: center; opacity: 0.8; padding: 1rem;">Aucune allergie ou restriction enregistrée</div>';
+        // Sécurisé : vider le conteneur avant d'ajouter de nouveaux éléments
+        container.textContent = '';
+        
+        // Fonction helper pour créer un élément d'allergie/restriction de manière sécurisée
+        const createAllergyRestrictionItem = (name, count, iconClass, iconColor) => {
+          const itemDiv = document.createElement('div');
+          itemDiv.style.cssText = 'background: rgba(255,255,255,0.15); padding: 0.75rem 1rem; border-radius: 8px; backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center;';
+          
+          // Conteneur pour le nom avec icône
+          const nameSpan = document.createElement('span');
+          nameSpan.style.cssText = 'font-weight: 500; font-size: 0.9rem; display: flex; align-items: center;';
+          
+          // Icône (sécurisée : classe FontAwesome hardcodée)
+          const icon = document.createElement('i');
+          icon.className = iconClass;
+          // Sécurisé : iconColor est une valeur hardcodée passée en paramètre, pas des données utilisateur
+          icon.style.cssText = `margin-right: 0.5rem; color: ${iconColor};`;
+          nameSpan.appendChild(icon);
+          
+          // Nom (sécurisé : utilisation de textContent)
+          const nameText = document.createTextNode(name);
+          nameSpan.appendChild(nameText);
+          
+          // Conteneur pour le count
+          const countSpan = document.createElement('span');
+          countSpan.style.cssText = 'background: rgba(255,255,255,0.3); padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem;';
+          // Sécurisé : count est un nombre, converti en string avec textContent
+          countSpan.textContent = String(count);
+          
+          itemDiv.appendChild(nameSpan);
+          itemDiv.appendChild(countSpan);
+          return itemDiv;
+        };
+        
+        // Créer les éléments pour les allergies
+        const allergiesEntries = Object.entries(allergiesCount).sort((a, b) => b[1] - a[1]);
+        if (allergiesEntries.length > 0) {
+          allergiesEntries.forEach(([allergen, count]) => {
+            // Sécurisé : formatAllergenName retourne une string, utilisée avec textContent
+            const formattedName = formatAllergenName(allergen);
+            const item = createAllergyRestrictionItem(
+              formattedName,
+              count,
+              'fas fa-exclamation-triangle',
+              '#ffc107'
+            );
+            container.appendChild(item);
+          });
+        }
+        
+        // Créer les éléments pour les restrictions
+        const restrictionsEntries = Object.entries(restrictionsCount).sort((a, b) => b[1] - a[1]);
+        if (restrictionsEntries.length > 0) {
+          restrictionsEntries.forEach(([restriction, count]) => {
+            // Sécurisé : formatRestrictionName retourne une string, utilisée avec textContent
+            const formattedName = formatRestrictionName(restriction);
+            const item = createAllergyRestrictionItem(
+              formattedName,
+              count,
+              'fas fa-ban',
+              '#e74c3c'
+            );
+            container.appendChild(item);
+          });
+        }
+        
+        // Message si aucune allergie ou restriction
+        if (allergiesEntries.length === 0 && restrictionsEntries.length === 0) {
+          const emptyDiv = document.createElement('div');
+          emptyDiv.style.cssText = 'grid-column: 1/-1; text-align: center; opacity: 0.8; padding: 1rem;';
+          emptyDiv.textContent = 'Aucune allergie ou restriction enregistrée';
+          container.appendChild(emptyDiv);
+        }
       }
 
       function formatAllergenName(allergen) {
@@ -1232,39 +1462,72 @@
           const mealType = document.getElementById('modal-menu-type')?.value;
           const period = document.getElementById('modal-menu-period')?.value || '1';
           if (!mealType) {
-            showToast('Veuillez sélectionner un type de repas', 'error');
+            handleError('Type de repas non sélectionné', 'Veuillez sélectionner un type de repas', true, 'generateMenuResidentsConfirm');
             return;
           }
           closeGenerateMenuResidentsModal();
           try {
-            const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
-            const user = JSON.parse(storedUser);
+            // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+            const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+            if (!user) {
+              handleError('Utilisateur non connecté', 'Erreur: Utilisateur non connecté', true, 'generateMenuResidentsConfirm');
+              return;
+            }
             const siteId = user?.siteId;
+            if (!siteId || (typeof isValidObjectId === 'function' && !isValidObjectId(siteId))) {
+              handleError('Site ID invalide ou manquant', 'Erreur: Site ID invalide ou manquant', true, 'generateMenuResidentsConfirm');
+              return;
+            }
+            // 🔐 SÉCURITÉ : Le backend filtre déjà par siteId et statut
             const response = await fetch(`/api/residents/site/${siteId}?status=actif&limit=1000`, { credentials: 'include' });
-            if (!response.ok) throw new Error('Erreur lors du chargement des résidents');
-            const data = await response.json();
-            // Filtrer encore côté client : ACTIFS + du BON siteId
+            
+            // ✅ VALIDATION : Parser la réponse de manière sécurisée
+            let data;
+            if (typeof safeAPIParse === 'function') {
+              const parsed = await safeAPIParse(response, {
+                required: ['success', 'data'],
+                types: { success: 'boolean', data: 'object' }
+              });
+              if (!parsed.success) {
+                handleError(parsed.error || 'Réponse API invalide', 'Erreur lors du chargement des résidents', true, 'generateMenuResidentsConfirm');
+                return;
+              }
+              data = parsed.data;
+            } else {
+              if (!response.ok) {
+                const apiResult = await handleAPIResponse(response, 'generateMenuResidentsConfirm', 'Erreur lors du chargement des résidents');
+                if (!apiResult.success) return;
+                data = apiResult.data;
+              } else {
+                data = await response.json();
+              }
+            }
+            
+            // Le backend a déjà filtré par siteId et statut 'actif'
+            // Filtrage côté client : double sécurité pour l'UI (ne devrait jamais filtrer si le backend fonctionne correctement)
             const allResidents = data?.data || [];
             const siteIdStr = String(siteId);
             const residents = allResidents.filter(r => {
-              // Vérifier le statut
+              // Vérifier le statut (déjà fait par le backend, mais double sécurité)
               const status = r.status ? String(r.status).toLowerCase().trim() : '';
-              if (status !== 'actif') return false;
+              if (status !== 'actif') {
+                console.warn(`⚠️ [generateMenuResidentsConfirm] Résident avec statut "${status}" retourné par le backend (devrait être filtré)`);
+                return false;
+              }
               
-              // Vérifier que le résident appartient bien à ce site
+              // Vérifier que le résident appartient bien à ce site (déjà fait par le backend, mais double sécurité)
               const residentSiteId = r.siteId ? (r.siteId._id ? String(r.siteId._id) : String(r.siteId)) : null;
-              if (!residentSiteId || residentSiteId !== siteIdStr) return false;
+              if (!residentSiteId || residentSiteId !== siteIdStr) {
+                console.error(`🚨 [generateMenuResidentsConfirm] SÉCURITÉ - Résident du site ${residentSiteId} retourné pour le site ${siteIdStr} (le backend devrait avoir filtré)`);
+                return false;
+              }
               
               return true;
             });
-            console.log(`📊 Génération menu - Résidents pour site ${siteIdStr}: ${allResidents.length} total, ${residents.length} actifs et du bon site`);
-            let totalPortions = 0;
-            residents.forEach(resident => {
-              const ps = resident.portionSize;
-              if (ps === 0.5) totalPortions += 0.5;
-              else if (ps === 2) totalPortions += 1.5;
-              else totalPortions += 1;
-            });
+            console.log(`📊 [generateMenuResidentsConfirm] Résidents pour site ${siteIdStr}: ${allResidents.length} retournés par le backend, ${residents.length} après filtrage client (double sécurité)`);
+            
+            // ✅ NORMALISÉ : Utiliser calculateTotalPortions() pour un calcul cohérent
+            const totalPortions = calculateTotalPortions(residents);
             const peopleInput = document.getElementById('custom-menu-people');
             const typeSelect = document.getElementById('custom-menu-type');
             const periodSelect = document.getElementById('custom-menu-period');
@@ -1277,8 +1540,7 @@
             const resultsDiv = document.getElementById('custom-menu-results');
             if (resultsDiv) resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
           } catch (error) {
-            console.error('Erreur:', error);
-            showToast('Erreur lors de la génération du menu', 'error');
+            handleError(error, 'Erreur lors de la génération du menu', true, 'generateMenuResidentsConfirm');
           }
         });
       }

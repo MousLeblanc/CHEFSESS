@@ -91,9 +91,22 @@ class NotificationClient {
 
     // Déterminer le protocole WebSocket
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws/notifications`;
+    
+    // Déterminer quel type de cookie utiliser selon la page
+    // Si on est sur une page de site (ehpad-dashboard, collectivite-dashboard, etc.), utiliser siteToken
+    const isSitePage = window.location.pathname.includes('ehpad-dashboard') ||
+                       window.location.pathname.includes('collectivite-dashboard') ||
+                       window.location.pathname.includes('hopital-dashboard') ||
+                       window.location.pathname.includes('maison-retraite-dashboard') ||
+                       window.location.pathname.includes('ecole-dashboard') ||
+                       window.location.pathname.includes('entreprise-dashboard');
+    
+    // Ajouter un paramètre pour indiquer quel cookie utiliser
+    const cookieType = isSitePage ? 'siteToken' : 'token';
+    const wsUrl = `${protocol}//${window.location.host}/ws/notifications?cookieType=${cookieType}`;
     
     console.log('📡 URL WebSocket:', wsUrl);
+    console.log('   Type de cookie:', cookieType);
     
     try {
       // Les cookies sont envoyés automatiquement par le navigateur

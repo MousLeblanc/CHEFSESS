@@ -25,7 +25,27 @@ class NotificationService {
       console.log('   Origin:', req.headers.origin);
       
       // 🍪 Extraire le token depuis les cookies HTTP-Only
+      // Support à la fois 'token' (connexion normale) et 'siteToken' (connexion site)
       let token = null;
+      
+      // Vérifier si le client a spécifié quel cookie utiliser via query string
+      let cookieType = 'token'; // Par défaut
+      try {
+        const protocol = req.headers['x-forwarded-proto'] || (req.headers.host?.includes('localhost') ? 'http' : 'https');
+        const url = new URL(req.url, `${protocol}://${req.headers.host}`);
+        cookieType = url.searchParams.get('cookieType') || 'token';
+        console.log(`   📋 Type de cookie demandé: ${cookieType}`);
+        
+        // Fallback : essayer depuis la query string (compatibilité)
+        if (!token) {
+          token = url.searchParams.get('token');
+          if (token) {
+            console.log('   ✅ Token trouvé dans la query string');
+          }
+        }
+      } catch (error) {
+        console.log('   ⚠️ Erreur lors de la création de l\'URL:', error.message);
+      }
       
       // Parser les cookies depuis le header
       const cookies = req.headers.cookie;
@@ -35,25 +55,25 @@ class NotificationService {
         const cookieArray = cookies.split(';');
         for (const cookie of cookieArray) {
           const [name, value] = cookie.trim().split('=');
-          if (name === 'token') {
+          // Utiliser le cookie spécifié par le client, ou 'token' par défaut
+          if (name === cookieType && value) {
             token = value;
-            console.log('   ✅ Token trouvé dans les cookies');
+            console.log(`   ✅ Token trouvé dans le cookie "${cookieType}"`);
             break;
           }
         }
-      }
-      
-      // Fallback : essayer depuis la query string (compatibilité)
-      if (!token) {
-        try {
-          const protocol = req.headers['x-forwarded-proto'] || 'https';
-          const url = new URL(req.url, `${protocol}://${req.headers.host}`);
-          token = url.searchParams.get('token');
-          if (token) {
-            console.log('   ✅ Token trouvé dans la query string');
+        
+        // Fallback : si le cookie demandé n'existe pas, essayer l'autre
+        if (!token) {
+          const fallbackCookie = cookieType === 'token' ? 'siteToken' : 'token';
+          for (const cookie of cookieArray) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === fallbackCookie && value) {
+              token = value;
+              console.log(`   ⚠️ Cookie "${cookieType}" non trouvé, utilisation du cookie "${fallbackCookie}" en fallback`);
+              break;
+            }
           }
-        } catch (error) {
-          console.log('   ⚠️ Erreur lors de la création de l\'URL:', error.message);
         }
       }
       

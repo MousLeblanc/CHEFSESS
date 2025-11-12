@@ -86,6 +86,41 @@
 
     <!-- Onglet Menus -->
     <div id="menus-tab" class="tab-content active">
+      <!-- Section Groupes d'Élèves (Ancienne fonctionnalité restaurée) -->
+      <div class="card" style="margin-bottom: 2rem; border: 2px solid #ff6b6b;">
+        <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%); color: white; padding: 1.5rem; margin: -2rem -2rem 2rem -2rem; border-radius: 12px 12px 0 0;">
+          <h2 style="margin: 0; color: white;"><i class="fas fa-users"></i> Groupes d'Élèves</h2>
+          <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.9;">Configurez des groupes d'élèves (Maternelle, Primaire, Secondaire) avec nombre et restrictions</p>
+        </div>
+        
+        <div id="age-groups-container">
+          <!-- Les groupes seront ajoutés dynamiquement ici -->
+        </div>
+        
+        <button type="button" id="add-group-btn" class="add-group-btn" style="width: 100%; margin-top: 1rem;">
+          <i class="fas fa-plus"></i> Ajouter un groupe d'élèves
+        </button>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; align-items: center;">
+          <select id="group-meal-type-select" style="flex: 0 0 auto; min-width: 200px; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; font-size: 1rem;">
+            <option value="déjeuner">Déjeuner</option>
+            <option value="dîner">Dîner</option>
+            <option value="petit-déjeuner">Petit-déjeuner</option>
+            <option value="collation">Collation</option>
+          </select>
+          <button type="button" id="generate-menu-from-groups-btn" class="add-group-btn" style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); font-size: 1.1rem; padding: 1rem;">
+            <i class="fas fa-magic"></i> Générer un menu pour ces groupes
+          </button>
+        </div>
+        
+        <div style="background: #f0fdf4; padding: 1rem; border-radius: 8px; margin-top: 1.5rem; border-left: 4px solid #10b981;">
+          <p style="margin: 0; color: #047857; font-size: 0.9rem;">
+            <i class="fas fa-info-circle"></i> 
+            <strong>Utilisation :</strong> Créez des groupes d'élèves par niveau (Maternelle, Primaire, Secondaire) avec le nombre d'élèves et leurs restrictions alimentaires. Cliquez sur "Générer un menu" pour créer un menu adapté à tous les groupes avec les quantités appropriées.
+          </p>
+        </div>
+      </div>
+
       <!-- Générateur IA Personnalisé avec Critères Nutritionnels -->
       <div class="card" style="margin-bottom: 2rem; border: 2px solid #10b981;">
         <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 1.5rem; margin: -2rem -2rem 2rem -2rem; border-radius: 12px 12px 0 0;">
@@ -778,6 +813,9 @@
       }
     });
   </script>
+
+  <!-- Script pour la gestion des groupes d'élèves -->
+  <script type="module" src="js/ecole-dashboard.js"></script>
 
 </body>
 </html>
