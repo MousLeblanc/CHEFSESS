@@ -414,7 +414,10 @@ async function generateMenuViaAPI(numberOfPeople, mealType, dietaryRestrictions,
   if (progressText) progressText.textContent = 'Génération du menu en cours...';
   
   try {
-    const response = await fetch('/api/menu/generate-custom', {
+    // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+    const response = await fetchFn('/api/menu/generate-custom', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

@@ -26,6 +26,35 @@ class RestaurantSupplierManager {
             return;
         }
 
+        // Vérifier si un supplierId est dans l'URL (méthode la plus fiable pour les onglets multiples)
+        const urlParams = new URLSearchParams(window.location.search);
+        const supplierIdFromUrl = urlParams.get('supplierId');
+        
+        console.log('🔍 Initialisation - URL complète:', window.location.href);
+        console.log('🔍 Initialisation - supplierId depuis URL:', supplierIdFromUrl);
+        
+        if (supplierIdFromUrl) {
+            this.selectedSupplierId = supplierIdFromUrl;
+            console.log('✅ Fournisseur restauré depuis URL:', supplierIdFromUrl);
+        } else {
+            console.log('ℹ️ Aucun fournisseur dans l\'URL, sélection automatique du premier après chargement');
+        }
+
+        // Écouter les changements d'URL (back/forward browser buttons)
+        window.addEventListener('popstate', (event) => {
+            console.log('🔄 Événement popstate détecté');
+            const urlParams = new URLSearchParams(window.location.search);
+            const supplierIdFromUrl = urlParams.get('supplierId');
+            if (supplierIdFromUrl && supplierIdFromUrl !== this.selectedSupplierId) {
+                console.log('🔄 Restauration du fournisseur depuis l\'historique:', supplierIdFromUrl);
+                this.selectedSupplierId = supplierIdFromUrl;
+                // Re-rendre la liste pour mettre à jour la sélection visuelle
+                if (this.suppliers.length > 0) {
+                    this.renderSuppliersList();
+                }
+            }
+        });
+
         this.loadSuppliers();
         this.initEventListeners();
     }
@@ -217,14 +246,78 @@ class RestaurantSupplierManager {
             suppliersList.appendChild(supplierItem);
         });
         
-        // Si aucun fournisseur n'est sélectionné mais qu'il y en a dans la liste, sélectionner le premier
-        if (this.selectedSupplierId === null && suppliersToRender.length > 0) {
-            this.selectSupplier(suppliersToRender[0]._id || suppliersToRender[0].id);
+        // Vérifier si un fournisseur doit être sélectionné
+        const urlParams = new URLSearchParams(window.location.search);
+        const supplierIdFromUrl = urlParams.get('supplierId');
+        
+        console.log('🎨 renderSuppliersList - supplierId depuis URL:', supplierIdFromUrl);
+        console.log('🎨 renderSuppliersList - this.selectedSupplierId:', this.selectedSupplierId);
+        console.log('🎨 renderSuppliersList - Nombre de fournisseurs:', suppliersToRender.length);
+        
+        // Si un supplierId est dans l'URL, l'utiliser (priorité absolue)
+        if (supplierIdFromUrl) {
+            const supplierExists = suppliersToRender.find(s => {
+                const id = s._id || s.id;
+                return String(id) === String(supplierIdFromUrl);
+            });
+            
+            console.log('🔍 Fournisseur de l\'URL existe dans la liste?', !!supplierExists);
+            
+            if (supplierExists) {
+                // Le fournisseur existe dans la liste, le sélectionner
+                console.log('✅ Sélection du fournisseur depuis URL:', supplierIdFromUrl);
+                this.selectedSupplierId = supplierIdFromUrl;
+                const supplierItem = document.querySelector(`[data-id="${supplierIdFromUrl}"]`);
+                if (supplierItem) {
+                    supplierItem.classList.add('active');
+                }
+                // Charger les détails du fournisseur
+                this.renderSupplierDetails();
+            } else {
+                // Le fournisseur de l'URL n'existe pas dans la liste, sélectionner le premier
+                console.warn(`⚠️ Fournisseur ${supplierIdFromUrl} de l'URL non trouvé dans la liste, sélection du premier`);
+                if (suppliersToRender.length > 0) {
+                    const firstSupplierId = suppliersToRender[0]._id || suppliersToRender[0].id;
+                    console.log('📌 Sélection du premier fournisseur:', firstSupplierId);
+                    this.selectSupplier(firstSupplierId);
+                }
+            }
+        } else if (this.selectedSupplierId === null && suppliersToRender.length > 0) {
+            // Aucun fournisseur sélectionné et aucun dans l'URL, sélectionner le premier
+            const firstSupplierId = suppliersToRender[0]._id || suppliersToRender[0].id;
+            console.log('📌 Aucun fournisseur dans URL, sélection du premier:', firstSupplierId);
+            this.selectSupplier(firstSupplierId);
+        } else if (this.selectedSupplierId !== null) {
+            // Un fournisseur est déjà sélectionné (depuis l'URL), s'assurer qu'il est bien affiché
+            console.log('✅ Fournisseur déjà sélectionné, affichage:', this.selectedSupplierId);
+            const supplierItem = document.querySelector(`[data-id="${this.selectedSupplierId}"]`);
+            if (supplierItem) {
+                supplierItem.classList.add('active');
+            }
+            // Charger les détails du fournisseur
+            this.renderSupplierDetails();
         }
     }
 
     selectSupplier(supplierId) {
+        console.log('🎯 selectSupplier appelé avec:', supplierId);
         this.selectedSupplierId = supplierId;
+        
+        // Mettre à jour l'URL sans recharger la page (cela permet de garder l'état par onglet)
+        // Utiliser pushState au lieu de replaceState pour que l'URL soit bien dans l'historique
+        const newUrl = new URL(window.location);
+        newUrl.searchParams.set('supplierId', supplierId);
+        
+        // Vérifier si l'URL a vraiment changé avant de la mettre à jour
+        const currentUrl = window.location.href;
+        const newUrlString = newUrl.href;
+        
+        if (currentUrl !== newUrlString) {
+            window.history.pushState({ supplierId: supplierId }, '', newUrl);
+            console.log('✅ URL mise à jour:', newUrl.href);
+        } else {
+            console.log('ℹ️ URL déjà à jour:', newUrl.href);
+        }
         
         // Mettre à jour la classe active
         document.querySelectorAll('.supplier-item').forEach(item => {
@@ -490,8 +583,10 @@ class RestaurantSupplierManager {
             };
             
             try {
-                // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-                const response = await fetch('/api/orders', {
+                // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+                const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+                const response = await fetchFn('/api/orders', {
                     credentials: 'include', // 🍪 Cookie HTTP-Only
                     method: 'POST',
                     headers: {
@@ -638,7 +733,10 @@ class RestaurantSupplierManager {
                 notes: document.getElementById('order-notes').value
             };
 
-            const response = await fetch(`${API_BASE}/api/catalog/orders`, {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn(`${API_BASE}/api/catalog/orders`, {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
@@ -1030,7 +1128,10 @@ class RestaurantSupplierManager {
                     notes: notes
                 };
                 
-                const response = await fetch('/api/orders', {
+                // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+                const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+                const response = await fetchFn('/api/orders', {
                     credentials: 'include', // 🍪 Cookie HTTP-Only
                     method: 'POST',
                     headers: {
@@ -1256,8 +1357,10 @@ class RestaurantSupplierManager {
         }
         
         try {
-            // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-            const response = await fetch(`/api/orders/${orderId}/cancel`, {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn(`/api/orders/${orderId}/cancel`, {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'PUT',
                 headers: {

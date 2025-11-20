@@ -919,7 +919,10 @@ class GroupDashboard {
                     });
                     console.log(`✅ Requête normalisée:`, payload);
                     
-                    const menuResponse = await fetch('/api/intelligent-menu/generate', {
+                    // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+                    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+                    const menuResponse = await fetchFn('/api/intelligent-menu/generate', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -2364,7 +2367,10 @@ class GroupDashboard {
             try {
                 this.showLoader('Enregistrement en cours...');
                 
-                const response = await fetch(`/api/sites/${siteId}`, {
+                // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+                const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+                const response = await fetchFn(`/api/sites/${siteId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -2403,7 +2409,10 @@ class GroupDashboard {
             try {
                 this.showLoader('Activation du site...');
                 
-                const response = await fetch(`/api/sites/${siteId}`, {
+                // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+                const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+                const response = await fetchFn(`/api/sites/${siteId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -2462,8 +2471,11 @@ class GroupDashboard {
                 throw new Error('Site non trouvé');
             }
             
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
             // Utiliser l'endpoint de suppression
-            const response = await fetch(`/api/groups/${this.currentGroup}/sites/${siteId}`, {
+            const response = await fetchFn(`/api/groups/${this.currentGroup}/sites/${siteId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
@@ -2534,8 +2546,11 @@ class GroupDashboard {
 
     async logout() {
         try {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
             // 1️⃣ Appeler l'API pour supprimer le cookie côté serveur
-            await fetch('/api/auth/logout', {
+            await fetchFn('/api/auth/logout', {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -2563,7 +2578,10 @@ class GroupDashboard {
             
             this.showToast('🌱 Chargement des fournisseurs en cours...', 'info');
             
-            const response = await fetch('/api/suppliers/seed', {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn('/api/suppliers/seed', {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
@@ -2862,7 +2880,10 @@ class GroupDashboard {
                 payload.forceVariation = true;
             }
             
-            const response = await fetch('/api/menu/generate-custom', {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn('/api/menu/generate-custom', {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
@@ -3484,7 +3505,10 @@ class GroupDashboard {
             
             console.log('📤 Envoi de la déduction au serveur:', itemsToDeduct);
             
-            const response = await fetch('/api/stock/deduct', {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn('/api/stock/deduct', {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'PUT',
                 headers: {

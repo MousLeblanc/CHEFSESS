@@ -70,8 +70,28 @@ class NotificationClient {
    */
   playSound() {
     try {
-      if (this.createNotificationBeep) {
+      // Vérifier si l'audioContext existe
+      if (!this.audioContext) {
+        console.warn('⚠️ AudioContext non initialisé, tentative de réinitialisation...');
+        this.loadNotificationSound();
+      }
+      
+      // Si l'audioContext est suspendu (politique des navigateurs), le reprendre
+      if (this.audioContext && this.audioContext.state === 'suspended') {
+        console.log('🔊 Réactivation de l\'AudioContext...');
+        this.audioContext.resume().then(() => {
+          console.log('✅ AudioContext réactivé');
+          if (this.createNotificationBeep) {
+            this.createNotificationBeep();
+          }
+        }).catch(error => {
+          console.error('❌ Erreur lors de la réactivation de l\'AudioContext:', error);
+        });
+      } else if (this.createNotificationBeep) {
+        console.log('🔊 Lecture du son de notification...');
         this.createNotificationBeep();
+      } else {
+        console.warn('⚠️ createNotificationBeep non disponible');
       }
     } catch (error) {
       console.error('❌ Erreur lors de la lecture du son:', error);

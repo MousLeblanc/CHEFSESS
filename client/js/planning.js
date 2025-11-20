@@ -62,7 +62,10 @@ menuList.appendChild(div);
 
 async function generateWeekPlanning(startDate) {
   try {
-    const res = await fetch('/api/menus/generate', {
+    // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+    const res = await fetchFn('/api/menus/generate', {
       credentials: 'include', // 🍪 Cookie HTTP-Only
       method: 'POST',
       headers: {
@@ -133,7 +136,10 @@ document.getElementById('generate-week-plan').addEventListener('click', () => {
 document.querySelectorAll('.add-menu-btn').forEach(btn => {
 btn.addEventListener('click', async () => {
 const date = btn.dataset.date;
-const res = await fetch('/api/menus', {
+// ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+const res = await fetchFn('/api/menus', {
 credentials: 'include', // 🍪 Cookie HTTP-Only
 method: 'POST',
 headers: {

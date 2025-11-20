@@ -146,20 +146,74 @@ class ResidentManager {
     });
     
     const container = document.getElementById('summary-allergies-restrictions');
-    let html = '';
-    Object.entries(allergiesCount).sort((a, b) => b[1] - a[1]).forEach(([allergen, count]) => {
-      html += `<div style="background: rgba(255,255,255,0.15); padding: 0.75rem 1rem; border-radius: 8px; backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight: 500; font-size: 0.9rem;"><i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem; color: #ffc107;"></i>${this.formatAllergenName(allergen)}</span>
-        <span style="background: rgba(255,255,255,0.3); padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem;">${count}</span>
-      </div>`;
+    // ✅ SÉCURITÉ : Vider le conteneur de manière sécurisée
+    container.textContent = '';
+    
+    // ✅ SÉCURITÉ : Fonction helper pour créer un élément d'allergie/restriction de manière sécurisée
+    const createAllergyRestrictionItem = (name, count, iconClass, iconColor) => {
+      const itemDiv = document.createElement('div');
+      itemDiv.style.cssText = 'background: rgba(255,255,255,0.3); padding: 0.75rem 1rem; border-radius: 8px; backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; color: #ffffff;';
+      
+      // Conteneur pour le nom avec icône
+      const nameSpan = document.createElement('span');
+      nameSpan.style.cssText = 'font-weight: 500; font-size: 0.9rem; color: #ffffff; display: flex; align-items: center;';
+      
+      // Icône (sécurisée : classe FontAwesome hardcodée)
+      const icon = document.createElement('i');
+      icon.className = iconClass;
+      icon.style.cssText = `margin-right: 0.5rem; color: ${iconColor};`;
+      nameSpan.appendChild(icon);
+      
+      // Nom (sécurisé : utilisation de textContent)
+      const nameText = document.createTextNode(name);
+      nameSpan.appendChild(nameText);
+      
+      // Conteneur pour le count
+      const countSpan = document.createElement('span');
+      countSpan.style.cssText = 'background: rgba(255,255,255,0.45); padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem; color: #ffffff;';
+      // Sécurisé : count est un nombre, converti en string avec textContent
+      countSpan.textContent = String(count);
+      
+      itemDiv.appendChild(nameSpan);
+      itemDiv.appendChild(countSpan);
+      return itemDiv;
+    };
+    
+    // Créer les éléments pour les allergies
+    const allergiesEntries = Object.entries(allergiesCount).sort((a, b) => b[1] - a[1]);
+    allergiesEntries.forEach(([allergen, count]) => {
+      // Sécurisé : formatAllergenName retourne une string, utilisée avec textContent
+      const formattedName = this.formatAllergenName(allergen);
+      const item = createAllergyRestrictionItem(
+        formattedName,
+        count,
+        'fas fa-exclamation-triangle',
+        '#ffc107'
+      );
+      container.appendChild(item);
     });
-    Object.entries(restrictionsCount).sort((a, b) => b[1] - a[1]).forEach(([restriction, count]) => {
-      html += `<div style="background: rgba(255,255,255,0.15); padding: 0.75rem 1rem; border-radius: 8px; backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight: 500; font-size: 0.9rem;"><i class="fas fa-ban" style="margin-right: 0.5rem; color: #e74c3c;"></i>${this.formatRestrictionName(restriction)}</span>
-        <span style="background: rgba(255,255,255,0.3); padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem;">${count}</span>
-      </div>`;
+    
+    // Créer les éléments pour les restrictions
+    const restrictionsEntries = Object.entries(restrictionsCount).sort((a, b) => b[1] - a[1]);
+    restrictionsEntries.forEach(([restriction, count]) => {
+      // Sécurisé : formatRestrictionName retourne une string, utilisée avec textContent
+      const formattedName = this.formatRestrictionName(restriction);
+      const item = createAllergyRestrictionItem(
+        formattedName,
+        count,
+        'fas fa-ban',
+        '#e74c3c'
+      );
+      container.appendChild(item);
     });
-    container.innerHTML = html || '<div style="grid-column: 1/-1; text-align: center; opacity: 0.8; padding: 1rem;">Aucune allergie ou restriction enregistrée</div>';
+    
+    // Message si aucune allergie ou restriction
+    if (allergiesEntries.length === 0 && restrictionsEntries.length === 0) {
+      const emptyDiv = document.createElement('div');
+      emptyDiv.style.cssText = 'grid-column: 1/-1; text-align: center; opacity: 1; padding: 1rem; color: #ffffff;';
+      emptyDiv.textContent = 'Aucune allergie ou restriction enregistrée';
+      container.appendChild(emptyDiv);
+    }
   }
 
   formatAllergenName(allergen) {
@@ -268,45 +322,246 @@ class ResidentManager {
     const statsContainer = document.getElementById('resident-stats');
     if (!statsContainer) return;
 
-    statsContainer.innerHTML = `
-      <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px; text-align: center;">
-        <h3 style="margin: 0; color: #1976d2; font-size: 2rem;">${stats.totalResidents}</h3>
-        <p style="margin: 0.5rem 0 0 0; color: #666;">Résidents actifs</p>
-      </div>
-      <div style="background: #f3e5f5; padding: 1rem; border-radius: 8px; text-align: center;">
-        <h3 style="margin: 0; color: #7b1fa2; font-size: 2rem;">${stats.textureStats.length}</h3>
-        <p style="margin: 0.5rem 0 0 0; color: #666;">Types de textures</p>
-      </div>
-      <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px; text-align: center;">
-        <h3 style="margin: 0; color: #388e3c; font-size: 2rem;">${stats.medicalStats.length}</h3>
-        <p style="margin: 0.5rem 0 0 0; color: #666;">Conditions médicales</p>
-      </div>
-    `;
+    // ✅ SÉCURITÉ : Vider le conteneur de manière sécurisée
+    statsContainer.textContent = '';
+
+    // Créer les cartes de statistiques de manière sécurisée
+    const createStatCard = (value, label, bgColor, textColor) => {
+      const card = document.createElement('div');
+      card.style.cssText = `background: ${bgColor}; padding: 1rem; border-radius: 8px; text-align: center;`;
+      
+      const h3 = document.createElement('h3');
+      h3.style.cssText = `margin: 0; color: ${textColor}; font-size: 2rem;`;
+      h3.textContent = String(value);
+      
+      const p = document.createElement('p');
+      p.style.cssText = 'margin: 0.5rem 0 0 0; color: #666;';
+      p.textContent = label;
+      
+      card.appendChild(h3);
+      card.appendChild(p);
+      return card;
+    };
+
+    statsContainer.appendChild(createStatCard(stats.totalResidents, 'Résidents actifs', '#e3f2fd', '#1976d2'));
+    statsContainer.appendChild(createStatCard(stats.textureStats.length, 'Types de textures', '#f3e5f5', '#7b1fa2'));
+    statsContainer.appendChild(createStatCard(stats.medicalStats.length, 'Conditions médicales', '#e8f5e8', '#388e3c'));
   }
 
   renderResidents() {
     const container = document.getElementById('residents-list');
     if (!container) return;
 
+    // ✅ SÉCURITÉ : Vider le conteneur de manière sécurisée
+    container.textContent = '';
+
     if (this.residents.length === 0) {
-      container.innerHTML = `
-        <div style="text-align: center; padding: 3rem; color: #666;">
-          <i class="fas fa-user-plus" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-          <h3>Aucun résident enregistré</h3>
-          <p>Commencez par ajouter un résident pour gérer les profils médicaux.</p>
-        </div>
-      `;
+      // ✅ SÉCURITÉ : Créer le message vide de manière sécurisée
+      const emptyDiv = document.createElement('div');
+      emptyDiv.style.cssText = 'text-align: center; padding: 3rem; color: #666;';
+      
+      const icon = document.createElement('i');
+      icon.className = 'fas fa-user-plus';
+      icon.style.cssText = 'font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;';
+      emptyDiv.appendChild(icon);
+      
+      const h3 = document.createElement('h3');
+      h3.textContent = 'Aucun résident enregistré';
+      emptyDiv.appendChild(h3);
+      
+      const p = document.createElement('p');
+      p.textContent = 'Commencez par ajouter un résident pour gérer les profils médicaux.';
+      emptyDiv.appendChild(p);
+      
+      container.appendChild(emptyDiv);
       return;
     }
 
-    // Afficher en grille avec 3 colonnes
-    container.innerHTML = `
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;">
-        ${this.residents.map(resident => this.renderResidentCard(resident)).join('')}
-      </div>
-    `;
+    // ✅ SÉCURITÉ : Créer la grille de manière sécurisée
+    const gridDiv = document.createElement('div');
+    gridDiv.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;';
+    
+    // Créer les cartes de résidents de manière sécurisée
+    this.residents.forEach(resident => {
+      const cardElement = this.createResidentCardElement(resident);
+      gridDiv.appendChild(cardElement);
+    });
+    
+    container.appendChild(gridDiv);
   }
 
+  // ✅ SÉCURITÉ : Créer un élément DOM de carte résident de manière sécurisée (remplace renderResidentCard)
+  createResidentCardElement(resident) {
+    const age = this.calculateAge(resident.dateOfBirth);
+    const medicalSummary = this.getMedicalSummary(resident.nutritionalProfile);
+    const isSelected = this.selectedResidents.has(resident._id);
+    const portionSize = resident.portionSize || 1;
+
+    // Créer la carte principale
+    const card = document.createElement('div');
+    card.className = 'resident-card';
+    card.style.cssText = `
+      background: ${isSelected ? '#e8f5e8' : '#fff'};
+      border: 2px solid ${isSelected ? '#4caf50' : '#e0e0e0'};
+      border-radius: 8px;
+      padding: 0.9rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    `;
+    card.addEventListener('click', () => this.toggleResidentSelection(resident._id));
+
+    // En-tête avec nom et boutons
+    const headerDiv = document.createElement('div');
+    headerDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.6rem;';
+    
+    const nameDiv = document.createElement('div');
+    nameDiv.style.cssText = 'flex: 1; min-width: 0;';
+    
+    const h3 = document.createElement('h3');
+    h3.style.cssText = 'margin: 0 0 0.3rem 0; color: #333; display: flex; align-items: center; gap: 0.4rem; font-size: 0.95rem; font-weight: 600;';
+    
+    const checkIcon = document.createElement('i');
+    checkIcon.className = isSelected ? 'fas fa-check-circle' : 'fas fa-circle';
+    checkIcon.style.cssText = `color: ${isSelected ? '#4caf50' : '#ccc'}; font-size: 0.85rem;`;
+    h3.appendChild(checkIcon);
+    
+    const nameSpan = document.createElement('span');
+    nameSpan.style.cssText = 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
+    nameSpan.textContent = `${resident.firstName} ${resident.lastName}`;
+    h3.appendChild(nameSpan);
+    
+    const ageP = document.createElement('p');
+    ageP.style.cssText = 'margin: 0; color: #666; font-size: 0.75rem;';
+    ageP.textContent = `${age} ans${resident.roomNumber ? ` • Ch. ${resident.roomNumber}` : ''}`;
+    
+    nameDiv.appendChild(h3);
+    nameDiv.appendChild(ageP);
+    
+    // Boutons d'action
+    const buttonsDiv = document.createElement('div');
+    buttonsDiv.style.cssText = 'display: flex; gap: 0.3rem;';
+    
+    const editBtn = document.createElement('button');
+    editBtn.style.cssText = 'background: #3498db; color: white; border: none; padding: 0.35rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem;';
+    editBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.editResident(resident._id);
+    });
+    const editIcon = document.createElement('i');
+    editIcon.className = 'fas fa-edit';
+    editBtn.appendChild(editIcon);
+    
+    const deleteBtn = document.createElement('button');
+    deleteBtn.style.cssText = 'background: #e74c3c; color: white; border: none; padding: 0.35rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem;';
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.deleteResident(resident._id);
+    });
+    const deleteIcon = document.createElement('i');
+    deleteIcon.className = 'fas fa-trash';
+    deleteBtn.appendChild(deleteIcon);
+    
+    buttonsDiv.appendChild(editBtn);
+    buttonsDiv.appendChild(deleteBtn);
+    
+    headerDiv.appendChild(nameDiv);
+    headerDiv.appendChild(buttonsDiv);
+    card.appendChild(headerDiv);
+
+    // Sélecteur de portion
+    const portionDiv = document.createElement('div');
+    portionDiv.style.cssText = 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 0.6rem; border-radius: 6px; margin-bottom: 0.6rem;';
+    portionDiv.addEventListener('click', (e) => e.stopPropagation());
+    
+    const portionLabel = document.createElement('label');
+    portionLabel.style.cssText = 'display: block; margin-bottom: 0.3rem; color: white; font-size: 0.7rem; font-weight: 600;';
+    const utensilIcon = document.createElement('i');
+    utensilIcon.className = 'fas fa-utensils';
+    utensilIcon.style.cssText = 'font-size: 0.7rem;';
+    portionLabel.appendChild(utensilIcon);
+    portionLabel.appendChild(document.createTextNode(' Taille de portion'));
+    
+    const portionSelect = document.createElement('select');
+    portionSelect.style.cssText = 'width: 100%; padding: 0.4rem; border: none; border-radius: 4px; font-size: 0.75rem; font-weight: 600; background: white; color: #667eea; cursor: pointer;';
+    portionSelect.value = String(portionSize);
+    portionSelect.addEventListener('change', (e) => {
+      this.updatePortionSize(resident._id, e.target.value);
+    });
+    
+    const option05 = document.createElement('option');
+    option05.value = '0.5';
+    option05.textContent = '½ - Demi-portion';
+    if (portionSize === 0.5) option05.selected = true;
+    
+    const option1 = document.createElement('option');
+    option1.value = '1';
+    option1.textContent = '1 - Portion normale';
+    if (portionSize === 1) option1.selected = true;
+    
+    const option2 = document.createElement('option');
+    option2.value = '2';
+    option2.textContent = '2 - Double portion';
+    if (portionSize === 2) option2.selected = true;
+    
+    portionSelect.appendChild(option05);
+    portionSelect.appendChild(option1);
+    portionSelect.appendChild(option2);
+    
+    portionDiv.appendChild(portionLabel);
+    portionDiv.appendChild(portionSelect);
+    card.appendChild(portionDiv);
+
+    // Profil médical
+    const medicalDiv = document.createElement('div');
+    medicalDiv.style.cssText = 'background: #f8f9fa; padding: 0.6rem; border-radius: 6px; margin-bottom: 0.6rem; flex: 1;';
+    
+    const medicalH4 = document.createElement('h4');
+    medicalH4.style.cssText = 'margin: 0 0 0.4rem 0; color: #495057; font-size: 0.75rem; font-weight: 600;';
+    const stethIcon = document.createElement('i');
+    stethIcon.className = 'fas fa-stethoscope';
+    stethIcon.style.cssText = 'font-size: 0.7rem;';
+    medicalH4.appendChild(stethIcon);
+    medicalH4.appendChild(document.createTextNode(' Profil médical'));
+    
+    const medicalP = document.createElement('p');
+    medicalP.style.cssText = 'margin: 0; color: #666; font-size: 0.7rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;';
+    medicalP.textContent = medicalSummary || 'Aucune information médicale spécifique';
+    
+    medicalDiv.appendChild(medicalH4);
+    medicalDiv.appendChild(medicalP);
+    card.appendChild(medicalDiv);
+
+    // Contact d'urgence (si présent)
+    if (resident.emergencyContact) {
+      const contactDiv = document.createElement('div');
+      contactDiv.style.cssText = 'background: #fff3cd; padding: 0.6rem; border-radius: 6px; border-left: 3px solid #ffc107;';
+      
+      const contactH4 = document.createElement('h4');
+      contactH4.style.cssText = 'margin: 0 0 0.3rem 0; color: #856404; font-size: 0.7rem; font-weight: 600;';
+      const phoneIcon = document.createElement('i');
+      phoneIcon.className = 'fas fa-phone';
+      phoneIcon.style.cssText = 'font-size: 0.65rem;';
+      contactH4.appendChild(phoneIcon);
+      contactH4.appendChild(document.createTextNode(' Contact d\'urgence'));
+      
+      const contactP = document.createElement('p');
+      contactP.style.cssText = 'margin: 0; color: #856404; font-size: 0.65rem;';
+      contactP.textContent = `${resident.emergencyContact.name}\n${resident.emergencyContact.phone}`;
+      contactP.style.whiteSpace = 'pre-line';
+      
+      contactDiv.appendChild(contactH4);
+      contactDiv.appendChild(contactP);
+      card.appendChild(contactDiv);
+    }
+
+    return card;
+  }
+
+  // ⚠️ DÉPRÉCIÉ : Utiliser createResidentCardElement() à la place pour éviter les risques XSS
   renderResidentCard(resident) {
     const age = this.calculateAge(resident.dateOfBirth);
     const medicalSummary = this.getMedicalSummary(resident.nutritionalProfile);
@@ -458,7 +713,10 @@ class ResidentManager {
 
   async updatePortionSize(residentId, portionSize) {
     try {
-      const response = await fetch(`/api/residents/${residentId}`, {
+      // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+      const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+      
+      const response = await fetchFn(`/api/residents/${residentId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -548,7 +806,10 @@ class ResidentManager {
     }
 
     try {
-      const response = await fetch(`/api/residents/${residentId}`, {
+      // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+      const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+      
+      const response = await fetchFn(`/api/residents/${residentId}`, {
         method: 'DELETE',
         credentials: 'include'
       });
@@ -570,121 +831,316 @@ class ResidentManager {
   createResidentModal(resident = null) {
     const isEdit = !!resident;
     const modal = document.createElement('div');
+    modal.id = 'add-resident-modal';
+    modal.className = 'resident-modal';
     modal.style.cssText = `
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
       background: rgba(0,0,0,0.5); z-index: 1000; display: flex; 
       align-items: center; justify-content: center;
     `;
 
-    modal.innerHTML = `
-      <div style="background: white; border-radius: 12px; padding: 2rem; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
-        <h2 style="margin: 0 0 1.5rem 0; color: ${isEdit ? '#3498db' : '#4caf50'};">
-          <i class="fas ${isEdit ? 'fa-edit' : 'fa-user-plus'}"></i> ${isEdit ? 'Modifier le résident' : 'Ajouter un résident'}
-        </h2>
-        
-        <form id="add-resident-form" data-resident-id="${isEdit ? resident._id : ''}">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-            <div>
-              <label>Prénom *</label>
-              <input type="text" id="resident-firstname" required value="${isEdit ? resident.firstName : ''}" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
-            </div>
-            <div>
-              <label>Nom *</label>
-              <input type="text" id="resident-lastname" required value="${isEdit ? resident.lastName : ''}" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
-            </div>
-          </div>
+    // ✅ SÉCURITÉ : Fonction helper pour échapper les valeurs HTML
+    const escapeHtml = (text) => {
+      if (text == null) return '';
+      const div = document.createElement('div');
+      div.textContent = String(text);
+      return div.innerHTML;
+    };
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-            <div>
-              <label>Date de naissance *</label>
-              <input type="date" id="resident-birthdate" required value="${isEdit && resident.dateOfBirth ? resident.dateOfBirth.split('T')[0] : ''}" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
-            </div>
-            <div>
-              <label>Genre *</label>
-              <select id="resident-gender" required style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
-                <option value="">Sélectionner...</option>
-                <option value="homme" ${isEdit && resident.gender === 'homme' ? 'selected' : ''}>Homme</option>
-                <option value="femme" ${isEdit && resident.gender === 'femme' ? 'selected' : ''}>Femme</option>
-                <option value="autre" ${isEdit && resident.gender === 'autre' ? 'selected' : ''}>Autre</option>
-              </select>
-            </div>
-          </div>
+    // ✅ SÉCURITÉ : Créer le contenu de la modale de manière sécurisée
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = 'background: white; border-radius: 12px; padding: 2rem; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;';
+    
+    // Titre
+    const h2 = document.createElement('h2');
+    h2.style.cssText = `margin: 0 0 1.5rem 0; color: ${isEdit ? '#3498db' : '#4caf50'};`;
+    const titleIcon = document.createElement('i');
+    titleIcon.className = isEdit ? 'fas fa-edit' : 'fas fa-user-plus';
+    h2.appendChild(titleIcon);
+    h2.appendChild(document.createTextNode(` ${isEdit ? 'Modifier le résident' : 'Ajouter un résident'}`));
+    modalContent.appendChild(h2);
+    
+    // Formulaire
+    const form = document.createElement('form');
+    form.id = 'add-resident-form';
+    if (isEdit && resident._id) {
+      form.setAttribute('data-resident-id', String(resident._id));
+    }
+    
+    // Ligne 1: Prénom et Nom
+    const row1 = document.createElement('div');
+    row1.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;';
+    
+    const firstNameDiv = document.createElement('div');
+    const firstNameLabel = document.createElement('label');
+    firstNameLabel.textContent = 'Prénom *';
+    const firstNameInput = document.createElement('input');
+    firstNameInput.type = 'text';
+    firstNameInput.id = 'resident-firstname';
+    firstNameInput.required = true;
+    firstNameInput.value = isEdit && resident.firstName ? String(resident.firstName) : '';
+    firstNameInput.style.cssText = 'width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;';
+    firstNameDiv.appendChild(firstNameLabel);
+    firstNameDiv.appendChild(firstNameInput);
+    
+    const lastNameDiv = document.createElement('div');
+    const lastNameLabel = document.createElement('label');
+    lastNameLabel.textContent = 'Nom *';
+    const lastNameInput = document.createElement('input');
+    lastNameInput.type = 'text';
+    lastNameInput.id = 'resident-lastname';
+    lastNameInput.required = true;
+    lastNameInput.value = isEdit && resident.lastName ? String(resident.lastName) : '';
+    lastNameInput.style.cssText = 'width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;';
+    lastNameDiv.appendChild(lastNameLabel);
+    lastNameDiv.appendChild(lastNameInput);
+    
+    row1.appendChild(firstNameDiv);
+    row1.appendChild(lastNameDiv);
+    form.appendChild(row1);
+    
+    // Ligne 2: Date de naissance et Genre
+    const row2 = document.createElement('div');
+    row2.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;';
+    
+    const birthdateDiv = document.createElement('div');
+    const birthdateLabel = document.createElement('label');
+    birthdateLabel.textContent = 'Date de naissance *';
+    const birthdateInput = document.createElement('input');
+    birthdateInput.type = 'date';
+    birthdateInput.id = 'resident-birthdate';
+    birthdateInput.required = true;
+    if (isEdit && resident.dateOfBirth) {
+      birthdateInput.value = String(resident.dateOfBirth).split('T')[0];
+    }
+    birthdateInput.style.cssText = 'width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;';
+    birthdateDiv.appendChild(birthdateLabel);
+    birthdateDiv.appendChild(birthdateInput);
+    
+    const genderDiv = document.createElement('div');
+    const genderLabel = document.createElement('label');
+    genderLabel.textContent = 'Genre *';
+    const genderSelect = document.createElement('select');
+    genderSelect.id = 'resident-gender';
+    genderSelect.required = true;
+    genderSelect.style.cssText = 'width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;';
+    
+    const genderOption0 = document.createElement('option');
+    genderOption0.value = '';
+    genderOption0.textContent = 'Sélectionner...';
+    genderSelect.appendChild(genderOption0);
+    
+    ['homme', 'femme', 'autre'].forEach(gender => {
+      const option = document.createElement('option');
+      option.value = gender;
+      option.textContent = gender.charAt(0).toUpperCase() + gender.slice(1);
+      if (isEdit && resident.gender === gender) {
+        option.selected = true;
+      }
+      genderSelect.appendChild(option);
+    });
+    
+    genderDiv.appendChild(genderLabel);
+    genderDiv.appendChild(genderSelect);
+    
+    row2.appendChild(birthdateDiv);
+    row2.appendChild(genderDiv);
+    form.appendChild(row2);
+    
+    // Ligne 3: Chambre et Portion
+    const row3 = document.createElement('div');
+    row3.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;';
+    
+    const roomDiv = document.createElement('div');
+    const roomLabel = document.createElement('label');
+    roomLabel.textContent = 'Numéro de chambre';
+    const roomInput = document.createElement('input');
+    roomInput.type = 'text';
+    roomInput.id = 'resident-room';
+    roomInput.value = isEdit && resident.roomNumber ? String(resident.roomNumber) : '';
+    roomInput.style.cssText = 'width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;';
+    roomDiv.appendChild(roomLabel);
+    roomDiv.appendChild(roomInput);
+    
+    const portionDiv = document.createElement('div');
+    const portionLabel = document.createElement('label');
+    portionLabel.textContent = 'Taille de portion';
+    const portionSelect = document.createElement('select');
+    portionSelect.id = 'resident-portion';
+    portionSelect.style.cssText = 'width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;';
+    
+    const portionOptions = [
+      { value: '0.5', text: '½ - Demi-portion' },
+      { value: '1', text: '1 - Portion normale' },
+      { value: '2', text: '2 - Double portion' }
+    ];
+    
+    portionOptions.forEach(opt => {
+      const option = document.createElement('option');
+      option.value = opt.value;
+      option.textContent = opt.text;
+      if (isEdit && resident.portionSize === parseFloat(opt.value)) {
+        option.selected = true;
+      } else if (!isEdit && opt.value === '1') {
+        option.selected = true;
+      }
+      portionSelect.appendChild(option);
+    });
+    
+    portionDiv.appendChild(portionLabel);
+    portionDiv.appendChild(portionSelect);
+    
+    row3.appendChild(roomDiv);
+    row3.appendChild(portionDiv);
+    form.appendChild(row3);
+    
+    // Conditions médicales
+    const medicalDiv = document.createElement('div');
+    medicalDiv.style.cssText = 'margin-bottom: 1rem;';
+    const medicalLabel = document.createElement('label');
+    medicalLabel.textContent = 'Conditions médicales';
+    const medicalGrid = document.createElement('div');
+    medicalGrid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; margin-top: 0.5rem;';
+    
+    const conditions = ['diabete_type2', 'hypertension', 'dysphagie', 'alzheimer', 'parkinson', 'denutrition'];
+    const conditionLabels = {
+      'diabete_type2': 'Diabète type 2',
+      'hypertension': 'Hypertension',
+      'dysphagie': 'Dysphagie',
+      'alzheimer': 'Alzheimer',
+      'parkinson': 'Parkinson',
+      'denutrition': 'Dénutrition'
+    };
+    
+    conditions.forEach(condition => {
+      const label = document.createElement('label');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'medical-condition';
+      checkbox.value = condition;
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(` ${conditionLabels[condition]}`));
+      medicalGrid.appendChild(label);
+    });
+    
+    medicalDiv.appendChild(medicalLabel);
+    medicalDiv.appendChild(medicalGrid);
+    form.appendChild(medicalDiv);
+    
+    // Texture IDDSI
+    const textureDiv = document.createElement('div');
+    textureDiv.style.cssText = 'margin-bottom: 1rem;';
+    const textureLabel = document.createElement('label');
+    textureLabel.textContent = 'Texture / Consistance (IDDSI) *';
+    const textureSelect = document.createElement('select');
+    textureSelect.id = 'resident-texture';
+    textureSelect.style.cssText = 'width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;';
+    
+    const textureOptions = [
+      { value: 'iddsi_7', text: 'IDDSI 7 - Normal facile à mastiquer' },
+      { value: 'iddsi_6', text: 'IDDSI 6 - Petites morceaux tendres' },
+      { value: 'iddsi_5', text: 'IDDSI 5 - Haché lubrifié' },
+      { value: 'iddsi_4', text: 'IDDSI 4 - Purée lisse / Très épais (boisson)' },
+      { value: 'iddsi_3', text: 'IDDSI 3 - Purée fluide / Modérément épais (boisson)' },
+      { value: 'iddsi_2', text: 'IDDSI 2 - Légèrement épais (boisson)' },
+      { value: 'iddsi_1', text: 'IDDSI 1 - Très légèrement épais (boisson)' },
+      { value: 'iddsi_0', text: 'IDDSI 0 - Liquide' },
+      { value: 'finger_food', text: 'Finger Food' }
+    ];
+    
+    textureOptions.forEach(opt => {
+      const option = document.createElement('option');
+      option.value = opt.value;
+      option.textContent = opt.text;
+      textureSelect.appendChild(option);
+    });
+    
+    const textureSmall = document.createElement('small');
+    textureSmall.style.cssText = 'color: #666; font-size: 0.85rem; margin-top: 0.3rem; display: block;';
+    const infoIcon = document.createElement('i');
+    infoIcon.className = 'fas fa-info-circle';
+    textureSmall.appendChild(infoIcon);
+    textureSmall.appendChild(document.createTextNode(' IDDSI 0-4 pour liquides/boissons, IDDSI 3-7 pour aliments'));
+    
+    textureDiv.appendChild(textureLabel);
+    textureDiv.appendChild(textureSelect);
+    textureDiv.appendChild(textureSmall);
+    form.appendChild(textureDiv);
+    
+    // Allergènes
+    const allergenDiv = document.createElement('div');
+    allergenDiv.style.cssText = 'margin-bottom: 1rem;';
+    const allergenLabel = document.createElement('label');
+    allergenLabel.textContent = 'Allergènes';
+    const allergenGrid = document.createElement('div');
+    allergenGrid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; margin-top: 0.5rem;';
+    
+    const allergens = ['gluten', 'lactose', 'oeufs', 'arachides', 'poisson', 'soja'];
+    const allergenLabels = {
+      'gluten': 'Gluten',
+      'lactose': 'Lactose',
+      'oeufs': 'Œufs',
+      'arachides': 'Arachides',
+      'poisson': 'Poisson',
+      'soja': 'Soja'
+    };
+    
+    allergens.forEach(allergen => {
+      const label = document.createElement('label');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'allergen';
+      checkbox.value = allergen;
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(` ${allergenLabels[allergen]}`));
+      allergenGrid.appendChild(label);
+    });
+    
+    allergenDiv.appendChild(allergenLabel);
+    allergenDiv.appendChild(allergenGrid);
+    form.appendChild(allergenDiv);
+    
+    // Notes
+    const notesDiv = document.createElement('div');
+    notesDiv.style.cssText = 'margin-bottom: 1rem;';
+    const notesLabel = document.createElement('label');
+    notesLabel.textContent = 'Notes médicales';
+    const notesTextarea = document.createElement('textarea');
+    notesTextarea.id = 'resident-notes';
+    notesTextarea.rows = 3;
+    notesTextarea.style.cssText = 'width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; resize: vertical;';
+    notesDiv.appendChild(notesLabel);
+    notesDiv.appendChild(notesTextarea);
+    form.appendChild(notesDiv);
+    
+    // Boutons
+    const buttonsDiv = document.createElement('div');
+    buttonsDiv.style.cssText = 'display: flex; gap: 1rem; justify-content: flex-end;';
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'cancel-resident-modal-btn';
+    cancelBtn.style.cssText = 'background: #6c757d; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer;';
+    cancelBtn.textContent = 'Annuler';
+    
+    const submitBtn = document.createElement('button');
+    submitBtn.type = 'submit';
+    submitBtn.style.cssText = 'background: #4caf50; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer;';
+    const saveIcon = document.createElement('i');
+    saveIcon.className = 'fas fa-save';
+    submitBtn.appendChild(saveIcon);
+    submitBtn.appendChild(document.createTextNode(' Enregistrer'));
+    
+    buttonsDiv.appendChild(cancelBtn);
+    buttonsDiv.appendChild(submitBtn);
+    form.appendChild(buttonsDiv);
+    
+    modalContent.appendChild(form);
+    modal.appendChild(modalContent);
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-            <div>
-              <label>Numéro de chambre</label>
-              <input type="text" id="resident-room" value="${isEdit && resident.roomNumber ? resident.roomNumber : ''}" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
-            </div>
-            <div>
-              <label>Taille de portion</label>
-              <select id="resident-portion" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
-                <option value="0.5" ${isEdit && resident.portionSize === 0.5 ? 'selected' : ''}>½ - Demi-portion</option>
-                <option value="1" ${!isEdit || resident.portionSize === 1 ? 'selected' : ''}>1 - Portion normale</option>
-                <option value="2" ${isEdit && resident.portionSize === 2 ? 'selected' : ''}>2 - Double portion</option>
-              </select>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 1rem;">
-            <label>Conditions médicales</label>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; margin-top: 0.5rem;">
-              <label><input type="checkbox" class="medical-condition" value="diabete_type2"> Diabète type 2</label>
-              <label><input type="checkbox" class="medical-condition" value="hypertension"> Hypertension</label>
-              <label><input type="checkbox" class="medical-condition" value="dysphagie"> Dysphagie</label>
-              <label><input type="checkbox" class="medical-condition" value="alzheimer"> Alzheimer</label>
-              <label><input type="checkbox" class="medical-condition" value="parkinson"> Parkinson</label>
-              <label><input type="checkbox" class="medical-condition" value="denutrition"> Dénutrition</label>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 1rem;">
-            <label>Texture / Consistance (IDDSI) *</label>
-            <select id="resident-texture" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px;">
-              <option value="iddsi_7">IDDSI 7 - Normal facile à mastiquer</option>
-              <option value="iddsi_6">IDDSI 6 - Petites morceaux tendres</option>
-              <option value="iddsi_5">IDDSI 5 - Haché lubrifié</option>
-              <option value="iddsi_4">IDDSI 4 - Purée lisse / Très épais (boisson)</option>
-              <option value="iddsi_3">IDDSI 3 - Purée fluide / Modérément épais (boisson)</option>
-              <option value="iddsi_2">IDDSI 2 - Légèrement épais (boisson)</option>
-              <option value="iddsi_1">IDDSI 1 - Très légèrement épais (boisson)</option>
-              <option value="iddsi_0">IDDSI 0 - Liquide</option>
-              <option value="finger_food">Finger Food</option>
-            </select>
-            <small style="color: #666; font-size: 0.85rem; margin-top: 0.3rem; display: block;">
-              <i class="fas fa-info-circle"></i> IDDSI 0-4 pour liquides/boissons, IDDSI 3-7 pour aliments
-            </small>
-          </div>
-
-          <div style="margin-bottom: 1rem;">
-            <label>Allergènes</label>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; margin-top: 0.5rem;">
-              <label><input type="checkbox" class="allergen" value="gluten"> Gluten</label>
-              <label><input type="checkbox" class="allergen" value="lactose"> Lactose</label>
-              <label><input type="checkbox" class="allergen" value="oeufs"> Œufs</label>
-              <label><input type="checkbox" class="allergen" value="arachides"> Arachides</label>
-              <label><input type="checkbox" class="allergen" value="poisson"> Poisson</label>
-              <label><input type="checkbox" class="allergen" value="soja"> Soja</label>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 1rem;">
-            <label>Notes médicales</label>
-            <textarea id="resident-notes" rows="3" style="width: 100%; padding: 0.8rem; border: 1px solid #ced4da; border-radius: 8px; resize: vertical;"></textarea>
-          </div>
-
-          <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-            <button type="button" onclick="this.closest('.modal').remove()" style="background: #6c757d; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer;">
-              Annuler
-            </button>
-            <button type="submit" style="background: #4caf50; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer;">
-              <i class="fas fa-save"></i> Enregistrer
-            </button>
-          </div>
-        </form>
-      </div>
-    `;
-
-    // Pré-remplir les champs si c'est une édition
+    // ✅ SÉCURITÉ : Plus besoin d'innerHTML, tout est créé avec createElement
+    // Pré-remplir les champs si c'est une édition (les valeurs sont déjà définies ci-dessus)
+    // Mais on doit aussi gérer les checkboxes et selects qui dépendent de nutritionalProfile
     if (isEdit && resident.nutritionalProfile) {
       const np = resident.nutritionalProfile;
       
@@ -720,9 +1176,16 @@ class ResidentManager {
     }
 
     // Gérer la soumission du formulaire
-    modal.querySelector('#add-resident-form').addEventListener('submit', (e) => {
+    // ✅ CORRECTION : Utiliser la variable form déjà créée, pas besoin de querySelector
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
       this.saveResident(modal);
+    });
+
+    // ✅ REFACTORISÉ : Gérer le bouton Annuler
+    // ✅ CORRECTION : Utiliser la variable cancelBtn déjà créée, pas besoin de querySelector
+    cancelBtn.addEventListener('click', () => {
+      modal.remove();
     });
 
     // Fermer le modal en cliquant à l'extérieur
@@ -788,7 +1251,10 @@ class ResidentManager {
       const url = isEdit ? `/api/residents/${residentId}` : '/api/residents';
       const method = isEdit ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
+      // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+      const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+      const response = await fetchFn(url, {
         method: method,
         headers: {
           'Content-Type': 'application/json'
@@ -824,7 +1290,10 @@ class ResidentManager {
     }
 
     try {
-      const response = await fetch('/api/intelligent-menu/generate-for-residents', {
+      // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+      const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+      
+      const response = await fetchFn('/api/intelligent-menu/generate-for-residents', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -838,120 +1307,242 @@ class ResidentManager {
       });
 
       if (!response.ok) {
-        throw new Error('Erreur lors de la génération du menu');
+        // ✅ AMÉLIORATION : Récupérer le message d'erreur du serveur
+        let errorMessage = 'Erreur lors de la génération du menu';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch (e) {
+          // Si la réponse n'est pas du JSON, utiliser le message par défaut
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
       this.showMenuResults(data);
     } catch (error) {
       console.error('Erreur:', error);
-      this.showToast('Erreur lors de la génération du menu', 'error');
+      this.showToast(error.message || 'Erreur lors de la génération du menu', 'error');
     }
   }
 
   showMenuResults(data) {
     // Afficher les résultats du menu dans l'onglet Menus
     const menuResults = document.getElementById('menu-results');
-    if (menuResults && data.success) {
+    if (!menuResults) return;
+    
+    // ✅ SÉCURITÉ : Vider le conteneur de manière sécurisée
+    menuResults.textContent = '';
+    
+    if (data.success) {
       const menu = data.menu;
       const metadata = menu.metadata;
       
-      menuResults.innerHTML = `
-        <div style="background: #e8f5e8; padding: 1.5rem; border-radius: 8px; margin-top: 1rem;">
-          <h3 style="color: #4caf50; margin: 0 0 1rem 0;">
-            <i class="fas fa-magic"></i> ${menu.title}
-          </h3>
-          <p style="margin: 0 0 1rem 0; color: #666;">
-            ${menu.description}
-          </p>
+      // ✅ SÉCURITÉ : Créer les éléments de manière sécurisée avec createElement
+      const container = document.createElement('div');
+      container.style.cssText = 'background: #e8f5e8; padding: 1.5rem; border-radius: 8px; margin-top: 1rem;';
+      
+      // Titre
+      const h3 = document.createElement('h3');
+      h3.style.cssText = 'color: #4caf50; margin: 0 0 1rem 0;';
+      const magicIcon = document.createElement('i');
+      magicIcon.className = 'fas fa-magic';
+      h3.appendChild(magicIcon);
+      h3.appendChild(document.createTextNode(' '));
+      const titleText = document.createTextNode(menu.title || 'Menu généré');
+      h3.appendChild(titleText);
+      container.appendChild(h3);
+      
+      // Description
+      if (menu.description) {
+        const descP = document.createElement('p');
+        descP.style.cssText = 'margin: 0 0 1rem 0; color: #666;';
+        descP.textContent = menu.description;
+        container.appendChild(descP);
+      }
+      
+      // Statistiques
+      const statsGrid = document.createElement('div');
+      statsGrid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;';
+      
+      const createStatCard = (value, label) => {
+        const card = document.createElement('div');
+        card.style.cssText = 'background: #fff; padding: 1rem; border-radius: 8px; text-align: center;';
+        const h4 = document.createElement('h4');
+        h4.style.cssText = 'margin: 0; color: #4caf50; font-size: 1.5rem;';
+        h4.textContent = String(value);
+        const p = document.createElement('p');
+        p.style.cssText = 'margin: 0.5rem 0 0 0; color: #666;';
+        p.textContent = label;
+        card.appendChild(h4);
+        card.appendChild(p);
+        return card;
+      };
+      
+      statsGrid.appendChild(createStatCard(metadata.totalPeople || 0, 'Résidents'));
+      statsGrid.appendChild(createStatCard(metadata.medicalGroups?.length || 0, 'Groupes médicaux'));
+      statsGrid.appendChild(createStatCard(menu.mainMenu?.dishes?.length || 0, 'Plats générés'));
+      container.appendChild(statsGrid);
+      
+      // Menu principal
+      if (menu.mainMenu && menu.mainMenu.dishes) {
+        const mainMenuDiv = document.createElement('div');
+        mainMenuDiv.style.cssText = 'background: #fff; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;';
+        
+        const menuH4 = document.createElement('h4');
+        menuH4.style.cssText = 'margin: 0 0 1rem 0; color: #333;';
+        const utensilIcon = document.createElement('i');
+        utensilIcon.className = 'fas fa-utensils';
+        menuH4.appendChild(utensilIcon);
+        menuH4.appendChild(document.createTextNode(' Menu principal'));
+        mainMenuDiv.appendChild(menuH4);
+        
+        const dishesGrid = document.createElement('div');
+        dishesGrid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;';
+        
+        menu.mainMenu.dishes.forEach(dish => {
+          const dishDiv = document.createElement('div');
+          dishDiv.style.cssText = 'border: 1px solid #e0e0e0; padding: 1rem; border-radius: 8px;';
           
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
-            <div style="background: #fff; padding: 1rem; border-radius: 8px; text-align: center;">
-              <h4 style="margin: 0; color: #4caf50; font-size: 1.5rem;">${metadata.totalPeople}</h4>
-              <p style="margin: 0.5rem 0 0 0; color: #666;">Résidents</p>
-            </div>
-            <div style="background: #fff; padding: 1rem; border-radius: 8px; text-align: center;">
-              <h4 style="margin: 0; color: #4caf50; font-size: 1.5rem;">${metadata.medicalGroups.length}</h4>
-              <p style="margin: 0.5rem 0 0 0; color: #666;">Groupes médicaux</p>
-            </div>
-            <div style="background: #fff; padding: 1rem; border-radius: 8px; text-align: center;">
-              <h4 style="margin: 0; color: #4caf50; font-size: 1.5rem;">${menu.mainMenu.dishes.length}</h4>
-              <p style="margin: 0.5rem 0 0 0; color: #666;">Plats générés</p>
-            </div>
-          </div>
-
-          <div style="background: #fff; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-            <h4 style="margin: 0 0 1rem 0; color: #333;">
-              <i class="fas fa-utensils"></i> Menu principal
-            </h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
-              ${menu.mainMenu.dishes.map(dish => `
-                <div style="border: 1px solid #e0e0e0; padding: 1rem; border-radius: 8px;">
-                  <h5 style="margin: 0 0 0.5rem 0; color: #4caf50;">${dish.title}</h5>
-                  <p style="margin: 0; color: #666; font-size: 0.9rem;">${dish.description || 'Description non disponible'}</p>
-                  <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #888;">
-                    <span style="background: #e3f2fd; padding: 0.25rem 0.5rem; border-radius: 4px; margin-right: 0.5rem;">
-                      ${dish.servings} portions
-                    </span>
-                    <span style="background: #f3e5f5; padding: 0.25rem 0.5rem; border-radius: 4px;">
-                      ${dish.category || 'Non spécifié'}
-                    </span>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-
-          ${menu.variants && menu.variants.length > 0 ? `
-            <div style="background: #fff; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-              <h4 style="margin: 0 0 1rem 0; color: #333;">
-                <i class="fas fa-exchange-alt"></i> Variantes pour groupes spécifiques
-              </h4>
-              ${menu.variants.map(variant => `
-                <div style="border: 1px solid #e0e0e0; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                  <h5 style="margin: 0 0 0.5rem 0; color: #9c27b0;">
-                    ${variant.groupName} (${variant.count} résidents)
-                  </h5>
-                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
-                    ${variant.dishes.map(dish => `
-                      <div style="background: #f8f9fa; padding: 0.75rem; border-radius: 6px;">
-                        <strong>${dish.title}</strong>
-                        <p style="margin: 0.25rem 0 0 0; font-size: 0.8rem; color: #666;">${dish.description || ''}</p>
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
-
-          <div style="background: #fff; padding: 1rem; border-radius: 8px;">
-            <h4 style="margin: 0 0 1rem 0; color: #333;">
-              <i class="fas fa-shopping-cart"></i> Liste de courses
-            </h4>
-            <div style="max-height: 200px; overflow-y: auto;">
-              ${menu.shoppingList.map(item => `
-                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0;">
-                  <span>${item.name}</span>
-                  <span style="color: #4caf50; font-weight: 600;">${item.quantity} ${item.unit}</span>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        </div>
-      `;
+          const dishH5 = document.createElement('h5');
+          dishH5.style.cssText = 'margin: 0 0 0.5rem 0; color: #4caf50;';
+          dishH5.textContent = dish.title || 'Plat sans titre';
+          
+          const dishP = document.createElement('p');
+          dishP.style.cssText = 'margin: 0; color: #666; font-size: 0.9rem;';
+          dishP.textContent = dish.description || 'Description non disponible';
+          
+          const badgesDiv = document.createElement('div');
+          badgesDiv.style.cssText = 'margin-top: 0.5rem; font-size: 0.8rem; color: #888;';
+          
+          const servingsSpan = document.createElement('span');
+          servingsSpan.style.cssText = 'background: #e3f2fd; padding: 0.25rem 0.5rem; border-radius: 4px; margin-right: 0.5rem;';
+          servingsSpan.textContent = `${dish.servings || 0} portions`;
+          
+          const categorySpan = document.createElement('span');
+          categorySpan.style.cssText = 'background: #f3e5f5; padding: 0.25rem 0.5rem; border-radius: 4px;';
+          categorySpan.textContent = dish.category || 'Non spécifié';
+          
+          badgesDiv.appendChild(servingsSpan);
+          badgesDiv.appendChild(categorySpan);
+          
+          dishDiv.appendChild(dishH5);
+          dishDiv.appendChild(dishP);
+          dishDiv.appendChild(badgesDiv);
+          dishesGrid.appendChild(dishDiv);
+        });
+        
+        mainMenuDiv.appendChild(dishesGrid);
+        container.appendChild(mainMenuDiv);
+      }
+      
+      // Variantes (si présentes)
+      if (menu.variants && menu.variants.length > 0) {
+        const variantsDiv = document.createElement('div');
+        variantsDiv.style.cssText = 'background: #fff; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;';
+        
+        const variantsH4 = document.createElement('h4');
+        variantsH4.style.cssText = 'margin: 0 0 1rem 0; color: #333;';
+        const exchangeIcon = document.createElement('i');
+        exchangeIcon.className = 'fas fa-exchange-alt';
+        variantsH4.appendChild(exchangeIcon);
+        variantsH4.appendChild(document.createTextNode(' Variantes pour groupes spécifiques'));
+        variantsDiv.appendChild(variantsH4);
+        
+        menu.variants.forEach(variant => {
+          const variantDiv = document.createElement('div');
+          variantDiv.style.cssText = 'border: 1px solid #e0e0e0; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;';
+          
+          const variantH5 = document.createElement('h5');
+          variantH5.style.cssText = 'margin: 0 0 0.5rem 0; color: #9c27b0;';
+          variantH5.textContent = `${variant.groupName || 'Groupe'} (${variant.count || 0} résidents)`;
+          variantDiv.appendChild(variantH5);
+          
+          const variantDishesGrid = document.createElement('div');
+          variantDishesGrid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;';
+          
+          if (variant.dishes) {
+            variant.dishes.forEach(dish => {
+              const variantDishDiv = document.createElement('div');
+              variantDishDiv.style.cssText = 'background: #f8f9fa; padding: 0.75rem; border-radius: 6px;';
+              
+              const variantDishStrong = document.createElement('strong');
+              variantDishStrong.textContent = dish.title || 'Plat sans titre';
+              
+              const variantDishP = document.createElement('p');
+              variantDishP.style.cssText = 'margin: 0.25rem 0 0 0; font-size: 0.8rem; color: #666;';
+              variantDishP.textContent = dish.description || '';
+              
+              variantDishDiv.appendChild(variantDishStrong);
+              variantDishDiv.appendChild(variantDishP);
+              variantDishesGrid.appendChild(variantDishDiv);
+            });
+          }
+          
+          variantDiv.appendChild(variantDishesGrid);
+          variantsDiv.appendChild(variantDiv);
+        });
+        
+        container.appendChild(variantsDiv);
+      }
+      
+      // Liste de courses
+      if (menu.shoppingList && menu.shoppingList.length > 0) {
+        const shoppingDiv = document.createElement('div');
+        shoppingDiv.style.cssText = 'background: #fff; padding: 1rem; border-radius: 8px;';
+        
+        const shoppingH4 = document.createElement('h4');
+        shoppingH4.style.cssText = 'margin: 0 0 1rem 0; color: #333;';
+        const cartIcon = document.createElement('i');
+        cartIcon.className = 'fas fa-shopping-cart';
+        shoppingH4.appendChild(cartIcon);
+        shoppingH4.appendChild(document.createTextNode(' Liste de courses'));
+        shoppingDiv.appendChild(shoppingH4);
+        
+        const shoppingListDiv = document.createElement('div');
+        shoppingListDiv.style.cssText = 'max-height: 200px; overflow-y: auto;';
+        
+        menu.shoppingList.forEach(item => {
+          const itemDiv = document.createElement('div');
+          itemDiv.style.cssText = 'display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0;';
+          
+          const itemName = document.createElement('span');
+          itemName.textContent = item.name || 'Article';
+          
+          const itemQty = document.createElement('span');
+          itemQty.style.cssText = 'color: #4caf50; font-weight: 600;';
+          itemQty.textContent = `${item.quantity || 0} ${item.unit || ''}`;
+          
+          itemDiv.appendChild(itemName);
+          itemDiv.appendChild(itemQty);
+          shoppingListDiv.appendChild(itemDiv);
+        });
+        
+        shoppingDiv.appendChild(shoppingListDiv);
+        container.appendChild(shoppingDiv);
+      }
+      
+      menuResults.appendChild(container);
       menuResults.style.display = 'block';
     } else {
-      menuResults.innerHTML = `
-        <div style="background: #ffebee; padding: 1.5rem; border-radius: 8px; margin-top: 1rem; text-align: center;">
-          <h3 style="color: #f44336; margin: 0 0 1rem 0;">
-            <i class="fas fa-exclamation-triangle"></i> Erreur lors de la génération du menu
-          </h3>
-          <p style="margin: 0; color: #666;">
-            ${data.message || 'Une erreur inattendue s\'est produite'}
-          </p>
-        </div>
-      `;
+      // ✅ SÉCURITÉ : Message d'erreur créé de manière sécurisée
+      const errorDiv = document.createElement('div');
+      errorDiv.style.cssText = 'background: #ffebee; padding: 1.5rem; border-radius: 8px; margin-top: 1rem; text-align: center;';
+      
+      const errorH3 = document.createElement('h3');
+      errorH3.style.cssText = 'color: #f44336; margin: 0 0 1rem 0;';
+      const errorIcon = document.createElement('i');
+      errorIcon.className = 'fas fa-exclamation-triangle';
+      errorH3.appendChild(errorIcon);
+      errorH3.appendChild(document.createTextNode(' Erreur lors de la génération du menu'));
+      
+      const errorP = document.createElement('p');
+      errorP.style.cssText = 'margin: 0; color: #666;';
+      errorP.textContent = data.message || 'Une erreur inattendue s\'est produite';
+      
+      errorDiv.appendChild(errorH3);
+      errorDiv.appendChild(errorP);
+      menuResults.appendChild(errorDiv);
       menuResults.style.display = 'block';
     }
 

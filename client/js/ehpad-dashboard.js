@@ -333,6 +333,16 @@ function initTabs() {
         loadSuppliersData();
       }
       
+      // ⚖️ Charger la comparaison quand l'onglet Comparaison est sélectionné
+      if (tab === 'supplier-comparison') {
+        console.log('⚖️ Chargement de la comparaison des fournisseurs');
+        if (typeof window.loadSupplierComparison === 'function') {
+          window.loadSupplierComparison();
+        } else {
+          console.error('❌ loadSupplierComparison non disponible');
+        }
+      }
+      
       // ⚙️ Charger les paramètres quand l'onglet Paramètres est sélectionné
       if (tab === 'settings') {
         console.log('⚙️ Chargement des paramètres');
@@ -622,7 +632,10 @@ async function saveSiteSettings(e) {
 
     console.log('💾 Sauvegarde des paramètres:', settingsData);
 
-    const response = await fetch(`/api/sites/${currentUser.siteId}`, {
+    // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+    const response = await fetchFn(`/api/sites/${currentUser.siteId}`, {
       method: 'PUT',
       credentials: 'include',
       headers: {

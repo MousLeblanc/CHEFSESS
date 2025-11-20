@@ -9,6 +9,7 @@ class CustomMenuGenerator {
         this.nutritionalGoals = [];
         this.generatedMenus = [];
         this.acceptedMenu = null;
+        this.addGoalModal = null;
     }
     
     /**
@@ -17,12 +18,34 @@ class CustomMenuGenerator {
     init() {
         console.log('🎯 Initialisation du générateur de menu personnalisé');
         
+        // ✅ REFACTORISÉ : Utiliser la classe Modal réutilisable
+        const modalEl = document.getElementById('add-nutritional-goal-modal');
+        if (modalEl && typeof window.Modal !== 'undefined') {
+            this.addGoalModal = new window.Modal('add-nutritional-goal-modal', {
+                onOpen: () => {
+                    this.updateModalGoalsList();
+                    // Focus sur le premier champ
+                    const nutrientSelect = document.getElementById('goal-nutrient');
+                    if (nutrientSelect) {
+                        setTimeout(() => nutrientSelect.focus(), 100);
+                    }
+                },
+                onClose: () => {
+                    // Réinitialiser le formulaire
+                    const form = document.getElementById('add-nutritional-goal-form');
+                    if (form) form.reset();
+                },
+                closeOnBackdropClick: true,
+                closeOnEscape: true,
+                lockBodyScroll: true
+            });
+        }
+        
         // Événements
         const addGoalBtn = document.getElementById('add-goal-btn');
         const customMenuForm = document.getElementById('generate-custom-menu-form');
         const addGoalForm = document.getElementById('add-nutritional-goal-form');
         const addAndCloseBtn = document.getElementById('add-goal-and-close-btn');
-        const modal = document.getElementById('add-nutritional-goal-modal');
         
         if (addGoalBtn) {
             addGoalBtn.addEventListener('click', () => {
@@ -45,23 +68,6 @@ class CustomMenuGenerator {
             });
         }
         
-        // Gestion de la fermeture de la modale
-        if (modal) {
-            const closeButtons = modal.querySelectorAll('.modal-close');
-            closeButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    this.closeGoalModal();
-                });
-            });
-            
-            // Fermer en cliquant en dehors
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    this.closeGoalModal();
-                }
-            });
-        }
-        
         if (customMenuForm) {
             customMenuForm.addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -71,25 +77,33 @@ class CustomMenuGenerator {
     }
     
     showAddGoalModal() {
-        const modal = document.getElementById('add-nutritional-goal-modal');
-        if (modal) {
-            modal.style.display = 'flex';
-            this.updateModalGoalsList();
-            // Focus sur le premier champ
-            const nutrientSelect = document.getElementById('goal-nutrient');
-            if (nutrientSelect) {
-                setTimeout(() => nutrientSelect.focus(), 100);
+        if (this.addGoalModal) {
+            this.addGoalModal.open();
+        } else {
+            // Fallback si Modal n'est pas disponible
+            const modal = document.getElementById('add-nutritional-goal-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                this.updateModalGoalsList();
+                const nutrientSelect = document.getElementById('goal-nutrient');
+                if (nutrientSelect) {
+                    setTimeout(() => nutrientSelect.focus(), 100);
+                }
             }
         }
     }
     
     closeGoalModal() {
-        const modal = document.getElementById('add-nutritional-goal-modal');
-        if (modal) {
-            modal.style.display = 'none';
-            // Réinitialiser le formulaire
-            const form = document.getElementById('add-nutritional-goal-form');
-            if (form) form.reset();
+        if (this.addGoalModal) {
+            this.addGoalModal.close();
+        } else {
+            // Fallback si Modal n'est pas disponible
+            const modal = document.getElementById('add-nutritional-goal-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                const form = document.getElementById('add-nutritional-goal-form');
+                if (form) form.reset();
+            }
         }
     }
     

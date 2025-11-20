@@ -53,7 +53,10 @@ class IntelligentMenuGenerator {
       
       // Ajouter le token seulement si présent
 
-      const response = await fetch(`${this.apiUrl}${endpoint}`, {
+      // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+      const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+      const response = await fetchFn(`${this.apiUrl}${endpoint}`, {
         credentials: 'include', // 🍪 Cookie HTTP-Only
         method: 'POST',
         headers: headers,

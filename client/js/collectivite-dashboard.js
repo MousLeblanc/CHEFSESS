@@ -715,7 +715,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 notes: formData.get('notes')
             };
 
-            const response = await fetch('/api/stock', {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn('/api/stock', {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
@@ -1097,7 +1100,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 notes: formData.get('notes')
             };
 
-            const response = await fetch('/api/suppliers', {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn('/api/suppliers', {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
@@ -1302,7 +1308,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 notes: formData.get('notes')
             };
 
-            const response = await fetch(`/api/stock/${id}`, {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn(`/api/stock/${id}`, {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'PUT',
                 headers: {
@@ -1366,7 +1375,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
                 // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
-            const response = await fetch(`/api/stock/${id}`, {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn(`/api/stock/${id}`, {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'DELETE',
                 headers: {
@@ -1507,7 +1519,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 notes: formData.get('notes')
             };
 
-            const response = await fetch(`/api/suppliers/${id}`, {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn(`/api/suppliers/${id}`, {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'PUT',
                 headers: {
@@ -1545,7 +1560,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
                 // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
-            const response = await fetch(`/api/suppliers/${id}`, {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn(`/api/suppliers/${id}`, {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'DELETE',
                 headers: {
@@ -1891,8 +1909,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
             
             try {
-                // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-                const response = await fetch('/api/orders', {
+                // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+                const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+                const response = await fetchFn('/api/orders', {
                     credentials: 'include', // 🍪 Cookie HTTP-Only
                     method: 'POST',
                     headers: {
@@ -2221,7 +2241,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const token = getToken();
                 // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
 
-            const response = await fetch('/api/menus/generate-collectivite', {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn('/api/menus/generate-collectivite', {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
@@ -2367,9 +2390,12 @@ window.saveMenu = function(menuIndex) {
     const menu = window.generatedMenus[menuIndex];
     if (!menu) return;
     
+    // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
     // Appeler l'API de sauvegarde
     // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-    fetch('/api/menus/save', {
+    fetchFn('/api/menus/save', {
         credentials: 'include', // 🍪 Cookie HTTP-Only
         method: 'POST',
         headers: {
@@ -2400,8 +2426,10 @@ window.saveMenu = function(menuIndex) {
 // Fonction pour déduire les ingrédients du stock
 async function deductStockItems(itemsToDeduct) {
     try {
-        // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-        const response = await fetch('/api/stock/deduct', {
+        // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+        const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+        const response = await fetchFn('/api/stock/deduct', {
             credentials: 'include', // 🍪 Cookie HTTP-Only
             method: 'PUT',
             headers: {
@@ -2650,7 +2678,10 @@ window.checkoutCart = async function() {
                 notes: notes
             };
             
-            const response = await fetch('/api/orders', {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn('/api/orders', {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
@@ -2875,8 +2906,10 @@ window.cancelMyOrder = async function(orderId) {
     }
     
     try {
-        // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-        const response = await fetch(`/api/orders/${orderId}/cancel`, {
+        // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+        const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+        const response = await fetchFn(`/api/orders/${orderId}/cancel`, {
             credentials: 'include', // 🍪 Cookie HTTP-Only
             method: 'PUT',
             headers: {

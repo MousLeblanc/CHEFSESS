@@ -435,7 +435,10 @@ function initStockOCR(modal) {
       const formData = new FormData();
       formData.append('file', file);
       
-      const response = await fetch('/api/stock/ocr', {
+      // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+      const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+      const response = await fetchFn('/api/stock/ocr', {
         method: 'POST',
         credentials: 'include',
         body: formData
@@ -509,7 +512,10 @@ window.saveNewStockItem = async function() {
   }
 
   try {
-    const response = await fetch('/api/stock', {
+    // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+    const response = await fetchFn('/api/stock', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -662,7 +668,10 @@ window.saveEditedStockItem = async function(itemId) {
   console.log('💾 Modification article - alertThreshold:', alertThreshold, '| Type:', typeof alertThreshold);
 
   try {
-    const response = await fetch(`/api/stock/${itemId}`, {
+    // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+    const response = await fetchFn(`/api/stock/${itemId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -736,7 +745,10 @@ window.deleteStockItem = async function(itemId) {
   }
 
   try {
-    const response = await fetch(`/api/stock/${itemId}`, {
+    // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+    const response = await fetchFn(`/api/stock/${itemId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -822,8 +834,11 @@ export async function consolidateStock() {
       const mainItem = group.items[0];
       const itemsToDelete = group.items.slice(1);
       
+      // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+      const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
       // Mettre à jour la quantité du premier article
-      const updateResponse = await fetch(`/api/stock/${mainItem._id}`, {
+      const updateResponse = await fetchFn(`/api/stock/${mainItem._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -845,7 +860,7 @@ export async function consolidateStock() {
       
       // Supprimer les doublons
       for (const itemToDelete of itemsToDelete) {
-        const deleteResponse = await fetch(`/api/stock/${itemToDelete._id}`, {
+        const deleteResponse = await fetchFn(`/api/stock/${itemToDelete._id}`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include'
@@ -952,7 +967,10 @@ export async function loadDemoStock() {
     // Afficher un loader
     showToast('⏳ Chargement de 83 ingrédients en cours...', 'info');
     
-    const response = await fetch('/api/stock/seed', {
+    // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+    const response = await fetchFn('/api/stock/seed', {
       credentials: 'include', // 🍪 Cookie HTTP-Only
       method: 'POST',
       headers: {

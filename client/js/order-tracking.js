@@ -590,7 +590,10 @@ window.cancelOrder = async function(orderId) {
   }
 
   try {
-    const response = await fetch(`/api/orders/${orderId}/cancel`, {
+    // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+    const response = await fetchFn(`/api/orders/${orderId}/cancel`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'

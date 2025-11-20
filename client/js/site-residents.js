@@ -601,7 +601,10 @@ class SiteResidents {
         }
         
         try {
-            const response = await fetch(`/api/residents/${residentId}`, {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn(`/api/residents/${residentId}`, {
                 method: 'DELETE',
                 credentials: 'include',
                 headers: {
@@ -674,7 +677,10 @@ class SiteResidents {
 
     async logout() {
         try {
-            const response = await fetch('/api/sites/logout', {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn('/api/sites/logout', {
                 method: 'POST',
                 credentials: 'include'
             });

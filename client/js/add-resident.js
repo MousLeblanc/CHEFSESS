@@ -73,7 +73,10 @@ class AddResident {
         this.showLoading(true);
         
         try {
-            const response = await fetch('/api/residents', {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn('/api/residents', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

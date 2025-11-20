@@ -610,8 +610,11 @@ async function checkoutCart() {
     
     console.log(`📡 Création commande - Rôle: ${user.role}, Endpoint: /api/orders`);
     
+    // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
     const orderPromises = Object.values(ordersBySupplier).map(orderData =>
-      fetch('/api/orders', {
+      fetchFn('/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

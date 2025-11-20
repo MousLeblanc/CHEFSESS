@@ -396,7 +396,10 @@ class FoodCostManager {
         console.log('📤 Envoi du siteId pour création de période:', siteIdToSend);
       }
 
-      const response = await fetch(`/api/foodcost${siteIdToSend ? `?siteId=${siteIdToSend}` : ''}`, {
+      // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+      const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+      const response = await fetchFn(`/api/foodcost${siteIdToSend ? `?siteId=${siteIdToSend}` : ''}`, {
         credentials: 'include', // 🍪 Cookie HTTP-Only
         method: 'POST',
         headers: {
@@ -606,7 +609,10 @@ class FoodCostManager {
         notes: document.getElementById('expense-notes').value
       };
 
-      const response = await fetch(`/api/foodcost/${periodId}/expense`, {
+      // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+      const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+      const response = await fetchFn(`/api/foodcost/${periodId}/expense`, {
         credentials: 'include', // 🍪 Cookie HTTP-Only
         method: 'POST',
         headers: {
@@ -648,7 +654,10 @@ class FoodCostManager {
       
       console.log('🔄 Début recalcul pour période:', periodId);
       
-      const response = await fetch(`/api/foodcost/${periodId}/recalculate`, {
+      // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+      const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+      const response = await fetchFn(`/api/foodcost/${periodId}/recalculate`, {
         credentials: 'include', // 🍪 Cookie HTTP-Only
         method: 'POST',
         headers: {
@@ -711,7 +720,10 @@ class FoodCostManager {
       
       console.log('🗑️ Suppression de la période:', periodId);
       
-      const response = await fetch(`/api/foodcost/${periodId}`, {
+      // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+      const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+      const response = await fetchFn(`/api/foodcost/${periodId}`, {
         credentials: 'include', // 🍪 Cookie HTTP-Only
         method: 'DELETE',
         headers: {

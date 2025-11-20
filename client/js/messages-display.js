@@ -492,7 +492,9 @@ class MessagesDisplay {
     
     // Marquer comme lu
     try {
-      await fetch(`/api/messages/${messageId}/read`, { method: 'PUT' });
+      // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+      const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+      await fetchFn(`/api/messages/${messageId}/read`, { method: 'PUT', credentials: 'include' });
       await this.loadMessages();
     } catch (error) {
       console.error('Erreur lors du marquage comme lu:', error);

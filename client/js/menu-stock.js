@@ -129,7 +129,10 @@ async function fetchMenuFromBackend(servings = 4) {
 
   // 2. Requête API avec gestion améliorée des erreurs
   try {
-    const res = await fetch(`${API_BASE}/api/menus/generate`, {
+    // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+    const res = await fetchFn(`${API_BASE}/api/menus/generate`, {
       credentials: 'include', // 🍪 Cookie HTTP-Only
       method: 'POST',
       headers: {

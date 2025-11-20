@@ -57,8 +57,11 @@ class RecipeGenerator {
 
       console.log('🤖 Génération de recettes:', requestData);
 
+      // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+      const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
       // Appel API
-      const response = await fetch('/api/recipe-generator/generate', {
+      const response = await fetchFn('/api/recipe-generator/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -16,6 +16,19 @@ class SupplierDashboard {
     }
 
     async init() {
+        // Nettoyer les données spécifiques à d'autres dashboards pour éviter le mélange
+        // Garder uniquement 'user' qui est partagé
+        const keysToKeep = ['user'];
+        const allKeys = Object.keys(sessionStorage);
+        allKeys.forEach(key => {
+            if (!keysToKeep.includes(key)) {
+                // Supprimer les clés spécifiques à d'autres dashboards
+                if (key.includes('site') || key.includes('current') || key.includes('tab') || key.includes('cart')) {
+                    sessionStorage.removeItem(key);
+                }
+            }
+        });
+        
         // TOUJOURS vérifier avec le serveur pour garantir que l'utilisateur est toujours authentifié
         console.log('🔐 Vérification de l\'authentification avec le serveur...');
         
@@ -85,11 +98,17 @@ class SupplierDashboard {
             // Mode démo - permettre l'accès même sans authentification
             document.getElementById('business-name').textContent = 'Mode Démo';
             this.isDemoMode = true;
+            // Mode démo : ne pas charger les données pour éviter les erreurs 403
+            console.warn('⚠️ Mode démo activé - Les données ne seront pas chargées');
+            this.showToast('⚠️ Vous devez être connecté en tant que fournisseur pour accéder à cette page', 'error');
         } else if (!isSupplier) {
             console.error('❌ Rôle incorrect:', user.role, user.roles, 'attendu: fournisseur - Mode démo activé');
             // Mode démo - permettre l'accès même avec le mauvais rôle
             document.getElementById('business-name').textContent = user.businessName || 'Mode Démo';
             this.isDemoMode = true;
+            // Mode démo : ne pas charger les données pour éviter les erreurs 403
+            console.warn('⚠️ Mode démo activé - Les données ne seront pas chargées');
+            this.showToast('⚠️ Vous devez être connecté en tant que fournisseur pour accéder à cette page', 'error');
         } else {
             console.log('✅ Utilisateur fournisseur connecté:', user.businessName);
             // Afficher le nom de l'entreprise
@@ -98,12 +117,15 @@ class SupplierDashboard {
             
             // Charger le profil fournisseur (inclut les zones de livraison)
             await this.loadSupplierProfile();
+            
+            // Charger les données initiales UNIQUEMENT si l'utilisateur est un fournisseur
+            await this.loadStats();
+            await this.loadProducts();
+            await this.loadOrders();
+            
+            // Vérifier s'il y a des commandes en attente et notifier avec sonnerie
+            await this.checkPendingOrdersOnLogin();
         }
-
-        // Charger les données initiales (même en mode démo)
-        await this.loadStats();
-        await this.loadProducts();
-        await this.loadOrders();
     }
 
     setupEventListeners() {
@@ -167,6 +189,15 @@ class SupplierDashboard {
 
         if (addZoneBtn) {
             addZoneBtn.addEventListener('click', () => this.addDeliveryZone());
+        }
+        
+        // Initialiser l'autocomplete pour le champ ville quand l'onglet profil est visible
+        // On l'initialisera aussi quand l'onglet est activé
+        const profileTab = document.getElementById('profile-tab');
+        if (profileTab && profileTab.style.display !== 'none') {
+            setTimeout(() => {
+                this.initCityAutocomplete();
+            }, 200);
         }
 
         if (profileForm) {
@@ -250,9 +281,74 @@ class SupplierDashboard {
             if (response.ok) {
                 const orders = await response.json();
                 this.displayOrders(orders);
+                return orders;
             }
         } catch (error) {
             this.showToast('Erreur lors du chargement des commandes', 'error');
+        }
+        return null;
+    }
+
+    /**
+     * Vérifier s'il y a des commandes en attente au moment de la connexion
+     * et notifier le fournisseur avec sonnerie
+     */
+    async checkPendingOrdersOnLogin() {
+        try {
+            // Attendre que notificationClient soit disponible (peut prendre quelques secondes)
+            let attempts = 0;
+            const maxAttempts = 10;
+            while (!window.notificationClient && attempts < maxAttempts) {
+                console.log(`⏳ Attente de notificationClient... (tentative ${attempts + 1}/${maxAttempts})`);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                attempts++;
+            }
+            
+            const response = await fetch('/api/orders/supplier', {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                const orders = result.data || result || [];
+                
+                // Compter les commandes en attente (pending)
+                const pendingOrders = orders.filter(order => order.status === 'pending');
+                
+                if (pendingOrders.length > 0) {
+                    console.log(`🔔 ${pendingOrders.length} commande(s) en attente détectée(s) au chargement`);
+                    
+                    // Jouer le son de notification
+                    if (window.notificationClient && typeof window.notificationClient.playSound === 'function') {
+                        console.log('   🔊 Lecture du son de notification...');
+                        window.notificationClient.playSound();
+                    } else {
+                        console.warn('   ⚠️ notificationClient.playSound non disponible');
+                    }
+                    
+                    // Afficher une notification
+                    this.showToast(
+                        `🔔 Vous avez ${pendingOrders.length} commande(s) en attente de confirmation`,
+                        'info'
+                    );
+                    
+                    // Faire vibrer l'onglet Commandes
+                    const ordersTab = document.querySelector('[data-tab="orders"]');
+                    if (ordersTab) {
+                        ordersTab.style.animation = 'pulse 1s 3';
+                        setTimeout(() => {
+                            ordersTab.style.animation = '';
+                        }, 3000);
+                    }
+                } else {
+                    console.log('✅ Aucune commande en attente');
+                }
+            }
+        } catch (error) {
+            console.error('Erreur lors de la vérification des commandes en attente:', error);
         }
     }
 
@@ -316,13 +412,16 @@ class SupplierDashboard {
 
             console.log(`🌐 Envoi ${method} vers ${url}`);
 
-            const response = await fetch(url, {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn(url, {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: method,
                 headers: {
                     'Content-Type': 'application/json',
                     // 🍪 Authorization via cookie HTTP-Only (header Authorization supprimé)
-},
+                },
                 body: JSON.stringify(formData)
             });
 
@@ -572,6 +671,81 @@ class SupplierDashboard {
         this.showToast('Zone de livraison supprimée', 'success');
     }
 
+    async initCityAutocomplete() {
+        console.log('🚀 initCityAutocomplete appelée');
+        const cityInput = document.getElementById('new-zone-city');
+        console.log('🔍 Champ new-zone-city trouvé?', !!cityInput);
+        if (!cityInput) {
+            console.warn('⚠️ Champ new-zone-city non trouvé pour l\'autocomplete');
+            console.warn('   Recherche de tous les inputs...');
+            const allInputs = document.querySelectorAll('input');
+            console.warn('   Inputs trouvés:', Array.from(allInputs).map(i => i.id || i.name || i.placeholder));
+            return;
+        }
+        
+        console.log('🔍 Initialisation de l\'autocomplete pour les villes...');
+        
+        // Fonction pour initialiser l'autocomplete
+        const doInit = (initFn) => {
+            if (typeof initFn === 'function') {
+                console.log('✅ Initialisation de l\'autocomplete...');
+                initFn('new-zone-city', (city) => {
+                    console.log('Ville sélectionnée:', city);
+                });
+                return true;
+            }
+            return false;
+        };
+        
+        // Essayer d'abord avec la fonction globale (si le script est déjà chargé)
+        if (typeof window.initCityAutocomplete === 'function') {
+            console.log('✅ Fonction globale initCityAutocomplete trouvée');
+            doInit(window.initCityAutocomplete);
+            return;
+        }
+        
+        // Sinon, essayer d'importer le module
+        try {
+            console.log('⏳ Import du module city-autocomplete.js...');
+            // Essayer plusieurs chemins possibles
+            let module = null;
+            try {
+                module = await import('./city-autocomplete.js');
+            } catch (e1) {
+                try {
+                    module = await import('/js/city-autocomplete.js');
+                } catch (e2) {
+                    module = await import('../js/city-autocomplete.js');
+                }
+            }
+            if (module && module.initCityAutocomplete) {
+                console.log('✅ Module city-autocomplete.js importé');
+                doInit(module.initCityAutocomplete);
+                // Aussi définir la fonction globale pour les prochaines fois
+                window.initCityAutocomplete = module.initCityAutocomplete;
+            } else {
+                throw new Error('Fonction initCityAutocomplete non trouvée dans le module');
+            }
+        } catch (error) {
+            console.error('❌ Erreur lors de l\'import du module:', error);
+            // Fallback: attendre que le script se charge
+            console.log('⏳ Tentative avec la fonction globale...');
+            let attempts = 0;
+            const maxAttempts = 30;
+            const retryInterval = setInterval(() => {
+                attempts++;
+                if (typeof window.initCityAutocomplete === 'function') {
+                    clearInterval(retryInterval);
+                    console.log('✅ Autocomplete initialisé après', attempts, 'tentative(s)');
+                    doInit(window.initCityAutocomplete);
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(retryInterval);
+                    console.error('❌ Impossible d\'initialiser l\'autocomplete après', maxAttempts, 'tentatives');
+                }
+            }, 100);
+        }
+    }
+
     renderDeliveryZones() {
         const container = document.getElementById('delivery-zones-list');
         if (!container) return;
@@ -629,7 +803,10 @@ class SupplierDashboard {
 
             console.log('📦 Données à sauvegarder:', supplierData);
 
-            const response = await fetch('/api/suppliers/me', {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn('/api/suppliers/me', {
                 method: 'PUT',
                 credentials: 'include',
                 headers: {
@@ -723,7 +900,10 @@ window.deleteProduct = async function(productId) {
     }
     
     try {
-        const response = await fetch(`/api/products/${productId}`, {
+        // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+        const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+        const response = await fetchFn(`/api/products/${productId}`, {
             credentials: 'include', // 🍪 Cookie HTTP-Only
             method: 'DELETE',
             headers: {

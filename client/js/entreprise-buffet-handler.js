@@ -78,7 +78,10 @@ class EnterpriseBuffetHandler {
       // Utilise toujours l'endpoint sécurisé avec cookie
       const endpoint = '/api/intelligent-menu/generate-enterprise-buffet';
 
-      const response = await fetch(endpoint, {
+      // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+      const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+      const response = await fetchFn(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
