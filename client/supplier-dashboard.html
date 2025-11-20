@@ -812,7 +812,10 @@
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="new-zone-city">Ville</label>
-                                    <input type="text" id="new-zone-city" placeholder="Ex: Bruxelles">
+                                    <input type="text" id="new-zone-city" placeholder="Ex: Bruxelles" autocomplete="off">
+                                    <small style="color: #7f8c8d; display: block; margin-top: 0.25rem;">
+                                        <i class="fas fa-info-circle"></i> Commencez à taper pour voir les suggestions
+                                    </small>
                                 </div>
                                 <div class="form-group">
                                     <label for="new-zone-postalCode">Code postal</label>
@@ -848,6 +851,9 @@
 
     <!-- 🔒 Helper CSRF (doit être chargé avant les autres scripts qui font des requêtes) -->
     <script type="module" src="js/csrf-helper.js"></script>
+    
+    <!-- 🏙️ Autocomplete pour les villes (chargé tôt pour être disponible) -->
+    <script src="js/city-autocomplete.js" type="module"></script>
     
     <script>
         // Fonction pour récupérer l'utilisateur connecté (depuis sessionStorage uniquement, pas localStorage)
@@ -1254,7 +1260,6 @@
                         'pending': '#f39c12',
                         'confirmed': '#3498db',
                         'prepared': '#9b59b6',
-                        'ready': '#9b59b6',
                         'shipped': '#3498db',
                         'delivered': '#27ae60',
                         'issue': '#e74c3c',
@@ -1265,7 +1270,6 @@
                         'pending': 'En attente',
                         'confirmed': 'Confirmée',
                         'prepared': 'Préparée',
-                        'ready': 'Prête',
                         'shipped': '📦 Envoyée',
                         'delivered': '✅ Livrée',
                         'issue': '⚠️ Problème signalé',
@@ -1325,11 +1329,6 @@
                                     </button>
                                 ` : ''}
                                 ${order.status === 'preparing' ? `
-                                    <button onclick="updateOrderStatus('${order._id}', 'ready')" class="btn btn-primary">
-                                        <i class="fas fa-box"></i> Prête
-                                    </button>
-                                ` : ''}
-                                ${(order.status === 'ready' || order.status === 'prepared') ? `
                                     <button onclick="updateOrderStatus('${order._id}', 'shipped')" class="btn btn-primary" style="background-color: #3498db;">
                                         <i class="fas fa-shipping-fast"></i> Marquer comme envoyée
                                     </button>
@@ -1426,17 +1425,17 @@
                     // Construire les objets superPromo et toSave correctement
                     superPromo: superPromoActive ? {
                         active: true,
-                        promoPrice: null,
-                        promoQuantity: null,
-                        endDate: null
+                        promoPrice: document.getElementById('super-promo-price')?.value ? parseFloat(document.getElementById('super-promo-price').value) : null,
+                        promoQuantity: document.getElementById('super-promo-quantity')?.value ? parseInt(document.getElementById('super-promo-quantity').value) : null,
+                        endDate: document.getElementById('super-promo-end-date')?.value ? new Date(document.getElementById('super-promo-end-date').value) : null
                     } : {
                         active: false
                     },
                     toSave: saveProductValue ? {
                         active: true,
-                        savePrice: null,
-                        saveQuantity: null,
-                        expirationDate: null
+                        savePrice: document.getElementById('to-save-price')?.value ? parseFloat(document.getElementById('to-save-price').value) : null,
+                        saveQuantity: document.getElementById('to-save-quantity')?.value ? parseInt(document.getElementById('to-save-quantity').value) : null,
+                        expirationDate: document.getElementById('to-save-expiration')?.value ? new Date(document.getElementById('to-save-expiration').value) : null
                     } : {
                         active: false
                     }
@@ -1466,7 +1465,13 @@
                     const url = isEdit ? `/api/products/${productId}` : '/api/products';
                     const method = isEdit ? 'PUT' : 'POST';
                     
-                    const response = await fetch(url, {
+                    // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+                    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+                    
+                    console.log(`🌐 Envoi ${method} vers ${url}`);
+                    console.log('📦 Données envoyées:', formData);
+                    
+                    const response = await fetchFn(url, {
                         method: method,
                         headers: {
                             'Content-Type': 'application/json'
@@ -1476,6 +1481,12 @@
                     });
 
                     console.log('📡 Réponse reçue:', response.status, response.statusText);
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ error: 'Erreur inconnue' }));
+                        console.error('❌ Erreur lors de la requête:', errorData);
+                        throw new Error(errorData.message || errorData.error || `Erreur ${response.status}: ${response.statusText}`);
+                    }
 
                     if (response.ok) {
                         const result = await response.json();
@@ -1755,6 +1766,81 @@
                 if (container) {
                     container.appendChild(toast);
                     setTimeout(() => toast.remove(), 3000);
+                }
+            }
+
+            async initCityAutocomplete() {
+                console.log('🚀 initCityAutocomplete appelée');
+                const cityInput = document.getElementById('new-zone-city');
+                console.log('🔍 Champ new-zone-city trouvé?', !!cityInput);
+                if (!cityInput) {
+                    console.warn('⚠️ Champ new-zone-city non trouvé pour l\'autocomplete');
+                    console.warn('   Recherche de tous les inputs...');
+                    const allInputs = document.querySelectorAll('input');
+                    console.warn('   Inputs trouvés:', Array.from(allInputs).map(i => i.id || i.name || i.placeholder));
+                    return;
+                }
+                
+                console.log('🔍 Initialisation de l\'autocomplete pour les villes...');
+                
+                // Fonction pour initialiser l'autocomplete
+                const doInit = (initFn) => {
+                    if (typeof initFn === 'function') {
+                        console.log('✅ Initialisation de l\'autocomplete...');
+                        initFn('new-zone-city', (city) => {
+                            console.log('Ville sélectionnée:', city);
+                        });
+                        return true;
+                    }
+                    return false;
+                };
+                
+                // Essayer d'abord avec la fonction globale (si le script est déjà chargé)
+                if (typeof window.initCityAutocomplete === 'function') {
+                    console.log('✅ Fonction globale initCityAutocomplete trouvée');
+                    doInit(window.initCityAutocomplete);
+                    return;
+                }
+                
+                // Sinon, essayer d'importer le module
+                try {
+                    console.log('⏳ Import du module city-autocomplete.js...');
+                    // Essayer plusieurs chemins possibles
+                    let module = null;
+                    try {
+                        module = await import('./city-autocomplete.js');
+                    } catch (e1) {
+                        try {
+                            module = await import('/js/city-autocomplete.js');
+                        } catch (e2) {
+                            module = await import('../js/city-autocomplete.js');
+                        }
+                    }
+                    if (module && module.initCityAutocomplete) {
+                        console.log('✅ Module city-autocomplete.js importé');
+                        doInit(module.initCityAutocomplete);
+                        // Aussi définir la fonction globale pour les prochaines fois
+                        window.initCityAutocomplete = module.initCityAutocomplete;
+                    } else {
+                        throw new Error('Fonction initCityAutocomplete non trouvée dans le module');
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur lors de l\'import du module:', error);
+                    // Fallback: attendre que le script se charge
+                    console.log('⏳ Tentative avec la fonction globale...');
+                    let attempts = 0;
+                    const maxAttempts = 30;
+                    const retryInterval = setInterval(() => {
+                        attempts++;
+                        if (typeof window.initCityAutocomplete === 'function') {
+                            clearInterval(retryInterval);
+                            console.log('✅ Autocomplete initialisé après', attempts, 'tentative(s)');
+                            doInit(window.initCityAutocomplete);
+                        } else if (attempts >= maxAttempts) {
+                            clearInterval(retryInterval);
+                            console.error('❌ Impossible d\'initialiser l\'autocomplete après', maxAttempts, 'tentatives');
+                        }
+                    }, 100);
                 }
             }
         }
@@ -2447,6 +2533,24 @@
                         // Charger les données spécifiques à l'onglet
                         if (targetTab === 'profile' && window.dashboard) {
                             window.dashboard.loadSupplierProfile();
+                            // Initialiser l'autocomplétion pour les villes après un court délai
+                            setTimeout(async () => {
+                                console.log('🔄 Tentative d\'initialisation de l\'autocomplétion...');
+                                console.log('🔍 window.dashboard existe?', !!window.dashboard);
+                                console.log('🔍 typeof window.dashboard.initCityAutocomplete?', typeof window.dashboard?.initCityAutocomplete);
+                                if (window.dashboard && typeof window.dashboard.initCityAutocomplete === 'function') {
+                                    console.log('✅ Appel de initCityAutocomplete...');
+                                    try {
+                                        await window.dashboard.initCityAutocomplete();
+                                    } catch (error) {
+                                        console.error('❌ Erreur lors de l\'initialisation:', error);
+                                    }
+                                } else {
+                                    console.error('❌ initCityAutocomplete non trouvée dans window.dashboard');
+                                    console.error('   window.dashboard:', window.dashboard);
+                                    console.error('   Méthodes disponibles:', window.dashboard ? Object.keys(window.dashboard) : 'N/A');
+                                }
+                            }, 300);
                         }
                     }
                 });
@@ -2462,6 +2566,16 @@
                 if (savedBtn) {
                     // Simuler un clic pour activer l'onglet
                     savedBtn.click();
+                }
+            } else {
+                // Si aucun onglet sauvegardé, initialiser l'autocomplétion si l'onglet profile est actif par défaut
+                const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab;
+                if (activeTab === 'profile' && window.dashboard) {
+                    setTimeout(() => {
+                        if (window.dashboard && typeof window.dashboard.initCityAutocomplete === 'function') {
+                            window.dashboard.initCityAutocomplete();
+                        }
+                    }, 500);
                 }
             }
             
@@ -2496,6 +2610,22 @@
                 // Nouvelle commande reçue
                 window.notificationClient.on('new_order', (notification) => {
                     console.log('🛒 NOUVELLE COMMANDE REÇUE (WebSocket)!', notification);
+                    
+                    // 🔔 JOUER LE SON DE NOTIFICATION
+                    if (window.notificationClient && typeof window.notificationClient.playSound === 'function') {
+                        console.log('   🔊 Lecture du son de notification...');
+                        window.notificationClient.playSound();
+                    } else {
+                        console.warn('   ⚠️ notificationClient.playSound non disponible');
+                    }
+                    
+                    // Afficher un toast de notification
+                    if (window.dashboard && typeof window.dashboard.showToast === 'function') {
+                        window.dashboard.showToast(
+                            `🔔 Nouvelle commande reçue: ${notification.data?.orderNumber || 'N/A'}`,
+                            'info'
+                        );
+                    }
                     
                     // Recharger IMMÉDIATEMENT les commandes
                     if (window.dashboard && typeof window.dashboard.loadOrders === 'function') {

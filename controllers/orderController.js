@@ -4,6 +4,7 @@ import Product from '../models/Product.js';
 import Stock from '../models/Stock.js';
 import User from '../models/User.js';
 import notificationService from '../services/notificationService.js';
+import { isValidObjectId, isValidArray, isValidInteger, sanitizeInteger } from '../middleware/validationMiddleware.js';
 
 // @desc    Créer une nouvelle commande
 // @route   POST /api/orders
@@ -329,7 +330,7 @@ export const getOrder = asyncHandler(async (req, res) => {
 // @access  Private (fournisseur)
 export const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
-  const validStatuses = ['pending', 'confirmed', 'preparing', 'prepared', 'ready', 'shipped', 'cancelled'];
+  const validStatuses = ['pending', 'confirmed', 'preparing', 'shipped', 'cancelled'];
 
   if (!validStatuses.includes(status)) {
     res.status(400);
@@ -501,7 +502,7 @@ export const updateCustomerOrderStatus = asyncHandler(async (req, res) => {
 
   // Vérifier que la commande a bien été confirmée/préparée avant de confirmer la réception
   // SAUF si elle est déjà delivered (pour permettre de rajouter au stock si nécessaire)
-  const validStatusForDelivery = ['confirmed', 'preparing', 'prepared', 'ready', 'shipped', 'delivered'];
+  const validStatusForDelivery = ['confirmed', 'preparing', 'shipped', 'delivered'];
   if (status === 'delivered' && !validStatusForDelivery.includes(order.status)) {
     console.log(`❌ Status invalide pour confirmation: ${order.status} (doit être l'un de: ${validStatusForDelivery.join(', ')})`);
     res.status(400);

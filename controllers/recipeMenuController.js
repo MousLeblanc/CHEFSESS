@@ -6,6 +6,28 @@ import Resident from '../models/Resident.js';
 import openai from '../services/openaiClient.js';
 
 /**
+ * Convertit un code de texture IDDSI en label lisible
+ */
+function getTextureLabel(textureCode) {
+  const textureLabels = {
+    'iddsi_7': 'Normale (facile à mastiquer)',
+    'iddsi_6': 'Petits morceaux tendres',
+    'iddsi_5': 'Haché lubrifié',
+    'iddsi_4': 'Purée lisse / Très épais',
+    'iddsi_3': 'Purée fluide / Modérément épais',
+    'normale': 'Normale',
+    'tendre': 'Tendre',
+    'hachée': 'Hachée',
+    'mixée': 'Mixée',
+    'moulinée': 'Moulinée',
+    'lisse': 'Lisse',
+    'liquide': 'Liquide',
+    'boire': 'Boire'
+  };
+  return textureLabels[textureCode] || textureCode;
+}
+
+/**
  * Normalise les valeurs du frontend vers le format backend
  */
 /**
@@ -1745,17 +1767,25 @@ export const generateMenuForResidents = asyncHandler(async (req, res) => {
   } = req.body;
 
   try {
+    // ✅ CORRECTION : Utiliser siteId au lieu de establishment
+    if (!req.user.siteId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Utilisateur non associé à un site'
+      });
+    }
+
     // 1. Récupérer les résidents
     const residents = await Resident.find({
       _id: { $in: residentIds },
-      establishment: req.user._id,
+      siteId: req.user.siteId, // ✅ CORRECTION : Utiliser siteId au lieu de establishment
       status: 'actif'
     });
 
     if (residents.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'Aucun résident valide trouvé'
+        message: 'Aucun résident valide trouvé. Vérifiez que les résidents sélectionnés appartiennent à votre site et sont actifs.'
       });
     }
 
@@ -1763,28 +1793,53 @@ export const generateMenuForResidents = asyncHandler(async (req, res) => {
     const medicalGroups = new Map();
     
     residents.forEach(resident => {
-      const profile = resident.medicalProfile;
+      // ✅ CORRECTION : Utiliser nutritionalProfile au lieu de medicalProfile
+      const profile = resident.nutritionalProfile || {};
+      
+      // ✅ CORRECTION : Mapper la structure nutritionalProfile vers le format attendu
+      const medicalConditions = (profile.medicalConditions || []).map(c => c.condition || c);
+      const allergens = (profile.allergies || []).map(a => a.allergen || a);
+      // Extraire les restrictions et les normaliser pour correspondre à la base de données
+      const rawDietaryRestrictions = (profile.dietaryRestrictions || []).map(r => r.restriction || r);
+      const dietaryRestrictions = normalizeDietaryRestrictions(rawDietaryRestrictions);
+      // ✅ SIMPLIFICATION : Filtrer les restrictions éthiques/religieuses directement depuis le profile
+      const ethicalRestrictions = (profile.dietaryRestrictions || [])
+        .filter(dr => dr.type === 'éthique' || dr.type === 'religieuse')
+        .map(dr => normalizeDietaryRestrictions([dr.restriction || dr])[0]);
+      const texture = profile.texturePreferences?.consistency || 'iddsi_7';
+      const swallowing = profile.texturePreferences?.difficulty || 'aucune';
       
       // Créer une clé unique pour le profil médical
       const profileKey = JSON.stringify({
-        medical: (profile.medical || []).sort(),
-        texture: profile.texture || 'normale',
-        swallowing: profile.swallowing || 'normale',
-        nutrition: (profile.nutrition || []).sort(),
-        ethical: (profile.ethical || []).sort(),
-        allergens: (profile.allergens || []).sort(),
-        comfort: (profile.comfort || []).sort(),
-        ageGroup: profile.ageGroup || 'personne_agee_autonome'
+        medical: medicalConditions.sort(),
+        texture: texture,
+        swallowing: swallowing,
+        nutrition: [], // Pas de champ direct dans nutritionalProfile
+        ethical: ethicalRestrictions.sort(),
+        allergens: allergens.sort(),
+        comfort: [], // Pas de champ direct dans nutritionalProfile
+        ageGroup: 'personne_agee_autonome' // Valeur par défaut pour EHPAD
       });
       
       if (medicalGroups.has(profileKey)) {
         medicalGroups.get(profileKey).count++;
         medicalGroups.get(profileKey).residents.push(resident);
       } else {
+        // ✅ CORRECTION : Stocker les données mappées au lieu du profile brut
         medicalGroups.set(profileKey, {
           count: 1,
           residents: [resident],
-          profile: profile
+          profile: {
+            medical: medicalConditions,
+            texture: texture,
+            swallowing: swallowing,
+            nutrition: [],
+            ethical: ethicalRestrictions,
+            allergens: allergens,
+            comfort: [],
+            ageGroup: 'personne_agee_autonome'
+          },
+          nutritionalProfile: profile // Garder aussi le profile original pour référence
         });
       }
     });
@@ -1800,102 +1855,138 @@ export const generateMenuForResidents = asyncHandler(async (req, res) => {
         ...(group.profile.nutrition || []),
         ...(group.profile.ethical || [])
       ],
-      texture: group.profile.texture || 'normale',
-      swallowing: group.profile.swallowing || 'normale',
+      texture: group.profile.texture || 'iddsi_7',
+      swallowing: group.profile.swallowing || 'aucune',
       nutritionalProfile: group.profile.nutrition || [],
       ethicalRestrictions: group.profile.ethical || [],
       ageDependencyGroup: group.profile.ageGroup || 'personne_agee_autonome',
       comfortFilters: group.profile.comfort || []
     }));
 
-    // 4. Préparer les données pour la génération de menu
-    const menuData = {
-      establishmentType: 'maison_retraite',
-      ageGroups: ageGroups,
-      numDishes: numDishes,
-      allergens: [...new Set(ageGroups.flatMap(g => g.allergens))],
-      dietaryRestrictions: [...new Set(ageGroups.flatMap(g => g.dietaryRestrictions))],
-      medicalConditions: [...new Set(ageGroups.flatMap(g => g.medicalConditions))],
-      texture: ageGroups[0]?.texture || 'normale',
-      swallowing: ageGroups[0]?.swallowing || 'normale',
-      nutritionalProfile: [...new Set(ageGroups.flatMap(g => g.nutritionalProfile))],
-      ethicalRestrictions: [...new Set(ageGroups.flatMap(g => g.ethicalRestrictions))],
-      ageDependencyGroup: ageGroups[0]?.ageDependencyGroup || 'personne_agee_autonome',
-      comfortFilters: [...new Set(ageGroups.flatMap(g => g.comfortFilters))],
-      useStockOnly: useStockOnly,
-      theme: theme
-    };
+    // 4. Calculer les groupes de variantes AVANT de chercher les recettes
+    // ✅ CORRECTION : Calculer les variantGroups d'abord pour comprendre la structure
+    const variantGroups = calculateVariantGroups(ageGroups);
+    console.log(`📊 ${ageGroups.length} groupe(s) de profils similaires identifié(s)`);
+    console.log(`📊 Groupes de variantes:`, JSON.stringify(variantGroups, null, 2));
 
-    // 5. Générer le menu en utilisant la logique existante
+    // 5. ✅ CORRECTION : Récupérer un pool large de recettes compatibles avec AU MOINS UN groupe
+    // Au lieu de combiner toutes les restrictions, on récupère les recettes qui peuvent
+    // satisfaire au moins un des groupes de résidents
     const totalPeople = ageGroups.reduce((sum, group) => sum + group.count, 0);
     const majorityAgeGroup = 'adulte'; // Tous les résidents sont des adultes
 
-    // Construire les filtres pour la recherche de recettes
+    // Collecter TOUS les allergènes de TOUS les groupes (pour exclusion globale)
+    const allAllergens = [...new Set(ageGroups.flatMap(g => g.allergens || []))];
+    
+    // Construire un filtre plus permissif : recettes qui ne contiennent AUCUN allergène
+    // et qui peuvent satisfaire au moins un groupe
     const recipeFilter = {
-      allergens: { $nin: menuData.allergens }
+      // Exclure les recettes contenant des allergènes présents dans n'importe quel groupe
+      allergens: { $nin: allAllergens }
     };
 
-    // Utiliser une logique OR pour les restrictions et conditions médicales
+    // ✅ NOUVELLE LOGIQUE : Construire un filtre permissif qui trouve des recettes
+    // compatibles avec AU MOINS UN groupe, en utilisant une logique OR globale
+    
+    // Filtrer par type d'établissement
+    recipeFilter.establishmentTypes = { $in: ['maison_retraite', 'ehpad', 'hopital'] };
+    
+    // Construire des conditions OR globales : une recette est compatible si elle
+    // satisfait AU MOINS UNE des restrictions/conditions de n'importe quel groupe
     const orConditions = [];
     
-    if (menuData.dietaryRestrictions.length > 0) {
-      orConditions.push({ diet: { $in: menuData.dietaryRestrictions } });
+    // Collecter toutes les restrictions de tous les groupes
+    const allDietaryRestrictions = [...new Set(ageGroups.flatMap(g => g.dietaryRestrictions || []))];
+    const allEthicalRestrictions = [...new Set(ageGroups.flatMap(g => g.ethicalRestrictions || []))];
+    const allMedicalConditions = [...new Set(ageGroups.flatMap(g => g.medicalConditions || []))];
+    const allTextures = [...new Set(ageGroups.map(g => g.texture).filter(t => t && t !== 'iddsi_7' && t !== 'normale'))];
+    
+    // ✅ NORMALISATION : Normaliser les restrictions pour correspondre à la base de données
+    const normalizedDietaryRestrictions = normalizeDietaryRestrictions(allDietaryRestrictions);
+    const normalizedEthicalRestrictions = normalizeDietaryRestrictions(allEthicalRestrictions);
+    
+    // ✅ NOUVEAU : Séparer les restrictions "sans sel" qui sont compatibles avec les recettes normales
+    const hasHyposode = normalizedDietaryRestrictions.includes('hyposode');
+    const dietaryRestrictionsWithoutHyposode = normalizedDietaryRestrictions.filter(r => r !== 'hyposode');
+    
+    console.log(`🔄 Restrictions normalisées:`, normalizedDietaryRestrictions);
+    console.log(`🔄 Restrictions éthiques normalisées:`, normalizedEthicalRestrictions);
+    if (hasHyposode) {
+      console.log(`⚠️ "Sans sel" détecté : les recettes normales seront compatibles avec un warning`);
     }
-
-    if (menuData.medicalConditions.length > 0) {
-      orConditions.push({ pathologies: { $in: menuData.medicalConditions } });
+    if (allTextures.length > 0) {
+      console.log(`⚠️ Textures spécifiques détectées : les recettes normales seront compatibles avec un message d'adaptation`);
     }
-
-    if (menuData.nutritionalProfile.length > 0) {
-      orConditions.push({ nutritionalProfile: { $in: menuData.nutritionalProfile } });
+    
+    // Restrictions alimentaires (sans "sans sel" qui sera géré différemment)
+    if (dietaryRestrictionsWithoutHyposode.length > 0) {
+      orConditions.push(
+        { diet: { $in: dietaryRestrictionsWithoutHyposode } },
+        { dietaryRestrictions: { $in: dietaryRestrictionsWithoutHyposode } }
+      );
     }
-
-    if (menuData.ethicalRestrictions.length > 0) {
-      orConditions.push({ ethicalRestrictions: { $in: menuData.ethicalRestrictions } });
+    
+    // Restrictions éthiques/religieuses : chercher dans 'diet' ET 'dietaryRestrictions'
+    if (normalizedEthicalRestrictions.length > 0) {
+      orConditions.push(
+        { diet: { $in: normalizedEthicalRestrictions } },
+        { dietaryRestrictions: { $in: normalizedEthicalRestrictions } }
+      );
     }
-
+    
+    // Conditions médicales
+    if (allMedicalConditions.length > 0) {
+      orConditions.push({ pathologies: { $in: allMedicalConditions } });
+    }
+    
+    // ✅ NOUVEAU : Ne PAS filtrer par texture - toutes les recettes sont compatibles
+    // (on ajoutera un message d'adaptation dans les métadonnées)
+    // Les textures spécifiques seront gérées via des warnings dans les métadonnées
+    
+    // Si on a des conditions OR, les ajouter au filtre
+    // Si aucune condition spécifique, on prend toutes les recettes sans allergènes
+    // (déjà filtrées par establishmentTypes)
     if (orConditions.length > 0) {
       recipeFilter.$or = orConditions;
     }
-
-    // Texture
-    if (menuData.texture && menuData.texture !== 'normale') {
-      recipeFilter.texture = menuData.texture;
+    
+    // ✅ NOUVEAU : Si on a seulement "sans sel" ou textures, on prend toutes les recettes
+    // (les warnings seront ajoutés dans les métadonnées)
+    if (orConditions.length === 0 && (hasHyposode || allTextures.length > 0)) {
+      // Pas de filtre OR, on prend toutes les recettes sans allergènes
+      // (déjà filtrées par establishmentTypes)
     }
 
-    // Filtres de déglutition
-    if (menuData.swallowing && menuData.swallowing !== 'normale') {
-      recipeFilter.swallowing = menuData.swallowing;
-    }
-
-    // Groupe d'âge et dépendance
-    if (menuData.ageDependencyGroup && menuData.ageDependencyGroup !== 'personne_agee_autonome') {
-      recipeFilter.ageDependencyGroup = menuData.ageDependencyGroup;
-    }
-
-    // Filtres de confort
-    if (menuData.comfortFilters.length > 0) {
-      recipeFilter.comfortFilters = { $in: menuData.comfortFilters };
-    }
-
-    // 6. Récupérer les recettes compatibles
+    // 6. Récupérer les recettes compatibles (pool large)
     let compatibleRecipes = await RecipeEnriched.find(recipeFilter);
-    console.log(`🔍 ${compatibleRecipes.length} recettes compatibles trouvées pour les résidents`);
+    console.log(`🔍 ${compatibleRecipes.length} recettes potentiellement compatibles trouvées (pool large)`);
 
-    // Filtrer par tranche d'âge si nécessaire
+    // 7. Filtrer par tranche d'âge si nécessaire
     compatibleRecipes = filterRecipesByAgeGroup(compatibleRecipes, majorityAgeGroup);
     console.log(`🔍 ${compatibleRecipes.length} recettes après filtrage par âge`);
 
-    // Filtrage spécifique pour les personnes âgées
+    // 8. Filtrage spécifique pour les personnes âgées
     compatibleRecipes = filterRecipesForSeniors(compatibleRecipes);
     console.log(`👴 ${compatibleRecipes.length} recettes adaptées aux seniors après filtrage`);
 
-    // Vérification assouplie: avertir si peu de recettes mais continuer
+    // 9. ✅ FALLBACK : Si aucune recette trouvée, essayer sans restrictions (sauf allergènes)
     if (compatibleRecipes.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: `Aucune recette compatible trouvée avec les critères spécifiés.`
-      });
+      console.log(`⚠️ Aucune recette trouvée avec les restrictions, essai sans restrictions (sauf allergènes)`);
+      const fallbackFilter = {
+        allergens: { $nin: allAllergens },
+        establishmentTypes: { $in: ['maison_retraite', 'ehpad', 'hopital'] }
+      };
+      compatibleRecipes = await RecipeEnriched.find(fallbackFilter);
+      compatibleRecipes = filterRecipesByAgeGroup(compatibleRecipes, majorityAgeGroup);
+      compatibleRecipes = filterRecipesForSeniors(compatibleRecipes);
+      console.log(`🔍 ${compatibleRecipes.length} recettes trouvées avec le filtre de secours`);
+      
+      if (compatibleRecipes.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Aucune recette compatible trouvée. Vérifiez que la base de données contient des recettes pour EHPAD et que les allergènes des résidents sont correctement renseignés.`
+        });
+      }
     }
     
     if (compatibleRecipes.length < numDishes) {
@@ -1903,7 +1994,7 @@ export const generateMenuForResidents = asyncHandler(async (req, res) => {
       console.log(`   L'IA réutilisera certaines recettes ou adaptera le menu.`);
     }
 
-    // 7. Si useStockOnly, vérifier la disponibilité en stock
+    // 10. Si useStockOnly, vérifier la disponibilité en stock
     let stockItems = [];
     if (useStockOnly) {
       stockItems = await Stock.find({ userId: req.user._id });
@@ -1911,14 +2002,17 @@ export const generateMenuForResidents = asyncHandler(async (req, res) => {
       console.log(`🔍 ${compatibleRecipes.length} recettes disponibles avec le stock`);
     }
 
-    // 8. Calculer les groupes de variantes nécessaires
-    const variantGroups = calculateVariantGroups(ageGroups);
-    console.log(`📊 Groupes de variantes:`, JSON.stringify(variantGroups, null, 2));
+    // 11. ✅ CORRECTION : Préparer les données globales pour generateMenuWithVariants
+    // Les allergènes globaux sont ceux de TOUS les groupes (pour exclusion)
+    const globalAllergens = allAllergens;
+    const globalRestrictions = [...new Set(ageGroups.flatMap(g => g.dietaryRestrictions || []))];
+    const globalMedicalConditions = [...new Set(ageGroups.flatMap(g => g.medicalConditions || []))];
 
-    // 9. Générer le menu principal et les variantes
+    // 12. Générer le menu principal et les variantes pour chaque groupe
     console.log(`🎯 Génération du menu avec ${compatibleRecipes.length} recettes compatibles`);
     console.log(`🎯 Nombre de plats demandés: ${numDishes}`);
     console.log(`🎯 Nombre total de convives: ${totalPeople}`);
+    console.log(`🎯 ${ageGroups.length} groupe(s) de profils à gérer`);
     
     const menuWithVariants = await generateMenuWithVariants(
       compatibleRecipes,
@@ -1928,16 +2022,64 @@ export const generateMenuForResidents = asyncHandler(async (req, res) => {
       variantGroups,
       'maison_retraite',
       theme,
-      menuData.allergens,
-      menuData.dietaryRestrictions,
-      menuData.medicalConditions,
+      globalAllergens,
+      globalRestrictions,
+      globalMedicalConditions,
       menuStructure
     );
     
     console.log(`✅ Menu généré avec succès: ${menuWithVariants.title}`);
 
-    // 10. Générer la liste de courses globale
+    // 13. Générer la liste de courses globale
     const shoppingList = generateShoppingListForVariants(menuWithVariants);
+
+    // 14. ✅ NOUVEAU : Préparer les warnings pour "sans sel" et textures
+    const warnings = [];
+    const adaptations = [];
+    
+    // Warnings pour "sans sel"
+    if (hasHyposode) {
+      // Trouver les groupes qui ont "hyposode" dans leurs restrictions
+      const hyposodeGroups = ageGroups.filter(g => {
+        const groupRestrictions = g.dietaryRestrictions || [];
+        return groupRestrictions.includes('hyposode');
+      });
+      if (hyposodeGroups.length > 0) {
+        const hyposodeCount = hyposodeGroups.reduce((sum, g) => sum + g.count, 0);
+        warnings.push({
+          type: 'hyposode',
+          message: `⚠️ ATTENTION : ${hyposodeCount} résident(s) nécessitent un régime sans sel. Ne pas ajouter de sel lors de la préparation des plats.`,
+          affectedResidents: hyposodeCount,
+          groups: hyposodeGroups.map(g => ({
+            count: g.count,
+            restrictions: g.dietaryRestrictions || []
+          }))
+        });
+      }
+    }
+    
+    // Adaptations pour textures
+    if (allTextures.length > 0) {
+      const textureGroups = ageGroups.filter(g => 
+        g.texture && g.texture !== 'iddsi_7' && g.texture !== 'normale'
+      );
+      if (textureGroups.length > 0) {
+        textureGroups.forEach(group => {
+          const textureLabel = getTextureLabel(group.texture);
+          adaptations.push({
+            type: 'texture',
+            texture: group.texture,
+            textureLabel: textureLabel,
+            message: `🔄 ADAPTATION : Pour ${group.count} résident(s) nécessitant une texture "${textureLabel}", mixer la recette jusqu'à obtention de la texture souhaitée.`,
+            affectedResidents: group.count,
+            group: {
+              count: group.count,
+              texture: group.texture
+            }
+          });
+        });
+      }
+    }
 
     res.status(200).json({
       success: true,
@@ -1955,17 +2097,19 @@ export const generateMenuForResidents = asyncHandler(async (req, res) => {
             id: r._id,
             name: `${r.firstName} ${r.lastName}`,
             room: r.roomNumber,
-            medicalProfile: r.medicalProfile
+            nutritionalProfile: r.nutritionalProfile // ✅ CORRECTION : Utiliser nutritionalProfile
           })),
           medicalGroups: Array.from(medicalGroups.values()).map(group => ({
             count: group.count,
             profile: group.profile,
             residents: group.residents.map(r => `${r.firstName} ${r.lastName}`)
           })),
-          allergens: menuData.allergens,
-          dietaryRestrictions: menuData.dietaryRestrictions,
-          medicalConditions: menuData.medicalConditions,
-          texture: menuData.texture
+          allergens: globalAllergens,
+          dietaryRestrictions: globalRestrictions,
+          medicalConditions: globalMedicalConditions,
+          texture: ageGroups[0]?.texture || 'iddsi_7',
+          warnings: warnings, // ✅ NOUVEAU : Warnings pour "sans sel"
+          adaptations: adaptations // ✅ NOUVEAU : Adaptations pour textures
         }
       }
     });

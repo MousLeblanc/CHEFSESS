@@ -198,66 +198,109 @@ const updateMySupplier = asyncHandler(async (req, res) => {
   console.log('📦 Body reçu:', JSON.stringify(req.body, null, 2));
   console.log('📦 deliveryZones reçues:', JSON.stringify(req.body.deliveryZones, null, 2));
   
-  // Chercher le supplier par createdBy ou supplierId de l'utilisateur
-  // Utiliser req.user._id au lieu de req.user.id
-  let supplier = await Supplier.findOne({ createdBy: req.user._id });
-  
-  console.log('🔍 Supplier trouvé via createdBy:', supplier ? {
-    _id: supplier._id,
-    name: supplier.name,
-    deliveryZonesCount: supplier.deliveryZones?.length || 0
-  } : 'AUCUN');
-  
-  // Si pas trouvé, chercher via supplierId de l'utilisateur
-  if (!supplier && req.user.supplierId) {
-    supplier = await Supplier.findById(req.user.supplierId);
-    console.log('🔍 Supplier trouvé via supplierId:', supplier ? {
+  try {
+    // Chercher le supplier par createdBy ou supplierId de l'utilisateur
+    // Utiliser req.user._id au lieu de req.user.id
+    let supplier = await Supplier.findOne({ createdBy: req.user._id });
+    
+    console.log('🔍 Supplier trouvé via createdBy:', supplier ? {
       _id: supplier._id,
       name: supplier.name,
       deliveryZonesCount: supplier.deliveryZones?.length || 0
     } : 'AUCUN');
-  }
-  
-  if (!supplier) {
-    console.log('✨ Création d\'un nouveau Supplier...');
-    // Créer un supplier si aucun n'existe
-    supplier = await Supplier.create({
-      name: req.body.name || req.user.businessName || req.user.name || 'Fournisseur',
-      contact: req.body.contact || req.user.name,
-      email: req.body.email || req.user.email,
-      phone: req.body.phone || req.user.phone || '',
-      address: req.body.address || req.user.address || {},
-      createdBy: req.user._id,
-      status: 'active',
-      ...req.body
+    
+    // Si pas trouvé, chercher via supplierId de l'utilisateur
+    if (!supplier && req.user.supplierId) {
+      supplier = await Supplier.findById(req.user.supplierId);
+      console.log('🔍 Supplier trouvé via supplierId:', supplier ? {
+        _id: supplier._id,
+        name: supplier.name,
+        deliveryZonesCount: supplier.deliveryZones?.length || 0
+      } : 'AUCUN');
+    }
+    
+    if (!supplier) {
+      console.log('✨ Création d\'un nouveau Supplier...');
+      // Créer un supplier si aucun n'existe
+      // S'assurer que les champs requis sont présents
+      const supplierData = {
+        name: req.body.name || req.user.businessName || req.user.name || 'Fournisseur',
+        contact: req.body.contact || req.user.name || 'Contact',
+        email: req.body.email || req.user.email || '',
+        phone: req.body.phone || req.user.phone || '',
+        address: req.body.address || req.user.address || {},
+        createdBy: req.user._id,
+        status: 'active',
+        ...req.body
+      };
+      
+      // Nettoyer les deliveryZones (supprimer les valeurs undefined)
+      if (supplierData.deliveryZones) {
+        supplierData.deliveryZones = supplierData.deliveryZones.map(zone => {
+          const cleanZone = {};
+          if (zone.city && zone.city.trim()) cleanZone.city = zone.city.trim();
+          if (zone.postalCode && zone.postalCode.trim()) cleanZone.postalCode = zone.postalCode.trim();
+          return cleanZone;
+        }).filter(zone => zone.city || zone.postalCode);
+      }
+      
+      supplier = await Supplier.create(supplierData);
+      console.log('✅ Nouveau Supplier créé:', supplier._id);
+    } else {
+      console.log('📝 Mise à jour du Supplier existant...');
+      console.log('   - deliveryZones avant:', JSON.stringify(supplier.deliveryZones, null, 2));
+      
+      // Nettoyer les deliveryZones avant assignation
+      if (req.body.deliveryZones) {
+        req.body.deliveryZones = req.body.deliveryZones.map(zone => {
+          const cleanZone = {};
+          if (zone.city && zone.city.trim()) cleanZone.city = zone.city.trim();
+          if (zone.postalCode && zone.postalCode.trim()) cleanZone.postalCode = zone.postalCode.trim();
+          return cleanZone;
+        }).filter(zone => zone.city || zone.postalCode);
+      }
+      
+      // Mettre à jour le supplier
+      Object.assign(supplier, req.body);
+      
+      console.log('   - deliveryZones après assign:', JSON.stringify(supplier.deliveryZones, null, 2));
+      
+      await supplier.save();
+      
+      console.log('✅ Supplier sauvegardé');
+      console.log('   - deliveryZones après save:', JSON.stringify(supplier.deliveryZones, null, 2));
+    }
+    
+    // Vérifier que les zones sont bien sauvegardées
+    const savedSupplier = await Supplier.findById(supplier._id);
+    console.log('🔍 Vérification après sauvegarde:');
+    console.log('   - deliveryZonesCount:', savedSupplier.deliveryZones?.length || 0);
+    console.log('   - deliveryZones:', JSON.stringify(savedSupplier.deliveryZones, null, 2));
+    
+    res.json({
+      success: true,
+      message: 'Informations mises à jour avec succès',
+      data: savedSupplier
     });
-    console.log('✅ Nouveau Supplier créé:', supplier._id);
-  } else {
-    console.log('📝 Mise à jour du Supplier existant...');
-    console.log('   - deliveryZones avant:', JSON.stringify(supplier.deliveryZones, null, 2));
+  } catch (error) {
+    console.error('❌ Erreur lors de la mise à jour du Supplier:', error);
     
-    // Mettre à jour le supplier
-    Object.assign(supplier, req.body);
+    // Gérer les erreurs de validation Mongoose
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map(err => err.message).join(', ');
+      return res.status(400).json({
+        success: false,
+        message: `Erreur de validation: ${validationErrors}`,
+        errors: error.errors
+      });
+    }
     
-    console.log('   - deliveryZones après assign:', JSON.stringify(supplier.deliveryZones, null, 2));
-    
-    await supplier.save();
-    
-    console.log('✅ Supplier sauvegardé');
-    console.log('   - deliveryZones après save:', JSON.stringify(supplier.deliveryZones, null, 2));
+    // Autres erreurs
+    res.status(400).json({
+      success: false,
+      message: error.message || 'Erreur lors de la mise à jour du fournisseur'
+    });
   }
-  
-  // Vérifier que les zones sont bien sauvegardées
-  const savedSupplier = await Supplier.findById(supplier._id);
-  console.log('🔍 Vérification après sauvegarde:');
-  console.log('   - deliveryZonesCount:', savedSupplier.deliveryZones?.length || 0);
-  console.log('   - deliveryZones:', JSON.stringify(savedSupplier.deliveryZones, null, 2));
-  
-  res.json({
-    success: true,
-    message: 'Informations mises à jour avec succès',
-    data: savedSupplier
-  });
 });
 
 // @desc    Mettre à jour un fournisseur

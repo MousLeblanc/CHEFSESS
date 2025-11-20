@@ -314,7 +314,6 @@ class NotificationService {
     const statusMessages = {
       'confirmed': 'Votre commande a été confirmée par le fournisseur',
       'preparing': 'Votre commande est en cours de préparation',
-      'ready': 'Votre commande est prête',
       'shipped': 'Votre commande a été expédiée',
       'delivered': 'Votre commande a été livrée',
       'cancelled': 'Votre commande a été annulée'

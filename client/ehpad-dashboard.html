@@ -8,8 +8,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EHPAD - ChAIf SES</title>
-  <link rel="stylesheet" href="CSS/main.css">
-  <link rel="stylesheet" href="CSS/components/modal.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components/modal.css">
+  <link rel="stylesheet" href="css/utilities/common-styles.css">
+  <link rel="stylesheet" href="css/utilities/accessibility.css">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -18,8 +20,15 @@
     header { background: linear-gradient(135deg, #9c27b0 0%, #ba68c8 100%); color: #fff; padding: 1.5rem 2rem; border-radius: 12px; margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
     header h1 { margin: 0; font-size: 1.8em; font-weight: 600; }
     .card { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); margin-bottom: 2rem; }
-    .card h2 { margin-top: 0; margin-bottom: 1.5rem; color: #9c27b0; font-weight: 600; font-size: 1.4em; display: flex; align-items: center; }
+    .card h2 { margin-top: 0; margin-bottom: 1.5rem; color: #2d3748; font-weight: 600; font-size: 1.4em; display: flex; align-items: center; }
     .card h2 i { margin-right: 0.75rem; color: #9c27b0; }
+    /* ✅ ACCESSIBILITÉ : Exception pour les headers avec fond coloré - texte blanc */
+    .card-header-purple h2,
+    .card-header-green h2,
+    .card-header-purple .card-header-title,
+    .card-header-green .card-header-title {
+      color: #ffffff !important;
+    }
     label { display: block; margin-bottom: 0.6rem; font-weight: 500; color: #495057; font-size: 0.9rem; }
     .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.8rem 1rem; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box; font-family: 'Poppins', sans-serif; font-size: 0.95rem; }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #9c27b0; box-shadow: 0 0 0 0.2rem rgba(156, 39, 176, 0.25); outline: none; }
@@ -105,21 +114,21 @@
 <body>
   <div class="page-container">
     <header>
-      <div style="display: flex; align-items: center; gap: 1rem;">
-        <i class="fas fa-heartbeat" style="font-size: 2rem;"></i>
+      <div class="flex-center-gap">
+        <i class="fas fa-heartbeat icon-large"></i>
         <div>
-          <h1 id="site-name" style="margin: 0; font-size: 1.8em;">EHPAD</h1>
-          <p id="group-name" style="margin: 0; font-size: 0.85em; opacity: 0.9;">Vulpia Group</p>
+          <h1 id="site-name" class="m-0" style="font-size: 1.8em;">EHPAD</h1>
+          <p id="group-name" class="m-0 text-label-sm opacity-90">Vulpia Group</p>
         </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 1.5rem;">
+      <div class="flex-center-gap">
         <button onclick="showMyOrders()" style="background-color: #3498db; padding: 0.7rem 1.2rem; font-size: 0.9rem;">
           <i class="fas fa-receipt"></i> Mes Commandes
         </button>
-        <div id="cart-badge" onclick="showCart()" style="position: relative; cursor: pointer; background: #27ae60; padding: 0.7rem 1rem; border-radius: 8px; display: flex; align-items: center; gap: 0.5rem;">
-          <i class="fas fa-shopping-cart" style="font-size: 1.2rem;"></i>
+        <div id="cart-badge" onclick="showCart()" class="relative flex-center-gap-sm" style="cursor: pointer; background: #27ae60; padding: 0.7rem 1rem; border-radius: 8px;">
+          <i class="fas fa-shopping-cart icon-medium"></i>
           <span style="font-weight: 600;">Panier</span>
-          <span id="cart-count" style="position: absolute; top: -8px; right: -8px; background: #e74c3c; color: white; border-radius: 50%; width: 24px; height: 24px; display: none; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold;">0</span>
+          <span id="cart-count" class="absolute" style="top: -8px; right: -8px; background: #e74c3c; color: white; border-radius: 50%; width: 24px; height: 24px; display: none; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold;">0</span>
         </div>
         <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
       </div>
@@ -131,6 +140,7 @@
       <button class="tab-btn" data-tab="recipe-generator"><i class="fas fa-magic"></i> Générateur IA</button>
       <button class="tab-btn" data-tab="stock"><i class="fas fa-boxes"></i> Stock</button>
       <button class="tab-btn" data-tab="suppliers"><i class="fas fa-truck"></i> Fournisseurs</button>
+      <button class="tab-btn" data-tab="supplier-comparison"><i class="fas fa-balance-scale"></i> Comparaison</button>
       <button class="tab-btn" data-tab="foodcost"><i class="fas fa-chart-line"></i> Food Cost</button>
       <button class="tab-btn" data-tab="settings"><i class="fas fa-cog"></i> Paramètres</button>
     </div>
@@ -138,15 +148,15 @@
     <!-- Onglet Menus -->
     <div id="menus-tab" class="tab-content active">
       <!-- Calculateur de portions (au-dessus du générateur) -->
-      <div class="card" style="margin-bottom: 1.5rem; border: 2px solid #9c27b0;">
-        <div style="background: linear-gradient(135deg, #9c27b0 0%, #ba68c8 100%); color: white; padding: 1.25rem; margin: -2rem -2rem 1.5rem -2rem; border-radius: 12px 12px 0 0;">
-          <h2 style="margin: 0; color: white; font-size: 1.2rem; display: flex; align-items: center; gap: .5rem;">
+      <div class="card card-border-purple mb-1-5">
+        <div class="card-header-purple">
+          <h2 class="card-header-title">
             <i class="fas fa-scale-balanced"></i>
             Calculateur de portions
           </h2>
-          <p style="margin: .35rem 0 0 0; font-size: .9rem; opacity: .95;">Renseignez le nombre de résidents par type de portion. Nous calculons les portions équivalentes.</p>
+          <p class="text-subtitle">Renseignez le nombre de résidents par type de portion. Nous calculons les portions équivalentes.</p>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(3, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+        <div class="grid-3-col mb-1">
           <div class="form-group">
             <label for="portion-normal">Portion normale (auto)</label>
             <input type="number" id="portion-normal" min="0" value="0" readonly>
@@ -160,18 +170,18 @@
             <input type="number" id="portion-double" min="0" value="0" readonly>
           </div>
         </div>
-        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; justify-content: space-between;">
-          <div style="display: flex; gap: 1.25rem; flex-wrap: wrap;">
-            <div style="background:#f8f5fb; padding:.75rem 1rem; border-radius:8px; border:1px solid #e5d7f3;">
+        <div class="flex-wrap-between">
+          <div class="flex-wrap">
+            <div class="summary-box">
               <strong>Total résidents:</strong>
               <span id="calc-total-residents">0</span>
             </div>
-            <div style="background:#f3e5f5; padding:.75rem 1rem; border-radius:8px; border:1px solid #e1bee7;">
+            <div class="summary-box-alt">
               <strong>Total portions équivalentes:</strong>
               <span id="calc-total-portions">0</span>
             </div>
           </div>
-          <div style="display: flex; gap: .75rem;">
+          <div class="button-group">
             <button id="calc-refresh" style="background:#9c27b0;">
               <i class="fas fa-rotate"></i> Recalculer depuis résidents
             </button>
@@ -185,14 +195,14 @@
         </div>
       </div>
       <!-- Générateur IA Personnalisé avec Critères Nutritionnels -->
-      <div class="card" style="margin-bottom: 2rem; border: 2px solid #10b981;">
-        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 1.5rem; margin: -2rem -2rem 2rem -2rem; border-radius: 12px 12px 0 0;">
-          <h2 style="margin: 0; color: white;"><i class="fas fa-flask"></i> Générateur IA Personnalisé</h2>
-          <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.9;">Créez des menus sur-mesure avec des objectifs nutritionnels spécifiques</p>
+      <div class="card card-border-green mb-2">
+        <div class="card-header-green">
+          <h2 class="card-header-title"><i class="fas fa-flask"></i> Générateur IA Personnalisé</h2>
+          <p class="text-subtitle-sm">Créez des menus sur-mesure avec des objectifs nutritionnels spécifiques</p>
         </div>
         
         <form id="generate-custom-menu-form">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div class="grid-2-col mb-1-5">
             <div class="form-group">
               <label for="custom-menu-people"><i class="fas fa-users"></i> Nombre de personnes *</label>
               <input type="number" id="custom-menu-people" min="1" max="100" value="4" required>
@@ -367,6 +377,28 @@
       </div>
     </div>
 
+    <!-- Onglet Comparaison Fournisseurs -->
+    <div id="supplier-comparison-tab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-balance-scale"></i> Comparaison des Fournisseurs</h2>
+        <p style="color: #6c757d; margin-bottom: 1.5rem;">
+          Comparez les produits similaires entre vos fournisseurs disponibles. L'IA analyse automatiquement les produits et leurs prix pour vous aider à faire le meilleur choix.
+        </p>
+        
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+          <button id="refresh-comparison-btn" style="background-color: #3498db;"><i class="fas fa-sync"></i> Actualiser</button>
+          <button id="filter-comparison-btn" style="background-color: #6c757d;"><i class="fas fa-filter"></i> Filtrer</button>
+        </div>
+
+        <div id="comparison-loading" style="display: none; text-align: center; padding: 2rem;">
+          <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #9c27b0;"></i>
+          <p>Analyse en cours...</p>
+        </div>
+
+        <div id="comparison-results"></div>
+      </div>
+    </div>
+
     <!-- Onglet Résidents -->
     <div id="residents-tab" class="tab-content">
       <div class="card">
@@ -378,13 +410,13 @@
             <i class="fas fa-chart-pie"></i> Résumé des Résidents
           </h3>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
-            <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 8px; backdrop-filter: blur(10px);">
-              <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">Total Résidents</div>
-              <div style="font-size: 2rem; font-weight: 700;" id="summary-total-residents">0</div>
+            <div style="background: rgba(255,255,255,0.3); padding: 1rem; border-radius: 8px; backdrop-filter: blur(10px);">
+              <div style="font-size: 0.9rem; opacity: 1; margin-bottom: 0.5rem; color: #ffffff; font-weight: 500;">Total Résidents</div>
+              <div style="font-size: 2rem; font-weight: 700; color: #ffffff;" id="summary-total-residents">0</div>
             </div>
-            <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 8px; backdrop-filter: blur(10px);">
-              <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">Total Portions</div>
-              <div style="font-size: 2rem; font-weight: 700;" id="summary-total-portions">0</div>
+            <div style="background: rgba(255,255,255,0.3); padding: 1rem; border-radius: 8px; backdrop-filter: blur(10px);">
+              <div style="font-size: 0.9rem; opacity: 1; margin-bottom: 0.5rem; color: #ffffff; font-weight: 500;">Total Portions</div>
+              <div style="font-size: 2rem; font-weight: 700; color: #ffffff;" id="summary-total-portions">0</div>
             </div>
           </div>
           <div id="summary-allergies-restrictions" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.75rem;">
@@ -798,7 +830,7 @@
           <i class="fas fa-users"></i>
           Générer un menu pour les résidents
         </h2>
-        <button onclick="closeGenerateMenuResidentsModal()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">
+        <button onclick="closeGenerateMenuResidentsModal()" style="background: rgba(255,255,255,0.3); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s; font-weight: 600;">
           &times;
         </button>
       </div>
@@ -811,17 +843,17 @@
             <i class="fas fa-chart-pie"></i> Résumé des Résidents
           </h3>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
-            <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 8px; backdrop-filter: blur(10px);">
-              <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">Total Résidents</div>
-              <div style="font-size: 2rem; font-weight: 700;" id="modal-summary-total-residents">0</div>
+            <div style="background: rgba(255,255,255,0.3); padding: 1rem; border-radius: 8px; backdrop-filter: blur(10px);">
+              <div style="font-size: 0.9rem; opacity: 1; margin-bottom: 0.5rem; color: #ffffff; font-weight: 500;">Total Résidents</div>
+              <div style="font-size: 2rem; font-weight: 700; color: #ffffff;" id="modal-summary-total-residents">0</div>
             </div>
-            <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 8px; backdrop-filter: blur(10px);">
-              <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">Total Portions</div>
-              <div style="font-size: 2rem; font-weight: 700;" id="modal-summary-total-portions">0</div>
+            <div style="background: rgba(255,255,255,0.3); padding: 1rem; border-radius: 8px; backdrop-filter: blur(10px);">
+              <div style="font-size: 0.9rem; opacity: 1; margin-bottom: 0.5rem; color: #ffffff; font-weight: 500;">Total Portions</div>
+              <div style="font-size: 2rem; font-weight: 700; color: #ffffff;" id="modal-summary-total-portions">0</div>
             </div>
           </div>
           <div style="margin-top: 1rem;">
-            <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.75rem; font-weight: 600;">Allergies et Restrictions</div>
+            <div style="font-size: 0.9rem; opacity: 1; margin-bottom: 0.75rem; font-weight: 600; color: #ffffff;">Allergies et Restrictions</div>
             <div id="modal-summary-allergies-restrictions" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; max-height: 300px; overflow-y: auto;">
               <!-- Les allergies et restrictions seront générées dynamiquement -->
             </div>
@@ -887,6 +919,7 @@
   <script type="module" src="js/validation-helper.js"></script>
   
   <script type="module" src="js/supplier-common.js"></script>
+  <script type="module" src="js/supplier-comparison.js"></script>
   <script type="module" src="js/order-tracking.js"></script>
   <script type="module" src="js/stock-common.js"></script>
   <script type="module" src="js/ehpad-dashboard.js"></script>
@@ -894,8 +927,12 @@
   <script src="js/recipe-generator.js"></script>
   <script src="js/foodcost-manager.js"></script>
   <script src="js/init.js"></script>
+  <!-- Classe Modal réutilisable (doit être chargée avant les scripts qui l'utilisent) -->
+  <script src="js/Modal.js"></script>
   <!-- Générateur de menu personnalisé avec objectifs nutritionnels -->
   <script src="js/custom-menu-generator.js"></script>
+  <!-- Utilitaires pour les résidents (doit être chargé avant ehpad-menu-calculator.js) -->
+  <script src="js/resident-utils.js"></script>
   <!-- Module pour le calculateur de portions et la génération de menu pour résidents -->
   <script src="js/ehpad-menu-calculator.js"></script>
   
@@ -952,6 +989,7 @@
         }
       }
 
+      const $n = document.getElementById('portion-normale');
       const $h = document.getElementById('portion-demi');
       const $d = document.getElementById('portion-double');
       const $totalResidents = document.getElementById('calc-total-residents');
@@ -1295,7 +1333,7 @@
           // Sécurisé : utilisation de createElement et textContent au lieu de innerHTML
           container.textContent = ''; // Vider le conteneur
           const emptyDiv = document.createElement('div');
-          emptyDiv.style.cssText = 'grid-column: 1/-1; text-align: center; opacity: 0.8; padding: 1rem;';
+          emptyDiv.style.cssText = 'grid-column: 1/-1; text-align: center; opacity: 1; padding: 1rem; color: #ffffff;';
           emptyDiv.textContent = 'Aucun résident actif trouvé';
           container.appendChild(emptyDiv);
           return;
@@ -1370,7 +1408,7 @@
         // Fonction helper pour créer un élément d'allergie/restriction de manière sécurisée
         const createAllergyRestrictionItem = (name, count, iconClass, iconColor) => {
           const itemDiv = document.createElement('div');
-          itemDiv.style.cssText = 'background: rgba(255,255,255,0.15); padding: 0.75rem 1rem; border-radius: 8px; backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center;';
+          itemDiv.style.cssText = 'background: rgba(255,255,255,0.3); padding: 0.75rem 1rem; border-radius: 8px; backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; color: #ffffff;';
           
           // Conteneur pour le nom avec icône
           const nameSpan = document.createElement('span');
@@ -1389,7 +1427,7 @@
           
           // Conteneur pour le count
           const countSpan = document.createElement('span');
-          countSpan.style.cssText = 'background: rgba(255,255,255,0.3); padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem;';
+          countSpan.style.cssText = 'background: rgba(255,255,255,0.45); padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem; color: #ffffff;';
           // Sécurisé : count est un nombre, converti en string avec textContent
           countSpan.textContent = String(count);
           
@@ -1433,7 +1471,7 @@
         // Message si aucune allergie ou restriction
         if (allergiesEntries.length === 0 && restrictionsEntries.length === 0) {
           const emptyDiv = document.createElement('div');
-          emptyDiv.style.cssText = 'grid-column: 1/-1; text-align: center; opacity: 0.8; padding: 1rem;';
+          emptyDiv.style.cssText = 'grid-column: 1/-1; text-align: center; opacity: 1; padding: 1rem; color: #ffffff;';
           emptyDiv.textContent = 'Aucune allergie ou restriction enregistrée';
           container.appendChild(emptyDiv);
         }
@@ -1546,7 +1584,6 @@
           }
         });
       }
-    });
   </script>
 
   <!--  Syst�me de notifications en temps r�el -->
