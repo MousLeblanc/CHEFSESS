@@ -115,7 +115,26 @@ supplierRatingSchema.index({ reviewer: 1 });
 // Méthode statique pour calculer la note moyenne d'un fournisseur
 supplierRatingSchema.statics.getAverageRating = async function(supplierId) {
   // Convertir en ObjectId si nécessaire
-  const supplierObjectId = typeof supplierId === 'string' ? mongoose.Types.ObjectId(supplierId) : supplierId;
+  let supplierObjectId;
+  if (typeof supplierId === 'string') {
+    try {
+      supplierObjectId = new mongoose.Types.ObjectId(supplierId);
+    } catch (error) {
+      console.error('Erreur lors de la conversion de supplierId en ObjectId:', error);
+      // Retourner des valeurs par défaut si l'ID est invalide
+      return {
+        averageRating: 0,
+        count: 0,
+        priceAvg: 0,
+        deliveryAvg: 0,
+        qualityAvg: 0,
+        communicationAvg: 0,
+        packagingAvg: 0
+      };
+    }
+  } else {
+    supplierObjectId = supplierId;
+  }
   
   const result = await this.aggregate([
     { $match: { supplier: supplierObjectId, status: 'approved' } },

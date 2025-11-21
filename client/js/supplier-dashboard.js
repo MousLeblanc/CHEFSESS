@@ -293,6 +293,212 @@ class SupplierDashboard {
      * Vérifier s'il y a des commandes en attente au moment de la connexion
      * et notifier le fournisseur avec sonnerie
      */
+    /**
+     * Charger les avis reçus par le fournisseur
+     */
+    async loadRatings() {
+        const container = document.getElementById('ratings-container');
+        const loading = document.getElementById('ratings-loading');
+        
+        if (!container) {
+            console.error('❌ Conteneur ratings-container non trouvé');
+            return;
+        }
+        
+        if (loading) loading.style.display = 'block';
+        container.innerHTML = '';
+        
+        try {
+            // Récupérer l'ID du fournisseur depuis le profil utilisateur
+            const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+            const supplierId = user._id;
+            
+            console.log('📊 [loadRatings] User:', user);
+            console.log('📊 [loadRatings] SupplierId:', supplierId);
+            
+            if (!supplierId) {
+                throw new Error('ID fournisseur non trouvé');
+            }
+            
+            console.log('📊 [loadRatings] Appel API pour récupérer les avis...');
+            const response = await fetch(`/api/suppliers/ratings/supplier/${supplierId}`, {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            console.log('📊 [loadRatings] Réponse API:', response.status, response.statusText);
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('❌ [loadRatings] Erreur API:', errorData);
+                throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            console.log('📊 [loadRatings] Résultat:', result);
+            const { ratings, averages } = result.data;
+            
+            console.log('📊 [loadRatings] Nombre d\'avis:', ratings?.length || 0);
+            console.log('📊 [loadRatings] Moyennes:', averages);
+            
+            if (loading) loading.style.display = 'none';
+            
+            if (ratings.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: #6c757d;">
+                        <i class="fas fa-star" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                        <p>Aucun avis reçu pour le moment</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Afficher le résumé
+            container.innerHTML = `
+                <div style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; color: white;">
+                    <div style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
+                        <div>
+                            <div style="font-size: 4rem; font-weight: 700; line-height: 1;">
+                                ${averages.averageRating.toFixed(1)}
+                            </div>
+                            <div style="margin-top: 0.5rem; font-size: 1.2rem; opacity: 0.9;">
+                                ${this.renderStars(averages.averageRating)}
+                            </div>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 1.1rem; margin-bottom: 0.5rem; opacity: 0.9;">
+                                Basé sur ${averages.count} avis
+                            </div>
+                            ${averages.priceAvg > 0 || averages.deliveryAvg > 0 || averages.qualityAvg > 0 ? `
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                                    ${averages.priceAvg > 0 ? `
+                                        <div>
+                                            <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 0.25rem;">Prix</div>
+                                            <div>${this.renderStars(averages.priceAvg)}</div>
+                                        </div>
+                                    ` : ''}
+                                    ${averages.deliveryAvg > 0 ? `
+                                        <div>
+                                            <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 0.25rem;">Livraison</div>
+                                            <div>${this.renderStars(averages.deliveryAvg)}</div>
+                                        </div>
+                                    ` : ''}
+                                    ${averages.qualityAvg > 0 ? `
+                                        <div>
+                                            <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 0.25rem;">Qualité</div>
+                                            <div>${this.renderStars(averages.qualityAvg)}</div>
+                                        </div>
+                                    ` : ''}
+                                    ${averages.communicationAvg > 0 ? `
+                                        <div>
+                                            <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 0.25rem;">Communication</div>
+                                            <div>${this.renderStars(averages.communicationAvg)}</div>
+                                        </div>
+                                    ` : ''}
+                                    ${averages.packagingAvg > 0 ? `
+                                        <div>
+                                            <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 0.25rem;">Emballage</div>
+                                            <div>${this.renderStars(averages.packagingAvg)}</div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 style="margin-bottom: 1rem; color: #2c3e50;">Avis détaillés</h3>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        ${ratings.map(rating => `
+                            <div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 1.5rem; background: white;">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #2c3e50; margin-bottom: 0.25rem; font-size: 1.1rem;">
+                                            ${rating.reviewer?.name || 'Anonyme'}
+                                            ${rating.site?.siteName ? ` - ${rating.site.siteName}` : ''}
+                                        </div>
+                                        <div style="color: #6c757d; font-size: 0.9rem;">
+                                            ${new Date(rating.createdAt).toLocaleDateString('fr-FR', { 
+                                                year: 'numeric', 
+                                                month: 'long', 
+                                                day: 'numeric' 
+                                            })}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        ${this.renderStars(rating.overallRating)}
+                                    </div>
+                                </div>
+                                
+                                ${rating.feedback?.positive || rating.feedback?.negative || rating.feedback?.suggestions ? `
+                                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f0f0f0;">
+                                        ${rating.feedback.positive ? `
+                                            <div style="margin-bottom: 0.75rem;">
+                                                <div style="font-weight: 600; color: #27ae60; margin-bottom: 0.5rem; font-size: 0.95rem;">
+                                                    <i class="fas fa-thumbs-up"></i> Points positifs
+                                                </div>
+                                                <div style="color: #555; font-size: 0.95rem; line-height: 1.6;">${rating.feedback.positive}</div>
+                                            </div>
+                                        ` : ''}
+                                        ${rating.feedback.negative ? `
+                                            <div style="margin-bottom: 0.75rem;">
+                                                <div style="font-weight: 600; color: #e74c3c; margin-bottom: 0.5rem; font-size: 0.95rem;">
+                                                    <i class="fas fa-thumbs-down"></i> Points à améliorer
+                                                </div>
+                                                <div style="color: #555; font-size: 0.95rem; line-height: 1.6;">${rating.feedback.negative}</div>
+                                            </div>
+                                        ` : ''}
+                                        ${rating.feedback.suggestions ? `
+                                            <div>
+                                                <div style="font-weight: 600; color: #3498db; margin-bottom: 0.5rem; font-size: 0.95rem;">
+                                                    <i class="fas fa-lightbulb"></i> Suggestions
+                                                </div>
+                                                <div style="color: #555; font-size: 0.95rem; line-height: 1.6;">${rating.feedback.suggestions}</div>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Erreur lors du chargement des avis:', error);
+            if (loading) loading.style.display = 'none';
+            container.innerHTML = `
+                <div style="padding: 2rem; text-align: center; color: #e74c3c;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <p>Erreur lors du chargement des avis: ${error.message}</p>
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * Rendre les étoiles de notation
+     */
+    renderStars(rating) {
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        
+        let html = '';
+        for (let i = 0; i < fullStars; i++) {
+            html += '<i class="fas fa-star" style="color: #f39c12;"></i>';
+        }
+        if (hasHalfStar) {
+            html += '<i class="fas fa-star-half-alt" style="color: #f39c12;"></i>';
+        }
+        for (let i = 0; i < emptyStars; i++) {
+            html += '<i class="far fa-star" style="color: #ddd;"></i>';
+        }
+        return html;
+    }
+
     async checkPendingOrdersOnLogin() {
         try {
             // Attendre que notificationClient soit disponible (peut prendre quelques secondes)

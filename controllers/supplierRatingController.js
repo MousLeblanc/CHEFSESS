@@ -1,4 +1,5 @@
 import asyncHandler from 'express-async-handler';
+import mongoose from 'mongoose';
 import SupplierRating from '../models/SupplierRating.js';
 import User from '../models/User.js';
 import Site from '../models/Site.js';
@@ -75,18 +76,48 @@ export const createRating = asyncHandler(async (req, res) => {
 export const getSupplierRatings = asyncHandler(async (req, res) => {
   try {
     const { supplierId } = req.params;
+    
+    console.log('📊 [getSupplierRatings] Récupération des avis pour le fournisseur:', supplierId);
+
+    // Vérifier que supplierId est valide
+    if (!supplierId) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID fournisseur requis'
+      });
+    }
+
+    // Vérifier que l'ID est un ObjectId valide
+    if (!mongoose.Types.ObjectId.isValid(supplierId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID fournisseur invalide'
+      });
+    }
 
     const ratings = await SupplierRating.find({ 
       supplier: supplierId,
       status: 'approved'
     })
-      .populate('reviewer', 'name')
-      .populate('site', 'siteName')
+      .populate({
+        path: 'reviewer',
+        select: 'name',
+        options: { strictPopulate: false }
+      })
+      .populate({
+        path: 'site',
+        select: 'siteName',
+        options: { strictPopulate: false }
+      })
       .sort({ createdAt: -1 })
       .limit(50);
 
+    console.log(`📊 [getSupplierRatings] ${ratings.length} avis trouvé(s)`);
+
     // Calculer les moyennes
     const averages = await SupplierRating.getAverageRating(supplierId);
+    
+    console.log('📊 [getSupplierRatings] Moyennes calculées:', averages);
 
     res.json({
       success: true,
@@ -96,7 +127,8 @@ export const getSupplierRatings = asyncHandler(async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Erreur lors de la récupération des avis:', error);
+    console.error('❌ Erreur lors de la récupération des avis:', error);
+    console.error('   Stack:', error.stack);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la récupération des avis',

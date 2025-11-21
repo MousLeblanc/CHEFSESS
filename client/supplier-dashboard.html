@@ -483,17 +483,20 @@
         </script>
 
         <!-- Navigation par onglets -->
-        <div class="tab-navigation" style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid #ddd;">
-            <button class="tab-btn active" data-tab="products" style="padding: 1rem 2rem; background: white; border: none; border-bottom: 3px solid #16a085; cursor: pointer; font-weight: 600; transition: all 0.3s; color: #16a085;">
+        <div class="tab-navigation" style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid #ddd; flex-wrap: wrap;">
+            <button class="tab-btn active" data-tab="products" style="padding: 1rem 2rem; background: white; border: none; border-bottom: 3px solid #16a085; cursor: pointer; font-weight: 600; transition: all 0.3s; color: #16a085; display: inline-block;">
                 <i class="fas fa-boxes"></i> Produits & Stock
             </button>
-            <button class="tab-btn" data-tab="orders" style="padding: 1rem 2rem; background: white; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 600; transition: all 0.3s; color: #2c3e50;">
+            <button class="tab-btn" data-tab="orders" style="padding: 1rem 2rem; background: white; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 600; transition: all 0.3s; color: #2c3e50; display: inline-block;">
                 <i class="fas fa-shopping-cart"></i> Commandes
             </button>
-            <button class="tab-btn" data-tab="stats" style="padding: 1rem 2rem; background: white; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 600; transition: all 0.3s; color: #2c3e50;">
+            <button class="tab-btn" data-tab="stats" style="padding: 1rem 2rem; background: white; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 600; transition: all 0.3s; color: #2c3e50; display: inline-block;">
                 <i class="fas fa-chart-bar"></i> Statistiques
             </button>
-            <button class="tab-btn" data-tab="profile" style="padding: 1rem 2rem; background: white; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 600; transition: all 0.3s; color: #2c3e50;">
+            <button class="tab-btn" data-tab="ratings" style="padding: 1rem 2rem; background: white; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 600; transition: all 0.3s; color: #2c3e50; display: inline-block;">
+                <i class="fas fa-star"></i> Avis Reçus
+            </button>
+            <button class="tab-btn" data-tab="profile" style="padding: 1rem 2rem; background: white; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 600; transition: all 0.3s; color: #2c3e50; display: inline-block;">
                 <i class="fas fa-user-cog"></i> Mon Profil
             </button>
         </div>
@@ -702,6 +705,40 @@
                 </div>
             </div>
         </div><!-- Fin onglet Statistiques -->
+
+        <!-- Onglet Avis Reçus -->
+        <div id="ratings-tab" class="tab-content">
+            <div class="section">
+                <h2><i class="fas fa-star"></i> Avis Reçus</h2>
+                <p style="color: #6c757d; margin-bottom: 1.5rem;">Consultez les avis et notes laissés par vos clients.</p>
+                
+                <!-- Message informatif sur la confidentialité -->
+                <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="display: flex; align-items: start; gap: 1rem;">
+                        <div style="font-size: 2rem; flex-shrink: 0;">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.2rem; color: white;">Confidentialité de vos avis</h3>
+                            <p style="margin: 0; line-height: 1.6; opacity: 0.95;">
+                                Les sections <strong>"Points à améliorer"</strong> et <strong>"Suggestions"</strong> sont <strong>strictement privées</strong> et ne sont visibles que par vous. 
+                                Elles vous permettent d'identifier les axes d'amélioration pour votre service. 
+                                Seuls les <strong>"Points positifs"</strong> et la <strong>note globale</strong> sont visibles par les autres utilisateurs de la plateforme.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="ratings-loading" style="display: none; text-align: center; padding: 2rem;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #16a085;"></i>
+                    <p>Chargement des avis...</p>
+                </div>
+                
+                <div id="ratings-container">
+                    <!-- Les avis seront chargés ici -->
+                </div>
+            </div>
+        </div><!-- Fin onglet Avis Reçus -->
 
         <!-- Onglet Mon Profil -->
         <div id="profile-tab" class="tab-content">
@@ -1843,6 +1880,266 @@
                     }, 100);
                 }
             }
+
+            /**
+             * Charger les avis reçus par le fournisseur
+             */
+            async loadRatings() {
+                const container = document.getElementById('ratings-container');
+                const loading = document.getElementById('ratings-loading');
+                
+                if (!container) {
+                    console.error('❌ Conteneur ratings-container non trouvé');
+                    return;
+                }
+                
+                if (loading) loading.style.display = 'block';
+                container.innerHTML = '';
+                
+                try {
+                    // Récupérer l'ID du fournisseur
+                    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+                    let supplierId = user.supplierId || user._id;
+                    
+                    console.log('📊 [loadRatings] User:', user);
+                    console.log('📊 [loadRatings] SupplierId initial:', supplierId);
+                    
+                    // Si pas d'ID direct, récupérer le supplier via l'API
+                    if (!supplierId) {
+                        console.log('📊 [loadRatings] Récupération du supplier via /api/suppliers/me...');
+                        const supplierResponse = await fetch('/api/suppliers/me', {
+                            credentials: 'include',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (supplierResponse.ok) {
+                            const supplierData = await supplierResponse.json();
+                            supplierId = supplierData.data?._id || supplierData._id;
+                            console.log('📊 [loadRatings] SupplierId récupéré:', supplierId);
+                        }
+                    }
+                    
+                    if (!supplierId) {
+                        throw new Error('ID fournisseur non trouvé');
+                    }
+                    
+                    console.log('📊 [loadRatings] Appel API pour récupérer les avis avec supplierId:', supplierId);
+                    const apiUrl = `/api/suppliers/ratings/supplier/${supplierId}`;
+                    console.log('📊 [loadRatings] URL API:', apiUrl);
+                    
+                    const response = await fetch(apiUrl, {
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    console.log('📊 [loadRatings] Réponse API:', response.status, response.statusText);
+                    console.log('📊 [loadRatings] Response headers:', Object.fromEntries(response.headers.entries()));
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('❌ [loadRatings] Erreur API - Status:', response.status);
+                        console.error('❌ [loadRatings] Erreur API - Response:', errorText);
+                        let errorData;
+                        try {
+                            errorData = JSON.parse(errorText);
+                        } catch (e) {
+                            errorData = { message: errorText };
+                        }
+                        throw new Error(errorData.message || `Erreur ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const result = await response.json();
+                    console.log('📊 [loadRatings] Résultat:', result);
+                    const { ratings, averages } = result.data;
+                    
+                    console.log('📊 [loadRatings] Nombre d\'avis:', ratings?.length || 0);
+                    console.log('📊 [loadRatings] Moyennes:', averages);
+                    
+                    if (loading) loading.style.display = 'none';
+                    
+                    if (!ratings || ratings.length === 0) {
+                        container.innerHTML = `
+                            <div style="text-align: center; padding: 3rem; color: #6c757d;">
+                                <i class="fas fa-star" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                                <p>Aucun avis reçu pour le moment</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Afficher le résumé
+                    container.innerHTML = `
+                        <div style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; color: white;">
+                            <div style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
+                                <div>
+                                    <div style="font-size: 4rem; font-weight: 700; line-height: 1;">
+                                        ${averages.averageRating.toFixed(1)}
+                                    </div>
+                                    <div style="margin-top: 0.5rem; font-size: 1.2rem; opacity: 0.9;">
+                                        ${this.renderStars(averages.averageRating)}
+                                    </div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 1.1rem; margin-bottom: 0.5rem; opacity: 0.9;">
+                                        Basé sur ${averages.count} avis
+                                    </div>
+                                    ${averages.priceAvg > 0 || averages.deliveryAvg > 0 || averages.qualityAvg > 0 ? `
+                                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                                            ${averages.priceAvg > 0 ? `
+                                                <div>
+                                                    <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 0.25rem;">Prix</div>
+                                                    <div>${this.renderStars(averages.priceAvg)}</div>
+                                                </div>
+                                            ` : ''}
+                                            ${averages.deliveryAvg > 0 ? `
+                                                <div>
+                                                    <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 0.25rem;">Livraison</div>
+                                                    <div>${this.renderStars(averages.deliveryAvg)}</div>
+                                                </div>
+                                            ` : ''}
+                                            ${averages.qualityAvg > 0 ? `
+                                                <div>
+                                                    <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 0.25rem;">Qualité</div>
+                                                    <div>${this.renderStars(averages.qualityAvg)}</div>
+                                                </div>
+                                            ` : ''}
+                                            ${averages.communicationAvg > 0 ? `
+                                                <div>
+                                                    <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 0.25rem;">Communication</div>
+                                                    <div>${this.renderStars(averages.communicationAvg)}</div>
+                                                </div>
+                                            ` : ''}
+                                            ${averages.packagingAvg > 0 ? `
+                                                <div>
+                                                    <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 0.25rem;">Emballage</div>
+                                                    <div>${this.renderStars(averages.packagingAvg)}</div>
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 style="margin-bottom: 1rem; color: #2c3e50;">Avis détaillés</h3>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                ${ratings.map(rating => `
+                                    <div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 1.5rem; background: white;">
+                                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                            <div>
+                                                <div style="font-weight: 600; color: #2c3e50; margin-bottom: 0.25rem; font-size: 1.1rem;">
+                                                    ${rating.reviewer?.name || 'Anonyme'}
+                                                    ${rating.site?.siteName ? ` - ${rating.site.siteName}` : ''}
+                                                </div>
+                                                <div style="color: #6c757d; font-size: 0.9rem;">
+                                                    ${new Date(rating.createdAt).toLocaleDateString('fr-FR', { 
+                                                        year: 'numeric', 
+                                                        month: 'long', 
+                                                        day: 'numeric' 
+                                                    })}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                ${this.renderStars(rating.overallRating)}
+                                            </div>
+                                        </div>
+                                        
+                                        ${rating.feedback?.positive || rating.feedback?.negative || rating.feedback?.suggestions ? `
+                                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f0f0f0;">
+                                                ${rating.feedback.positive ? `
+                                                    <div style="margin-bottom: 0.75rem;">
+                                                        <div style="font-weight: 600; color: #27ae60; margin-bottom: 0.5rem; font-size: 0.95rem;">
+                                                            <i class="fas fa-thumbs-up"></i> Points positifs
+                                                        </div>
+                                                        <div style="color: #555; font-size: 0.95rem; line-height: 1.6;">${rating.feedback.positive}</div>
+                                                    </div>
+                                                ` : ''}
+                                                ${rating.feedback.negative ? `
+                                                    <div style="margin-bottom: 0.75rem; background: #fff5f5; padding: 1rem; border-radius: 6px; border-left: 4px solid #e74c3c;">
+                                                        <div style="font-weight: 600; color: #e74c3c; margin-bottom: 0.5rem; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;">
+                                                            <i class="fas fa-thumbs-down"></i> 
+                                                            <span>Points à améliorer</span>
+                                                            <span style="background: #e74c3c; color: white; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500; margin-left: auto;">
+                                                                <i class="fas fa-lock" style="font-size: 0.7rem;"></i> Privé
+                                                            </span>
+                                                        </div>
+                                                        <div style="color: #555; font-size: 0.95rem; line-height: 1.6;">${rating.feedback.negative}</div>
+                                                    </div>
+                                                ` : ''}
+                                                ${rating.feedback.suggestions ? `
+                                                    <div style="background: #f0f8ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #3498db;">
+                                                        <div style="font-weight: 600; color: #3498db; margin-bottom: 0.5rem; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;">
+                                                            <i class="fas fa-lightbulb"></i> 
+                                                            <span>Suggestions</span>
+                                                            <span style="background: #3498db; color: white; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500; margin-left: auto;">
+                                                                <i class="fas fa-lock" style="font-size: 0.7rem;"></i> Privé
+                                                            </span>
+                                                        </div>
+                                                        <div style="color: #555; font-size: 0.95rem; line-height: 1.6;">${rating.feedback.suggestions}</div>
+                                                    </div>
+                                                ` : ''}
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error('❌ [loadRatings] Erreur lors du chargement des avis:', error);
+                    console.error('❌ [loadRatings] Stack:', error.stack);
+                    if (loading) loading.style.display = 'none';
+                    
+                    let errorMessage = error.message || 'Erreur inconnue';
+                    // Message plus détaillé pour le débogage
+                    if (errorMessage.includes('404')) {
+                        errorMessage = 'L\'endpoint API n\'a pas été trouvé. Vérifiez que le serveur est correctement configuré.';
+                    } else if (errorMessage.includes('403')) {
+                        errorMessage = 'Vous n\'avez pas les permissions pour accéder à cette ressource.';
+                    } else if (errorMessage.includes('401')) {
+                        errorMessage = 'Votre session a expiré. Veuillez vous reconnecter.';
+                    } else if (errorMessage.includes('NetworkError') || errorMessage.includes('Failed to fetch')) {
+                        errorMessage = 'Erreur de connexion au serveur. Vérifiez votre connexion internet.';
+                    }
+                    
+                    container.innerHTML = `
+                        <div style="padding: 2rem; text-align: center; color: #e74c3c;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                            <h3 style="color: #e74c3c; margin-bottom: 1rem;">Erreur lors du chargement des avis</h3>
+                            <p style="margin-bottom: 1rem;">${errorMessage}</p>
+                            <button onclick="window.dashboard.loadRatings()" class="btn btn-primary" style="margin-top: 1rem;">
+                                <i class="fas fa-redo"></i> Réessayer
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+
+            /**
+             * Rendre les étoiles de notation
+             */
+            renderStars(rating) {
+                const fullStars = Math.floor(rating);
+                const hasHalfStar = rating % 1 >= 0.5;
+                const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+                
+                let html = '';
+                for (let i = 0; i < fullStars; i++) {
+                    html += '<i class="fas fa-star" style="color: #f39c12;"></i>';
+                }
+                if (hasHalfStar) {
+                    html += '<i class="fas fa-star-half-alt" style="color: #f39c12;"></i>';
+                }
+                for (let i = 0; i < emptyStars; i++) {
+                    html += '<i class="far fa-star" style="color: #ddd;"></i>';
+                }
+                return html;
+            }
         }
 
         // Fonctions globales pour les actions sur les produits
@@ -2531,7 +2828,16 @@
                         targetContent.style.display = 'block';
                         
                         // Charger les données spécifiques à l'onglet
-                        if (targetTab === 'profile' && window.dashboard) {
+                        if (targetTab === 'ratings' && window.dashboard) {
+                            console.log('⭐ Onglet Avis Reçus activé - Chargement des avis...');
+                            console.log('🔍 window.dashboard.loadRatings existe?', typeof window.dashboard.loadRatings);
+                            if (typeof window.dashboard.loadRatings === 'function') {
+                                window.dashboard.loadRatings();
+                            } else {
+                                console.error('❌ window.dashboard.loadRatings n\'est pas une fonction');
+                                console.error('   Méthodes disponibles:', Object.keys(window.dashboard));
+                            }
+                        } else if (targetTab === 'profile' && window.dashboard) {
                             window.dashboard.loadSupplierProfile();
                             // Initialiser l'autocomplétion pour les villes après un court délai
                             setTimeout(async () => {
