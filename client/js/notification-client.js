@@ -165,11 +165,18 @@ class NotificationClient {
         this.isConnected = false;
       };
       
-      this.ws.onclose = () => {
+      this.ws.onclose = (event) => {
         console.log('🔌 Déconnecté du service de notifications');
+        console.log('   Code:', event.code);
+        console.log('   Reason:', event.reason);
+        console.log('   Was clean:', event.wasClean);
         this.isConnected = false;
         this.triggerEvent('disconnected', {});
-        this.attemptReconnect();
+        
+        // Ne pas reconnecter si c'est une fermeture volontaire (code 1000)
+        if (event.code !== 1000) {
+          this.attemptReconnect();
+        }
       };
       
     } catch (error) {

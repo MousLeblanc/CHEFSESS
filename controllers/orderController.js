@@ -147,10 +147,18 @@ export const createOrder = asyncHandler(async (req, res) => {
   // 🔔 NOTIFIER LE FOURNISSEUR DE LA NOUVELLE COMMANDE
   try {
     await order.populate('customer', 'businessName name');
-    notificationService.notifyNewOrder(supplierId, order);
-    console.log(`📬 Notification envoyée au fournisseur ${supplierId}`);
+    // S'assurer que supplierId est bien une string pour la notification
+    const supplierIdStr = supplierId.toString ? supplierId.toString() : String(supplierId);
+    console.log(`\n📬 ======== ENVOI NOTIFICATION FOURNISSEUR ========`);
+    console.log(`   Supplier ID: ${supplierIdStr} (type: ${typeof supplierIdStr})`);
+    console.log(`   Order: ${order.orderNumber}`);
+    console.log(`   Customer: ${order.customer?.businessName || order.customer?.name || 'N/A'}`);
+    notificationService.notifyNewOrder(supplierIdStr, order);
+    console.log(`✅ Notification envoyée au fournisseur ${supplierIdStr}`);
+    console.log(`========================================\n`);
   } catch (notifError) {
     console.error('❌ Erreur lors de l\'envoi de la notification:', notifError);
+    console.error('   Stack:', notifError.stack);
     // Ne pas bloquer la création de commande si la notification échoue
   }
 
@@ -360,15 +368,19 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   
   // 🔔 NOTIFIER LE CLIENT DU CHANGEMENT DE STATUT
   try {
-    const customerId = order.customer._id || order.customer;
+    // S'assurer que customerId est bien extrait et converti en string
+    let customerId = order.customer._id || order.customer;
+    if (customerId && typeof customerId !== 'string') {
+      customerId = customerId.toString ? customerId.toString() : String(customerId);
+    }
+    
     console.log(`\n📬 ======== ENVOI NOTIFICATION CLIENT ========`);
-    console.log(`   Customer ID: ${customerId}`);
-    console.log(`   Customer type: ${typeof customerId}`);
-    console.log(`   Customer toString: ${customerId.toString()}`);
+    console.log(`   Customer ID: ${customerId} (type: ${typeof customerId})`);
     console.log(`   Supplier: ${order.supplier?.businessName || 'N/A'}`);
     console.log(`   Customer: ${order.customer?.businessName || 'N/A'}`);
     console.log(`   Order: ${order.orderNumber}`);
     console.log(`   Status: ${oldStatus} → ${status}`);
+    console.log(`   Site ID: ${order.siteId || 'N/A'}`);
     
     notificationService.notifyOrderStatusChange(customerId, order, oldStatus, status);
     console.log(`✅ Notification envoyée au service`);
