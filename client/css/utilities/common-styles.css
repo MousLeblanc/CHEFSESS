@@ -1,0 +1,265 @@
+/**
+ * Styles communs réutilisables
+ * Remplace les styles inline répétés dans le code
+ */
+
+/* ===== Cards et conteneurs avec fond semi-transparent ===== */
+/* ✅ ACCESSIBILITÉ : Opacité augmentée pour meilleur contraste (WCAG AA) */
+.card-item {
+  background: rgba(255, 255, 255, 0.25);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #ffffff; /* Texte blanc pour contraste sur fond coloré */
+}
+
+.card-item-light {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  color: #ffffff;
+}
+
+/* ===== Badges et compteurs ===== */
+/* ✅ ACCESSIBILITÉ : Opacité augmentée pour meilleur contraste (WCAG AA) */
+.badge-count {
+  background: rgba(255, 255, 255, 0.4);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #ffffff;
+}
+
+.badge-count-small {
+  background: rgba(255, 255, 255, 0.35);
+  padding: 0.2rem 0.6rem;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: #ffffff;
+}
+
+/* ===== Messages vides ===== */
+/* ✅ ACCESSIBILITÉ : Opacité supprimée, couleur plus contrastée (WCAG AA) */
+.empty-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  opacity: 1;
+  padding: 1rem;
+  color: #4a5568; /* Couleur plus foncée pour meilleur contraste */
+}
+
+.empty-state {
+  text-align: center;
+  opacity: 1;
+  padding: 1.5rem;
+  color: #4a5568; /* Couleur plus foncée pour meilleur contraste */
+}
+
+/* ===== Flexbox utilities ===== */
+.flex-center {
+  display: flex;
+  align-items: center;
+}
+
+.flex-center-gap {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.flex-center-gap-sm {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.flex-wrap-between {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+/* ===== Grid utilities ===== */
+.grid-3-col {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.grid-2-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+/* ===== Text utilities ===== */
+.text-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+}
+
+.text-label-sm {
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+/* ✅ ACCESSIBILITÉ : Opacité supprimée, couleur plus contrastée (WCAG AA) */
+.text-subtitle {
+  margin: 0.35rem 0 0 0;
+  font-size: 0.9rem;
+  opacity: 1;
+  color: #4a5568; /* Couleur plus foncée pour meilleur contraste */
+}
+
+.text-subtitle-sm {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.9rem;
+  opacity: 1;
+  color: #4a5568; /* Couleur plus foncée pour meilleur contraste */
+}
+
+/* ===== Card headers avec gradient ===== */
+/* ✅ ACCESSIBILITÉ : Ombre de texte ajoutée pour meilleure lisibilité (WCAG AA) */
+.card-header-purple {
+  background: linear-gradient(135deg, #9c27b0 0%, #ba68c8 100%);
+  color: white;
+  padding: 1.25rem;
+  margin: -2rem -2rem 1.5rem -2rem;
+  border-radius: 12px 12px 0 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Améliore la lisibilité */
+}
+
+.card-header-green {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 1.5rem;
+  margin: -2rem -2rem 2rem -2rem;
+  border-radius: 12px 12px 0 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Améliore la lisibilité */
+}
+
+.card-header-title {
+  margin: 0;
+  color: white;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Améliore la lisibilité */
+}
+
+/* ===== Summary boxes ===== */
+.summary-box {
+  background: #f8f5fb;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #e5d7f3;
+}
+
+.summary-box-alt {
+  background: #f3e5f5;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #e1bee7;
+}
+
+/* ===== Icon utilities ===== */
+.icon-spacing {
+  margin-right: 0.5rem;
+}
+
+.icon-large {
+  font-size: 2rem;
+}
+
+.icon-medium {
+  font-size: 1.2rem;
+}
+
+/* ===== Button groups ===== */
+.button-group {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.button-group-sm {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ===== Card borders ===== */
+.card-border-purple {
+  margin-bottom: 1.5rem;
+  border: 2px solid #9c27b0;
+}
+
+.card-border-green {
+  margin-bottom: 2rem;
+  border: 2px solid #10b981;
+}
+
+/* ===== Position utilities ===== */
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+/* ===== Spacing utilities ===== */
+.mb-1 {
+  margin-bottom: 1rem;
+}
+
+.mb-1-5 {
+  margin-bottom: 1.5rem;
+}
+
+.mb-2 {
+  margin-bottom: 2rem;
+}
+
+.mt-0 {
+  margin-top: 0;
+}
+
+.m-0 {
+  margin: 0;
+}
+
+/* ===== Opacity utilities ===== */
+.opacity-90 {
+  opacity: 0.9;
+}
+
+.opacity-95 {
+  opacity: 0.95;
+}
+
+.opacity-80 {
+  opacity: 0.8;
+}
+

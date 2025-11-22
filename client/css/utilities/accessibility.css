@@ -1,0 +1,153 @@
+/**
+ * Styles d'accessibilité pour améliorer le contraste (WCAG AA minimum)
+ * Ratio de contraste minimum : 4.5:1 pour texte normal, 3:1 pour texte large
+ */
+
+/* ===== Correction des fonds semi-transparents avec texte blanc ===== */
+/* Augmenter l'opacité des fonds pour améliorer le contraste */
+.card-item {
+  /* Fond plus opaque pour meilleur contraste avec texte blanc */
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+.card-item-light {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Badges avec meilleur contraste */
+.badge-count {
+  /* Fond plus opaque pour meilleur contraste */
+  background: rgba(255, 255, 255, 0.4) !important;
+  /* Texte plus foncé si nécessaire, ou garder blanc avec fond plus opaque */
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.badge-count-small {
+  background: rgba(255, 255, 255, 0.35) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+/* ===== Correction des textes avec opacity réduite ===== */
+/* Éviter l'opacity sur le texte, utiliser une couleur plus claire à la place */
+.text-subtitle {
+  /* Au lieu de opacity: 0.95, utiliser une couleur avec plus de contraste */
+  color: #4a5568 !important;
+  opacity: 1 !important;
+}
+
+.text-subtitle-sm {
+  color: #4a5568 !important;
+  opacity: 1 !important;
+}
+
+.empty-message {
+  /* Au lieu de opacity: 0.8, utiliser une couleur avec plus de contraste */
+  color: #4a5568 !important;
+  opacity: 1 !important;
+}
+
+.empty-state {
+  color: #4a5568 !important;
+  opacity: 1 !important;
+}
+
+/* ===== Correction des éléments dans les modales avec fonds colorés ===== */
+/* Éléments avec fond rgba(255,255,255,0.2) sur fonds colorés */
+[style*="rgba(255,255,255,0.2)"],
+[style*="rgba(255,255,255,0.15)"] {
+  /* Augmenter l'opacité du fond pour meilleur contraste */
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Textes avec opacity dans les modales colorées */
+[style*="opacity: 0.9"],
+[style*="opacity:0.9"] {
+  /* Remplacer par couleur plus contrastée */
+  color: #ffffff !important;
+  opacity: 1 !important;
+  font-weight: 500;
+}
+
+[style*="opacity: 0.8"],
+[style*="opacity:0.8"] {
+  color: #ffffff !important;
+  opacity: 1 !important;
+  font-weight: 500;
+}
+
+/* ===== Boutons avec meilleur contraste ===== */
+/* Bouton de fermeture avec fond semi-transparent */
+button[style*="rgba(255,255,255,0.2)"] {
+  background: rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+}
+
+button[style*="rgba(255,255,255,0.2)"]:hover {
+  background: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* ===== Amélioration du contraste pour les gradients ===== */
+/* S'assurer que le texte blanc sur gradients est bien visible */
+.card-header-purple,
+.card-header-green {
+  /* Ajouter une ombre de texte pour améliorer la lisibilité */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.card-header-title {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Correction des couleurs de texte sur fonds clairs ===== */
+/* Textes gris sur fonds clairs - s'assurer du contraste suffisant */
+.text-muted,
+[style*="color: #6b7280"],
+[style*="color: #6c757d"],
+[style*="color: #7f8c8d"] {
+  /* Utiliser une couleur plus foncée pour meilleur contraste */
+  color: #374151 !important;
+}
+
+/* ===== Labels et textes de formulaire ===== */
+label {
+  color: #1f2937 !important;
+  font-weight: 500;
+}
+
+/* ===== Amélioration du focus pour l'accessibilité ===== */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus,
+a:focus {
+  outline: 3px solid #9c27b0;
+  outline-offset: 2px;
+}
+
+/* ===== Correction spécifique pour les éléments générés dynamiquement ===== */
+/* Les éléments créés en JavaScript avec style inline */
+div[style*="background: rgba(255,255,255,0.15)"] {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+div[style*="background: rgba(255,255,255,0.2)"] {
+  background: rgba(255, 255, 255, 0.35) !important;
+}
+
+span[style*="background: rgba(255,255,255,0.3)"] {
+  background: rgba(255, 255, 255, 0.45) !important;
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+/* ===== Media query pour le mode sombre (si applicable) ===== */
+@media (prefers-color-scheme: dark) {
+  /* Ajustements pour le mode sombre si nécessaire */
+  .empty-message,
+  .empty-state {
+    color: #e5e7eb !important;
+  }
+}
+
