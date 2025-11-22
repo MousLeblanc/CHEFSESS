@@ -6,6 +6,7 @@ dotenv.config();
 
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -74,6 +75,7 @@ const clientPath = path.resolve("client"); // compatible local & Render
 
 // Middleware pour définir le type MIME pour les fichiers CSS AVANT express.static
 app.use('/css', (req, res, next) => {
+  console.log(`📁 [CSS] Requête pour: ${req.path} (URL: ${req.url})`);
   if (req.path.endsWith('.css') || req.url.endsWith('.css')) {
     res.type('text/css');
   }
@@ -89,18 +91,25 @@ app.use('/css', express.static(path.join(clientPath, 'css'), {
     if (filePath && (filePath.endsWith('.css') || filePath.includes('.css'))) {
       res.type('text/css');
     }
-  }
+  },
+  // IMPORTANT: index doit être false pour servir les fichiers dans les sous-dossiers
+  index: false
 }));
 
 // Middleware pour gérer les fichiers CSS manquants avec le bon type MIME
 app.use('/css', (req, res, next) => {
   // Si la réponse a déjà été envoyée (fichier trouvé par express.static), passer au suivant
   if (res.headersSent) {
+    console.log(`✅ [CSS] Fichier servi: ${req.path}`);
     return next();
   }
   // Si on arrive ici, c'est que express.static n'a pas trouvé le fichier
   // Vérifier si c'est une requête pour un fichier CSS
   if (req.path.endsWith('.css') || req.url.endsWith('.css')) {
+    const fullPath = path.join(clientPath, 'css', req.path);
+    console.error(`❌ [CSS] Fichier non trouvé: ${req.path}`);
+    console.error(`   Chemin complet: ${fullPath}`);
+    console.error(`   Fichier existe? ${fs.existsSync(fullPath)}`);
     res.type('text/css');
     res.status(404).send('/* Fichier CSS non trouvé */');
     return;
@@ -221,7 +230,7 @@ app.get("/*.html", (req, res) => {
 app.get("*", (req, res, next) => {
   const requestPath = req.path || req.url;
   
-  // Ne pas intercepter les requêtes vers les fichiers statiques ou API
+  // Ne JAMAIS intercepter les requêtes vers les fichiers statiques ou API
   // Vérifier à la fois avec et sans slash initial pour gérer les chemins relatifs
   if (requestPath.startsWith('/js/') || 
       requestPath.startsWith('/css/') || 
@@ -231,7 +240,9 @@ app.get("*", (req, res, next) => {
       requestPath.startsWith('css/') ||
       requestPath.startsWith('img/') ||
       requestPath.match(/\.(js|css|json|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|eot)$/i)) {
-    // Si c'est un fichier statique qui n'a pas été trouvé, retourner 404 avec le bon type MIME
+    // Si on arrive ici, c'est qu'express.static n'a pas trouvé le fichier
+    // Ne pas retourner index.html, mais laisser next() pour que le middleware d'erreur gère
+    console.warn(`⚠️ [ROUTE_DEFAUT] Fichier statique non trouvé: ${requestPath}`);
     if (requestPath.endsWith('.css')) {
       res.type('text/css');
       return res.status(404).send('/* Fichier CSS non trouvé */');
@@ -240,8 +251,9 @@ app.get("*", (req, res, next) => {
       res.type('application/javascript');
       return res.status(404).send('// Fichier JavaScript non trouvé');
     }
-    return next(); // Laisser express.static gérer ces fichiers
+    return next(); // Ne pas retourner index.html pour les fichiers statiques
   }
+  // Seulement pour les routes HTML, retourner index.html
   res.sendFile(path.join(clientPath, "index.html"));
 });
 
