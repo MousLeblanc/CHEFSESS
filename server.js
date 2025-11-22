@@ -6,7 +6,6 @@ dotenv.config();
 
 import path from "path";
 import { fileURLToPath } from "url";
-import fs from "fs";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -75,7 +74,6 @@ const clientPath = path.resolve("client"); // compatible local & Render
 
 // Middleware pour définir le type MIME pour les fichiers CSS AVANT express.static
 app.use('/css', (req, res, next) => {
-  console.log(`📁 [CSS] Requête pour: ${req.path} (URL: ${req.url})`);
   if (req.path.endsWith('.css') || req.url.endsWith('.css')) {
     res.type('text/css');
   }
@@ -100,16 +98,11 @@ app.use('/css', express.static(path.join(clientPath, 'css'), {
 app.use('/css', (req, res, next) => {
   // Si la réponse a déjà été envoyée (fichier trouvé par express.static), passer au suivant
   if (res.headersSent) {
-    console.log(`✅ [CSS] Fichier servi: ${req.path}`);
     return next();
   }
   // Si on arrive ici, c'est que express.static n'a pas trouvé le fichier
   // Vérifier si c'est une requête pour un fichier CSS
   if (req.path.endsWith('.css') || req.url.endsWith('.css')) {
-    const fullPath = path.join(clientPath, 'css', req.path);
-    console.error(`❌ [CSS] Fichier non trouvé: ${req.path}`);
-    console.error(`   Chemin complet: ${fullPath}`);
-    console.error(`   Fichier existe? ${fs.existsSync(fullPath)}`);
     res.type('text/css');
     res.status(404).send('/* Fichier CSS non trouvé */');
     return;
@@ -241,8 +234,7 @@ app.get("*", (req, res, next) => {
       requestPath.startsWith('img/') ||
       requestPath.match(/\.(js|css|json|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|eot)$/i)) {
     // Si on arrive ici, c'est qu'express.static n'a pas trouvé le fichier
-    // Ne pas retourner index.html, mais laisser next() pour que le middleware d'erreur gère
-    console.warn(`⚠️ [ROUTE_DEFAUT] Fichier statique non trouvé: ${requestPath}`);
+    // Ne pas retourner index.html, mais retourner 404 avec le bon type MIME
     if (requestPath.endsWith('.css')) {
       res.type('text/css');
       return res.status(404).send('/* Fichier CSS non trouvé */');
