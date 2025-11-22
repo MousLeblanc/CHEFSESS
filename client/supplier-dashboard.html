@@ -1897,12 +1897,37 @@
                 container.innerHTML = '';
                 
                 try {
-                    // Récupérer l'ID du fournisseur
+                    // Vérifier d'abord que l'utilisateur est connecté
                     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+                    console.log('📊 [loadRatings] User depuis sessionStorage:', user);
+                    
+                    if (!user || (!user._id && !user.supplierId)) {
+                        console.warn('⚠️ [loadRatings] Aucun utilisateur trouvé dans sessionStorage');
+                        // Essayer de récupérer depuis l'API
+                        try {
+                            const authResponse = await fetch('/api/auth/me', {
+                                credentials: 'include',
+                                headers: { 'Content-Type': 'application/json' }
+                            });
+                            if (authResponse.ok) {
+                                const authData = await authResponse.json();
+                                const freshUser = authData.user || authData;
+                                console.log('📊 [loadRatings] User récupéré depuis API:', freshUser);
+                                if (freshUser) {
+                                    sessionStorage.setItem('user', JSON.stringify(freshUser));
+                                    Object.assign(user, freshUser);
+                                }
+                            }
+                        } catch (authError) {
+                            console.error('❌ [loadRatings] Erreur lors de la vérification auth:', authError);
+                        }
+                    }
+                    
                     let supplierId = user.supplierId || user._id;
                     
-                    console.log('📊 [loadRatings] User:', user);
                     console.log('📊 [loadRatings] SupplierId initial:', supplierId);
+                    console.log('📊 [loadRatings] Environnement:', window.location.hostname);
+                    console.log('📊 [loadRatings] URL complète:', window.location.href);
                     
                     // Si pas d'ID direct, récupérer le supplier via l'API
                     if (!supplierId) {
@@ -1927,13 +1952,18 @@
                     
                     console.log('📊 [loadRatings] Appel API pour récupérer les avis avec supplierId:', supplierId);
                     const apiUrl = `/api/suppliers/ratings/supplier/${supplierId}`;
-                    console.log('📊 [loadRatings] URL API:', apiUrl);
+                    const fullUrl = `${window.location.origin}${apiUrl}`;
+                    console.log('📊 [loadRatings] URL API relative:', apiUrl);
+                    console.log('📊 [loadRatings] URL API complète:', fullUrl);
+                    console.log('📊 [loadRatings] Credentials:', 'include');
                     
                     const response = await fetch(apiUrl, {
                         credentials: 'include',
                         headers: {
                             'Content-Type': 'application/json'
-                        }
+                        },
+                        // Ajouter un cache-buster pour éviter les problèmes de cache
+                        cache: 'no-store'
                     });
                     
                     console.log('📊 [loadRatings] Réponse API:', response.status, response.statusText);
@@ -1953,11 +1983,30 @@
                     }
                     
                     const result = await response.json();
-                    console.log('📊 [loadRatings] Résultat:', result);
-                    const { ratings, averages } = result.data;
+                    console.log('📊 [loadRatings] Résultat complet:', result);
+                    console.log('📊 [loadRatings] result.success:', result.success);
+                    console.log('📊 [loadRatings] result.data:', result.data);
                     
-                    console.log('📊 [loadRatings] Nombre d\'avis:', ratings?.length || 0);
+                    // Vérifier que la structure de réponse est correcte
+                    if (!result.success) {
+                        throw new Error(result.message || 'Erreur lors de la récupération des avis');
+                    }
+                    
+                    const ratings = result.data?.ratings || [];
+                    const averages = result.data?.averages || {
+                        averageRating: 0,
+                        count: 0,
+                        priceAvg: 0,
+                        deliveryAvg: 0,
+                        qualityAvg: 0,
+                        communicationAvg: 0,
+                        packagingAvg: 0
+                    };
+                    
+                    console.log('📊 [loadRatings] Nombre d\'avis:', ratings.length);
+                    console.log('📊 [loadRatings] Type de ratings:', Array.isArray(ratings) ? 'Array' : typeof ratings);
                     console.log('📊 [loadRatings] Moyennes:', averages);
+                    console.log('📊 [loadRatings] Environnement:', window.location.hostname);
                     
                     if (loading) loading.style.display = 'none';
                     
@@ -1965,7 +2014,11 @@
                         container.innerHTML = `
                             <div style="text-align: center; padding: 3rem; color: #6c757d;">
                                 <i class="fas fa-star" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
-                                <p>Aucun avis reçu pour le moment</p>
+                                <h3 style="color: #2c3e50; margin-bottom: 1rem;">Aucun avis reçu pour le moment</h3>
+                                <p style="margin-bottom: 1rem;">Vous n'avez pas encore reçu d'avis de la part de vos clients.</p>
+                                <p style="font-size: 0.9rem; color: #95a5a6;">
+                                    Les avis apparaîtront ici une fois que vos clients auront laissé des commentaires sur vos produits et services.
+                                </p>
                             </div>
                         `;
                         return;

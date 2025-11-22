@@ -95,6 +95,10 @@ export const getSupplierRatings = asyncHandler(async (req, res) => {
       });
     }
 
+    // Vérifier d'abord s'il y a des avis (même non approuvés) pour ce fournisseur
+    const allRatingsCount = await SupplierRating.countDocuments({ supplier: supplierId });
+    console.log(`📊 [getSupplierRatings] Total d'avis (tous statuts) pour ce fournisseur: ${allRatingsCount}`);
+    
     const ratings = await SupplierRating.find({ 
       supplier: supplierId,
       status: 'approved'
@@ -112,18 +116,37 @@ export const getSupplierRatings = asyncHandler(async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(50);
 
-    console.log(`📊 [getSupplierRatings] ${ratings.length} avis trouvé(s)`);
+    console.log(`📊 [getSupplierRatings] ${ratings.length} avis approuvé(s) trouvé(s)`);
+    
+    // Si aucun avis approuvé, vérifier s'il y a des avis en attente
+    if (ratings.length === 0 && allRatingsCount > 0) {
+      const pendingRatings = await SupplierRating.countDocuments({ 
+        supplier: supplierId,
+        status: { $ne: 'approved' }
+      });
+      console.log(`📊 [getSupplierRatings] ${pendingRatings} avis en attente de modération`);
+    }
 
-    // Calculer les moyennes
+    // Calculer les moyennes (même s'il n'y a pas d'avis, pour avoir une structure cohérente)
     const averages = await SupplierRating.getAverageRating(supplierId);
     
     console.log('📊 [getSupplierRatings] Moyennes calculées:', averages);
+    console.log('📊 [getSupplierRatings] Environnement:', process.env.NODE_ENV || 'dev');
+    console.log('📊 [getSupplierRatings] User ID:', req.user?._id || req.user?.id);
 
     res.json({
       success: true,
       data: {
-        ratings,
-        averages
+        ratings: ratings || [],
+        averages: averages || {
+          averageRating: 0,
+          count: 0,
+          priceAvg: 0,
+          deliveryAvg: 0,
+          qualityAvg: 0,
+          communicationAvg: 0,
+          packagingAvg: 0
+        }
       }
     });
   } catch (error) {
