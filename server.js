@@ -69,7 +69,45 @@ app.use((req, res, next) => {
 // === SERVIR LES FICHIERS STATIQUES ===
 const clientPath = path.resolve("client"); // compatible local & Render
 
-app.use(express.static(clientPath, {
+// Middleware pour définir les MIME types corrects
+app.use((req, res, next) => {
+  // Définir les MIME types pour les fichiers statiques
+  if (req.path.endsWith('.css')) {
+    res.type('text/css');
+  } else if (req.path.endsWith('.js')) {
+    res.type('application/javascript');
+  } else if (req.path.endsWith('.json')) {
+    res.type('application/json');
+  } else if (req.path.match(/\.(jpg|jpeg|png|gif|svg|ico)$/)) {
+    res.type('image/' + req.path.split('.').pop());
+  }
+  next();
+});
+
+// ✅ Servir correctement les sous-dossiers statiques JS / CSS / IMG AVANT la route par défaut
+app.use('/js', express.static(path.join(clientPath, 'js'), {
+  etag: false,
+  lastModified: false,
+  setHeaders: (res, path) => {
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    if (path.endsWith('.js')) {
+      res.type('application/javascript');
+    }
+  },
+}));
+
+app.use('/css', express.static(path.join(clientPath, 'css'), {
+  etag: false,
+  lastModified: false,
+  setHeaders: (res, path) => {
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    if (path.endsWith('.css')) {
+      res.type('text/css');
+    }
+  },
+}));
+
+app.use('/img', express.static(path.join(clientPath, 'img'), {
   etag: false,
   lastModified: false,
   setHeaders: (res) => {
@@ -77,10 +115,20 @@ app.use(express.static(clientPath, {
   },
 }));
 
-// ✅ Servir correctement les sous-dossiers statiques JS / CSS / IMG
-app.use('/js', express.static(path.join(clientPath, 'js')));
-app.use('/css', express.static(path.join(clientPath, 'css')));
-app.use('/img', express.static(path.join(clientPath, 'img')));
+// Servir les autres fichiers statiques
+app.use(express.static(clientPath, {
+  etag: false,
+  lastModified: false,
+  setHeaders: (res, path) => {
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    // Définir les MIME types selon l'extension
+    if (path.endsWith('.css')) {
+      res.type('text/css');
+    } else if (path.endsWith('.js')) {
+      res.type('application/javascript');
+    }
+  },
+}));
 
 // === MIDDLEWARE CSRF ===
 // Générer un token CSRF pour toutes les requêtes GET authentifiées
@@ -128,10 +176,15 @@ app.get("/*.html", (req, res) => {
 });
 
 // === ROUTE PAR DÉFAUT ===
+// IMPORTANT: Cette route doit être en dernier pour ne pas intercepter les fichiers statiques
 app.get("*", (req, res, next) => {
-  // Ne pas intercepter les requêtes vers les fichiers statiques
-  if (req.path.startsWith('/js/') || req.path.startsWith('/css/') || req.path.startsWith('/img/') || req.path.startsWith('/api/')) {
-    return next();
+  // Ne pas intercepter les requêtes vers les fichiers statiques ou API
+  if (req.path.startsWith('/js/') || 
+      req.path.startsWith('/css/') || 
+      req.path.startsWith('/img/') || 
+      req.path.startsWith('/api/') ||
+      req.path.match(/\.(js|css|json|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|eot)$/)) {
+    return next(); // Laisser express.static gérer ces fichiers
   }
   res.sendFile(path.join(clientPath, "index.html"));
 });
