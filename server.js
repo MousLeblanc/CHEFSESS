@@ -69,43 +69,56 @@ app.use((req, res, next) => {
 // === SERVIR LES FICHIERS STATIQUES ===
 const clientPath = path.resolve("client"); // compatible local & Render
 
-// Middleware pour définir les MIME types corrects
-app.use((req, res, next) => {
-  // Définir les MIME types pour les fichiers statiques
-  if (req.path.endsWith('.css')) {
-    res.type('text/css');
-  } else if (req.path.endsWith('.js')) {
-    res.type('application/javascript');
-  } else if (req.path.endsWith('.json')) {
-    res.type('application/json');
-  } else if (req.path.match(/\.(jpg|jpeg|png|gif|svg|ico)$/)) {
-    res.type('image/' + req.path.split('.').pop());
-  }
-  next();
-});
-
 // ✅ Servir correctement les sous-dossiers statiques JS / CSS / IMG AVANT la route par défaut
-app.use('/js', express.static(path.join(clientPath, 'js'), {
-  etag: false,
-  lastModified: false,
-  setHeaders: (res, path) => {
-    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
-    if (path.endsWith('.js')) {
-      res.type('application/javascript');
-    }
-  },
-}));
+// IMPORTANT: L'ordre est crucial - les routes spécifiques doivent être avant la route générale
 
 app.use('/css', express.static(path.join(clientPath, 'css'), {
   etag: false,
   lastModified: false,
-  setHeaders: (res, path) => {
+  setHeaders: (res, filePath) => {
     res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
-    if (path.endsWith('.css')) {
+    // Définir le MIME type uniquement si le fichier existe et se termine par .css
+    if (filePath && filePath.endsWith('.css')) {
       res.type('text/css');
     }
-  },
+  }
 }));
+
+// Middleware pour gérer les fichiers CSS manquants avec le bon type MIME
+app.use('/css', (req, res, next) => {
+  // Si on arrive ici, c'est que express.static n'a pas trouvé le fichier
+  // Vérifier si c'est une requête pour un fichier CSS
+  if (req.path.endsWith('.css')) {
+    res.type('text/css');
+    res.status(404).send('/* Fichier CSS non trouvé */');
+    return;
+  }
+  next();
+});
+
+app.use('/js', express.static(path.join(clientPath, 'js'), {
+  etag: false,
+  lastModified: false,
+  setHeaders: (res, filePath) => {
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    // Définir le MIME type uniquement si le fichier existe et se termine par .js
+    if (filePath && filePath.endsWith('.js')) {
+      res.type('application/javascript');
+    }
+  }
+}));
+
+// Middleware pour gérer les fichiers JS manquants avec le bon type MIME
+app.use('/js', (req, res, next) => {
+  // Si on arrive ici, c'est que express.static n'a pas trouvé le fichier
+  // Vérifier si c'est une requête pour un fichier JS
+  if (req.path.endsWith('.js')) {
+    res.type('application/javascript');
+    res.status(404).send('// Fichier JavaScript non trouvé');
+    return;
+  }
+  next();
+});
 
 app.use('/img', express.static(path.join(clientPath, 'img'), {
   etag: false,
