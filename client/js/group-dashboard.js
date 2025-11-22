@@ -403,6 +403,20 @@ class GroupDashboard {
         if (refreshResidents) {
             refreshResidents.addEventListener('click', () => this.loadResidentsGroups());
         }
+        
+        // Sélecteur de mode de regroupement des résidents
+        const groupingMode = document.getElementById('grouping-mode');
+        if (groupingMode) {
+            // Mettre à jour le titre au chargement initial
+            this.updateResidentsTitle(groupingMode.value);
+            
+            groupingMode.addEventListener('change', (e) => {
+                this.residentsGroupingMode = e.target.value;
+                // Mettre à jour le titre de la page
+                this.updateResidentsTitle(e.target.value);
+                this.loadResidentsGroups();
+            });
+        }
 
         // Stock avec debounce
         const stockSearch = document.getElementById('stock-search');
@@ -423,6 +437,17 @@ class GroupDashboard {
             });
         }
 
+        // Analyses financières
+        const refreshFinancial = document.getElementById('refresh-financial');
+        if (refreshFinancial) {
+            refreshFinancial.addEventListener('click', () => this.loadFinancialAnalysis());
+        }
+        
+        const financialPeriodSelect = document.getElementById('financial-period-select');
+        if (financialPeriodSelect) {
+            financialPeriodSelect.addEventListener('change', () => this.loadFinancialAnalysis());
+        }
+        
         // Sélecteurs de semaine
         const weekSelector = document.getElementById('week-selector');
         if (weekSelector) {
@@ -502,6 +527,9 @@ class GroupDashboard {
             case 'reports':
                 await this.loadReportsData();
                 break;
+            case 'financial-analysis':
+                await this.loadFinancialAnalysis();
+                break;
             case 'users':
                 await this.loadUsersData();
                 break;
@@ -580,14 +608,26 @@ class GroupDashboard {
         if (!tbody) return;
         
         if (this.sites.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center">Aucun site trouvé</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center">Aucun site trouvé</td></tr>';
             return;
         }
         
-        // Charger le nombre de résidents par site
+        // Charger le nombre de résidents et portions par site
         const residentsCounts = await this.loadResidentsCounts();
+        const portionsCounts = await this.loadPortionsCounts();
         
-        tbody.innerHTML = this.sites.map(site => `
+        console.log('📊 Données chargées pour le tableau:', {
+            residentsCounts,
+            portionsCounts,
+            sitesCount: this.sites.length
+        });
+        
+        tbody.innerHTML = this.sites.map(site => {
+            const siteId = site._id?.toString() || site._id;
+            const residentsCount = residentsCounts[siteId] || 0;
+            const portionsCount = portionsCounts[siteId] || 0;
+            
+            return `
             <tr style="${!site.isActive ? 'opacity: 0.6; background-color: #f8f9fa;' : ''}">
                 <td>
                     <strong>${site.siteName}</strong>
@@ -598,7 +638,11 @@ class GroupDashboard {
                     <span class="status-badge ${site.isActive ? 'status-synced' : 'status-error'}">${this.getSiteTypeLabel(site.type)}</span>
                 </td>
                 <td>
-                    <strong style="color: ${site.isActive ? '#667eea' : '#999'}; font-size: 1.1rem;">${residentsCounts[site._id] || 0}</strong>
+                    <strong style="color: ${site.isActive ? '#667eea' : '#999'}; font-size: 1.1rem;">${residentsCount}</strong>
+                </td>
+                <td>
+                    <strong style="color: ${site.isActive ? '#10b981' : '#999'}; font-size: 1.1rem;">${portionsCount.toFixed(1)}</strong>
+                    <br><small class="text-muted" style="font-size: 0.75rem;">portions/jour</small>
                 </td>
                 <td>${site.isActive ? '3,45 €/repas' : '—'}</td>
                 <td class="${site.isActive ? 'text-success' : 'text-muted'}">${site.isActive ? '+2%' : '—'}</td>
@@ -627,7 +671,8 @@ class GroupDashboard {
                     </div>
                 </td>
             </tr>
-        `).join('');
+            `;
+        }).join('');
     }
 
     async loadSitesData() {
@@ -715,6 +760,32 @@ class GroupDashboard {
             return result.data || {};
         } catch (error) {
             console.error('Erreur lors du chargement des résidents:', error);
+            return {};
+        }
+    }
+    
+    async loadPortionsCounts() {
+        try {
+            const response = await fetch(`/api/residents/group/${this.currentGroup}/portions`, {
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                console.warn('⚠️ Impossible de charger le nombre de portions:', response.status, response.statusText);
+                return {};
+            }
+            
+            const result = await response.json();
+            console.log('📊 Portions chargées:', result);
+            
+            if (!result.success) {
+                console.warn('⚠️ Erreur dans la réponse:', result.message);
+                return {};
+            }
+            
+            return result.data || {};
+        } catch (error) {
+            console.error('❌ Erreur lors du chargement des portions:', error);
             return {};
         }
     }
@@ -1379,7 +1450,20 @@ class GroupDashboard {
         try {
             this.showLoader('Chargement des résidents...');
             
-            const response = await fetch(`/api/residents/group/${this.currentGroup}/grouped`, {
+            const groupingMode = document.getElementById('grouping-mode')?.value || 'nutritional';
+            const nutritionalFilters = document.getElementById('nutritional-filters');
+            
+            // Afficher/masquer les filtres nutritionnels selon le mode
+            if (nutritionalFilters) {
+                nutritionalFilters.style.display = groupingMode === 'nutritional' ? 'flex' : 'none';
+            }
+            
+            let url = `/api/residents/group/${this.currentGroup}/grouped`;
+            if (groupingMode !== 'nutritional') {
+                url += `?mode=${groupingMode}`;
+            }
+            
+            const response = await fetch(url, {
                 credentials: 'include'
             });
 
@@ -1388,7 +1472,16 @@ class GroupDashboard {
             }
 
             const result = await response.json();
-            this.displayResidentsGroups(result.data);
+            
+            if (!result.success) {
+                throw new Error(result.message || 'Erreur lors du chargement des données');
+            }
+            
+            if (groupingMode === 'nutritional') {
+                this.displayResidentsGroups(result.data);
+            } else {
+                this.displayResidentsByMode(result.data, groupingMode);
+            }
             
             this.hideLoader();
         } catch (error) {
@@ -1396,6 +1489,194 @@ class GroupDashboard {
             this.showToast('Erreur lors du chargement des résidents', 'error');
             this.hideLoader();
         }
+    }
+    
+    displayResidentsByMode(data, mode) {
+        const content = document.getElementById('residents-groups-content');
+        if (!content) {
+            console.error('❌ Element residents-groups-content non trouvé');
+            return;
+        }
+        
+        if (!data) {
+            content.innerHTML = '<div style="text-align: center; padding: 3rem; color: #666;">Aucune donnée disponible</div>';
+            return;
+        }
+        
+        // Mettre à jour les statistiques
+        const totalResidentsCount = document.getElementById('total-residents-count');
+        if (totalResidentsCount) {
+            totalResidentsCount.textContent = data.totalResidents || 0;
+        }
+        
+        let html = '';
+        
+        try {
+            switch(mode) {
+                case 'site':
+                    html = this.createSiteGrouping(data);
+                    break;
+                case 'age':
+                case 'Tranche d\'âge':
+                    html = this.createAgeGrouping(data);
+                    break;
+                case 'status':
+                case 'Statut (actif/inactif)':
+                    html = this.createStatusGrouping(data);
+                    break;
+                case 'room':
+                case 'Chambre/Unité':
+                    html = this.createRoomGrouping(data);
+                    break;
+                case 'diet':
+                case 'Régime alimentaire':
+                    html = this.createDietGrouping(data);
+                    break;
+                default:
+                    html = '<div style="text-align: center; padding: 3rem; color: #666;">Mode de regroupement non supporté: ' + mode + '</div>';
+            }
+        } catch (error) {
+            console.error('❌ Erreur dans displayResidentsByMode:', error);
+            html = '<div style="text-align: center; padding: 3rem; color: #e74c3c;">Erreur lors de l\'affichage: ' + error.message + '</div>';
+        }
+        
+        content.innerHTML = html;
+    }
+    
+    createSiteGrouping(data) {
+        if (!data || !data.sites || data.sites.length === 0) {
+            return '<div style="text-align: center; padding: 3rem; color: #666;"><i class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i><p>Aucun résident trouvé pour ce regroupement</p></div>';
+        }
+        
+        let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 1.5rem;">';
+        
+        data.sites.forEach(site => {
+            html += `
+                <div style="background: white; border: 2px solid #667eea; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 2px solid #667eea;">
+                        <h4 style="margin: 0; color: #333; font-size: 1.2rem;">
+                            <i class="fas fa-building"></i> ${site.name}
+                        </h4>
+                        <span style="background: #667eea; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600;">
+                            ${site.residents?.length || 0} résident${(site.residents?.length || 0) > 1 ? 's' : ''}
+                        </span>
+                    </div>
+                    <div style="max-height: 400px; overflow-y: auto;">
+            `;
+            
+            (site.residents || []).forEach(resident => {
+                html += `
+                    <div style="padding: 0.75rem; margin-bottom: 0.5rem; background: #f8f9fa; border-radius: 6px;">
+                        <div style="font-weight: 600; color: #333;">${resident.name}</div>
+                        ${resident.room ? `<div style="font-size: 0.85rem; color: #666; margin-top: 0.25rem;"><i class="fas fa-door-open"></i> Ch. ${resident.room}</div>` : ''}
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        return html;
+    }
+    
+    createAgeGrouping(data) {
+        // Similaire à createSiteGrouping mais avec des tranches d'âge
+        if (!data || !data.ageGroups || data.ageGroups.length === 0) {
+            return '<div style="text-align: center; padding: 3rem; color: #666;"><i class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i><p>Aucun résident trouvé pour ce regroupement</p></div>';
+        }
+        
+        let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">';
+        
+        data.ageGroups.forEach(group => {
+            html += `
+                <div style="background: white; border: 2px solid #10b981; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 2px solid #10b981;">
+                        <h4 style="margin: 0; color: #333; font-size: 1.1rem;">${group.range}</h4>
+                        <span style="background: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600;">
+                            ${group.residents?.length || 0} résident${(group.residents?.length || 0) > 1 ? 's' : ''}
+                        </span>
+                    </div>
+                    <div style="max-height: 300px; overflow-y: auto;">
+            `;
+            
+            (group.residents || []).forEach(resident => {
+                html += `
+                    <div style="padding: 0.75rem; margin-bottom: 0.5rem; background: #f8f9fa; border-radius: 6px;">
+                        <div style="font-weight: 600; color: #333;">${resident.name}</div>
+                        <div style="font-size: 0.85rem; color: #666; margin-top: 0.25rem;">
+                            <i class="fas fa-building"></i> ${resident.site || 'N/A'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        return html;
+    }
+    
+    createStatusGrouping(data) {
+        // Regroupement par statut (actif/inactif)
+        return this.createSimpleGrouping(data.statusGroups, 'Statut', '#f39c12');
+    }
+    
+    createRoomGrouping(data) {
+        // Regroupement par chambre/unitaire
+        return this.createSimpleGrouping(data.roomGroups, 'Chambre', '#9b59b6');
+    }
+    
+    createDietGrouping(data) {
+        // Regroupement par régime alimentaire
+        return this.createSimpleGrouping(data.dietGroups, 'Régime', '#3498db');
+    }
+    
+    createSimpleGrouping(groups, title, color) {
+        if (!groups || !Array.isArray(groups) || groups.length === 0) {
+            return '<div style="text-align: center; padding: 3rem; color: #666;"><i class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i><p>Aucun résident trouvé pour ce regroupement</p></div>';
+        }
+        
+        let html = `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">`;
+        
+        groups.forEach(group => {
+            html += `
+                <div style="background: white; border: 2px solid ${color}; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 2px solid ${color};">
+                        <h4 style="margin: 0; color: #333; font-size: 1.1rem;">${group.name}</h4>
+                        <span style="background: ${color}; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600;">
+                            ${group.residents?.length || 0} résident${(group.residents?.length || 0) > 1 ? 's' : ''}
+                        </span>
+                    </div>
+                    <div style="max-height: 300px; overflow-y: auto;">
+            `;
+            
+            (group.residents || []).forEach(resident => {
+                html += `
+                    <div style="padding: 0.75rem; margin-bottom: 0.5rem; background: #f8f9fa; border-radius: 6px;">
+                        <div style="font-weight: 600; color: #333;">${resident.name}</div>
+                        <div style="font-size: 0.85rem; color: #666; margin-top: 0.25rem;">
+                            <i class="fas fa-building"></i> ${resident.site || 'N/A'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        return html;
     }
 
     displayResidentsGroups(data) {
@@ -1559,6 +1840,264 @@ class GroupDashboard {
     async loadSyncData() {
         this.populateWeekSelector('sync-week-selector');
     }
+    
+    /* ===========================
+     * Financial Analysis
+     * ===========================
+     */
+    async loadFinancialAnalysis() {
+        try {
+            console.log('💰 Chargement des analyses financières...');
+            this.showLoader('Analyse des données financières...');
+            
+            const period = document.getElementById('financial-period-select')?.value || 'month';
+            
+            // Charger les données financières
+            const response = await fetch(`/api/foodcost/financial-analysis?period=${period}`, {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Erreur lors du chargement des analyses financières');
+            }
+            
+            const data = await response.json();
+            
+            // Afficher les analyses
+            this.displayFinancialOverview(data.overview);
+            this.displayCostPerSiteChart(data.sites);
+            this.displayExpensesEvolutionChart(data.evolution);
+            this.displayCategoryBreakdown(data.categories);
+            this.displaySavingsSuggestions(data.suggestions);
+            this.displaySupplierComparison(data.suppliers);
+            
+            this.hideLoader();
+        } catch (error) {
+            console.error('❌ Erreur loadFinancialAnalysis:', error);
+            this.showToast('Erreur lors du chargement des analyses: ' + error.message, 'error');
+            this.hideLoader();
+        }
+    }
+    
+    displayFinancialOverview(overview) {
+        const container = document.querySelector('#financial-overview > div');
+        if (!container || !overview) return;
+        
+        container.innerHTML = `
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 12px; color: white; text-align: center;">
+                <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">
+                    ${overview.totalExpenses?.toLocaleString('fr-FR') || 0}€
+                </div>
+                <div style="font-size: 0.9rem; opacity: 0.9;">Dépenses totales</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); padding: 1.5rem; border-radius: 12px; color: white; text-align: center;">
+                <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">
+                    ${overview.averageCostPerResident?.toFixed(2) || 0}€
+                </div>
+                <div style="font-size: 0.9rem; opacity: 0.9;">Coût moyen/résident</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%); padding: 1.5rem; border-radius: 12px; color: white; text-align: center;">
+                <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">
+                    ${overview.potentialSavings?.toLocaleString('fr-FR') || 0}€
+                </div>
+                <div style="font-size: 0.9rem; opacity: 0.9;">Économies potentielles</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); padding: 1.5rem; border-radius: 12px; color: white; text-align: center;">
+                <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">
+                    ${overview.sitesCount || 0}
+                </div>
+                <div style="font-size: 0.9rem; opacity: 0.9;">Sites analysés</div>
+            </div>
+        `;
+    }
+    
+    displayCostPerSiteChart(sitesData) {
+        const canvas = document.getElementById('cost-per-site-chart');
+        if (!canvas || !sitesData) return;
+        
+        const ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: sitesData.map(s => s.name),
+                datasets: [{
+                    label: 'Coût total (€)',
+                    data: sitesData.map(s => s.totalCost),
+                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    
+    displayExpensesEvolutionChart(evolutionData) {
+        const canvas = document.getElementById('expenses-evolution-chart');
+        if (!canvas || !evolutionData) return;
+        
+        const ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: evolutionData.map(e => e.period),
+                datasets: [{
+                    label: 'Dépenses (€)',
+                    data: evolutionData.map(e => e.expenses),
+                    borderColor: 'rgba(39, 174, 96, 1)',
+                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    
+    displayCategoryBreakdown(categories) {
+        const canvas = document.getElementById('category-breakdown-chart');
+        if (!canvas || !categories) return;
+        
+        const ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: categories.map(c => c.name),
+                datasets: [{
+                    data: categories.map(c => c.amount),
+                    backgroundColor: [
+                        'rgba(102, 126, 234, 0.8)',
+                        'rgba(39, 174, 96, 0.8)',
+                        'rgba(243, 156, 18, 0.8)',
+                        'rgba(231, 76, 60, 0.8)',
+                        'rgba(155, 89, 182, 0.8)',
+                        'rgba(52, 152, 219, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+        
+        // Afficher les détails
+        const detailsContainer = document.getElementById('category-details');
+        if (detailsContainer) {
+            detailsContainer.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    ${categories.map(cat => `
+                        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; border-left: 4px solid #667eea;">
+                            <div style="font-weight: 600; color: #333; margin-bottom: 0.5rem;">${cat.name}</div>
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #667eea;">${cat.amount.toLocaleString('fr-FR')}€</div>
+                            <div style="font-size: 0.85rem; color: #666; margin-top: 0.25rem;">${cat.percentage.toFixed(1)}% du total</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+    }
+    
+    displaySavingsSuggestions(suggestions) {
+        const container = document.getElementById('savings-suggestions');
+        if (!container) {
+            console.error('❌ Element savings-suggestions non trouvé');
+            return;
+        }
+        
+        if (!suggestions || !Array.isArray(suggestions) || suggestions.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #666;">
+                    <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>Aucune suggestion d'économie disponible pour le moment</p>
+                    <p style="font-size: 0.9rem; color: #999; margin-top: 0.5rem;">
+                        Les suggestions apparaîtront une fois que suffisamment de données auront été collectées.
+                    </p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = suggestions.map((suggestion, index) => `
+            <div style="background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #10b981; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                    <h4 style="margin: 0; color: #333; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas ${suggestion.icon || 'fa-lightbulb'}" style="color: #10b981;"></i>
+                        ${suggestion.title}
+                    </h4>
+                    <span style="background: #10b981; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-weight: 600; font-size: 0.9rem;">
+                        Économie: ${suggestion.potentialSavings?.toLocaleString('fr-FR') || 0}€
+                    </span>
+                </div>
+                <p style="color: #666; margin: 0.5rem 0;">${suggestion.description}</p>
+                ${suggestion.actions ? `
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+                        <strong style="color: #333; font-size: 0.9rem;">Actions recommandées:</strong>
+                        <ul style="margin: 0.5rem 0 0 0; padding-left: 1.5rem; color: #666;">
+                            ${suggestion.actions.map(action => `<li>${action}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+    }
+    
+    displaySupplierComparison(suppliers) {
+        const container = document.getElementById('supplier-comparison');
+        if (!container || !suppliers || suppliers.length === 0) {
+            if (container) {
+                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">Aucune donnée de fournisseur disponible</div>';
+            }
+            return;
+        }
+        
+        container.innerHTML = `
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                        <th style="padding: 1rem; text-align: left;">Fournisseur</th>
+                        <th style="padding: 1rem; text-align: right;">Montant total</th>
+                        <th style="padding: 1rem; text-align: center;">Nombre de commandes</th>
+                        <th style="padding: 1rem; text-align: right;">Moyenne/commande</th>
+                        <th style="padding: 1rem; text-align: center;">Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${suppliers.map((supplier, index) => `
+                        <tr style="border-bottom: 1px solid #e9ecef; ${index % 2 === 0 ? 'background: #f8f9fa;' : ''}">
+                            <td style="padding: 1rem; font-weight: 600;">${supplier.name}</td>
+                            <td style="padding: 1rem; text-align: right; font-weight: 600;">${supplier.totalAmount.toLocaleString('fr-FR')}€</td>
+                            <td style="padding: 1rem; text-align: center;">${supplier.orderCount}</td>
+                            <td style="padding: 1rem; text-align: right;">${supplier.averageAmount.toFixed(2)}€</td>
+                            <td style="padding: 1rem; text-align: center;">
+                                <span style="background: ${supplier.rating >= 4 ? '#10b981' : supplier.rating >= 3 ? '#f39c12' : '#e74c3c'}; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.85rem;">
+                                    ${'★'.repeat(Math.round(supplier.rating))}${'☆'.repeat(5 - Math.round(supplier.rating))}
+                                </span>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    }
 
     async loadReportsData() {
         try {
@@ -1686,26 +2225,102 @@ class GroupDashboard {
                             <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                                 <th style="padding: 1rem; text-align: left;">Site</th>
                                 <th style="padding: 1rem; text-align: left;">Type</th>
-                                <th style="padding: 1rem; text-align: right;">Budget</th>
+                                <th style="padding: 1rem; text-align: right;">Budget mensuel</th>
+                                <th style="padding: 1rem; text-align: right;">Budget annuel</th>
                                 <th style="padding: 1rem; text-align: right;">Dépenses</th>
-                                <th style="padding: 1rem; text-align: center;">% Utilisé</th>
+                                <th style="padding: 1rem; text-align: center;">% Mensuel</th>
+                                <th style="padding: 1rem; text-align: center;">% Annuel</th>
                                 <th style="padding: 1rem; text-align: center;">Alertes</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${sites.length === 0 ? `
                                 <tr>
-                                    <td colspan="6" style="padding: 2rem; text-align: center; color: #666;">
+                                    <td colspan="8" style="padding: 2rem; text-align: center; color: #666;">
                                         Aucune donnée Food Cost disponible pour la période sélectionnée
                                     </td>
                                 </tr>
                             ` : sites.map((site, index) => {
-                                const percentColor = site.percentUsed > 100 ? '#e74c3c' : 
+                                const monthlyPercentColor = site.percentUsed > 100 ? '#e74c3c' : 
                                                     site.percentUsed > 90 ? '#f39c12' : '#27ae60';
+                                const annualPercentColor = (site.annualPercentUsed || 0) > 100 ? '#e74c3c' : 
+                                                    (site.annualPercentUsed || 0) > 90 ? '#f39c12' : '#27ae60';
                                 const bgColor = index % 2 === 0 ? '#ffffff' : '#f8f9fa';
                                 
                                 // Détecter si le site n'a pas de données Food Cost
                                 const hasData = site.periods && site.periods.length > 0;
+                                const monthlyBudget = site.monthlyBudget || 0;
+                                const annualBudget = site.annualBudget || 0;
+                                const annualExpenses = site.annualExpenses || 0;
+                                const annualPercentUsed = site.annualPercentUsed || 0;
+                                
+                                // Construire le message d'alerte enrichi
+                                let alertContent = '';
+                                if (hasData && (site.alerts.length > 0 || site.hasOverBudget)) {
+                                    const mainAlert = site.alerts.find(a => a.type === 'budget_exceeded' && a.annualInfo) || 
+                                                     (site.alerts.length > 0 ? site.alerts[0] : null);
+                                    const alertInfo = mainAlert?.annualInfo || {};
+                                    
+                                    // Construire le message d'alerte
+                                    let alertMessage = '';
+                                    if (site.percentUsed > 100) {
+                                        alertMessage += `Budget mensuel dépassé de ${site.percentUsed - 100}%`;
+                                    }
+                                    if (annualPercentUsed > 100) {
+                                        if (alertMessage) alertMessage += ' | ';
+                                        alertMessage += `Budget annuel dépassé de ${annualPercentUsed - 100}%`;
+                                    } else if (annualPercentUsed > 0) {
+                                        if (alertMessage) alertMessage += ' | ';
+                                        alertMessage += `Budget annuel utilisé à ${annualPercentUsed}%`;
+                                    }
+                                    
+                                    alertContent = `
+                                        <div style="position: relative;">
+                                            <span style="background: #e74c3c; color: white; padding: 0.3rem 0.7rem; border-radius: 12px; font-weight: bold; cursor: pointer;" 
+                                                  onclick="event.stopPropagation(); this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none';">
+                                                <i class="fas fa-exclamation-circle"></i> ${site.alerts.length || (site.hasOverBudget ? 1 : 0)}
+                                            </span>
+                                            <div style="display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; background: white; border: 2px solid #e74c3c; border-radius: 8px; padding: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; min-width: 300px;">
+                                                <h4 style="margin: 0 0 0.5rem 0; color: #e74c3c;">
+                                                    <i class="fas fa-exclamation-triangle"></i> Alertes Budget
+                                                </h4>
+                                                <div style="font-size: 0.9rem; line-height: 1.6;">
+                                                    <div style="margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid #eee;">
+                                                        <strong style="color: #333;">📅 Mensuel :</strong><br>
+                                                        Budget: ${(alertInfo.monthlyBudget || monthlyBudget || site.totalBudget).toLocaleString('fr-FR')}€<br>
+                                                        Dépensé: ${(alertInfo.monthlyExpenses || site.totalExpenses).toLocaleString('fr-FR')}€<br>
+                                                        <span style="color: ${monthlyPercentColor}; font-weight: bold;">
+                                                            ${site.percentUsed}% utilisé
+                                                            ${site.percentUsed > 100 ? ` (dépassement de ${site.percentUsed - 100}%)` : ''}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <strong style="color: #333;">📆 Annuel :</strong><br>
+                                                        Budget: ${(alertInfo.annualBudget || annualBudget || (monthlyBudget * 12)).toLocaleString('fr-FR')}€<br>
+                                                        Dépensé: ${(alertInfo.annualExpenses || annualExpenses).toLocaleString('fr-FR')}€<br>
+                                                        <span style="color: ${annualPercentColor}; font-weight: bold;">
+                                                            ${annualPercentUsed}% utilisé
+                                                            ${annualPercentUsed > 100 ? ` (dépassement de ${annualPercentUsed - 100}%)` : ''}
+                                                        </span>
+                                                    </div>
+                                                    ${alertMessage ? `
+                                                        <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #eee; color: #666; font-style: italic;">
+                                                            ${alertMessage}
+                                                        </div>
+                                                    ` : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                } else if (hasData) {
+                                    alertContent = `
+                                        <span style="color: #27ae60;">
+                                            <i class="fas fa-check-circle"></i> OK
+                                        </span>
+                                    `;
+                                } else {
+                                    alertContent = `<span style="color: #999;">—</span>`;
+                                }
                                 
                                 return `
                                     <tr style="background: ${bgColor}; border-bottom: 1px solid #e0e0e0; ${hasData ? 'cursor: pointer;' : ''}" ${hasData ? `onclick="groupDashboard.showSiteHistory('${site.siteId}', '${site.siteName}')"` : ''}>
@@ -1716,14 +2331,18 @@ class GroupDashboard {
                                         </td>
                                         <td style="padding: 1rem;">${site.establishmentType}</td>
                                         <td style="padding: 1rem; text-align: right; font-weight: 600;">
-                                            ${hasData ? site.totalBudget.toLocaleString('fr-FR') + '€' : '<span style="color: #999;">—</span>'}
+                                            ${hasData ? (monthlyBudget > 0 ? monthlyBudget.toLocaleString('fr-FR') + '€' : site.totalBudget.toLocaleString('fr-FR') + '€') : '<span style="color: #999;">—</span>'}
+                                        </td>
+                                        <td style="padding: 1rem; text-align: right; font-weight: 600;">
+                                            ${hasData ? (annualBudget > 0 ? annualBudget.toLocaleString('fr-FR') + '€' : '<span style="color: #999; font-size: 0.85rem;">(mensuel × 12)</span>') : '<span style="color: #999;">—</span>'}
                                         </td>
                                         <td style="padding: 1rem; text-align: right; font-weight: 600;">
                                             ${hasData ? site.totalExpenses.toLocaleString('fr-FR') + '€' : '<span style="color: #999;">—</span>'}
+                                            ${hasData && annualExpenses > 0 ? `<br><small style="color: #666; font-size: 0.85rem;">Annuel: ${annualExpenses.toLocaleString('fr-FR')}€</small>` : ''}
                                         </td>
                                         <td style="padding: 1rem; text-align: center;">
                                             ${hasData ? `
-                                                <div style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; background: ${percentColor}; color: white; font-weight: bold;">
+                                                <div style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; background: ${monthlyPercentColor}; color: white; font-weight: bold;">
                                                     ${site.percentUsed}%
                                                 </div>
                                             ` : `
@@ -1731,17 +2350,16 @@ class GroupDashboard {
                                             `}
                                         </td>
                                         <td style="padding: 1rem; text-align: center;">
-                                            ${hasData ? (site.alerts.length > 0 ? `
-                                                <span style="background: #e74c3c; color: white; padding: 0.3rem 0.7rem; border-radius: 12px; font-weight: bold;">
-                                                    <i class="fas fa-exclamation-circle"></i> ${site.alerts.length}
-                                                </span>
+                                            ${hasData && annualPercentUsed > 0 ? `
+                                                <div style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; background: ${annualPercentColor}; color: white; font-weight: bold;">
+                                                    ${annualPercentUsed}%
+                                                </div>
                                             ` : `
-                                                <span style="color: #27ae60;">
-                                                    <i class="fas fa-check-circle"></i> OK
-                                                </span>
-                                            `) : `
-                                                <span style="color: #999;">—</span>
+                                                <span style="color: #999; font-style: italic;">N/A</span>
                                             `}
+                                        </td>
+                                        <td style="padding: 1rem; text-align: center;" onclick="event.stopPropagation();">
+                                            ${alertContent}
                                         </td>
                                     </tr>
                                 `;
@@ -1754,6 +2372,13 @@ class GroupDashboard {
         
         // Ajouter le tableau après les cartes
         costsChart.innerHTML += tableHTML;
+    }
+    
+    showAlertDetails(siteId, siteName) {
+        const alertDetails = document.getElementById(`alert-details-${siteId}`);
+        if (alertDetails) {
+            alertDetails.style.display = alertDetails.style.display === 'none' ? 'block' : 'none';
+        }
     }
     
     // Graphique comparatif de tous les sites
@@ -2119,6 +2744,22 @@ class GroupDashboard {
             'resto': 'Restaurant'
         };
         return labels[type] || type || '—';
+    }
+    
+    updateResidentsTitle(mode) {
+        const titleElement = document.querySelector('#residents-tab h2');
+        if (!titleElement) return;
+        
+        const titles = {
+            'nutritional': 'Résidents - Regroupement par Profils Nutritionnels',
+            'site': 'Résidents - Regroupement par Site',
+            'age': 'Résidents - Regroupement par Tranche d\'âge',
+            'status': 'Résidents - Regroupement par Statut',
+            'room': 'Résidents - Regroupement par Chambre/Unité',
+            'diet': 'Résidents - Regroupement par Régime Alimentaire'
+        };
+        
+        titleElement.innerHTML = `<i class="fas fa-user-friends"></i> ${titles[mode] || titles['nutritional']}`;
     }
 
     async viewSite(siteId) {

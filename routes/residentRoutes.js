@@ -11,6 +11,7 @@ import {
     getResidentStats,
     getResidentStatsDefault,
     getResidentsCountBySite,
+    getPortionsCountBySite,
     getResidentsGroupedByNutritionalProfile
 } from '../controllers/residentController.js';
 import { protect } from '../middleware/authMiddleware.js';
@@ -23,6 +24,7 @@ router.post('/', protect, csrfProtection, createResident);
 router.get('/site/:siteId', protect, getResidentsBySite);
 router.get('/group/:groupId', protect, getResidentsByGroup);
 router.get('/group/:groupId/counts', protect, getResidentsCountBySite);
+router.get('/group/:groupId/portions', protect, getPortionsCountBySite);
 router.get('/group/:groupId/grouped', protect, getResidentsGroupedByNutritionalProfile);
 router.get('/search', protect, searchResidents);
 router.get('/stats/:siteId', protect, getResidentStats);

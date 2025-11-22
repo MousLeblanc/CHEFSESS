@@ -694,11 +694,75 @@ export async function getResidentsCountBySite(req, res) {
 }
 
 /**
+ * Récupérer le nombre de portions équivalentes par site pour un groupe
+ * Calcule les portions en tenant compte des demi-portions (0.5) et double portions (1.5)
+ */
+export async function getPortionsCountBySite(req, res) {
+    try {
+        const { groupId } = req.params;
+        
+        // Vérifier que le groupe existe
+        const group = await Group.findById(groupId);
+        if (!group) {
+            return res.status(404).json({ message: 'Groupe non trouvé' });
+        }
+        
+        // Récupérer tous les résidents actifs du groupe
+        const residents = await Resident.find({
+            groupId: group._id,
+            status: 'actif'
+        }).select('siteId portionSize');
+        
+        // Calculer les portions par site
+        const portionsMap = {};
+        
+        residents.forEach(resident => {
+            const siteId = resident.siteId?.toString();
+            if (!siteId) return;
+            
+            if (!portionsMap[siteId]) {
+                portionsMap[siteId] = 0;
+            }
+            
+            // Calculer la portion équivalente
+            // Si portionSize n'est pas défini, utiliser 1 (portion normale) par défaut
+            const portionSize = resident.portionSize;
+            let portionEquivalent = 1; // Par défaut, portion normale
+            
+            if (portionSize === 0.5 || portionSize === '0.5') {
+                portionEquivalent = 0.5; // Demi-portion
+            } else if (portionSize === 2 || portionSize === '2' || portionSize === 'double') {
+                portionEquivalent = 1.5; // Double portion = 1.5x
+            } else if (portionSize === 1 || portionSize === '1' || portionSize === 'normal' || !portionSize) {
+                portionEquivalent = 1; // Portion normale (valeur par défaut)
+            }
+            
+            portionsMap[siteId] += portionEquivalent;
+        });
+        
+        console.log('📊 Portions calculées par site:', portionsMap);
+        
+        res.status(200).json({
+            success: true,
+            data: portionsMap
+        });
+        
+    } catch (error) {
+        console.error('❌ Erreur:', error);
+        res.status(500).json({ 
+            success: false,
+            message: error.message 
+        });
+    }
+}
+
+/**
  * Récupérer les résidents regroupés par profils nutritionnels pour un groupe
  */
 export async function getResidentsGroupedByNutritionalProfile(req, res) {
     try {
         const { groupId } = req.params;
+        const { mode = 'nutritional' } = req.query;
         
         // Vérifier que le groupe existe
         const group = await Group.findById(groupId);
@@ -717,8 +781,16 @@ export async function getResidentsGroupedByNutritionalProfile(req, res) {
             status: 'actif' 
         })
         .populate('siteId', 'siteName type')
-        .select('firstName lastName roomNumber nutritionalProfile siteId')
+        .select('firstName lastName roomNumber nutritionalProfile siteId dateOfBirth status')
         .sort({ lastName: 1, firstName: 1 });
+        
+        // Si le mode n'est pas nutritionnel, utiliser les autres modes
+        if (mode !== 'nutritional') {
+            return res.status(200).json({
+                success: true,
+                data: groupResidentsByMode(residents, mode)
+            });
+        }
         
         // Structures pour stocker les groupes
         const allergiesGroups = {};
@@ -848,6 +920,157 @@ export async function getResidentsGroupedByNutritionalProfile(req, res) {
     }
 }
 
+// Fonction helper pour regrouper les résidents par différents modes
+function groupResidentsByMode(residents, mode) {
+    const result = {
+        totalResidents: residents.length
+    };
+    
+    switch(mode) {
+        case 'site':
+            const sitesMap = {};
+            residents.forEach(resident => {
+                const siteId = resident.siteId?._id?.toString() || 'unknown';
+                const siteName = resident.siteId?.siteName || resident.siteId?.name || 'Site inconnu';
+                
+                if (!sitesMap[siteId]) {
+                    sitesMap[siteId] = {
+                        id: siteId,
+                        name: siteName,
+                        residents: []
+                    };
+                }
+                
+                sitesMap[siteId].residents.push({
+                    _id: resident._id,
+                    name: `${resident.firstName} ${resident.lastName}`,
+                    room: resident.roomNumber,
+                    site: siteName,
+                    siteType: resident.siteId?.type || 'N/A'
+                });
+            });
+            result.sites = Object.values(sitesMap).sort((a, b) => b.residents.length - a.residents.length);
+            break;
+            
+        case 'age':
+            const ageGroups = {
+                '0-65': { range: '0-65 ans', residents: [] },
+                '66-75': { range: '66-75 ans', residents: [] },
+                '76-85': { range: '76-85 ans', residents: [] },
+                '86-95': { range: '86-95 ans', residents: [] },
+                '96+': { range: '96 ans et plus', residents: [] }
+            };
+            
+            residents.forEach(resident => {
+                if (!resident.dateOfBirth) {
+                    ageGroups['0-65'].residents.push({
+                        _id: resident._id,
+                        name: `${resident.firstName} ${resident.lastName}`,
+                        room: resident.roomNumber,
+                        site: resident.siteId?.siteName || 'N/A'
+                    });
+                    return;
+                }
+                
+                const age = new Date().getFullYear() - new Date(resident.dateOfBirth).getFullYear();
+                let group;
+                if (age <= 65) group = '0-65';
+                else if (age <= 75) group = '66-75';
+                else if (age <= 85) group = '76-85';
+                else if (age <= 95) group = '86-95';
+                else group = '96+';
+                
+                ageGroups[group].residents.push({
+                    _id: resident._id,
+                    name: `${resident.firstName} ${resident.lastName}`,
+                    room: resident.roomNumber,
+                    site: resident.siteId?.siteName || 'N/A'
+                });
+            });
+            
+            result.ageGroups = Object.values(ageGroups).filter(g => g.residents.length > 0);
+            break;
+            
+        case 'status':
+            const statusGroups = {
+                'actif': { name: 'Actifs', residents: [] },
+                'inactif': { name: 'Inactifs', residents: [] }
+            };
+            
+            residents.forEach(resident => {
+                const status = resident.status || 'actif';
+                statusGroups[status] = statusGroups[status] || { name: status, residents: [] };
+                statusGroups[status].residents.push({
+                    _id: resident._id,
+                    name: `${resident.firstName} ${resident.lastName}`,
+                    room: resident.roomNumber,
+                    site: resident.siteId?.siteName || 'N/A'
+                });
+            });
+            
+            result.statusGroups = Object.values(statusGroups).filter(g => g.residents.length > 0);
+            break;
+            
+        case 'room':
+            const roomGroups = {};
+            residents.forEach(resident => {
+                const room = resident.roomNumber || 'Non assigné';
+                if (!roomGroups[room]) {
+                    roomGroups[room] = {
+                        name: `Chambre ${room}`,
+                        residents: []
+                    };
+                }
+                roomGroups[room].residents.push({
+                    _id: resident._id,
+                    name: `${resident.firstName} ${resident.lastName}`,
+                    room: resident.roomNumber,
+                    site: resident.siteId?.siteName || 'N/A'
+                });
+            });
+            result.roomGroups = Object.values(roomGroups).sort((a, b) => b.residents.length - a.residents.length);
+            break;
+            
+        case 'diet':
+            const dietGroups = {};
+            residents.forEach(resident => {
+                const restrictions = resident.nutritionalProfile?.dietaryRestrictions || [];
+                if (restrictions.length === 0) {
+                    const key = 'Aucun régime spécifique';
+                    if (!dietGroups[key]) {
+                        dietGroups[key] = { name: key, residents: [] };
+                    }
+                    dietGroups[key].residents.push({
+                        _id: resident._id,
+                        name: `${resident.firstName} ${resident.lastName}`,
+                        room: resident.roomNumber,
+                        site: resident.siteId?.siteName || 'N/A'
+                    });
+                } else {
+                    restrictions.forEach(restriction => {
+                        const key = restriction.restriction || 'Autre';
+                        if (!dietGroups[key]) {
+                            dietGroups[key] = { name: key, residents: [] };
+                        }
+                        dietGroups[key].residents.push({
+                            _id: resident._id,
+                            name: `${resident.firstName} ${resident.lastName}`,
+                            room: resident.roomNumber,
+                            site: resident.siteId?.siteName || 'N/A'
+                        });
+                    });
+                }
+            });
+            result.dietGroups = Object.values(dietGroups).sort((a, b) => b.residents.length - a.residents.length);
+            break;
+            
+        default:
+            result.error = 'Mode de regroupement non supporté';
+    }
+    
+    return result;
+}
+
 export default {
     createResident,
     getResidents,
@@ -860,5 +1083,6 @@ export default {
     getResidentStats,
     getResidentStatsDefault,
     getResidentsCountBySite,
+    getPortionsCountBySite,
     getResidentsGroupedByNutritionalProfile
 };

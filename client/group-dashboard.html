@@ -62,6 +62,9 @@
         <button class="tab-btn" data-tab="reports">
             <i class="fas fa-chart-bar"></i> Rapports
         </button>
+        <button class="tab-btn" data-tab="financial-analysis">
+            <i class="fas fa-chart-pie"></i> Analyses Financières
+        </button>
         <button class="tab-btn" data-tab="users">
             <i class="fas fa-users"></i> Utilisateurs
         </button>
@@ -132,6 +135,7 @@
                                         <th>Site</th>
                                         <th>Type</th>
                                         <th>👥 Résidents</th>
+                                        <th>🍽️ Portions</th>
                                         <th>Coût matière/jour</th>
                                         <th>Taux d'écart nutrition</th>
                                         <th>Alertes stock</th>
@@ -203,8 +207,23 @@
                         </div>
                     </div>
 
-                    <!-- Filtres -->
-                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <!-- Sélecteur de regroupement -->
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;">
+                        <label style="font-weight: 600; color: #333; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-filter"></i> Regrouper par:
+                        </label>
+                        <select id="grouping-mode" style="padding: 0.5rem 1rem; border: 2px solid #667eea; border-radius: 6px; background: white; cursor: pointer; font-size: 0.95rem; min-width: 200px;">
+                            <option value="nutritional">Profil Nutritionnel</option>
+                            <option value="site">Site</option>
+                            <option value="age">Tranche d'âge</option>
+                            <option value="status">Statut (actif/inactif)</option>
+                            <option value="room">Chambre/Unité</option>
+                            <option value="diet">Régime alimentaire</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtres (pour le mode profil nutritionnel) -->
+                    <div id="nutritional-filters" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
                         <button class="filter-btn active" data-filter="all" style="padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 6px; background: #667eea; color: white; cursor: pointer;">
                             Tous les groupes
                         </button>
@@ -476,6 +495,84 @@
                     <div class="card-body">
                         <div id="costs-chart">
                             <p class="text-center">Chargement du rapport des coûts...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analyses Financières -->
+        <div id="financial-analysis-tab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-pie"></i> Analyses Financières & Optimisation</h2>
+                    <div class="header-actions">
+                        <select id="financial-period-select" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; margin-right: 1rem;">
+                            <option value="month">Mois en cours</option>
+                            <option value="quarter">Trimestre</option>
+                            <option value="year">Année</option>
+                        </select>
+                        <button id="refresh-financial" class="btn btn-primary">
+                            <i class="fas fa-sync"></i> Actualiser
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Vue d'ensemble -->
+                    <div id="financial-overview" style="margin-bottom: 2rem;">
+                        <h3 style="margin-bottom: 1rem; color: #333;"><i class="fas fa-tachometer-alt"></i> Vue d'ensemble</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                            <!-- Les cartes seront générées dynamiquement -->
+                        </div>
+                    </div>
+
+                    <!-- Graphiques comparatifs -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                        <div class="card" style="padding: 1.5rem;">
+                            <h3 style="margin-bottom: 1rem; color: #333;"><i class="fas fa-chart-bar"></i> Coût par site</h3>
+                            <canvas id="cost-per-site-chart" style="max-height: 300px;"></canvas>
+                        </div>
+                        <div class="card" style="padding: 1.5rem;">
+                            <h3 style="margin-bottom: 1rem; color: #333;"><i class="fas fa-chart-line"></i> Évolution des dépenses</h3>
+                            <canvas id="expenses-evolution-chart" style="max-height: 300px;"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Analyse par catégorie -->
+                    <div class="card" style="margin-bottom: 2rem;">
+                        <div class="card-header">
+                            <h3><i class="fas fa-tags"></i> Analyse par Catégorie de Dépenses</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="category-breakdown-chart" style="max-height: 400px;"></canvas>
+                            <div id="category-details" style="margin-top: 1.5rem;">
+                                <!-- Détails par catégorie -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Suggestions d'économies -->
+                    <div class="card" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 2px solid #10b981;">
+                        <div class="card-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                            <h3><i class="fas fa-lightbulb"></i> Suggestions d'Économies</h3>
+                        </div>
+                        <div class="card-body" id="savings-suggestions">
+                            <div style="text-align: center; padding: 2rem; color: #666;">
+                                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                                <p>Analyse en cours...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comparaison des fournisseurs -->
+                    <div class="card" style="margin-top: 2rem;">
+                        <div class="card-header">
+                            <h3><i class="fas fa-balance-scale"></i> Comparaison des Fournisseurs</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="supplier-comparison">
+                                <!-- Tableau comparatif -->
+                            </div>
                         </div>
                     </div>
                 </div>

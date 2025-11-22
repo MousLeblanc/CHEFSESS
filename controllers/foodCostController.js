@@ -81,7 +81,16 @@ export const getFoodCostPeriods = async (req, res) => {
 // @access  Private
 export const getFoodCostById = async (req, res) => {
   try {
-    const foodCost = await FoodCost.findById(req.params.id)
+    // Valider que l'ID est un ObjectId valide (24 caractères hexadécimaux)
+    const { id } = req.params;
+    if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID invalide. L\'ID doit être un ObjectId MongoDB valide (24 caractères hexadécimaux).'
+      });
+    }
+    
+    const foodCost = await FoodCost.findById(id)
       .populate('siteId', 'name establishmentType')
       .populate('groupId', 'name')
       .populate('expenses.manual.addedBy', 'firstName lastName email');
@@ -1091,12 +1100,57 @@ export const getAdminReports = async (req, res) => {
     
     console.log(`📊 ${siteStats.size} site(s) initialisé(s) dans le rapport`);
     
-    // 🎯 ÉTAPE 4 : Ajouter les données Food Cost pour les sites qui en ont
+    // 🎯 ÉTAPE 4 : Récupérer toutes les périodes de l'année en cours pour calculer les budgets annuels
+    const currentYear = new Date().getFullYear();
+    const yearStart = new Date(currentYear, 0, 1);
+    const yearEnd = new Date(currentYear, 11, 31, 23, 59, 59, 999);
+    
+    const yearlyFoodCosts = await FoodCost.find({
+      siteId: { $in: siteIds },
+      startDate: { $gte: yearStart },
+      endDate: { $lte: yearEnd }
+    })
+      .populate('siteId', 'name siteName establishmentType address')
+      .populate('groupId', 'name')
+      .sort({ 'siteId.name': 1, startDate: -1 });
+    
+    console.log(`📅 ${yearlyFoodCosts.length} période(s) Food Cost trouvée(s) pour l'année ${currentYear}`);
+    
+    // Calculer les totaux annuels par site
+    const yearlyStats = new Map();
+    yearlyFoodCosts.forEach(fc => {
+      const siteId = fc.siteId?._id?.toString();
+      if (!siteId) return;
+      
+      if (!yearlyStats.has(siteId)) {
+        yearlyStats.set(siteId, {
+          totalBudget: 0,
+          totalExpenses: 0,
+          monthlyPeriods: 0
+        });
+      }
+      
+      const stats = yearlyStats.get(siteId);
+      stats.totalBudget += fc.budget.planned || 0;
+      stats.totalExpenses += fc.expenses.total || 0;
+      
+      // Compter les périodes mensuelles
+      if (fc.period === 'mois') {
+        stats.monthlyPeriods++;
+      }
+    });
+    
+    // 🎯 ÉTAPE 5 : Ajouter les données Food Cost pour les sites qui en ont
     foodCosts.forEach(fc => {
       const siteId = fc.siteId?._id?.toString();
       if (!siteId || !siteStats.has(siteId)) return;
       
       const site = siteStats.get(siteId);
+      
+      // Calculer le pourcentage utilisé pour cette période
+      const periodPercentUsed = fc.budget.planned > 0 
+        ? Math.round((fc.expenses.total / fc.budget.planned) * 100) 
+        : 0;
       
       // Ajouter les données de cette période
       site.periods.push({
@@ -1105,8 +1159,8 @@ export const getAdminReports = async (req, res) => {
         endDate: fc.endDate,
         budget: fc.budget.planned,
         expenses: fc.expenses.total,
-        percentUsed: fc.percentUsed,
-        hasOverBudget: fc.percentUsed > 100
+        percentUsed: periodPercentUsed,
+        hasOverBudget: periodPercentUsed > 100
       });
       
       site.totalBudget += fc.budget.planned;
@@ -1116,32 +1170,110 @@ export const getAdminReports = async (req, res) => {
       totalExpenses += fc.expenses.total;
       
       // Gérer les alertes
-      if (fc.alerts && fc.alerts.length > 0) {
-        fc.alerts.forEach(alert => {
+      if (fc.analysis?.alerts && fc.analysis.alerts.length > 0) {
+        fc.analysis.alerts.forEach(alert => {
           if (!alert.acknowledged) {
             site.alerts.push({
               type: alert.type,
               message: alert.message,
               severity: alert.severity,
-              createdAt: alert.createdAt
+              createdAt: alert.date || alert.createdAt
             });
           }
         });
       }
       
       // Vérifier si le site a un dépassement de budget
-      if (fc.percentUsed > 100) {
+      if (fc.analysis?.variance?.percentage > 0) {
         site.hasOverBudget = true;
       }
     });
     
-    // Calculer le pourcentage global pour chaque site
+    // Calculer le pourcentage global pour chaque site et ajouter les données annuelles
     siteStats.forEach(site => {
       if (site.totalBudget > 0) {
         site.percentUsed = Math.round((site.totalExpenses / site.totalBudget) * 100);
       }
       if (site.hasOverBudget) {
         sitesWithOverBudget++;
+      }
+      
+      // Calculer le budget mensuel moyen et annuel
+      const yearlyData = yearlyStats.get(site.siteId) || { totalBudget: 0, totalExpenses: 0, monthlyPeriods: 0 };
+      
+      // Budget mensuel : moyenne des budgets mensuels de l'année, ou budget de la période actuelle si c'est un mois
+      let monthlyBudget = 0;
+      if (yearlyData.monthlyPeriods > 0) {
+        // Calculer la moyenne des budgets mensuels
+        const monthlyPeriods = yearlyFoodCosts.filter(fc => 
+          fc.siteId?._id?.toString() === site.siteId && fc.period === 'mois'
+        );
+        if (monthlyPeriods.length > 0) {
+          const totalMonthlyBudget = monthlyPeriods.reduce((sum, fc) => sum + (fc.budget.planned || 0), 0);
+          monthlyBudget = totalMonthlyBudget / monthlyPeriods.length;
+        }
+      } else if (site.totalBudget > 0 && site.periods.length > 0) {
+        // Si pas de périodes mensuelles dans l'année, utiliser le budget de la période actuelle
+        monthlyBudget = site.totalBudget / site.periods.length;
+      }
+      
+      // Budget annuel = budget mensuel * 12
+      const annualBudget = monthlyBudget * 12;
+      
+      // Dépenses annuelles
+      const annualExpenses = yearlyData.totalExpenses;
+      
+      // Pourcentage utilisé sur l'année
+      const annualPercentUsed = annualBudget > 0 ? Math.round((annualExpenses / annualBudget) * 100) : 0;
+      
+      // Ajouter les données annuelles au site
+      site.monthlyBudget = Math.round(monthlyBudget * 100) / 100;
+      site.annualBudget = Math.round(annualBudget * 100) / 100;
+      site.annualExpenses = Math.round(annualExpenses * 100) / 100;
+      site.annualPercentUsed = annualPercentUsed;
+      
+      // Améliorer les alertes pour inclure les informations annuelles
+      if (site.alerts.length > 0 || site.hasOverBudget) {
+        // Ajouter une alerte contextuelle avec les informations annuelles
+        const monthlyOverBudget = site.percentUsed > 100;
+        const annualOverBudget = annualPercentUsed > 100;
+        
+        if (monthlyOverBudget || annualOverBudget) {
+          // Créer un message d'alerte enrichi
+          const alertMessages = [];
+          
+          if (monthlyOverBudget) {
+            alertMessages.push(`Budget mensuel dépassé de ${site.percentUsed - 100}%`);
+          }
+          
+          if (annualOverBudget) {
+            alertMessages.push(`Budget annuel dépassé de ${annualPercentUsed - 100}%`);
+          } else if (annualPercentUsed > 0) {
+            alertMessages.push(`Budget annuel utilisé à ${annualPercentUsed}%`);
+          }
+          
+          // Ajouter ou mettre à jour l'alerte principale
+          const mainAlert = site.alerts.find(a => a.type === 'budget_exceeded') || {
+            type: 'budget_exceeded',
+            severity: monthlyOverBudget ? 'high' : 'medium',
+            message: '',
+            createdAt: new Date()
+          };
+          
+          mainAlert.message = alertMessages.join(' | ');
+          mainAlert.annualInfo = {
+            annualBudget,
+            annualExpenses,
+            annualPercentUsed,
+            monthlyBudget,
+            monthlyExpenses: site.totalExpenses,
+            monthlyPercentUsed: site.percentUsed
+          };
+          
+          if (!site.alerts.find(a => a.type === 'budget_exceeded')) {
+            site.alerts.push(mainAlert);
+          }
+        }
       }
     });
     
@@ -1307,6 +1439,623 @@ export const getSiteHistory = async (req, res) => {
   }
 };
 
+// @desc    Obtenir les analyses financières détaillées avec suggestions d'économies
+// @route   GET /api/foodcost/financial-analysis
+// @access  Private (Admin, Group Admin)
+export const getFinancialAnalysis = async (req, res) => {
+  try {
+    const { period = 'month' } = req.query;
+    
+    // Vérifier les permissions
+    const isAdmin = req.user.role === 'admin' || 
+                    req.user.role === 'GROUP_ADMIN' ||
+                    (req.user.roles && (req.user.roles.includes('admin') || req.user.roles.includes('GROUP_ADMIN')));
+    
+    if (!isAdmin) {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Accès refusé. Seuls les administrateurs peuvent voir les analyses financières.' 
+      });
+    }
+    
+    // Déterminer la période
+    const now = new Date();
+    let periodStart, periodEnd;
+    
+    if (period === 'month') {
+      periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    } else if (period === 'quarter') {
+      const quarter = Math.floor(now.getMonth() / 3);
+      periodStart = new Date(now.getFullYear(), quarter * 3, 1);
+      periodEnd = new Date(now.getFullYear(), (quarter + 1) * 3, 0, 23, 59, 59, 999);
+    } else { // year
+      periodStart = new Date(now.getFullYear(), 0, 1);
+      periodEnd = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+    }
+    
+    // Récupérer les sites du groupe
+    const Site = (await import('../models/Site.js')).default;
+    const groupIdFilter = req.user.groupId;
+    
+    // Si pas de groupId, retourner des données vides plutôt qu'une erreur
+    if (!groupIdFilter) {
+      return res.json({
+        success: true,
+        overview: {
+          totalExpenses: 0,
+          totalBudget: 0,
+          averageCostPerResident: 0,
+          potentialSavings: 0,
+          sitesCount: 0
+        },
+        sites: [],
+        evolution: [],
+        categories: [],
+        suppliers: [],
+        suggestions: []
+      });
+    }
+    
+    const siteQuery = { groupId: groupIdFilter };
+    const allSites = await Site.find(siteQuery).select('_id name siteName');
+    
+    const siteIds = allSites.map(s => s._id);
+    
+    // Si aucun site, retourner des données vides
+    if (siteIds.length === 0) {
+      return res.json({
+        success: true,
+        overview: {
+          totalExpenses: 0,
+          totalBudget: 0,
+          averageCostPerResident: 0,
+          potentialSavings: 0,
+          sitesCount: 0
+        },
+        sites: [],
+        evolution: [],
+        categories: [],
+        suppliers: [],
+        suggestions: []
+      });
+    }
+    
+    // Récupérer les food costs pour cette période
+    const foodCosts = await FoodCost.find({
+      siteId: { $in: siteIds },
+      $or: [
+        { startDate: { $gte: periodStart, $lte: periodEnd } },
+        { endDate: { $gte: periodStart, $lte: periodEnd } },
+        { startDate: { $lte: periodStart }, endDate: { $gte: periodEnd } }
+      ]
+    })
+      .populate('siteId', 'siteName name')
+      .sort({ startDate: -1 });
+    
+    // Récupérer les commandes pour analyser les fournisseurs
+    const orders = await Order.find({
+      siteId: { $in: siteIds },
+      status: { $in: ['delivered', 'completed'] },
+      createdAt: { $gte: periodStart, $lte: periodEnd }
+    })
+      .populate('supplier', 'firstName lastName email')
+      .select('pricing.total supplier createdAt');
+    
+    // Calculer les statistiques globales
+    const totalExpenses = foodCosts.reduce((sum, fc) => sum + (fc.expenses?.total || 0), 0);
+    const totalBudget = foodCosts.reduce((sum, fc) => sum + (fc.budget?.planned || 0), 0);
+    
+    // Récupérer le nombre total de résidents et calculer les portions
+    let totalResidents = 0;
+    let totalPortions = 0;
+    let averageCostPerResident = 0;
+    
+    try {
+      const residents = await Resident.find({
+        groupId: groupIdFilter,
+        status: 'actif'
+      }).select('portionSize');
+      
+      totalResidents = residents.length;
+      
+      // Calculer le total de portions équivalentes
+      residents.forEach(resident => {
+        // Si portionSize n'est pas défini, utiliser 1 (portion normale) par défaut
+        const portionSize = resident.portionSize;
+        let portionEquivalent = 1; // Par défaut, portion normale
+        
+        if (portionSize === 0.5 || portionSize === '0.5') {
+          portionEquivalent = 0.5; // Demi-portion
+        } else if (portionSize === 2 || portionSize === '2' || portionSize === 'double') {
+          portionEquivalent = 1.5; // Double portion = 1.5x
+        } else if (portionSize === 1 || portionSize === '1' || portionSize === 'normal' || !portionSize) {
+          portionEquivalent = 1; // Portion normale (valeur par défaut)
+        }
+        
+        totalPortions += portionEquivalent;
+      });
+      
+      console.log('📊 Total résidents:', totalResidents, 'Total portions:', totalPortions);
+      
+      // Calculer le coût par résident/jour
+      // On suppose une période d'un mois (30 jours) pour le calcul
+      const daysInPeriod = Math.ceil((periodEnd - periodStart) / (1000 * 60 * 60 * 24));
+      if (totalResidents > 0 && daysInPeriod > 0) {
+        averageCostPerResident = totalExpenses / (totalResidents * daysInPeriod);
+      }
+    } catch (residentError) {
+      console.warn('⚠️ Erreur lors du calcul du nombre de résidents:', residentError);
+      // Continuer sans cette donnée
+    }
+    
+    // Analyser par site
+    const sitesAnalysis = {};
+    foodCosts.forEach(fc => {
+      const siteId = fc.siteId?._id?.toString();
+      if (!siteId) return;
+      
+      if (!sitesAnalysis[siteId]) {
+        sitesAnalysis[siteId] = {
+          name: fc.siteId?.siteName || fc.siteId?.name || 'Site inconnu',
+          totalCost: 0,
+          totalBudget: 0,
+          periods: 0
+        };
+      }
+      
+      sitesAnalysis[siteId].totalCost += fc.expenses.total || 0;
+      sitesAnalysis[siteId].totalBudget += fc.budget.planned || 0;
+      sitesAnalysis[siteId].periods++;
+    });
+    
+    // Analyser par catégorie (inclure aussi les commandes)
+    const categoriesAnalysis = {
+      'fruits_legumes': { name: 'Fruits & Légumes', amount: 0 },
+      'viandes_poissons': { name: 'Viandes & Poissons', amount: 0 },
+      'produits_laitiers': { name: 'Produits Laitiers', amount: 0 },
+      'epicerie': { name: 'Épicerie', amount: 0 },
+      'surgeles': { name: 'Surgelés', amount: 0 },
+      'boissons': { name: 'Boissons', amount: 0 },
+      'pain_patisserie': { name: 'Pain & Pâtisserie', amount: 0 },
+      'commandes': { name: 'Commandes Fournisseurs', amount: 0 },
+      'autres': { name: 'Autres', amount: 0 }
+    };
+    
+    // Ajouter les dépenses manuelles par catégorie
+    foodCosts.forEach(fc => {
+      (fc.expenses.manual || []).forEach(expense => {
+        const category = expense.category || 'autres';
+        if (categoriesAnalysis[category]) {
+          categoriesAnalysis[category].amount += expense.amount || 0;
+        }
+      });
+      
+      // Ajouter les commandes fournisseurs
+      if (fc.expenses.orders && fc.expenses.orders > 0) {
+        categoriesAnalysis['commandes'].amount += fc.expenses.orders || 0;
+      }
+    });
+    
+    const categories = Object.values(categoriesAnalysis)
+      .filter(cat => cat.amount > 0)
+      .sort((a, b) => b.amount - a.amount)
+      .map(cat => ({
+        ...cat,
+        percentage: totalExpenses > 0 ? (cat.amount / totalExpenses) * 100 : 0
+      }));
+    
+    // Analyser les fournisseurs
+    const suppliersAnalysis = {};
+    orders.forEach(order => {
+      const supplier = order.supplier;
+      if (!supplier) return; // Ignorer les commandes sans fournisseur
+      
+      const supplierId = supplier._id?.toString() || 'unknown';
+      // Construire le nom du fournisseur depuis User (firstName + lastName ou email)
+      const supplierName = supplier.firstName && supplier.lastName 
+        ? `${supplier.firstName} ${supplier.lastName}`
+        : supplier.email || 'Fournisseur inconnu';
+      
+      if (!suppliersAnalysis[supplierId]) {
+        suppliersAnalysis[supplierId] = {
+          name: supplierName,
+          totalAmount: 0,
+          orderCount: 0
+        };
+      }
+      
+      suppliersAnalysis[supplierId].totalAmount += order.pricing?.total || 0;
+      suppliersAnalysis[supplierId].orderCount++;
+    });
+    
+    const suppliers = Object.values(suppliersAnalysis)
+      .map(supplier => ({
+        ...supplier,
+        averageAmount: supplier.orderCount > 0 ? supplier.totalAmount / supplier.orderCount : 0,
+        rating: 4.0 + Math.random() * 1.0 // Note simulée (à remplacer par vraie logique)
+      }))
+      .sort((a, b) => b.totalAmount - a.totalAmount);
+    
+    // Générer les suggestions d'économies
+    let suggestions = [];
+    try {
+      suggestions = generateSavingsSuggestions({
+        totalExpenses,
+        totalBudget,
+        sitesAnalysis,
+        categories,
+        suppliers,
+        averageCostPerResident,
+        totalResidents,
+        totalPortions
+      });
+    } catch (suggestionsError) {
+      console.error('⚠️ Erreur lors de la génération des suggestions:', suggestionsError);
+      // Continuer sans suggestions plutôt que de faire échouer toute la requête
+      suggestions = [{
+        title: 'Analyse en cours',
+        description: 'Les suggestions d\'économies seront disponibles une fois que suffisamment de données auront été collectées.',
+        potentialSavings: 0,
+        icon: 'fa-info-circle',
+        actions: []
+      }];
+    }
+    
+    // Calculer l'évolution (derniers 6 mois)
+    const evolution = [];
+    for (let i = 5; i >= 0; i--) {
+      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59, 999);
+      
+      const monthFoodCosts = foodCosts.filter(fc => 
+        fc.startDate >= monthStart && fc.endDate <= monthEnd
+      );
+      
+      const monthExpenses = monthFoodCosts.reduce((sum, fc) => sum + (fc.expenses.total || 0), 0);
+      
+      evolution.push({
+        period: monthStart.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }),
+        expenses: monthExpenses
+      });
+    }
+    
+    // Calculer les économies potentielles
+    const potentialSavings = suggestions.reduce((sum, s) => sum + (s.potentialSavings || 0), 0);
+    
+    res.json({
+      success: true,
+      overview: {
+        totalExpenses,
+        totalBudget,
+        averageCostPerResident,
+        potentialSavings,
+        sitesCount: Object.keys(sitesAnalysis).length
+      },
+      sites: Object.values(sitesAnalysis).sort((a, b) => b.totalCost - a.totalCost),
+      evolution,
+      categories,
+      suppliers,
+      suggestions
+    });
+    
+  } catch (error) {
+    console.error('Erreur getFinancialAnalysis:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Erreur lors de la génération des analyses financières',
+      error: error.message 
+    });
+  }
+};
+
+// Fonction pour générer les suggestions d'économies intelligentes basées sur l'analyse de données
+// Cette fonction utilise des algorithmes d'analyse pour identifier les opportunités d'économies
+function generateSavingsSuggestions(data) {
+  const suggestions = [];
+  
+  if (!data || !data.totalExpenses || data.totalExpenses === 0) {
+    return suggestions;
+  }
+  
+  console.log('💡 Génération de suggestions d\'économies basées sur:', {
+    totalExpenses: data.totalExpenses,
+    suppliersCount: data.suppliers?.length || 0,
+    categoriesCount: data.categories?.length || 0,
+    sitesCount: Object.keys(data.sitesAnalysis || {}).length
+  });
+  
+  // Suggestion 1: Optimisation des fournisseurs
+  if (data.suppliers && data.suppliers.length > 1) {
+    const topSupplier = data.suppliers[0];
+    const supplierPercentage = data.totalExpenses > 0 ? (topSupplier.totalAmount / data.totalExpenses) * 100 : 0;
+    
+    if (supplierPercentage > 30) {
+      // Si un fournisseur représente plus de 30% des dépenses
+      const avgOrderValue = data.suppliers.reduce((sum, s) => sum + s.averageAmount, 0) / data.suppliers.length;
+      const savingsPercent = topSupplier.averageAmount > avgOrderValue * 1.2 ? 0.08 : 0.05;
+      
+      suggestions.push({
+        title: 'Consolidation des commandes avec ' + topSupplier.name,
+        description: `Ce fournisseur représente ${supplierPercentage.toFixed(1)}% de vos dépenses totales (${topSupplier.totalAmount.toLocaleString('fr-FR')}€). En consolidant les commandes et en négociant des remises volume, vous pourriez réaliser des économies significatives.`,
+        potentialSavings: Math.round(topSupplier.totalAmount * savingsPercent),
+        icon: 'fa-handshake',
+        actions: [
+          `Négocier une remise de ${(savingsPercent * 100).toFixed(0)}% avec ${topSupplier.name} pour les commandes groupées`,
+          'Regrouper les commandes de plusieurs sites pour augmenter le volume',
+          'Établir un contrat annuel avec tarifs préférentiels basés sur le volume total'
+        ]
+      });
+    }
+    
+    // Suggestion 2: Diversification des fournisseurs
+    if (data.suppliers.length < 3 && supplierPercentage > 50) {
+      suggestions.push({
+        title: 'Diversification des fournisseurs',
+        description: `Vous dépendez fortement d'un seul fournisseur (${supplierPercentage.toFixed(1)}%). En diversifiant vos sources d'approvisionnement, vous pourriez bénéficier de meilleurs prix grâce à la concurrence.`,
+        potentialSavings: Math.round(data.totalExpenses * 0.03), // 3% d'économie estimée
+        icon: 'fa-balance-scale',
+        actions: [
+          'Identifier 2-3 fournisseurs alternatifs pour les catégories principales',
+          'Comparer les prix entre fournisseurs avant chaque commande importante',
+          'Négocier avec plusieurs fournisseurs pour obtenir les meilleurs tarifs'
+        ]
+      });
+    }
+  }
+  
+  // Suggestion 3: Optimisation des catégories
+  if (data.categories && data.categories.length > 0) {
+    const topCategory = data.categories[0];
+    if (topCategory.percentage > 25) {
+      // Analyser si cette catégorie peut être optimisée
+      const categoryName = topCategory.name;
+      let specificActions = [];
+      let savingsPercent = 0.08;
+      
+      if (categoryName.includes('Viandes') || categoryName.includes('Poissons')) {
+        specificActions = [
+          'Alterner entre viandes coûteuses et moins coûteuses (ex: bœuf vs porc)',
+          'Acheter en gros et congeler pour bénéficier de meilleurs prix',
+          'Négocier des prix avec les bouchers/poissonniers locaux pour des commandes régulières',
+          'Privilégier les morceaux moins nobles mais tout aussi nutritifs'
+        ];
+        savingsPercent = 0.10;
+      } else if (categoryName.includes('Fruits') || categoryName.includes('Légumes')) {
+        specificActions = [
+          'Acheter des fruits et légumes de saison (jusqu\'à 40% moins cher)',
+          'Privilégier les producteurs locaux pour réduire les coûts de transport',
+          'Acheter en gros au marché de gros plutôt qu\'au détail',
+          'Planifier les menus selon les disponibilités saisonnières'
+        ];
+        savingsPercent = 0.12;
+      } else {
+        specificActions = [
+          'Comparer les prix entre différents fournisseurs pour cette catégorie',
+          'Acheter en gros pour bénéficier de remises volume',
+          'Négocier des tarifs préférentiels pour les commandes régulières'
+        ];
+      }
+      
+      suggestions.push({
+        title: `Optimisation de la catégorie "${topCategory.name}"`,
+        description: `Cette catégorie représente ${topCategory.percentage.toFixed(1)}% de vos dépenses totales (${topCategory.amount.toLocaleString('fr-FR')}€). Des économies significatives peuvent être réalisées en optimisant vos achats dans cette catégorie.`,
+        potentialSavings: Math.round(topCategory.amount * savingsPercent),
+        icon: 'fa-tags',
+        actions: specificActions
+      });
+    }
+  }
+  
+  // Suggestion 4: Écart budgétaire
+  if (data.totalBudget > 0) {
+    const variance = ((data.totalExpenses - data.totalBudget) / data.totalBudget) * 100;
+    if (variance > 5) {
+      const overBudget = data.totalExpenses - data.totalBudget;
+      suggestions.push({
+        title: 'Révision du budget et optimisation',
+        description: `Vos dépenses dépassent le budget de ${variance.toFixed(1)}% (${overBudget.toLocaleString('fr-FR')}€ de dépassement). Une analyse approfondie et des ajustements sont nécessaires.`,
+        potentialSavings: Math.round(overBudget * 0.4), // 40% de l'écart récupérable avec optimisations
+        icon: 'fa-chart-line',
+        actions: [
+          'Analyser en détail les causes du dépassement (catégories, sites, périodes)',
+          'Identifier les postes de dépenses les plus problématiques',
+          'Réviser les budgets mensuels pour les prochains mois en tenant compte des tendances',
+          'Mettre en place des alertes plus précoces (à 80% du budget au lieu de 90%)',
+          'Établir des objectifs de réduction progressive sur 3 mois'
+        ]
+      });
+    } else if (variance < -10) {
+      // Budget sous-utilisé (peut indiquer un budget trop élevé)
+      suggestions.push({
+        title: 'Optimisation du budget alloué',
+        description: `Votre budget est sous-utilisé de ${Math.abs(variance).toFixed(1)}%. Cela peut indiquer que le budget est trop élevé ou que des optimisations ont été réalisées.`,
+        potentialSavings: 0, // Pas d'économie directe, mais optimisation du budget
+        icon: 'fa-check-circle',
+        actions: [
+          'Analyser si cette sous-utilisation est due à des optimisations réussies',
+          'Réviser le budget pour l\'aligner avec les dépenses réelles',
+          'Réinvestir les économies dans l\'amélioration de la qualité si nécessaire'
+        ]
+      });
+    }
+  }
+  
+  // Suggestion 5: Coût par résident (analyse intelligente)
+  if (data.averageCostPerResident > 0) {
+    // Benchmark adaptatif selon le type d'établissement
+    const benchmark = 8.5; // Coût de référence par résident/jour pour EHPAD
+    const currentCost = data.averageCostPerResident;
+    const variance = ((currentCost - benchmark) / benchmark) * 100;
+    
+    if (variance > 15) {
+      // Coût significativement supérieur au benchmark
+      const estimatedResidents = data.totalExpenses > 0 ? Math.round(data.totalExpenses / currentCost) : 100;
+      const potentialDailySavings = (currentCost - benchmark) * estimatedResidents;
+      const monthlySavings = potentialDailySavings * 30;
+      
+      suggestions.push({
+        title: 'Optimisation du coût par résident',
+        description: `Le coût moyen par résident est de ${currentCost.toFixed(2)}€/jour, soit ${variance.toFixed(1)}% au-dessus du benchmark de ${benchmark}€/jour. En optimisant les menus, les achats et en réduisant le gaspillage, vous pourriez économiser jusqu'à ${monthlySavings.toLocaleString('fr-FR')}€ par mois.`,
+        potentialSavings: Math.round(monthlySavings),
+        icon: 'fa-users',
+        actions: [
+          'Analyser les menus pour identifier les plats les plus coûteux',
+          'Optimiser les recettes pour réduire les coûts sans compromettre la qualité nutritionnelle',
+          'Réduire le gaspillage alimentaire (objectif: < 5% du total)',
+          'Négocier de meilleurs prix avec les fournisseurs pour les ingrédients les plus utilisés',
+          'Mettre en place un système de suivi du gaspillage par site'
+        ]
+      });
+    }
+  }
+  
+  // Suggestion 6: Analyse comparative entre sites
+  if (data.sitesAnalysis && Object.keys(data.sitesAnalysis).length > 1) {
+    const sites = Object.values(data.sitesAnalysis);
+    const costs = sites.map(s => s.totalCost);
+    const maxCost = Math.max(...costs);
+    const minCost = Math.min(...costs);
+    const avgCost = costs.reduce((a, b) => a + b, 0) / costs.length;
+    
+    if (maxCost > avgCost * 1.3) {
+      // Un site dépense significativement plus que la moyenne
+      const expensiveSite = sites.find(s => s.totalCost === maxCost);
+      const savingsPotential = (maxCost - avgCost) * 0.2; // 20% de l'écart récupérable
+      
+      suggestions.push({
+        title: `Optimisation du site "${expensiveSite.name}"`,
+        description: `Ce site dépense ${maxCost.toLocaleString('fr-FR')}€, soit ${((maxCost / avgCost - 1) * 100).toFixed(1)}% de plus que la moyenne du groupe (${avgCost.toLocaleString('fr-FR')}€). En appliquant les meilleures pratiques des autres sites, des économies sont possibles.`,
+        potentialSavings: Math.round(savingsPotential),
+        icon: 'fa-building',
+        actions: [
+          `Analyser les différences de coûts entre "${expensiveSite.name}" et les autres sites`,
+          'Identifier les pratiques des sites les plus performants',
+          'Partager les meilleures pratiques entre les sites du groupe',
+          'Mettre en place un plan d\'action spécifique pour ce site'
+        ]
+      });
+    }
+  }
+  
+  // Suggestion 7: Achat d'animaux complets pour la viande (économies significatives)
+  console.log('🔍 Vérification suggestion animaux complets:', {
+    totalPortions: data.totalPortions,
+    totalResidents: data.totalResidents,
+    hasPortions: !!data.totalPortions,
+    portionsGreaterThanZero: data.totalPortions > 0
+  });
+  
+  if (data.totalPortions && data.totalPortions > 0 && data.totalResidents && data.totalResidents > 0) {
+    // Estimation : en moyenne, 4-5 repas avec viande par semaine (soit ~64% des repas)
+    // data.totalPortions = nombre total de portions par jour pour tous les résidents
+    const meatMealsRatio = 4.5 / 7; // 64% des repas contiennent de la viande
+    const daysPerYear = 365;
+    
+    // Calculer le total de portions de viande par année
+    // Portions de viande par jour = portions totales/jour * ratio repas avec viande
+    const meatPortionsPerDay = data.totalPortions * meatMealsRatio;
+    const totalMeatPortionsPerYear = meatPortionsPerDay * daysPerYear;
+    
+    // Estimation de la quantité de viande par portion (en grammes)
+    // - Portion normale (1): 120-150g de viande
+    // - Demi-portion (0.5): 60-75g
+    // - Double portion (1.5): 180-225g
+    // Moyenne pondérée: environ 130g par portion équivalente
+    const meatPerPortionGrams = 130;
+    const totalMeatKgPerYear = (totalMeatPortionsPerYear * meatPerPortionGrams) / 1000;
+    
+    // Prix moyen au détail vs prix de l'animal complet
+    // Exemple pour le bœuf:
+    // - Au détail: 15-25€/kg selon les morceaux
+    // - Animal complet (carcasse): 8-12€/kg (rendement ~60-65% de viande)
+    // Économie potentielle: 30-40% sur le prix au kg
+    const avgRetailPricePerKg = 18; // Prix moyen au détail (€/kg)
+    const avgWholeAnimalPricePerKg = 10; // Prix de l'animal complet (€/kg carcasse)
+    const yieldPercentage = 0.62; // Rendement moyen (62% de viande utilisable)
+    
+    // Calculer les coûts
+    const retailCost = totalMeatKgPerYear * avgRetailPricePerKg;
+    const wholeAnimalKgNeeded = totalMeatKgPerYear / yieldPercentage;
+    const wholeAnimalCost = wholeAnimalKgNeeded * avgWholeAnimalPricePerKg;
+    const potentialSavings = retailCost - wholeAnimalCost;
+    
+    console.log('💰 Calcul économies animaux complets:', {
+      totalMeatKgPerYear,
+      retailCost,
+      wholeAnimalCost,
+      potentialSavings,
+      threshold: 1000
+    });
+    
+    // Baisser le seuil à 500€ pour que la suggestion apparaisse plus facilement
+    if (potentialSavings > 500) { // Seulement si les économies sont significatives (>500€)
+      // Calculer combien d'animaux complets il faudrait
+      // Exemple: un bœuf complet fait environ 300-400kg de carcasse
+      const avgAnimalWeight = 350; // kg de carcasse
+      const animalsNeeded = Math.ceil(wholeAnimalKgNeeded / avgAnimalWeight);
+      
+      suggestions.push({
+        title: 'Achat d\'animaux complets pour optimiser les coûts de viande',
+        description: `Avec ${data.totalResidents.toLocaleString('fr-FR')} résidents (${data.totalPortions.toFixed(1)} portions/jour), vous consommez environ ${totalMeatKgPerYear.toLocaleString('fr-FR')} kg de viande par an (${totalMeatPortionsPerYear.toLocaleString('fr-FR')} portions de viande). L'achat d'animaux complets (bœuf, porc, agneau) au lieu du détail peut générer des économies significatives.`,
+        potentialSavings: Math.round(potentialSavings),
+        icon: 'fa-drumstick-bite',
+        actions: [
+          `Acheter ${animalsNeeded} animal${animalsNeeded > 1 ? 'aux' : ''} complet${animalsNeeded > 1 ? 's' : ''} par an (bœuf, porc, agneau) au lieu d'acheter au détail`,
+          `Économie estimée: ${potentialSavings.toLocaleString('fr-FR')}€/an (${((potentialSavings / retailCost) * 100).toFixed(1)}% de réduction)`,
+          'Négocier avec des éleveurs locaux pour des prix encore plus avantageux',
+          'Investir dans un congélateur professionnel pour stocker la viande',
+          'Planifier les découpes selon les besoins des menus (rôtis, steaks, hachés, etc.)',
+          'Utiliser tous les morceaux (y compris les moins nobles) pour varier les plats',
+          'Coordonner les achats entre plusieurs sites pour augmenter le volume et négocier de meilleurs prix'
+        ]
+      });
+    } else {
+      console.log('⚠️ Suggestion animaux complets non ajoutée: économies trop faibles', potentialSavings);
+    }
+  } else {
+    console.log('⚠️ Suggestion animaux complets non ajoutée: données manquantes', {
+      totalPortions: data.totalPortions,
+      totalResidents: data.totalResidents
+    });
+  }
+  
+  // Trier les suggestions par économies potentielles (du plus élevé au plus faible)
+  suggestions.sort((a, b) => (b.potentialSavings || 0) - (a.potentialSavings || 0));
+  
+  // Limiter à 5 suggestions les plus pertinentes
+  return suggestions.slice(0, 5);
+}
+
+/* 
+ * COMMENT L'IA PEUT AMÉLIORER LES SUGGESTIONS D'ÉCONOMIES :
+ * 
+ * 1. Analyse prédictive :
+ *    - Utiliser le machine learning pour prédire les tendances de dépenses
+ *    - Identifier les patterns saisonniers et anticiper les pics de coûts
+ *    - Prédire l'impact des changements de fournisseurs ou de menus
+ * 
+ * 2. Optimisation automatique :
+ *    - Algorithmes d'optimisation pour trouver la meilleure combinaison de fournisseurs
+ *    - Optimisation des menus pour minimiser les coûts tout en respectant les contraintes nutritionnelles
+ *    - Calcul automatique des meilleures quantités à commander
+ * 
+ * 3. Analyse comparative intelligente :
+ *    - Comparer avec des bases de données de benchmarks du secteur
+ *    - Identifier les écarts par rapport aux meilleures pratiques
+ *    - Apprendre des succès d'autres établissements similaires
+ * 
+ * 4. Recommandations personnalisées :
+ *    - Adapter les suggestions selon le profil de l'établissement
+ *    - Prendre en compte l'historique et les préférences
+ *    - Prioriser les actions selon leur impact et leur faisabilité
+ * 
+ * 5. Détection d'anomalies :
+ *    - Identifier automatiquement les dépenses anormales
+ *    - Alerter sur les changements significatifs de coûts
+ *    - Détecter les opportunités d'économies non évidentes
+ */
+
 export default {
   getFoodCostPeriods,
   getFoodCostById,
@@ -1319,6 +2068,7 @@ export default {
   acknowledgeAlert,
   getAdminReports,
   deleteFoodCost,
-  getSiteHistory
+  getSiteHistory,
+  getFinancialAnalysis
 };
 

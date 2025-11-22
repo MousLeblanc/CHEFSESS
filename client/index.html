@@ -10,6 +10,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Connexion - CHaiF SES</title>
   <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   <style>
     .container {
       max-width: 400px;
@@ -64,6 +65,32 @@
     .link a { color: #3366cc; text-decoration: none; }
     .link a:hover { text-decoration: underline; }
     
+    .password-wrapper { position: relative; width: 100%; }
+    .password-wrapper input { padding-right: 2.5rem; }
+    .password-toggle { 
+      position: absolute; 
+      right: 0.75rem; 
+      top: 50%; 
+      transform: translateY(-50%); 
+      background: none; 
+      border: none; 
+      cursor: pointer; 
+      color: #666; 
+      font-size: 1.1rem; 
+      padding: 0.5rem; 
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+    }
+    .password-toggle i {
+      display: inline-block;
+      line-height: 1;
+    }
+    .password-toggle:hover { color: #333; }
+    
     #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
     .toast { background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 16px; min-width: 300px; max-width: 400px; display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s ease; }
     .toast-success { border-left: 4px solid #28a745; }
@@ -80,7 +107,12 @@
 
     <form id="login-form">
       <input type="email" id="email" placeholder="Email" required />
-      <input type="password" id="password" placeholder="Mot de passe" required />
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Mot de passe" required />
+        <button type="button" class="password-toggle" id="toggle-password" aria-label="Afficher/masquer le mot de passe">
+          <i class="fas fa-eye"></i>
+        </button>
+      </div>
       <button type="submit">Se connecter</button>
     </form>
     
@@ -192,6 +224,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 <script type="module" src="js/index.js"></script>
 <script type="module" src="js/login.js"></script>
+<script>
+  // Fonctionnalité d'affichage/masquage du mot de passe
+  document.addEventListener('DOMContentLoaded', () => {
+    const passwordInput = document.getElementById('password');
+    const toggleButton = document.getElementById('toggle-password');
+    
+    if (passwordInput && toggleButton) {
+      toggleButton.addEventListener('click', () => {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        // Changer l'icône
+        const icon = toggleButton.querySelector('i');
+        if (type === 'password') {
+          icon.classList.remove('fa-eye-slash');
+          icon.classList.add('fa-eye');
+        } else {
+          icon.classList.remove('fa-eye');
+          icon.classList.add('fa-eye-slash');
+        }
+      });
+    }
+  });
+</script>
 
 </body>
 </html>

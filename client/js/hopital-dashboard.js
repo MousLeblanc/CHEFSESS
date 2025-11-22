@@ -104,7 +104,26 @@ function initTabs() {
       
       // Ajouter la classe active au bouton et contenu sélectionné
       btn.classList.add('active');
-      document.getElementById(`${tab}-tab`).classList.add('active');
+      const tabContent = document.getElementById(`${tab}-tab`);
+      if (tabContent) {
+        tabContent.classList.add('active');
+      }
+      
+      // Charger les fournisseurs quand l'onglet est activé
+      if (tab === 'suppliers') {
+        console.log('🚚 Chargement des fournisseurs');
+        initSupplierTab();
+      }
+      
+      // Charger la comparaison quand l'onglet Comparaison est sélectionné
+      if (tab === 'supplier-comparison') {
+        console.log('⚖️ Chargement de la comparaison des fournisseurs');
+        if (typeof window.loadSupplierComparison === 'function') {
+          window.loadSupplierComparison();
+        } else {
+          console.error('❌ loadSupplierComparison non disponible');
+        }
+      }
     });
   });
 }

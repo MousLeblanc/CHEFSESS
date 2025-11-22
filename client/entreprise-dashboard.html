@@ -56,6 +56,7 @@
       <button class="tab-btn active" data-tab="menus"><i class="fas fa-utensils"></i> Menus</button>
       <button class="tab-btn" data-tab="stock"><i class="fas fa-boxes"></i> Stock</button>
       <button class="tab-btn" data-tab="suppliers"><i class="fas fa-truck"></i> Fournisseurs</button>
+      <button class="tab-btn" data-tab="supplier-comparison"><i class="fas fa-balance-scale"></i> Comparaison</button>
     </div>
 
     <!-- Onglet Menus -->
@@ -195,6 +196,28 @@
         <div id="suppliers-list"></div>
       </div>
     </div>
+
+    <!-- Onglet Comparaison Fournisseurs -->
+    <div id="supplier-comparison-tab" class="tab-content">
+      <div class="card">
+        <h2><i class="fas fa-balance-scale"></i> Comparaison des Fournisseurs</h2>
+        <p style="color: #6c757d; margin-bottom: 1.5rem;">
+          Comparez les produits similaires entre vos fournisseurs disponibles. L'IA analyse automatiquement les produits et leurs prix pour vous aider à faire le meilleur choix.
+        </p>
+        
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+          <button id="refresh-comparison-btn" style="background-color: #3498db;"><i class="fas fa-sync"></i> Actualiser</button>
+          <button id="filter-comparison-btn" style="background-color: #6c757d;"><i class="fas fa-filter"></i> Filtrer</button>
+        </div>
+
+        <div id="comparison-loading" style="display: none; text-align: center; padding: 2rem;">
+          <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #607d8b;"></i>
+          <p>Analyse en cours...</p>
+        </div>
+
+        <div id="comparison-results"></div>
+      </div>
+    </div>
   </div>
 
   <!-- Modale pour ajouter les objectifs nutritionnels -->
@@ -277,6 +300,7 @@
   <div id="toast-container" class="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 
   <script type="module" src="JS/supplier-common.js"></script>
+  <script type="module" src="js/supplier-comparison.js"></script>
   <script type="module" src="JS/entreprise-dashboard.js"></script>
   <script src="js/init.js"></script>
   <!-- Système de génération intelligente de menus pour entreprise -->

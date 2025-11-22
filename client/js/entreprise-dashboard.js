@@ -86,6 +86,16 @@ function initTabs() {
         console.log('Onglet Fournisseurs activé - Chargement des fournisseurs...');
         initSupplierTab();
       }
+      
+      // Charger la comparaison quand l'onglet Comparaison est sélectionné
+      if (tab === 'supplier-comparison') {
+        console.log('⚖️ Chargement de la comparaison des fournisseurs');
+        if (typeof window.loadSupplierComparison === 'function') {
+          window.loadSupplierComparison();
+        } else {
+          console.error('❌ loadSupplierComparison non disponible');
+        }
+      }
     });
   });
 }
