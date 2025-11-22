@@ -157,17 +157,25 @@ function renderComparison(comparisons) {
               </div>
             </div>
 
-            <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap;">
               <button class="btn-rate-supplier" 
                       data-supplier-id="${supplier.supplierId}"
                       data-supplier-name="${supplier.supplierName}"
-                      style="flex: 1; padding: 0.5rem; background: #9c27b0; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s;">
+                      style="flex: 1; min-width: 100px; padding: 0.5rem; background: #9c27b0; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s;">
                 <i class="fas fa-star"></i> Noter
               </button>
+              ${supplier.ratingCount > 0 ? `
+                <button class="btn-view-ratings" 
+                        data-supplier-id="${supplier.supplierId}"
+                        data-supplier-name="${supplier.supplierName}"
+                        style="flex: 1; min-width: 100px; padding: 0.5rem; background: #f39c12; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s;">
+                  <i class="fas fa-comments"></i> Avis (${supplier.ratingCount})
+                </button>
+              ` : ''}
               <button class="btn-view-supplier" 
                       data-supplier-id="${supplier.supplierId}"
                       data-supplier-name="${supplier.supplierName}"
-                      style="flex: 1; padding: 0.5rem; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s;">
+                      style="flex: 1; min-width: 100px; padding: 0.5rem; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s;">
                 <i class="fas fa-eye"></i> Voir
               </button>
             </div>
@@ -215,6 +223,15 @@ function attachEventListeners() {
       const supplierId = e.target.closest('.btn-rate-supplier').dataset.supplierId;
       const supplierName = e.target.closest('.btn-rate-supplier').dataset.supplierName;
       showRatingModal(supplierId, supplierName);
+    });
+  });
+
+  // Boutons voir avis
+  document.querySelectorAll('.btn-view-ratings').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const supplierId = e.target.closest('.btn-view-ratings').dataset.supplierId;
+      const supplierName = e.target.closest('.btn-view-ratings').dataset.supplierName;
+      await showSupplierRatings(supplierId, supplierName);
     });
   });
 
@@ -546,6 +563,281 @@ async function submitRating(modal) {
   } catch (error) {
     console.error('Erreur lors de la soumission de la notation:', error);
     alert(`Erreur: ${error.message}`);
+  }
+}
+
+/**
+ * Afficher les avis détaillés d'un fournisseur
+ */
+async function showSupplierRatings(supplierId, supplierName) {
+  try {
+    console.log('📊 [showSupplierRatings] Chargement des avis pour:', supplierId, supplierName);
+    
+    // Vérifier le rôle de l'utilisateur pour déterminer ce qui doit être affiché
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    const isSupplier = user && (user.role === 'fournisseur' || (user.roles && (user.roles.includes('fournisseur') || user.roles.includes('SUPPLIER'))));
+    
+    console.log('📊 [showSupplierRatings] Utilisateur est fournisseur?', isSupplier);
+    
+    const apiUrl = `/api/suppliers/ratings/supplier/${supplierId}`;
+    console.log('📊 [showSupplierRatings] URL API:', apiUrl);
+    
+    const response = await fetch(apiUrl, {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      cache: 'no-store'
+    });
+
+    console.log('📊 [showSupplierRatings] Réponse API:', response.status, response.statusText);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ [showSupplierRatings] Erreur API:', errorText);
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch (e) {
+        errorData = { message: errorText };
+      }
+      throw new Error(errorData.message || `Erreur ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log('📊 [showSupplierRatings] Résultat:', result);
+    console.log('📊 [showSupplierRatings] result.success:', result.success);
+    console.log('📊 [showSupplierRatings] result.data:', result.data);
+    
+    // Vérifier que la structure de réponse est correcte
+    if (!result.success) {
+      throw new Error(result.message || 'Erreur lors de la récupération des avis');
+    }
+    
+    if (!result.data) {
+      throw new Error('Données non disponibles dans la réponse');
+    }
+    
+    const ratings = result.data.ratings || [];
+    const averages = result.data.averages || {
+      averageRating: 0,
+      count: 0,
+      priceAvg: 0,
+      deliveryAvg: 0,
+      qualityAvg: 0,
+      communicationAvg: 0,
+      packagingAvg: 0
+    };
+    
+    console.log('📊 [showSupplierRatings] Nombre d\'avis:', ratings.length);
+    console.log('📊 [showSupplierRatings] Moyennes:', averages);
+
+    // Créer le modal
+    const modal = document.createElement('div');
+    modal.id = 'ratings-modal';
+    modal.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: rgba(0,0,0,0.5); z-index: 10000; 
+      display: flex; align-items: center; justify-content: center;
+    `;
+
+    modal.innerHTML = `
+      <div style="background: white; border-radius: 12px; padding: 2rem; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h2 style="margin: 0; color: #2c3e50;">
+            <i class="fas fa-star" style="color: #f39c12;"></i>
+            Avis sur ${supplierName}
+          </h2>
+          <button id="close-ratings-modal" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6c757d;">
+            &times;
+          </button>
+        </div>
+
+        ${ratings.length === 0 ? `
+          <div style="text-align: center; padding: 3rem; color: #6c757d;">
+            <i class="fas fa-star" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+            <p>Aucun avis pour le moment</p>
+          </div>
+        ` : `
+          <!-- Résumé des notes -->
+          <div style="background: #f8f9fa; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+              <div style="font-size: 3rem; font-weight: 700; color: #f39c12;">
+                ${averages.averageRating.toFixed(1)}
+              </div>
+              <div>
+                <div style="margin-bottom: 0.5rem;">
+                  ${renderStars(averages.averageRating)}
+                </div>
+                <div style="color: #6c757d; font-size: 0.9rem;">
+                  Basé sur ${averages.count} avis
+                </div>
+              </div>
+            </div>
+            
+            ${averages.priceAvg > 0 || averages.deliveryAvg > 0 || averages.qualityAvg > 0 ? `
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #dee2e6;">
+                ${averages.priceAvg > 0 ? `
+                  <div>
+                    <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 0.25rem;">Prix</div>
+                    <div>${renderStars(averages.priceAvg)}</div>
+                  </div>
+                ` : ''}
+                ${averages.deliveryAvg > 0 ? `
+                  <div>
+                    <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 0.25rem;">Livraison</div>
+                    <div>${renderStars(averages.deliveryAvg)}</div>
+                  </div>
+                ` : ''}
+                ${averages.qualityAvg > 0 ? `
+                  <div>
+                    <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 0.25rem;">Qualité</div>
+                    <div>${renderStars(averages.qualityAvg)}</div>
+                  </div>
+                ` : ''}
+                ${averages.communicationAvg > 0 ? `
+                  <div>
+                    <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 0.25rem;">Communication</div>
+                    <div>${renderStars(averages.communicationAvg)}</div>
+                  </div>
+                ` : ''}
+                ${averages.packagingAvg > 0 ? `
+                  <div>
+                    <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 0.25rem;">Emballage</div>
+                    <div>${renderStars(averages.packagingAvg)}</div>
+                  </div>
+                ` : ''}
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Liste des avis -->
+          <div>
+            <h3 style="margin-bottom: 1rem; color: #2c3e50;">Avis détaillés</h3>
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              ${ratings.map(rating => `
+                <div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 1rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                    <div>
+                      <div style="font-weight: 600; color: #2c3e50; margin-bottom: 0.25rem;">
+                        ${rating.reviewer?.name || 'Anonyme'}
+                        ${rating.site?.siteName ? ` - ${rating.site.siteName}` : ''}
+                      </div>
+                      <div style="color: #6c757d; font-size: 0.85rem;">
+                        ${new Date(rating.createdAt).toLocaleDateString('fr-FR', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      ${renderStars(rating.overallRating)}
+                    </div>
+                  </div>
+                  
+                  ${rating.feedback?.positive || (isSupplier && (rating.feedback?.negative || rating.feedback?.suggestions)) ? `
+                    <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #f0f0f0;">
+                      ${rating.feedback.positive ? `
+                        <div style="margin-bottom: 0.5rem;">
+                          <div style="font-weight: 600; color: #27ae60; margin-bottom: 0.25rem; font-size: 0.9rem;">
+                            <i class="fas fa-thumbs-up"></i> Points positifs
+                          </div>
+                          <div style="color: #555; font-size: 0.9rem;">${rating.feedback.positive}</div>
+                        </div>
+                      ` : ''}
+                      ${isSupplier && rating.feedback.negative ? `
+                        <div style="margin-bottom: 0.5rem;">
+                          <div style="font-weight: 600; color: #e74c3c; margin-bottom: 0.25rem; font-size: 0.9rem;">
+                            <i class="fas fa-thumbs-down"></i> Points à améliorer
+                          </div>
+                          <div style="color: #555; font-size: 0.9rem;">${rating.feedback.negative}</div>
+                        </div>
+                      ` : ''}
+                      ${isSupplier && rating.feedback.suggestions ? `
+                        <div>
+                          <div style="font-weight: 600; color: #3498db; margin-bottom: 0.25rem; font-size: 0.9rem;">
+                            <i class="fas fa-lightbulb"></i> Suggestions
+                          </div>
+                          <div style="color: #555; font-size: 0.9rem;">${rating.feedback.suggestions}</div>
+                        </div>
+                      ` : ''}
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `}
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Fermer le modal
+    modal.querySelector('#close-ratings-modal').addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        document.body.removeChild(modal);
+      }
+    });
+  } catch (error) {
+    console.error('❌ [showSupplierRatings] Erreur lors du chargement des avis:', error);
+    console.error('❌ [showSupplierRatings] Stack:', error.stack);
+    
+    // Afficher un modal d'erreur au lieu d'une alerte
+    const errorModal = document.createElement('div');
+    errorModal.id = 'ratings-error-modal';
+    errorModal.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: rgba(0,0,0,0.5); z-index: 10000; 
+      display: flex; align-items: center; justify-content: center;
+    `;
+    
+    let errorMessage = error.message || 'Erreur inconnue';
+    if (errorMessage.includes('404')) {
+      errorMessage = 'Les avis pour ce fournisseur n\'ont pas été trouvés.';
+    } else if (errorMessage.includes('403')) {
+      errorMessage = 'Vous n\'avez pas les permissions pour voir ces avis.';
+    } else if (errorMessage.includes('401')) {
+      errorMessage = 'Votre session a expiré. Veuillez vous reconnecter.';
+    }
+    
+    errorModal.innerHTML = `
+      <div style="background: white; border-radius: 12px; padding: 2rem; max-width: 500px; width: 90%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h2 style="margin: 0; color: #e74c3c;">
+            <i class="fas fa-exclamation-triangle"></i> Erreur
+          </h2>
+          <button id="close-error-modal" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6c757d;">
+            &times;
+          </button>
+        </div>
+        <p style="color: #555; margin-bottom: 1.5rem;">${errorMessage}</p>
+        <button id="retry-ratings" style="padding: 0.75rem 1.5rem; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem;">
+          Réessayer
+        </button>
+      </div>
+    `;
+    
+    document.body.appendChild(errorModal);
+    
+    errorModal.querySelector('#close-error-modal').addEventListener('click', () => {
+      document.body.removeChild(errorModal);
+    });
+    
+    errorModal.querySelector('#retry-ratings').addEventListener('click', () => {
+      document.body.removeChild(errorModal);
+      showSupplierRatings(supplierId, supplierName);
+    });
+    
+    errorModal.addEventListener('click', (e) => {
+      if (e.target === errorModal) {
+        document.body.removeChild(errorModal);
+      }
+    });
   }
 }
 
