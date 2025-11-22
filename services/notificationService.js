@@ -245,7 +245,15 @@ class NotificationService {
    * @param {object} order - Détails de la commande
    */
   notifyNewOrder(supplierId, order) {
-    return this.sendToUser(supplierId, {
+    // S'assurer que supplierId est bien une string
+    const supplierIdStr = supplierId.toString ? supplierId.toString() : String(supplierId);
+    
+    console.log(`\n📬 [notifyNewOrder] Notification nouvelle commande`);
+    console.log(`   Supplier ID: ${supplierIdStr} (type: ${typeof supplierIdStr})`);
+    console.log(`   Order: ${order.orderNumber}`);
+    console.log(`   Order ID: ${order._id}`);
+    
+    const notification = {
       type: 'new_order',
       title: 'Nouvelle commande reçue !',
       message: `Vous avez reçu une nouvelle commande: ${order.orderNumber}`,
@@ -253,12 +261,16 @@ class NotificationService {
         orderId: order._id,
         orderNumber: order.orderNumber,
         customerName: order.customer?.businessName || order.customer?.name,
-        total: order.pricing.total,
-        itemsCount: order.items.length
+        total: order.pricing?.total || 0,
+        itemsCount: order.items?.length || 0
       },
       sound: true,
       priority: 'high'
-    });
+    };
+    
+    const result = this.sendToUser(supplierIdStr, notification);
+    console.log(`📬 [notifyNewOrder] Résultat: ${result ? 'envoyé' : 'échec'}\n`);
+    return result;
   }
 
   /**
