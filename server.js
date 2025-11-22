@@ -191,12 +191,27 @@ app.get("/*.html", (req, res) => {
 // === ROUTE PAR DÉFAUT ===
 // IMPORTANT: Cette route doit être en dernier pour ne pas intercepter les fichiers statiques
 app.get("*", (req, res, next) => {
+  const requestPath = req.path || req.url;
+  
   // Ne pas intercepter les requêtes vers les fichiers statiques ou API
-  if (req.path.startsWith('/js/') || 
-      req.path.startsWith('/css/') || 
-      req.path.startsWith('/img/') || 
-      req.path.startsWith('/api/') ||
-      req.path.match(/\.(js|css|json|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|eot)$/)) {
+  // Vérifier à la fois avec et sans slash initial pour gérer les chemins relatifs
+  if (requestPath.startsWith('/js/') || 
+      requestPath.startsWith('/css/') || 
+      requestPath.startsWith('/img/') || 
+      requestPath.startsWith('/api/') ||
+      requestPath.startsWith('js/') ||
+      requestPath.startsWith('css/') ||
+      requestPath.startsWith('img/') ||
+      requestPath.match(/\.(js|css|json|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|eot)$/i)) {
+    // Si c'est un fichier statique qui n'a pas été trouvé, retourner 404 avec le bon type MIME
+    if (requestPath.endsWith('.css')) {
+      res.type('text/css');
+      return res.status(404).send('/* Fichier CSS non trouvé */');
+    }
+    if (requestPath.endsWith('.js')) {
+      res.type('application/javascript');
+      return res.status(404).send('// Fichier JavaScript non trouvé');
+    }
     return next(); // Laisser express.static gérer ces fichiers
   }
   res.sendFile(path.join(clientPath, "index.html"));
