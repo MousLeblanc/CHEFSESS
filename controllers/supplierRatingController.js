@@ -95,14 +95,45 @@ export const getSupplierRatings = asyncHandler(async (req, res) => {
       });
     }
 
+    // Vérifier si l'utilisateur connecté est le propriétaire du fournisseur
+    // Si c'est le cas, il peut voir TOUS ses avis (même non approuvés)
+    const isOwner = req.user && (
+      req.user._id.toString() === supplierId.toString() ||
+      req.user.supplierId?.toString() === supplierId.toString()
+    );
+    
+    // Vérifier aussi via le modèle Supplier
+    let isSupplierOwner = false;
+    if (req.user && !isOwner) {
+      try {
+        const Supplier = (await import('../models/Supplier.js')).default;
+        const supplier = await Supplier.findOne({ 
+          _id: supplierId,
+          $or: [
+            { createdBy: req.user._id },
+            { createdBy: req.user.id }
+          ]
+        });
+        isSupplierOwner = !!supplier;
+      } catch (err) {
+        console.error('Erreur lors de la vérification du propriétaire:', err);
+      }
+    }
+    
+    const canSeeAllRatings = isOwner || isSupplierOwner;
+    
     // Vérifier d'abord s'il y a des avis (même non approuvés) pour ce fournisseur
     const allRatingsCount = await SupplierRating.countDocuments({ supplier: supplierId });
     console.log(`📊 [getSupplierRatings] Total d'avis (tous statuts) pour ce fournisseur: ${allRatingsCount}`);
+    console.log(`📊 [getSupplierRatings] Utilisateur est propriétaire? ${canSeeAllRatings}`);
     
-    const ratings = await SupplierRating.find({ 
-      supplier: supplierId,
-      status: 'approved'
-    })
+    // Construire le filtre : si c'est le propriétaire, voir tous les avis, sinon seulement les approuvés
+    const filter = { supplier: supplierId };
+    if (!canSeeAllRatings) {
+      filter.status = 'approved';
+    }
+    
+    const ratings = await SupplierRating.find(filter)
       .populate({
         path: 'reviewer',
         select: 'name',
@@ -116,10 +147,11 @@ export const getSupplierRatings = asyncHandler(async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(50);
 
-    console.log(`📊 [getSupplierRatings] ${ratings.length} avis approuvé(s) trouvé(s)`);
+    const statusLabel = canSeeAllRatings ? 'tous statuts' : 'approuvé(s)';
+    console.log(`📊 [getSupplierRatings] ${ratings.length} avis ${statusLabel} trouvé(s)`);
     
     // Si aucun avis approuvé, vérifier s'il y a des avis en attente
-    if (ratings.length === 0 && allRatingsCount > 0) {
+    if (ratings.length === 0 && allRatingsCount > 0 && !canSeeAllRatings) {
       const pendingRatings = await SupplierRating.countDocuments({ 
         supplier: supplierId,
         status: { $ne: 'approved' }
@@ -127,12 +159,22 @@ export const getSupplierRatings = asyncHandler(async (req, res) => {
       console.log(`📊 [getSupplierRatings] ${pendingRatings} avis en attente de modération`);
     }
 
-    // Calculer les moyennes (même s'il n'y a pas d'avis, pour avoir une structure cohérente)
+    // Calculer les moyennes
+    // Si c'est le propriétaire, on peut calculer avec tous les avis, sinon seulement les approuvés
+    // (getAverageRating calcule déjà seulement les approuvés, donc c'est cohérent)
     const averages = await SupplierRating.getAverageRating(supplierId);
     
     console.log('📊 [getSupplierRatings] Moyennes calculées:', averages);
     console.log('📊 [getSupplierRatings] Environnement:', process.env.NODE_ENV || 'dev');
     console.log('📊 [getSupplierRatings] User ID:', req.user?._id || req.user?.id);
+    console.log('📊 [getSupplierRatings] Ratings retournés:', ratings.length);
+    if (ratings.length > 0) {
+      console.log('📊 [getSupplierRatings] Premier avis:', {
+        id: ratings[0]._id,
+        status: ratings[0].status,
+        overallRating: ratings[0].overallRating
+      });
+    }
 
     res.json({
       success: true,
@@ -146,7 +188,9 @@ export const getSupplierRatings = asyncHandler(async (req, res) => {
           qualityAvg: 0,
           communicationAvg: 0,
           packagingAvg: 0
-        }
+        },
+        // Indiquer si l'utilisateur peut voir tous les avis
+        canSeeAllRatings: canSeeAllRatings
       }
     });
   } catch (error) {
