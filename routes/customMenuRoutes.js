@@ -19,8 +19,10 @@ router.post('/generate-custom', protect, csrfProtection, asyncHandler(async (req
         numberOfPeople, 
         mealType, 
         nutritionalGoals, 
-        dietaryRestrictions, 
-        avoidMenuName, 
+        dietaryRestrictions,
+        allergens = [], // Allergènes à exclure strictement
+        avoidMenuName,
+        avoidMenuNames = [], // Liste de tous les menus déjà générés (pour éviter les répétitions)
         forceVariation,
         filtersAsPreferences,
         strictMode,
@@ -85,7 +87,9 @@ router.post('/generate-custom', protect, csrfProtection, asyncHandler(async (req
             mealType,
             nutritionalGoals: nutritionalGoals || [],
             dietaryRestrictions: dietaryRestrictions || [],
+            allergens: allergens || [],
             avoidMenuName,
+            avoidMenuNames: avoidMenuNames || [],
             forceVariation,
             filtersAsPreferences,
             strictMode,

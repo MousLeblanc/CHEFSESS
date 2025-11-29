@@ -131,12 +131,13 @@ class Modal {
   close(callOnClose = true) {
     if (!this.modal) return;
 
-    // Masquer la modale
+    // Masquer la modale - toujours forcer display: none pour être sûr
+    this.modal.style.display = 'none';
+    this.modal.style.setProperty('display', 'none', 'important');
+    
+    // Retirer aussi la classe show si elle existe
     if (this.modal.classList) {
       this.modal.classList.remove('show');
-    } else {
-      // Fallback pour les modales qui utilisent style.display
-      this.modal.style.display = 'none';
     }
 
     this.isOpen = false;

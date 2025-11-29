@@ -213,6 +213,10 @@ const urlParams = new URLSearchParams(window.location.search);
     const ingredientsToUseQuery = urlParams.get('useIngredients');
     const reason = urlParams.get('reason');
 
+    // Récupérer les éléments DOM
+    const loading = document.getElementById('loading');
+    const menusResults = document.getElementById('menus-results');
+
 if (loading) loading.style.display = 'flex';
     if (menusResults) menusResults.innerHTML = '';
 

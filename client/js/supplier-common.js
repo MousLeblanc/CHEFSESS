@@ -110,7 +110,10 @@ export function renderSuppliersList() {
 
 export async function browseSupplierProducts(supplierId, supplierName) {
   console.log('🛍️ Consultation du catalogue:', supplierName);
+  console.log('🔍 supplierId reçu:', supplierId, '(type:', typeof supplierId, ')');
+  // S'assurer qu'on utilise toujours l'ID de l'utilisateur, pas l'ID du modèle Supplier
   currentSupplierId = supplierId;
+  console.log('✅ currentSupplierId défini:', currentSupplierId);
   
   try {
     // 🍪 Token géré via cookie HTTP-Only (authentification automatique)
@@ -429,19 +432,197 @@ export function updateCartCount() {
 
 // ========== GESTION DU PANIER ET COMMANDES ==========
 
-export function showCart() {
+// Fonction pour calculer les frais de livraison
+async function calculateDeliveryFee(supplierId, siteCity, sitePostalCode, orderTotal) {
+  try {
+    // Récupérer les informations complètes du fournisseur
+    const response = await fetch(`/api/suppliers/${supplierId}`, {
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    if (!response.ok) {
+      console.warn(`⚠️ Impossible de récupérer les infos du fournisseur ${supplierId}`);
+      return { fee: 0, message: 'Information non disponible' };
+    }
+    
+    const result = await response.json();
+    const supplier = result.data;
+    
+    if (!supplier || !supplier.deliveryZones || supplier.deliveryZones.length === 0) {
+      return { fee: 0, message: 'Pas de zone de livraison définie' };
+    }
+    
+    // Normaliser les noms de villes (gérer les accents et variations)
+    const normalizeCityName = (city) => {
+      if (!city) return '';
+      return city.toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Enlever les accents
+        .trim();
+    };
+    
+    // Mappings pour les variations de noms de villes
+    const cityMappings = {
+      'bruxelles': ['brussels', 'bruxelles', 'brussel'],
+      'brussels': ['brussels', 'bruxelles', 'brussel'],
+      'brussel': ['brussels', 'bruxelles', 'brussel'],
+      'anvers': ['antwerp', 'anvers', 'antwerpen'],
+      'antwerp': ['antwerp', 'anvers', 'antwerpen'],
+      'antwerpen': ['antwerp', 'anvers', 'antwerpen'],
+      'gand': ['ghent', 'gand', 'gent'],
+      'ghent': ['ghent', 'gand', 'gent'],
+      'gent': ['ghent', 'gand', 'gent'],
+      'liege': ['liege', 'luik'],
+      'luik': ['liege', 'luik'],
+      'charleroi': ['charleroi'],
+      'namur': ['namur', 'namen'],
+      'namen': ['namur', 'namen'],
+      'brugge': ['brugge', 'bruges'],
+      'bruges': ['brugge', 'bruges'],
+      'oostende': ['oostende', 'ostende', 'ostend'],
+      'ostende': ['oostende', 'ostende', 'ostend'],
+      'ostend': ['oostende', 'ostende', 'ostend']
+    };
+    
+    const getCityVariations = (city) => {
+      const normalized = normalizeCityName(city);
+      return cityMappings[normalized] || [normalized];
+    };
+    
+    // Trouver la zone de livraison correspondante
+    console.log(`🔍 Recherche zone pour site: ${siteCity} (${sitePostalCode})`);
+    console.log(`📦 Zones disponibles:`, supplier.deliveryZones.map(z => `${z.city} (${z.postalCode || 'N/A'})`));
+    
+    const matchingZone = supplier.deliveryZones.find(zone => {
+      // Vérifier par code postal d'abord (plus précis)
+      if (sitePostalCode && zone.postalCode) {
+        const match = zone.postalCode.trim() === sitePostalCode.trim();
+        if (match) console.log(`✅ Correspondance par code postal: ${zone.postalCode}`);
+        return match;
+      }
+      
+      // Sinon vérifier par ville (avec variations)
+      if (siteCity && zone.city) {
+        const siteCityNormalized = normalizeCityName(siteCity);
+        const zoneCityNormalized = normalizeCityName(zone.city);
+        const siteCityVariations = getCityVariations(siteCity);
+        const zoneCityVariations = getCityVariations(zone.city);
+        
+        // Vérifier si les villes correspondent (directement ou via variations)
+        const match = siteCityNormalized === zoneCityNormalized ||
+                     siteCityVariations.some(v => zoneCityVariations.includes(v)) ||
+                     zoneCityVariations.some(v => siteCityVariations.includes(v));
+        
+        if (match) {
+          console.log(`✅ Correspondance par ville: ${zone.city} (site: ${siteCity})`);
+        }
+        return match;
+      }
+      
+      return false;
+    });
+    
+    if (!matchingZone) {
+      console.warn(`⚠️ Aucune zone trouvée pour ${siteCity || 'ville non définie'} (${sitePostalCode || 'code postal non défini'})`);
+      if (!siteCity && !sitePostalCode) {
+        return { fee: 0, message: 'Adresse du site non définie. Veuillez configurer l\'adresse du site dans les paramètres.' };
+      }
+      return { fee: 0, message: `Zone non couverte (${siteCity || sitePostalCode})` };
+    }
+    
+    if (!matchingZone.deliveryRules) {
+      console.warn(`⚠️ Zone trouvée mais pas de règles de livraison: ${matchingZone.city}`);
+      return { fee: 0, message: 'Pas de règles de livraison définies pour cette zone' };
+    }
+    
+    console.log(`✅ Règles trouvées pour ${matchingZone.city}:`, matchingZone.deliveryRules);
+    
+    const rules = matchingZone.deliveryRules;
+    
+    // Calculer les frais de livraison
+    if (rules.freeDeliveryThreshold && orderTotal >= rules.freeDeliveryThreshold) {
+      return { 
+        fee: 0, 
+        message: `Livraison gratuite (commande ≥ ${rules.freeDeliveryThreshold}€)`,
+        threshold: rules.freeDeliveryThreshold
+      };
+    } else {
+      return { 
+        fee: rules.deliveryFee || 0, 
+        message: rules.freeDeliveryThreshold 
+          ? `Frais de livraison: ${rules.deliveryFee || 0}€ (gratuit à partir de ${rules.freeDeliveryThreshold}€)`
+          : `Frais de livraison: ${rules.deliveryFee || 0}€`,
+        threshold: rules.freeDeliveryThreshold
+      };
+    }
+  } catch (error) {
+    console.error('❌ Erreur calcul frais livraison:', error);
+    return { fee: 0, message: 'Erreur de calcul' };
+  }
+}
+
+export async function showCart() {
   if (cart.length === 0) {
     showToast('Votre panier est vide', 'error');
     return;
   }
   
-  const total = cart.reduce((sum, item) => sum + item.total, 0);
+    // Récupérer les informations du site
+    let siteCity = '';
+    let sitePostalCode = '';
+    try {
+      // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+      const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+      if (user?.siteId) {
+      const siteResponse = await fetch(`/api/sites/${user.siteId}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (siteResponse.ok) {
+        const site = await siteResponse.json();
+        siteCity = site.address?.city || '';
+        sitePostalCode = site.address?.postalCode || '';
+        console.log(`📍 Site: ${site.siteName || 'N/A'}, Ville: ${siteCity || 'N/A'}, Code postal: ${sitePostalCode || 'N/A'}`);
+      }
+    } else {
+      console.warn('⚠️ Aucun siteId trouvé pour l\'utilisateur');
+    }
+  } catch (error) {
+    console.warn('⚠️ Impossible de récupérer les infos du site:', error);
+  }
+  
+  // Si le site n'a pas d'adresse, informer l'utilisateur
+  if (!siteCity && !sitePostalCode) {
+    console.warn('⚠️ Le site n\'a pas d\'adresse définie. Impossible de calculer les frais de livraison.');
+  }
+  
+  // Calculer le total des produits
+  const productsTotal = cart.reduce((sum, item) => sum + item.total, 0);
+  
+  // Grouper les articles par fournisseur et calculer les frais de livraison
+  const suppliersInCart = [...new Set(cart.map(item => item.supplierId))];
+  const deliveryFees = {};
+  let totalDeliveryFees = 0;
+  
+  // Calculer les frais pour chaque fournisseur
+  for (const supplierId of suppliersInCart) {
+    const supplierTotal = cart
+      .filter(item => item.supplierId === supplierId)
+      .reduce((sum, item) => sum + item.total, 0);
+    
+    const deliveryInfo = await calculateDeliveryFee(supplierId, siteCity, sitePostalCode, supplierTotal);
+    deliveryFees[supplierId] = deliveryInfo;
+    totalDeliveryFees += deliveryInfo.fee;
+  }
+  
+  const grandTotal = productsTotal + totalDeliveryFees;
   
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
   modal.id = 'cart-modal';
   modal.innerHTML = `
-    <div class="modal-content order-modal" style="max-width: 800px;">
+    <div class="modal-content order-modal" style="max-width: 900px;">
       <div class="modal-header">
         <h2><i class="fas fa-shopping-cart"></i> Mon Panier</h2>
         <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
@@ -485,8 +666,29 @@ export function showCart() {
           </tbody>
           <tfoot>
             <tr style="border-top: 2px solid #ddd;">
+              <td colspan="4" style="text-align: right; padding: 0.75rem; font-weight: bold;">Sous-total produits:</td>
+              <td style="text-align: right; padding: 0.75rem; font-weight: bold;">${productsTotal.toFixed(2)}€</td>
+              <td></td>
+            </tr>
+            ${Object.entries(deliveryFees).map(([supplierId, info]) => {
+              const supplierName = cart.find(item => item.supplierId === supplierId)?.supplierName || 'Fournisseur';
+              return `
+                <tr style="border-top: 1px solid #eee;">
+                  <td colspan="4" style="text-align: right; padding: 0.75rem; font-size: 0.9rem; color: #555;">
+                    <i class="fas fa-truck" style="margin-right: 0.5rem; color: #3498db;"></i>
+                    Livraison ${supplierName}:
+                    <br><small style="font-size: 0.8rem; color: #7f8c8d;">${info.message}</small>
+                  </td>
+                  <td style="text-align: right; padding: 0.75rem; font-weight: bold; color: ${info.fee === 0 ? '#27ae60' : '#e67e22'};">
+                    ${info.fee === 0 ? 'Gratuit' : `${info.fee.toFixed(2)}€`}
+                  </td>
+                  <td></td>
+                </tr>
+              `;
+            }).join('')}
+            <tr style="border-top: 2px solid #ddd; background: #f8f9fa;">
               <td colspan="4" style="text-align: right; padding: 1rem; font-weight: bold; font-size: 1.2rem;">Total général:</td>
-              <td style="text-align: right; padding: 1rem; font-weight: bold; font-size: 1.2rem; color: #27ae60;">${total.toFixed(2)}€</td>
+              <td style="text-align: right; padding: 1rem; font-weight: bold; font-size: 1.2rem; color: #27ae60;">${grandTotal.toFixed(2)}€</td>
               <td></td>
             </tr>
           </tfoot>
@@ -575,16 +777,33 @@ async function checkoutCart() {
     // Grouper les articles par fournisseur
     const ordersBySupplier = {};
     cart.forEach(item => {
-      if (!ordersBySupplier[item.supplierId]) {
-        ordersBySupplier[item.supplierId] = {
-          supplier: item.supplierId,
+      console.log('🛒 Item du panier:', {
+        productId: item.productId,
+        productName: item.productName,
+        supplierId: item.supplierId,
+        supplierName: item.supplierName
+      });
+      
+      // S'assurer qu'on utilise l'ID de l'utilisateur, pas l'ID du modèle Supplier
+      const supplierUserId = item.supplierId;
+      
+      if (!supplierUserId) {
+        console.error('❌ Item sans supplierId:', item);
+        alert(`Erreur: L'article "${item.productName}" n'a pas de fournisseur associé. Veuillez le retirer du panier.`);
+        return;
+      }
+      
+      if (!ordersBySupplier[supplierUserId]) {
+        ordersBySupplier[supplierUserId] = {
+          supplier: supplierUserId,
           supplierName: item.supplierName,
           items: [],
           deliveryDate,
           notes
         };
+        console.log(`✅ Nouvelle commande créée pour fournisseur: ${supplierUserId} (${item.supplierName})`);
       }
-      ordersBySupplier[item.supplierId].items.push({
+      ordersBySupplier[supplierUserId].items.push({
         productId: item.productId,
         productName: item.productName,
         quantity: item.quantity,
@@ -593,9 +812,19 @@ async function checkoutCart() {
       });
     });
     
+    console.log('📦 Commandes groupées par fournisseur:', Object.keys(ordersBySupplier).map(id => ({
+      supplierId: id,
+      itemsCount: ordersBySupplier[id].items.length
+    })));
+    
     // Créer une commande pour chaque fournisseur
     // IMPORTANT: Seules les collectivités peuvent créer des commandes
-    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+    const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+    if (!user) {
+      console.error('❌ Utilisateur non connecté');
+      return;
+    }
     
     if (user.role === 'fournisseur') {
       console.error('❌ Les fournisseurs ne peuvent pas créer de commandes !');
@@ -622,8 +851,29 @@ async function checkoutCart() {
         credentials: 'include', // 🔐 Envoie automatiquement le cookie
         body: JSON.stringify(orderData)
       }).then(async response => {
-        const data = await response.json();
-        return { ok: response.ok, data, orderData };
+        let data;
+        try {
+          data = await response.json();
+        } catch (e) {
+          // Si la réponse n'est pas du JSON, créer un objet d'erreur
+          const text = await response.text();
+          data = { 
+            message: `Erreur serveur (${response.status}): ${text || 'Réponse non valide'}`,
+            error: text || 'Erreur inconnue'
+          };
+        }
+        return { ok: response.ok, status: response.status, data, orderData };
+      }).catch(error => {
+        console.error('❌ Erreur lors de la création de commande:', error);
+        return { 
+          ok: false, 
+          status: 0,
+          data: { 
+            message: `Erreur réseau: ${error.message || 'Impossible de contacter le serveur'}`,
+            error: error.message 
+          }, 
+          orderData 
+        };
       })
     );
     
@@ -666,7 +916,13 @@ async function checkoutCart() {
     // ⚠️ Afficher les erreurs de manière détaillée
     if (failedOrders.length > 0) {
       failedOrders.forEach(failed => {
-        const errorMessage = failed.data.message || 'Erreur inconnue';
+        // Le serveur renvoie { success: false, error: "message" } via errorHandler
+        const errorMessage = failed.data?.error || failed.data?.message || `Erreur ${failed.status || 'inconnue'}`;
+        console.error('❌ Erreur commande:', {
+          status: failed.status,
+          data: failed.data,
+          orderData: failed.orderData
+        });
         
         // Créer un toast d'erreur détaillé
         const errorToast = document.createElement('div');
@@ -744,7 +1000,12 @@ window.showMyOrders = async function showMyOrders() {
     }
     
     // Déterminer l'endpoint selon le rôle de l'utilisateur
-    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+    const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+    if (!user) {
+      console.error('❌ Utilisateur non connecté');
+      return;
+    }
     const endpoint = user.role === 'fournisseur' ? '/api/orders/supplier' : '/api/orders';
     
     console.log(`📋 Chargement des commandes - Rôle: ${user.role}, Endpoint: ${endpoint}`);
@@ -880,6 +1141,144 @@ window.orderProductGlobal = orderProduct;
 window.addToCartGlobal = addToCart;
 window.showCart = showCart;
 window.showMyOrders = showMyOrders;
+
+// Confirmer la réception d'une commande
+window.confirmDelivery = async function(orderId) {
+  const confirmMessage = `✅ Confirmez-vous avoir bien reçu cette commande dans de bonnes conditions ?\n\n📦 Les articles seront automatiquement ajoutés à votre stock.\n💡 Consultez l'onglet "Stock" pour les voir.`;
+  
+  if (!confirm(confirmMessage)) {
+    return;
+  }
+
+  try {
+    // Récupérer le siteId depuis sessionStorage pour l'envoyer au serveur
+    const storedSiteId = sessionStorage.getItem('currentSiteId');
+    // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+    const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+    const userSiteId = user?.siteId;
+    const siteIdToSend = storedSiteId || userSiteId;
+    
+    const requestBody = {
+      status: 'delivered'
+    };
+    
+    if (siteIdToSend) {
+      requestBody.siteId = siteIdToSend;
+      console.log('📤 Envoi du siteId pour confirmation de réception:', siteIdToSend);
+    }
+    
+    // 🔒 Utiliser fetchWithCSRF pour la protection CSRF
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+    
+    const response = await fetchFn(`/api/orders/${orderId}/customer-status${siteIdToSend ? `?siteId=${siteIdToSend}` : ''}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include', // 🔐 Envoie automatiquement le cookie
+      body: JSON.stringify(requestBody)
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log('✅ Réception confirmée et articles ajoutés au stock');
+      
+      // Ouvrir automatiquement le formulaire de réception (exigence AFSCA)
+      // Le formulaire de contrôle à la réception est obligatoire pour la traçabilité
+      window.location.href = `/delivery-receipt.html?orderId=${orderId}`;
+      return;
+      
+      // Afficher un toast de succès amélioré
+      const successToast = document.createElement('div');
+      successToast.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: linear-gradient(135deg, #27ae60, #2ecc71);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(39, 174, 96, 0.4);
+        z-index: 10000;
+        max-width: 400px;
+        animation: slideInRight 0.5s ease, fadeOut 0.5s ease 5.5s;
+      `;
+      successToast.innerHTML = `
+        <div style="display: flex; align-items: start; gap: 1rem;">
+          <i class="fas fa-check-circle" style="font-size: 2rem; margin-top: 0.2rem;"></i>
+          <div>
+            <div style="font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem;">Réception confirmée !</div>
+            <div style="font-size: 0.95rem; line-height: 1.5; opacity: 0.95;">
+              📦 Les articles ont été ajoutés à votre stock<br>
+              💡 Consultez l'onglet "Stock" pour les voir
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(successToast);
+      setTimeout(() => successToast.remove(), 6000);
+      
+      // Recharger la liste des commandes
+      if (typeof window.showMyOrders === 'function') {
+        setTimeout(() => {
+          window.showMyOrders();
+        }, 800);
+      }
+    } else {
+      const errorData = await response.json().catch(() => ({ error: 'Erreur inconnue' }));
+      console.error('❌ Erreur lors de la confirmation:', errorData);
+      alert(`Erreur: ${errorData.error || 'Impossible de confirmer la réception'}`);
+    }
+  } catch (error) {
+    console.error('❌ Erreur lors de la confirmation de réception:', error);
+    alert(`Erreur: ${error.message || 'Impossible de confirmer la réception'}`);
+  }
+};
+
+// Signaler un problème avec une commande
+window.reportIssue = async function(orderId) {
+  const issueNotes = prompt('Veuillez décrire le problème rencontré avec cette commande:');
+  
+  if (!issueNotes) {
+    return;
+  }
+
+  try {
+    const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+    const userSiteId = user?.siteId;
+    const storedSiteId = sessionStorage.getItem('currentSiteId');
+    const siteIdToSend = storedSiteId || userSiteId;
+    
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+    
+    const response = await fetchFn(`/api/orders/${orderId}/customer-status${siteIdToSend ? `?siteId=${siteIdToSend}` : ''}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        status: 'issue',
+        notes: issueNotes
+      })
+    });
+
+    if (response.ok) {
+      alert('✅ Problème signalé avec succès. Le fournisseur sera notifié.');
+      if (typeof window.showMyOrders === 'function') {
+        setTimeout(() => {
+          window.showMyOrders();
+        }, 800);
+      }
+    } else {
+      const errorData = await response.json().catch(() => ({ error: 'Erreur inconnue' }));
+      alert(`Erreur: ${errorData.error || 'Impossible de signaler le problème'}`);
+    }
+  } catch (error) {
+    console.error('❌ Erreur lors du signalement du problème:', error);
+    alert(`Erreur: ${error.message || 'Impossible de signaler le problème'}`);
+  }
+};
 window.updateCartItemQuantity = updateCartItemQuantity;
 window.removeFromCart = removeFromCart;
 window.clearCart = clearCart;
@@ -896,7 +1295,12 @@ let lastOrdersCheck = null;
 window.checkOrdersUpdates = async function checkOrdersUpdates() {
   try {
     // Déterminer l'endpoint selon le rôle de l'utilisateur
-    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+    const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+    if (!user) {
+      console.warn('⚠️ Utilisateur non connecté, impossible de vérifier les commandes');
+      return;
+    }
     const endpoint = user.role === 'fournisseur' ? '/api/orders/supplier' : '/api/orders';
     
     console.log(`🔍 Vérification des commandes - Rôle: ${user.role}, Endpoint: ${endpoint}`);

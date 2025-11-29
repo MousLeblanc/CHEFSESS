@@ -1,4 +1,5 @@
 // controllers/authController.js
+import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Group from '../models/Group.js';
 import jwt from 'jsonwebtoken';
@@ -24,6 +25,13 @@ const generateToken = (user) => {
 };
 
 export const register = asyncHandler(async (req, res) => {
+  // Vérifier que MongoDB est connecté
+  if (mongoose.connection.readyState !== 1) {
+    console.error('❌ MongoDB non connecté. État:', mongoose.connection.readyState);
+    res.status(503);
+    throw new Error('Service temporairement indisponible. Connexion à la base de données en cours...');
+  }
+  
   const { 
     name, 
     email, 
@@ -156,6 +164,12 @@ export const register = asyncHandler(async (req, res) => {
 });
 
 export const login = asyncHandler(async (req, res) => {
+  // Vérifier que MongoDB est connecté
+  if (mongoose.connection.readyState !== 1) {
+    console.error('❌ MongoDB non connecté. État:', mongoose.connection.readyState);
+    res.status(503);
+    throw new Error('Service temporairement indisponible. Connexion à la base de données en cours...');
+  }
   try {
     console.log('🔐 Tentative de connexion pour:', req.body.email);
     const { email, password } = req.body;

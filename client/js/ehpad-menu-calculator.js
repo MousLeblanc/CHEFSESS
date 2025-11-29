@@ -351,6 +351,70 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // ✅ FONCTION : Grouper les résidents par profil (allergies + restrictions)
+  function groupResidentsByProfile(residents) {
+    const profileMap = new Map();
+    
+    // Fonction helper pour calculer la portion équivalente d'un résident
+    function calculatePortionForResident(resident) {
+      const portionSize = resident.portionSize;
+      if (portionSize === 0.5) return 0.5;
+      if (portionSize === 2) return 1.5; // Double portion = ×1.5
+      return 1; // Portion normale ou valeur par défaut
+    }
+    
+    residents.forEach(resident => {
+      // Collecter les allergies du résident
+      const residentAllergens = new Set();
+      if (resident.nutritionalProfile?.allergies?.length > 0) {
+        resident.nutritionalProfile.allergies.forEach(allergy => {
+          const allergen = allergy.allergen || allergy;
+          const normalized = normalizeAllergen(allergen);
+          residentAllergens.add(normalized);
+        });
+      }
+      if (resident.nutritionalProfile?.intolerances?.length > 0) {
+        resident.nutritionalProfile.intolerances.forEach(intolerance => {
+          const substance = intolerance.substance || intolerance;
+          const normalized = normalizeAllergen(substance);
+          residentAllergens.add(normalized);
+        });
+      }
+      
+      // Collecter les restrictions du résident
+      const residentRestrictions = new Set();
+      if (resident.nutritionalProfile?.dietaryRestrictions?.length > 0) {
+        resident.nutritionalProfile.dietaryRestrictions.forEach(restriction => {
+          const rn = restriction.restriction || restriction.type || restriction;
+          const normalized = String(rn).toLowerCase().trim();
+          residentRestrictions.add(normalized);
+        });
+      }
+      
+      // Créer une clé unique pour ce profil
+      const profileKey = JSON.stringify({
+        allergens: Array.from(residentAllergens).sort(),
+        restrictions: Array.from(residentRestrictions).sort()
+      });
+      
+      // Ajouter ou mettre à jour le groupe
+      const portion = calculatePortionForResident(resident);
+      if (profileMap.has(profileKey)) {
+        const group = profileMap.get(profileKey);
+        group.count += portion;
+      } else {
+        profileMap.set(profileKey, {
+          allergens: Array.from(residentAllergens),
+          dietaryRestrictions: Array.from(residentRestrictions),
+          count: portion,
+          ageRange: 'adulte' // Tous les résidents EHPAD sont des adultes
+        });
+      }
+    });
+    
+    return Array.from(profileMap.values());
+  }
+
   if (generateMenuResidentsConfirmBtn) {
     generateMenuResidentsConfirmBtn.addEventListener('click', async () => {
       const mealType = document.getElementById('modal-menu-type')?.value;
@@ -380,6 +444,15 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           return;
         }
+        
+        // Afficher le loader
+        const progressDiv = document.getElementById('custom-menu-progress');
+        const progressText = document.getElementById('custom-progress-text');
+        const resultsDiv = document.getElementById('custom-menu-results');
+        if (progressDiv) progressDiv.style.display = 'block';
+        if (resultsDiv) resultsDiv.style.display = 'none';
+        if (progressText) progressText.textContent = 'Chargement des résidents...';
+        
         // ✅ REFACTORISÉ : Utiliser la fonction utilitaire centralisée
         const residents = await loadActiveResidents(siteId, {
           filterActive: true,
@@ -387,23 +460,89 @@ document.addEventListener('DOMContentLoaded', () => {
           clientSideFilter: true
         });
         
-        // ✅ REFACTORISÉ : Utiliser la fonction utilitaire pour calculer les portions
-        const totalPortions = calculateTotalPortions(residents);
-        const peopleInput = document.getElementById('custom-menu-people');
-        const typeSelect = document.getElementById('custom-menu-type');
-        const periodSelect = document.getElementById('custom-menu-period');
-        if (peopleInput) peopleInput.value = Math.max(1, Math.round(totalPortions));
-        if (typeSelect) typeSelect.value = mealType;
-        if (periodSelect) periodSelect.value = period;
-        if (typeof customMenuGenerator !== 'undefined' && customMenuGenerator.generateCustomMenu) {
-          await customMenuGenerator.generateCustomMenu();
+        if (residents.length === 0) {
+          if (typeof showToast === 'function') {
+            showToast('Aucun résident actif trouvé', 'error');
+          }
+          if (progressDiv) progressDiv.style.display = 'none';
+          return;
         }
-        const resultsDiv = document.getElementById('custom-menu-results');
+        
+        if (progressText) progressText.textContent = 'Analyse des profils nutritionnels...';
+        
+        // ✅ NOUVEAU : Grouper les résidents par profil (allergies + restrictions)
+        const ageGroups = groupResidentsByProfile(residents);
+        console.log(`📊 ${ageGroups.length} groupe(s) de profils identifié(s)`, ageGroups);
+        
+        // Calculer le nombre total de personnes
+        const totalPeople = ageGroups.reduce((sum, group) => sum + group.count, 0);
+        
+        if (progressText) progressText.textContent = 'Génération du menu avec variantes...';
+        
+        // ✅ NOUVEAU : Appeler l'API qui génère des variantes pour les résidents
+        const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+        const response = await fetchFn('/api/intelligent-menu/generate', {
+          credentials: 'include',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            establishmentType: 'ehpad',
+            ageGroups: ageGroups,
+            numDishes: 2, // Entrée + Plat (ou Plat seul selon mealType)
+            menuStructure: mealType === 'déjeuner' ? 'entree_plat' : 'plat_seul',
+            allergens: [], // Déjà dans ageGroups
+            dietaryRestrictions: [], // Déjà dans ageGroups
+            medicalConditions: [],
+            texture: 'normale',
+            useStockOnly: false
+          })
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Erreur lors de la génération du menu');
+        }
+        
+        const menuResult = await response.json();
+        console.log('✅ Menu généré avec variantes:', menuResult);
+        
+        // Afficher le résultat
+        if (resultsDiv) {
+          resultsDiv.style.display = 'block';
+          resultsDiv.innerHTML = `
+            <div style="background: #f0f9ff; border: 2px solid #0ea5e9; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
+              <h3 style="margin-top: 0; color: #0c4a6e;">
+                <i class="fas fa-check-circle"></i> Menu généré avec variantes pour ${totalPeople} personnes
+              </h3>
+              <p style="color: #075985; margin-bottom: 0.5rem;">
+                <strong>Menu principal:</strong> ${menuResult.menu?.title || 'Menu généré'}
+              </p>
+              ${menuResult.menu?.variants && menuResult.menu.variants.length > 0 ? `
+                <p style="color: #075985; margin-bottom: 0.5rem;">
+                  <strong>${menuResult.menu.variants.length} variante(s)</strong> générée(s) pour les résidents avec allergies/restrictions
+                </p>
+              ` : ''}
+            </div>
+            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem;">
+              <pre style="white-space: pre-wrap; font-family: inherit; font-size: 0.9rem;">${JSON.stringify(menuResult, null, 2)}</pre>
+            </div>
+          `;
+        }
+        
+        if (progressDiv) progressDiv.style.display = 'none';
         if (resultsDiv) resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        if (typeof showToast === 'function') {
+          showToast(`✅ Menu généré avec ${menuResult.menu?.variants?.length || 0} variante(s)`, 'success');
+        }
       } catch (error) {
         console.error('Erreur:', error);
+        const progressDiv = document.getElementById('custom-menu-progress');
+        if (progressDiv) progressDiv.style.display = 'none';
         if (typeof showToast === 'function') {
-          showToast('Erreur lors de la génération du menu', 'error');
+          showToast(`Erreur: ${error.message || 'Erreur lors de la génération du menu'}`, 'error');
         }
       }
     });

@@ -10,6 +10,7 @@ class CustomMenuGenerator {
         this.generatedMenus = [];
         this.acceptedMenu = null;
         this.addGoalModal = null;
+        this.weeklyMenus = []; // Stocker les menus de la semaine pour remplacement individuel
     }
     
     /**
@@ -63,8 +64,24 @@ class CustomMenuGenerator {
         
         // Bouton "Ajouter et fermer"
         if (addAndCloseBtn) {
-            addAndCloseBtn.addEventListener('click', () => {
-                this.addNutritionalGoal(true); // Fermer la modale
+            addAndCloseBtn.addEventListener('click', (e) => {
+                e.preventDefault(); // Empêcher toute soumission de formulaire
+                e.stopPropagation(); // Empêcher la propagation de l'événement
+                
+                // Valider le formulaire avant d'ajouter
+                const form = document.getElementById('add-nutritional-goal-form');
+                if (form && !form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+                
+                const success = this.addNutritionalGoal(false); // Ne pas fermer ici, on le fait après
+                // Si l'ajout a réussi, fermer la modale immédiatement
+                if (success) {
+                    setTimeout(() => {
+                        this.closeGoalModal();
+                    }, 100); // Petit délai pour laisser le temps au toast de s'afficher
+                }
             });
         }
         
@@ -77,33 +94,58 @@ class CustomMenuGenerator {
     }
     
     showAddGoalModal() {
+        const modal = document.getElementById('add-nutritional-goal-modal');
+        if (!modal) return;
+        
         if (this.addGoalModal) {
             this.addGoalModal.open();
+            // S'assurer que la modale est visible même si Modal utilise des classes
+            modal.style.display = 'flex';
         } else {
             // Fallback si Modal n'est pas disponible
-            const modal = document.getElementById('add-nutritional-goal-modal');
-            if (modal) {
-                modal.style.display = 'flex';
-                this.updateModalGoalsList();
-                const nutrientSelect = document.getElementById('goal-nutrient');
-                if (nutrientSelect) {
-                    setTimeout(() => nutrientSelect.focus(), 100);
-                }
-            }
+            modal.style.display = 'flex';
+        }
+        
+        this.updateModalGoalsList();
+        const nutrientSelect = document.getElementById('goal-nutrient');
+        if (nutrientSelect) {
+            setTimeout(() => nutrientSelect.focus(), 100);
         }
     }
     
     closeGoalModal() {
+        const modal = document.getElementById('add-nutritional-goal-modal');
+        
         if (this.addGoalModal) {
-            this.addGoalModal.close();
-        } else {
-            // Fallback si Modal n'est pas disponible
-            const modal = document.getElementById('add-nutritional-goal-modal');
-            if (modal) {
-                modal.style.display = 'none';
-                const form = document.getElementById('add-nutritional-goal-form');
-                if (form) form.reset();
+            console.log('🔒 Fermeture de la modale via Modal.close()');
+            try {
+                this.addGoalModal.close();
+            } catch (e) {
+                console.warn('⚠️ Erreur lors de la fermeture via Modal.close():', e);
+                // Fallback si la méthode close() échoue
+                if (modal) {
+                    modal.style.display = 'none';
+                    modal.style.setProperty('display', 'none', 'important');
+                    modal.classList.remove('show');
+                }
             }
+        }
+        
+        // Toujours fermer directement aussi pour être sûr
+        if (modal) {
+            console.log('🔒 Fermeture directe de la modale');
+            modal.style.display = 'none';
+            modal.style.setProperty('display', 'none', 'important'); // Forcer avec !important
+            modal.classList.remove('show');
+            // Réinitialiser le formulaire
+            const form = document.getElementById('add-nutritional-goal-form');
+            if (form) form.reset();
+            // Débloquer le scroll du body si nécessaire
+            document.body.style.overflow = '';
+            // Vérifier que la modale est bien fermée
+            console.log('✅ Modale fermée, display:', modal.style.display, 'classList:', modal.classList.toString());
+        } else {
+            console.warn('⚠️ Modale non trouvée');
         }
     }
     
@@ -111,7 +153,7 @@ class CustomMenuGenerator {
         const nutrientSelect = document.getElementById('goal-nutrient');
         const targetInput = document.getElementById('goal-target');
         
-        if (!nutrientSelect || !targetInput) return;
+        if (!nutrientSelect || !targetInput) return false;
         
         const nutrient = nutrientSelect.value;
         const nutrientLabel = nutrientSelect.options[nutrientSelect.selectedIndex].text;
@@ -120,13 +162,13 @@ class CustomMenuGenerator {
         // Validation
         if (!target || target <= 0) {
             this.showToast('Veuillez saisir un objectif valide', 'warning');
-            return;
+            return false;
         }
         
         // Vérifier si ce nutriment n'est pas déjà ajouté
         if (this.nutritionalGoals.some(g => g.nutrient === nutrient)) {
             this.showToast('Ce nutriment est déjà dans la liste', 'warning');
-            return;
+            return false;
         }
         
         // Extraire l'unité du label
@@ -156,10 +198,8 @@ class CustomMenuGenerator {
         // Mettre à jour la liste dans la modale
         this.updateModalGoalsList();
         
-        // Fermer la modale seulement si demandé
-        if (closeModal) {
-            this.closeGoalModal();
-        }
+        // Retourner true pour indiquer le succès
+        return true;
     }
     
     updateModalGoalsList() {
@@ -293,8 +333,14 @@ class CustomMenuGenerator {
                 payload.forceVariation = true;
             }
             
+            // ✅ DÉCLARER generatedMenuNames AVANT callOnce() pour qu'il soit accessible
+            const generatedMenuNames = []; // Liste des menus déjà générés pour éviter les répétitions
+            
             // Helper to call backend once
             const callOnce = async () => {
+                // ✅ Mettre à jour payload.avoidMenuNames avec la liste actuelle avant chaque appel
+                payload.avoidMenuNames = [...generatedMenuNames]; // Copie pour éviter les mutations
+                
                 // 🔒 Utiliser fetchWithCSRF pour la protection CSRF automatique
                 const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
                 const response = await fetchFn('/api/menu/generate-custom', {
@@ -339,6 +385,8 @@ class CustomMenuGenerator {
                 const weeklyProteinPlan = ['vege','vlaams','volaille','viande','poisson','libre','libre'];
                 const proteinCounts = { boeuf: 0, porc: 0, veau: 0, agneau: 0, volaille: 0, poisson: 0, vegetarien: 0 };
                 let lastProteinKey = null;
+                // ✅ generatedMenuNames est déjà défini avant callOnce(), pas besoin de le redéfinir
+                
                 for (let d = 1; d <= periodDays; d++) {
                     if (progressText) progressText.textContent = `Jour ${d}/${periodDays}...`;
                     // Optionally we can hint variation to backend
@@ -351,6 +399,7 @@ class CustomMenuGenerator {
                     payload.weekdayTheme = theme;
                     payload.weeklyProteinPlan = weeklyProteinPlan; // aide globale côté IA
                     payload.antiRepeat = { maxSameProteinPerWeek: 1, keys: ['volaille','poisson','bœuf','porc','agneau','veau'] };
+                    // ✅ avoidMenuNames sera mis à jour dans callOnce() avant l'appel API
                     // Interdictions dynamiques pour limiter le bœuf et éviter même protéine deux jours de suite
                     const dynamicBan = [];
                     if (proteinCounts['boeuf'] >= 1) dynamicBan.push('bœuf','boeuf');
@@ -358,6 +407,18 @@ class CustomMenuGenerator {
                     payload.dynamicBanProteins = dynamicBan;
                     const { result, stockCheck } = await callOnce();
                     dayResults.push({ result, stockCheck, day: d });
+                    
+                    // ✅ NOUVEAU: Ajouter le menu généré à la liste pour éviter les répétitions
+                    if (result?.menu?.nomMenu) {
+                        const menuName = result.menu.nomMenu;
+                        generatedMenuNames.push(menuName);
+                        console.log(`📝 Menu jour ${d} ajouté à la liste d'exclusion: "${menuName}"`);
+                        console.log(`   Total menus à éviter: ${generatedMenuNames.length}`);
+                        console.log(`   Liste complète: ${JSON.stringify(generatedMenuNames)}`);
+                    } else {
+                        console.warn(`⚠️ Menu jour ${d} n'a pas de nomMenu, impossible d'éviter les répétitions`);
+                    }
+                    
                     // Déduire la protéine principale du résultat (simple heuristique sur nomMenu)
                     try {
                         const name = (result?.menu?.nomMenu || '').toLowerCase();
@@ -597,6 +658,14 @@ class CustomMenuGenerator {
         
         const { menu, nutrition, numberOfPeople, nutritionalGoals } = result;
         
+        // Debug: vérifier les allergènes
+        if (!menu.allergens || menu.allergens.length === 0) {
+            console.warn(`⚠️ Menu "${menu.nomMenu}" n'a pas d'allergènes déclarés dans les données reçues`);
+            console.log('Données du menu:', menu);
+        } else {
+            console.log(`✅ Menu "${menu.nomMenu}" a ${menu.allergens.length} allergène(s):`, menu.allergens);
+        }
+        
         const goalsStatus = nutritionalGoals.map(goal => {
             const value = nutrition.perPerson[goal.nutrient] || 0;
             const achieved = value >= goal.target;
@@ -734,6 +803,49 @@ class CustomMenuGenerator {
                     </ol>
                 </div>
                 
+                ${menu.allergens && menu.allergens.length > 0 ? `
+                <div style="margin-top: 1.5rem; padding: 1rem; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px;">
+                    <h4 style="margin: 0 0 0.75rem 0; color: #92400e;">
+                        <i class="fas fa-exclamation-triangle"></i> Allergènes (Directive Européenne UE 1169/2011 / AFSCA)
+                    </h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        ${menu.allergens.map(allergen => {
+                            const allergenNames = {
+                                'gluten': '🌾 Gluten',
+                                'lait': '🥛 Lait',
+                                'oeufs': '🥚 Œufs',
+                                'arachides': '🥜 Arachides',
+                                'fruits_a_coque': '🌰 Fruits à coque',
+                                'soja': '🫘 Soja',
+                                'poisson': '🐟 Poisson',
+                                'crustaces': '🦐 Crustacés',
+                                'mollusques': '🐚 Mollusques',
+                                'celeri': '🥬 Céleri',
+                                'moutarde': '🌶️ Moutarde',
+                                'sesame': '🌾 Sésame',
+                                'sulfites': '⚗️ Sulfites',
+                                'lupin': '🌱 Lupin'
+                            };
+                            const normalized = allergen.toLowerCase().trim();
+                            const displayName = allergenNames[normalized] || allergen.charAt(0).toUpperCase() + allergen.slice(1);
+                            return `<span style="background: #fff; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid #f59e0b; color: #92400e; font-weight: 600; font-size: 0.9rem;">${displayName}</span>`;
+                        }).join('')}
+                    </div>
+                    <p style="margin: 0.75rem 0 0 0; font-size: 0.85rem; color: #92400e; font-style: italic;">
+                        ⚠️ Conformité avec la Directive Européenne UE 1169/2011 et les exigences AFSCA (Agence fédérale pour la sécurité de la chaîne alimentaire - Belgique)
+                    </p>
+                </div>
+                ` : `
+                <div style="margin-top: 1.5rem; padding: 1rem; background: #d1fae5; border: 2px solid #10b981; border-radius: 8px;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: #065f46;">
+                        <i class="fas fa-check-circle"></i> Aucun allergène déclaré (conforme Directive Européenne UE 1169/2011)
+                    </h4>
+                    <p style="margin: 0; font-size: 0.85rem; color: #065f46; font-style: italic;">
+                        Cette recette ne contient aucun des 14 allergènes majeurs selon la Directive UE 1169/2011 / AFSCA
+                    </p>
+                </div>
+                `}
+                
                 <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
                     <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
                         <button onclick="customMenuGenerator.acceptMenu(${this.generatedMenus.length - 1})" class="btn btn-primary" style="flex: 1; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; padding: 1.25rem; font-size: 1.1rem;">
@@ -763,24 +875,292 @@ class CustomMenuGenerator {
     displayMultiDayResults(dayResults, numberOfPeople) {
         const resultsDiv = document.getElementById('custom-menu-results');
         if (!resultsDiv) return;
+        
+        // Stocker les menus de la semaine pour permettre le remplacement individuel
+        // Calculer les dates à partir d'aujourd'hui
+        const today = new Date();
+        this.weeklyMenus = dayResults.map(({ result, stockCheck, day }, idx) => {
+            const menuDate = new Date(today);
+            menuDate.setDate(today.getDate() + (day - 1)); // Jour 1 = aujourd'hui, Jour 2 = demain, etc.
+            return {
+                result,
+                stockCheck,
+                day,
+                date: menuDate.toISOString().split('T')[0], // Format YYYY-MM-DD
+                accepted: false
+            };
+        });
+        
+        this.renderWeeklyMenus();
+    }
+    
+    renderWeeklyMenus() {
+        const resultsDiv = document.getElementById('custom-menu-results');
+        if (!resultsDiv || !this.weeklyMenus || this.weeklyMenus.length === 0) return;
+        
         const combined = [];
         combined.push(`<div style="background:white;border-radius:8px;padding:1rem;border:2px solid #10b981;">`);
-        combined.push(`<h3 style="margin:0 0 1rem 0;color:#111827;">📅 Menus générés (${dayResults.length} jours)</h3>`);
-        dayResults.forEach(({ result, stockCheck, day }, idx) => {
-            combined.push(`<div style="margin-bottom:1rem;border:1px solid #e5e7eb;border-radius:8px;">`);
-            combined.push(`<div style="padding:.75rem 1rem;background:#f8fafc;border-bottom:1px solid #e5e7eb;font-weight:600;">Jour ${day}</div>`);
-            // Reuse single renderer into a lightweight section by extracting inner pieces
-            const tempDiv = document.createElement('div');
-            this.displayCustomMenuResult(result, stockCheck);
-            tempDiv.innerHTML = document.getElementById('custom-menu-results').innerHTML;
-            // Strip outer container padding to nest nicely
-            combined.push(`<div style="padding:1rem;">${tempDiv.innerHTML}</div>`);
+        combined.push(`<h3 style="margin:0 0 1rem 0;color:#111827;">📅 Menus générés (${this.weeklyMenus.length} jours)</h3>`);
+        combined.push(`<p style="margin:0 0 1rem 0;color:#6b7280;font-size:0.9rem;">💡 Vous pouvez remplacer chaque menu individuellement en cliquant sur "Remplacer"</p>`);
+        
+        this.weeklyMenus.forEach((menuData, idx) => {
+            const { result, stockCheck, day, date, accepted } = menuData;
+            const menu = result.menu || {};
+            
+            // Formater la date pour l'affichage
+            const dateObj = new Date(date);
+            const formattedDate = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            combined.push(`<div id="menu-day-${day}" style="margin-bottom:1.5rem;border:${accepted ? '2px solid #10b981' : '1px solid #e5e7eb'};border-radius:8px;background:${accepted ? '#f0fdf4' : 'white'};">`);
+            combined.push(`<div style="padding:.75rem 1rem;background:${accepted ? '#d1fae5' : '#f8fafc'};border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">`);
+            combined.push(`<div style="display:flex;align-items:center;gap:0.75rem;">`);
+            combined.push(`<span style="font-weight:600;color:#111827;">📅 Jour ${day}</span>`);
+            combined.push(`<input type="date" id="date-day-${day}" value="${date}" onchange="customMenuGenerator.updateMenuDate(${idx}, this.value)" style="padding:0.4rem 0.6rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.9rem;cursor:pointer;">`);
+            combined.push(`<span style="color:#6b7280;font-size:0.85rem;">${formattedDate}</span>`);
             combined.push(`</div>`);
+            combined.push(`<div style="display:flex;gap:0.5rem;align-items:center;">`);
+            if (accepted) {
+                combined.push(`<span style="color:#059669;font-weight:600;font-size:0.9rem;">✅ Accepté</span>`);
+            }
+            combined.push(`<button onclick="customMenuGenerator.replaceSingleMenu(${idx})" class="btn" style="background:linear-gradient(135deg, #f59e0b 0%, #d97706 100%);color:white;border:none;padding:0.5rem 1rem;border-radius:6px;font-size:0.9rem;cursor:pointer;font-weight:600;">
+                <i class="fas fa-sync-alt"></i> Remplacer
+            </button>`);
+            combined.push(`</div>`);
+            combined.push(`</div>`);
+            
+            combined.push(`<div style="padding:1rem;">`);
+            combined.push(`<h4 style="margin:0 0 0.5rem 0;color:#111827;font-size:1.2rem;">${menu.nomMenu || 'Menu'}</h4>`);
+            combined.push(`<p style="margin:0 0 1rem 0;color:#6b7280;">${menu.description || ''}</p>`);
+            
+            if (result.nutrition && result.nutrition.perPerson) {
+                const nut = result.nutrition.perPerson;
+                combined.push(`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.5rem;margin-bottom:1rem;padding:0.75rem;background:#f3f4f6;border-radius:6px;">`);
+                combined.push(`<div><strong>🔥 Calories:</strong> ${Math.round(nut.calories || 0)} kcal</div>`);
+                combined.push(`<div><strong>🥩 Protéines:</strong> ${(nut.proteins || 0).toFixed(1)}g</div>`);
+                combined.push(`<div><strong>🍞 Glucides:</strong> ${(nut.carbs || 0).toFixed(1)}g</div>`);
+                combined.push(`<div><strong>🥑 Lipides:</strong> ${(nut.lipids || 0).toFixed(1)}g</div>`);
+                combined.push(`</div>`);
+            }
+            
+            if (menu.allergens && menu.allergens.length > 0) {
+                const allergenNames = {
+                    'gluten': '🌾 Gluten', 'lait': '🥛 Lait', 'oeufs': '🥚 Œufs',
+                    'arachides': '🥜 Arachides', 'fruits_a_coque': '🌰 Fruits à coque', 'soja': '🫘 Soja',
+                    'poisson': '🐟 Poisson', 'crustaces': '🦐 Crustacés', 'mollusques': '🐚 Mollusques',
+                    'celeri': '🥬 Céleri', 'moutarde': '🌶️ Moutarde', 'sesame': '🌾 Sésame',
+                    'sulfites': '⚗️ Sulfites', 'lupin': '🌱 Lupin'
+                };
+                combined.push(`<div style="margin-bottom:1rem;padding:0.75rem;background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;">`);
+                combined.push(`<strong style="color:#92400e;">⚠️ Allergènes:</strong> `);
+                combined.push(`<span style="display:inline-flex;flex-wrap:wrap;gap:0.25rem;margin-top:0.25rem;">`);
+                menu.allergens.forEach(allergen => {
+                    const normalized = allergen.toLowerCase().trim();
+                    const displayName = allergenNames[normalized] || allergen;
+                    combined.push(`<span style="background:#fff;padding:0.25rem 0.5rem;border-radius:4px;font-size:0.85rem;color:#92400e;">${displayName}</span>`);
+                });
+                combined.push(`</span></div>`);
+            } else {
+                combined.push(`<div style="margin-bottom:1rem;padding:0.75rem;background:#d1fae5;border:1px solid #10b981;border-radius:6px;">`);
+                combined.push(`<span style="color:#065f46;font-size:0.9rem;">✅ Aucun allergène déclaré (conforme UE 1169/2011 / AFSCA)</span>`);
+                combined.push(`</div>`);
+            }
+            
+            // Ingrédients
+            if (menu.ingredients && menu.ingredients.length > 0) {
+                combined.push(`<div style="margin-bottom:1rem;">`);
+                combined.push(`<h5 style="margin:0 0 0.75rem 0;color:#374151;font-size:1rem;">👤 Ingrédients par personne</h5>`);
+                combined.push(`<ul style="columns:2;column-gap:2rem;margin:0;padding-left:1.5rem;list-style-type:disc;">`);
+                menu.ingredients.forEach(ing => {
+                    if (typeof ing === 'object') {
+                        const nom = ing.nom || ing.name || 'Ingrédient';
+                        const unite = ing.unite || ing.unit || '';
+                        let quantiteParPersonne = ing.quantiteParPersonne || ing.quantite || ing.quantity || '';
+                        if (typeof quantiteParPersonne === 'number') {
+                            quantiteParPersonne = Math.round(quantiteParPersonne * 10) / 10;
+                        }
+                        combined.push(`<li style="margin-bottom:0.5rem;color:#4b5563;">
+                            <strong>${nom}</strong>: ${quantiteParPersonne}${unite}
+                        </li>`);
+                    } else {
+                        combined.push(`<li style="margin-bottom:0.5rem;color:#4b5563;">${ing}</li>`);
+                    }
+                });
+                combined.push(`</ul>`);
+                
+                // Quantités totales
+                const totalPortionsEl = document.getElementById('calc-total-portions');
+                const nombrePortions = totalPortionsEl ? parseFloat(totalPortionsEl.textContent || result.numberOfPeople?.toString()) || result.numberOfPeople : result.numberOfPeople;
+                if (nombrePortions) {
+                    combined.push(`<div style="margin-top:1rem;padding:1rem;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);border-radius:8px;">`);
+                    combined.push(`<h5 style="margin:0 0 0.75rem 0;color:#ffffff;font-size:1rem;">👥 Quantités totales pour ${nombrePortions} portions équivalentes</h5>`);
+                    combined.push(`<ul style="columns:2;column-gap:2rem;margin:0;padding-left:1.5rem;list-style-type:disc;color:#ffffff;">`);
+                    menu.ingredients.forEach(ing => {
+                        if (typeof ing === 'object') {
+                            const nom = ing.nom || ing.name || 'Ingrédient';
+                            const unite = ing.unite || ing.unit || '';
+                            let quantiteParPersonne = parseFloat(ing.quantiteParPersonne || ing.quantite || ing.quantity || 0);
+                            if (isNaN(quantiteParPersonne)) quantiteParPersonne = 0;
+                            const quantiteTotal = quantiteParPersonne * nombrePortions;
+                            let quantiteTotalFormatee = quantiteTotal;
+                            if (unite.toLowerCase() === 'kg' || unite.toLowerCase() === 'l' || unite.toLowerCase() === 'litre') {
+                                quantiteTotalFormatee = Math.round(quantiteTotal * 100) / 100;
+                            } else {
+                                quantiteTotalFormatee = Math.round(quantiteTotal * 10) / 10;
+                            }
+                            combined.push(`<li style="margin-bottom:0.5rem;color:#ffffff;">
+                                <strong>${nom}</strong>: ${quantiteTotalFormatee}${unite}
+                            </li>`);
+                        }
+                    });
+                    combined.push(`</ul>`);
+                    combined.push(`</div>`);
+                }
+                combined.push(`</div>`);
+            }
+            
+            // Instructions
+            if (menu.instructions && menu.instructions.length > 0) {
+                combined.push(`<div style="margin-bottom:1rem;">`);
+                combined.push(`<h5 style="margin:0 0 0.75rem 0;color:#374151;font-size:1rem;">👨‍🍳 Instructions de préparation</h5>`);
+                combined.push(`<ol style="margin:0;padding-left:1.5rem;">`);
+                menu.instructions.forEach(instruction => {
+                    combined.push(`<li style="margin-bottom:0.75rem;color:#4b5563;">${instruction}</li>`);
+                });
+                combined.push(`</ol>`);
+                combined.push(`</div>`);
+            }
+            
+            combined.push(`<div style="display:flex;gap:0.5rem;margin-top:1rem;">`);
+            combined.push(`<button onclick="customMenuGenerator.acceptSingleMenu(${idx})" class="btn" style="flex:1;background:${accepted ? '#6b7280' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)'};color:white;border:none;padding:0.75rem;border-radius:6px;font-weight:600;cursor:pointer;">
+                <i class="fas fa-check-circle"></i> ${accepted ? 'Accepté' : 'Accepter'}
+            </button>`);
+            combined.push(`<button onclick="customMenuGenerator.exportSingleMenu(${idx})" class="btn" style="background:#6366f1;color:white;border:none;padding:0.75rem;border-radius:6px;cursor:pointer;">
+                <i class="fas fa-download"></i> Exporter
+            </button>`);
+            combined.push(`</div>`);
+            
+            combined.push(`</div></div>`);
         });
         combined.push(`</div>`);
         resultsDiv.innerHTML = combined.join('');
         resultsDiv.style.display = 'block';
-        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    async replaceSingleMenu(dayIndex) {
+        if (!this.weeklyMenus || dayIndex < 0 || dayIndex >= this.weeklyMenus.length) {
+            this.showToast('Erreur: menu introuvable', 'error');
+            return;
+        }
+        
+        const menuToReplace = this.weeklyMenus[dayIndex];
+        const day = menuToReplace.day;
+        
+        this.showToast(`🔄 Remplacement du menu du jour ${day}...`, 'info');
+        
+        try {
+            const numberOfPeople = parseInt(document.getElementById('custom-menu-people')?.value || 4);
+            const mealType = document.getElementById('custom-menu-type')?.value || 'déjeuner';
+            
+            // Récupérer la liste des menus déjà générés pour éviter les répétitions
+            const avoidMenuNames = this.weeklyMenus
+                .filter((m, idx) => idx !== dayIndex && m.result?.menu?.nomMenu)
+                .map(m => m.result.menu.nomMenu);
+            
+            // Appeler l'API pour générer un nouveau menu
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+            const response = await fetchFn('/api/menu/generate-custom', {
+                credentials: 'include',
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    numberOfPeople,
+                    mealType,
+                    nutritionalGoals: this.nutritionalGoals,
+                    dietaryRestrictions: [],
+                    allergens: [],
+                    avoidMenuNames,
+                    periodDays: 1,
+                    dayIndex: day
+                })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Erreur lors de la génération du menu');
+            }
+            
+            const result = await response.json();
+            
+            // Vérifier le stock
+            const stockCheck = await this.checkStockAvailability(result, numberOfPeople);
+            
+            // Remplacer le menu dans weeklyMenus (conserver la date)
+            const existingDate = this.weeklyMenus[dayIndex]?.date || new Date().toISOString().split('T')[0];
+            this.weeklyMenus[dayIndex] = {
+                result,
+                stockCheck,
+                day,
+                date: existingDate,
+                accepted: false
+            };
+            
+            // Réafficher les menus
+            this.renderWeeklyMenus();
+            
+            this.showToast(`✅ Menu du jour ${day} remplacé avec succès !`, 'success');
+        } catch (error) {
+            console.error('Erreur lors du remplacement:', error);
+            this.showToast(`Erreur: ${error.message}`, 'error');
+        }
+    }
+    
+    acceptSingleMenu(dayIndex) {
+        if (!this.weeklyMenus || dayIndex < 0 || dayIndex >= this.weeklyMenus.length) {
+            this.showToast('Erreur: menu introuvable', 'error');
+            return;
+        }
+        
+        this.weeklyMenus[dayIndex].accepted = !this.weeklyMenus[dayIndex].accepted;
+        this.renderWeeklyMenus();
+        
+        const menuName = this.weeklyMenus[dayIndex].result?.menu?.nomMenu || 'Menu';
+        const status = this.weeklyMenus[dayIndex].accepted ? 'accepté' : 'désaccepté';
+        this.showToast(`✅ Menu "${menuName}" ${status}`, 'success');
+    }
+    
+    exportSingleMenu(dayIndex) {
+        if (!this.weeklyMenus || dayIndex < 0 || dayIndex >= this.weeklyMenus.length) {
+            this.showToast('Erreur: menu introuvable', 'error');
+            return;
+        }
+        
+        const menuData = this.weeklyMenus[dayIndex].result;
+        const jsonStr = JSON.stringify(menuData, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `menu-jour-${this.weeklyMenus[dayIndex].day}-${(menuData.menu?.nomMenu || 'menu').toLowerCase().replace(/\s+/g, '-')}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        this.showToast('✅ Menu exporté !', 'success');
+    }
+    
+    updateMenuDate(dayIndex, newDate) {
+        if (!this.weeklyMenus || dayIndex < 0 || dayIndex >= this.weeklyMenus.length) {
+            this.showToast('Erreur: menu introuvable', 'error');
+            return;
+        }
+        
+        this.weeklyMenus[dayIndex].date = newDate;
+        this.renderWeeklyMenus();
+        
+        const dateObj = new Date(newDate);
+        const formattedDate = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        this.showToast(`✅ Date mise à jour: ${formattedDate}`, 'success');
     }
     
     displayGeneratedMenusList() {

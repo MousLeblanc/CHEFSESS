@@ -18,8 +18,8 @@ class FoodCostManager {
     try {
       // Récupérer le siteId depuis sessionStorage pour l'envoyer au serveur
       const storedSiteId = sessionStorage.getItem('currentSiteId');
-      const userStr = sessionStorage.getItem('user');
-      const user = userStr ? JSON.parse(userStr) : null;
+      // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+      const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
       const userSiteId = user?.siteId;
       const siteIdToSend = storedSiteId || userSiteId;
       
@@ -36,7 +36,20 @@ class FoodCostManager {
 
       if (!response.ok) throw new Error('Erreur lors du chargement des statistiques');
 
-      const data = await response.json();
+      // ✅ VALIDATION : Utiliser safeAPIParse pour une validation stricte
+      let data;
+      if (typeof safeAPIParse === 'function') {
+        const parsed = await safeAPIParse(response, {
+          required: ['data'],
+          types: { data: 'object' }
+        });
+        if (!parsed.success) {
+          throw new Error(parsed.error || 'Erreur lors du parsing de la réponse');
+        }
+        data = parsed.data;
+      } else {
+        data = await response.json();
+      }
       this.stats = data.data;
       await this.displayStats();
     } catch (error) {
@@ -192,8 +205,8 @@ class FoodCostManager {
     try {
       // Récupérer le siteId depuis sessionStorage pour l'envoyer au serveur
       const storedSiteId = sessionStorage.getItem('currentSiteId');
-      const userStr = sessionStorage.getItem('user');
-      const user = userStr ? JSON.parse(userStr) : null;
+      // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+      const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
       const userSiteId = user?.siteId;
       const siteIdToSend = storedSiteId || userSiteId;
       
@@ -375,8 +388,8 @@ class FoodCostManager {
       
       // Récupérer le siteId depuis sessionStorage pour l'envoyer au serveur
       const storedSiteId = sessionStorage.getItem('currentSiteId');
-      const userStr = sessionStorage.getItem('user');
-      const user = userStr ? JSON.parse(userStr) : null;
+      // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+      const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
       const userSiteId = user?.siteId;
       const siteIdToSend = storedSiteId || userSiteId;
       
@@ -855,13 +868,23 @@ class FoodCostManager {
 // Initialiser le gestionnaire au chargement de la page
 let foodCostManager;
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('foodcost-stats') || document.getElementById('foodcost-periods')) {
+function initFoodCostManager() {
+  if (!foodCostManager && (document.getElementById('foodcost-stats') || document.getElementById('foodcost-periods'))) {
     foodCostManager = new FoodCostManager();
     foodCostManager.init();
+    // Exposer globalement pour les onclick
+    window.foodCostManager = foodCostManager;
   }
-});
+  return foodCostManager;
+}
 
-// Exposer globalement pour les onclick
-window.foodCostManager = foodCostManager;
+// Initialiser automatiquement si le DOM est déjà chargé
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initFoodCostManager();
+  });
+} else {
+  // DOM déjà chargé, initialiser immédiatement
+  initFoodCostManager();
+}
 

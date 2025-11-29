@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import crypto from 'crypto';
 import Product from '../models/Product.js';
 import User from '../models/User.js';
 import Supplier from '../models/Supplier.js';
@@ -43,6 +44,12 @@ export const createProduct = async (req, res) => {
     const productData = {
       ...req.body,
       supplier: req.user._id,  // L'ID du User fournisseur connecté (utiliser _id au lieu de id)
+      // Code-barres
+      barcode: req.body.barcode || null,
+      // Image du produit (depuis code-barres)
+      imageUrl: req.body.imageUrl || null,
+      // Informations de traçabilité (AFSCA)
+      traceability: req.body.traceability || {},
       // S'assurer que superPromo et toSave sont bien structurés
       superPromo: req.body.superPromo || {
         active: false,
@@ -460,6 +467,35 @@ export const getAllProducts = async (req, res) => {
   }
 };
 
+// ✅ Obtenir un produit par ID
+export const getProductById = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    
+    const product = await Product.findById(productId)
+      .populate('supplier', 'name businessName email address');
+    
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Produit non trouvé'
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: product
+    });
+  } catch (error) {
+    console.error('Erreur lors de la récupération du produit:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la récupération du produit',
+      error: error.message
+    });
+  }
+};
+
 // ✅ Voir les produits d'un fournisseur spécifique
 export const getProductsBySupplier = async (req, res) => {
   try {
@@ -489,10 +525,80 @@ export const getProductsBySupplier = async (req, res) => {
         console.log('✅ Supplier trouvé:', {
           _id: supplier._id.toString(),
           name: supplier.name,
-          createdBy: supplier.createdBy ? supplier.createdBy.toString() : 'N/A'
+          createdBy: supplier.createdBy ? supplier.createdBy.toString() : 'N/A',
+          productsCount: supplier.products?.length || 0
         });
         
-        if (supplier.createdBy) {
+        // D'abord, vérifier si le Supplier a des produits dans son tableau products
+        if (supplier.products && supplier.products.length > 0) {
+          console.log(`📦 Supplier a ${supplier.products.length} produit(s) dans Supplier.products`);
+          
+          // Convertir les produits du Supplier en format compatible avec Product
+          products = supplier.products
+            .filter(p => p.name && p.category && p.unit && p.price !== undefined) // Filtrer les produits valides
+            .map((p, index) => {
+              // Générer un ID unique basé sur le nom et l'index pour éviter les doublons
+              // Utiliser un ObjectId valide basé sur un hash
+              const uniqueId = `${supplier._id.toString()}-${index}-${p.name.replace(/\s+/g, '-').toLowerCase()}`;
+              const hash = crypto.createHash('md5').update(uniqueId).digest('hex');
+              // Prendre les 24 premiers caractères du hash pour créer un ObjectId valide
+              const objectIdString = hash.substring(0, 24);
+              
+              // Calculer le prix avec promotion si active
+              let finalPrice = p.price;
+              let promoPrice = null;
+              if (p.promotion?.active && p.promotion.discountPercent) {
+                promoPrice = p.price * (1 - p.promotion.discountPercent / 100);
+                finalPrice = promoPrice;
+              }
+              
+              // Normaliser l'unité (Supplier utilise 'L' mais Product peut utiliser 'litre')
+              let normalizedUnit = p.unit;
+              if (p.unit === 'L') {
+                normalizedUnit = 'litre';
+              } else if (p.unit === 'ml') {
+                normalizedUnit = 'ml';
+              } else if (p.unit === 'g') {
+                normalizedUnit = 'g';
+              }
+              
+              // Créer un objet simple (pas un document Mongoose) pour la sérialisation JSON
+              const productObj = {
+                _id: objectIdString, // ID string pour la sérialisation JSON
+                name: p.name,
+                category: p.category,
+                unit: normalizedUnit,
+                price: Number(p.price),
+                stock: p.stock !== undefined && p.stock !== null ? Number(p.stock) : 0,
+                stockAlert: Math.floor((p.stock || 0) * 0.2), // Calculer un seuil d'alerte
+                active: true,
+                supplier: supplier.createdBy ? supplier.createdBy.toString() : supplierId.toString(),
+                description: `Produit de ${supplier.name}`,
+                createdAt: supplier.createdAt || new Date(),
+                // Champs requis par Product model
+                deliveryTime: 3, // Délai de livraison par défaut (3 jours)
+                minOrder: 1, // Commande minimum par défaut (1 unité)
+                // Gérer les promotions si présentes
+                promo: p.promotion?.active ? Number(p.promotion.discountPercent) : 0,
+                superPromo: p.promotion?.active && promoPrice ? {
+                  active: true,
+                  promoPrice: Number(promoPrice),
+                  promoQuantity: null,
+                  endDate: p.promotion.endDate || null
+                } : { active: false },
+                toSave: { active: false },
+                // Ajouter un flag pour indiquer que c'est un produit du Supplier
+                fromSupplierCatalog: true
+              };
+              
+              return productObj;
+            });
+          
+          console.log(`✅ ${products.length} produit(s) converti(s) depuis Supplier.products`);
+        }
+        
+        // Si toujours pas de produits, chercher via createdBy dans Product
+        if (products.length === 0 && supplier.createdBy) {
           // Convertir createdBy en ObjectId si nécessaire
           userId = typeof supplier.createdBy === 'string' 
             ? new mongoose.Types.ObjectId(supplier.createdBy)
@@ -504,8 +610,8 @@ export const getProductsBySupplier = async (req, res) => {
             active: true 
           }).sort({ createdAt: -1 });
           console.log(`✅ Produits trouvés via createdBy: ${products.length}`);
-        } else {
-          console.log('⚠️ Supplier trouvé mais createdBy est vide');
+        } else if (products.length === 0) {
+          console.log('⚠️ Supplier trouvé mais createdBy est vide et pas de produits dans Supplier.products');
         }
       } else {
         console.log('⚠️ Aucun Supplier trouvé avec ID:', supplierId);
@@ -515,20 +621,80 @@ export const getProductsBySupplier = async (req, res) => {
       console.log('✅ Produits trouvés directement, supplierId est un User ID');
     }
     
-    // Méthode 3: Si toujours rien, chercher un User avec supplierId
+    // Méthode 3: Si toujours rien, chercher un User avec supplierId OU si supplierId est un User ID
     if (products.length === 0 && !userId) {
       console.log('🔍 Méthode 3 - Recherche User avec supplierId...');
-      const user = await User.findOne({ supplierId: supplierId });
-      if (user) {
-        console.log('✅ User trouvé via supplierId:', user._id.toString());
-        userId = user._id;
-        products = await Product.find({ 
-          supplier: userId,
-          active: true 
-        }).sort({ createdAt: -1 });
-        console.log(`✅ Produits trouvés via User._id: ${products.length}`);
+      
+      // D'abord, vérifier si supplierId est un User ID
+      const userById = await User.findById(supplierId);
+      if (userById) {
+        console.log('✅ User trouvé directement avec supplierId (c\'est un User ID):', userById._id.toString());
+        userId = userById._id;
+        
+        // Si le User a un supplierId, chercher le Supplier
+        if (userById.supplierId) {
+          const supplierFromUser = await Supplier.findById(userById.supplierId);
+          if (supplierFromUser && supplierFromUser.products && supplierFromUser.products.length > 0) {
+            console.log(`📦 Supplier trouvé via User.supplierId: ${supplierFromUser.name}`);
+            console.log(`   Produits dans Supplier.products: ${supplierFromUser.products.length}`);
+            
+            // Convertir les produits du Supplier
+            products = supplierFromUser.products
+              .filter(p => p.name && p.category && p.unit && p.price !== undefined)
+              .map((p, index) => {
+                const uniqueId = `${supplierFromUser._id.toString()}-${index}-${p.name.replace(/\s+/g, '-').toLowerCase()}`;
+                const hash = crypto.createHash('md5').update(uniqueId).digest('hex');
+                const objectIdString = hash.substring(0, 24);
+                
+                let normalizedUnit = p.unit;
+                if (p.unit === 'L') normalizedUnit = 'litre';
+                
+                return {
+                  _id: objectIdString,
+                  name: p.name,
+                  category: p.category,
+                  unit: normalizedUnit,
+                  price: Number(p.price),
+                  stock: p.stock !== undefined && p.stock !== null ? Number(p.stock) : 0,
+                  stockAlert: Math.floor((p.stock || 0) * 0.2),
+                  active: true,
+                  supplier: userById._id.toString(),
+                  description: `Produit de ${supplierFromUser.name}`,
+                  createdAt: supplierFromUser.createdAt || new Date(),
+                  deliveryTime: 3,
+                  minOrder: 1,
+                  promo: p.promotion?.active ? Number(p.promotion.discountPercent) : 0,
+                  superPromo: { active: false },
+                  toSave: { active: false },
+                  fromSupplierCatalog: true
+                };
+              });
+            console.log(`✅ ${products.length} produit(s) converti(s) depuis Supplier.products`);
+          }
+        }
+        
+        // Si toujours pas de produits, chercher dans Product model
+        if (products.length === 0) {
+          products = await Product.find({ 
+            supplier: userId,
+            active: true 
+          }).sort({ createdAt: -1 });
+          console.log(`✅ Produits trouvés via User._id dans Product model: ${products.length}`);
+        }
       } else {
-        console.log('⚠️ Aucun User trouvé avec supplierId:', supplierId);
+        // Si pas trouvé comme User ID, chercher un User avec supplierId
+        const user = await User.findOne({ supplierId: supplierId });
+        if (user) {
+          console.log('✅ User trouvé via supplierId:', user._id.toString());
+          userId = user._id;
+          products = await Product.find({ 
+            supplier: userId,
+            active: true 
+          }).sort({ createdAt: -1 });
+          console.log(`✅ Produits trouvés via User._id: ${products.length}`);
+        } else {
+          console.log('⚠️ Aucun User trouvé avec supplierId:', supplierId);
+        }
       }
     }
     
@@ -537,8 +703,9 @@ export const getProductsBySupplier = async (req, res) => {
       console.log(`   User ID utilisé: ${userId.toString()}`);
     }
     
-    // Log pour vérifier les promotions
+    // Log pour vérifier les promotions et le format des produits
     if (products.length > 0) {
+      console.log(`📊 Exemple de produit converti:`, JSON.stringify(products[0], null, 2));
       products.forEach(product => {
         if (product.superPromo?.active || product.toSave?.active) {
           console.log(`📊 Produit avec promotion: ${product.name}`, {
@@ -547,6 +714,8 @@ export const getProductsBySupplier = async (req, res) => {
           });
         }
       });
+    } else {
+      console.log(`⚠️  AUCUN PRODUIT TROUVÉ pour supplierId: ${supplierId}`);
     }
 
     res.json({
@@ -635,8 +804,35 @@ export const updateProduct = async (req, res) => {
     }
     
     // Mettre à jour les autres champs (sauf superPromo et toSave qui sont déjà gérés)
-    const { superPromo, toSave, ...otherFields } = req.body;
+    const { superPromo, toSave, traceability, barcode, imageUrl, ...otherFields } = req.body;
     Object.assign(product, otherFields);
+    
+    // Mettre à jour le code-barres
+    if (barcode !== undefined) {
+      product.barcode = barcode || null;
+    }
+    
+    // Mettre à jour l'image
+    if (imageUrl !== undefined) {
+      product.imageUrl = imageUrl || null;
+    }
+    
+    // Mettre à jour les informations de traçabilité
+    if (traceability) {
+      product.traceability = {
+        countryOfOrigin: traceability.countryOfOrigin || product.traceability?.countryOfOrigin || '',
+        batchNumber: traceability.batchNumber || product.traceability?.batchNumber || '',
+        traceabilityNumber: traceability.traceabilityNumber || product.traceability?.traceabilityNumber || '',
+        healthStamp: traceability.healthStamp || product.traceability?.healthStamp || '',
+        commercialPresentation: traceability.commercialPresentation || product.traceability?.commercialPresentation || '',
+        category: traceability.category || product.traceability?.category || '',
+        class: traceability.class || product.traceability?.class || '',
+        qualityLabel: traceability.qualityLabel || product.traceability?.qualityLabel || { hasLabel: false, labelType: '' },
+        productionDate: traceability.productionDate ? new Date(traceability.productionDate) : (product.traceability?.productionDate || null),
+        useByDate: traceability.useByDate ? new Date(traceability.useByDate) : (product.traceability?.useByDate || null),
+        bestBeforeDate: traceability.bestBeforeDate ? new Date(traceability.bestBeforeDate) : (product.traceability?.bestBeforeDate || null)
+      };
+    }
     
     // Conserver les superPromo et toSave déjà traités
     // (ils sont déjà mis à jour dans les blocs if précédents)

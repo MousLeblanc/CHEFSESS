@@ -718,7 +718,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Vérifier si l'utilisateur est authentifié
             const token = localStorage.getItem('token');
-            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+            const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
             
             if (!token || !user) {
                 // Rediriger vers la page de login

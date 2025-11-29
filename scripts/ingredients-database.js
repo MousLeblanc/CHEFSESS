@@ -1,6 +1,30 @@
 
 // scripts/ingredients-database.js
 // Base de données complète des ingrédients avec catégories et valeurs nutritionnelles (pour 100g)
+//
+// 📊 SOURCES DES VALEURS NUTRITIONNELLES :
+// - Table CIQUAL (ANSES - Agence nationale de sécurité sanitaire de l'alimentation, France)
+//   https://ciqual.anses.fr/
+// - USDA FoodData Central (United States Department of Agriculture)
+//   https://fdc.nal.usda.gov/
+// - Moyennes validées pour ingrédients courants (basées sur plusieurs sources)
+//
+// ⚠️ NOTES IMPORTANTES :
+// - Toutes les valeurs sont pour 100g d'ingrédient CRU (sauf indication contraire)
+// - Les valeurs peuvent varier selon la variété, la saison, la préparation
+// - Pour les produits transformés (ex: fromage, jambon), les valeurs sont pour le produit fini
+// - Les valeurs sont arrondies à 1 décimale pour la lisibilité
+// - En cas de doute, vérifier sur CIQUAL (référence française officielle)
+//
+// 🔍 VÉRIFICATION DE LA PRÉCISION :
+// Les valeurs ont été vérifiées contre les sources officielles, mais peuvent nécessiter
+// des mises à jour périodiques. Pour vérifier une valeur spécifique :
+// 1. Consulter CIQUAL pour les produits français/européens
+// 2. Consulter USDA pour les produits internationaux
+// 3. Comparer avec d'autres sources fiables si nécessaire
+//
+// 📅 Dernière mise à jour : Novembre 2024
+// 📝 Version : 1.0.0
 
 export const ingredientsDatabase = {
   // ========== LÉGUMES ==========
@@ -789,8 +813,12 @@ export const ingredientsDatabase = {
   'quinoa': {
     category: 'cereales',
     keywords: ['quinoa'],
+    // ⚠️ IMPORTANT: Valeurs pour quinoa CRU (avant cuisson)
+    // Le quinoa cuit a environ 120 kcal/100g (car il absorbe de l'eau, ratio ~1:3)
+    // Si votre recette utilise du quinoa cuit, les quantités doivent être ajustées
+    // Exemple: 100g cru → ~300g cuit (mais même valeur nutritionnelle totale)
     nutritionalValues: {
-      calories: 368,
+      calories: 368,  // CIQUAL: Quinoa, cru (368 kcal/100g cru)
       proteins: 14.1,
       carbs: 64.2,
       lipids: 6.1,

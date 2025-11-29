@@ -1,5 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import Supplier from '../models/Supplier.js';
+import Order from '../models/Order.js';
+import User from '../models/User.js';
 
 // @desc    Récupérer tous les fournisseurs
 // @route   GET /api/suppliers
@@ -192,6 +194,21 @@ const getMySupplier = asyncHandler(async (req, res) => {
 // @route   PUT /api/suppliers/me
 // @access  Private
 const updateMySupplier = asyncHandler(async (req, res) => {
+  // Gérer le champ freeDelivery si présent
+  if (req.body.freeDelivery !== undefined) {
+    // S'assurer que freeDelivery a la bonne structure
+    if (typeof req.body.freeDelivery === 'object') {
+      // Valider et nettoyer les données
+      const freeDelivery = {
+        enabled: req.body.freeDelivery.enabled || false,
+        threshold: req.body.freeDelivery.enabled && req.body.freeDelivery.threshold 
+          ? parseFloat(req.body.freeDelivery.threshold) 
+          : null,
+        currency: req.body.freeDelivery.currency || 'EUR'
+      };
+      req.body.freeDelivery = freeDelivery;
+    }
+  }
   console.log('\n💾 ===== UPDATE MY SUPPLIER =====');
   console.log('👤 User _id:', req.user._id);
   console.log('👤 User supplierId:', req.user.supplierId);
@@ -234,12 +251,24 @@ const updateMySupplier = asyncHandler(async (req, res) => {
         ...req.body
       };
       
-      // Nettoyer les deliveryZones (supprimer les valeurs undefined)
+      // Nettoyer les deliveryZones (supprimer les valeurs undefined, préserver les deliveryRules)
       if (supplierData.deliveryZones) {
         supplierData.deliveryZones = supplierData.deliveryZones.map(zone => {
           const cleanZone = {};
           if (zone.city && zone.city.trim()) cleanZone.city = zone.city.trim();
           if (zone.postalCode && zone.postalCode.trim()) cleanZone.postalCode = zone.postalCode.trim();
+          // Préserver les règles de livraison si présentes
+          if (zone.deliveryRules) {
+            cleanZone.deliveryRules = {
+              freeDeliveryThreshold: zone.deliveryRules.freeDeliveryThreshold && zone.deliveryRules.freeDeliveryThreshold > 0 
+                ? parseFloat(zone.deliveryRules.freeDeliveryThreshold) 
+                : null,
+              deliveryFee: zone.deliveryRules.deliveryFee && zone.deliveryRules.deliveryFee > 0 
+                ? parseFloat(zone.deliveryRules.deliveryFee) 
+                : 0,
+              currency: zone.deliveryRules.currency || 'EUR'
+            };
+          }
           return cleanZone;
         }).filter(zone => zone.city || zone.postalCode);
       }
@@ -250,12 +279,24 @@ const updateMySupplier = asyncHandler(async (req, res) => {
       console.log('📝 Mise à jour du Supplier existant...');
       console.log('   - deliveryZones avant:', JSON.stringify(supplier.deliveryZones, null, 2));
       
-      // Nettoyer les deliveryZones avant assignation
+      // Nettoyer les deliveryZones avant assignation (préserver les deliveryRules)
       if (req.body.deliveryZones) {
         req.body.deliveryZones = req.body.deliveryZones.map(zone => {
           const cleanZone = {};
           if (zone.city && zone.city.trim()) cleanZone.city = zone.city.trim();
           if (zone.postalCode && zone.postalCode.trim()) cleanZone.postalCode = zone.postalCode.trim();
+          // Préserver les règles de livraison si présentes
+          if (zone.deliveryRules) {
+            cleanZone.deliveryRules = {
+              freeDeliveryThreshold: zone.deliveryRules.freeDeliveryThreshold && zone.deliveryRules.freeDeliveryThreshold > 0 
+                ? parseFloat(zone.deliveryRules.freeDeliveryThreshold) 
+                : null,
+              deliveryFee: zone.deliveryRules.deliveryFee && zone.deliveryRules.deliveryFee > 0 
+                ? parseFloat(zone.deliveryRules.deliveryFee) 
+                : 0,
+              currency: zone.deliveryRules.currency || 'EUR'
+            };
+          }
           return cleanZone;
         }).filter(zone => zone.city || zone.postalCode);
       }
@@ -406,6 +447,164 @@ const getSupplierStats = asyncHandler(async (req, res) => {
       overview: stats[0] || { total: 0, active: 0, inactive: 0, suspended: 0, avgRating: 0 },
       categories: categoryStats
     }
+  });
+});
+
+// @desc    Obtenir les statistiques du fournisseur connecté
+// @route   GET /api/supplier/stats
+// @access  Private (fournisseur)
+const getMySupplierStats = asyncHandler(async (req, res) => {
+  console.log('\n📊 ===== GET MY SUPPLIER STATS =====');
+  console.log('👤 User ID:', req.user._id);
+  console.log('👤 User role:', req.user.role);
+  
+  // Vérifier que l'utilisateur est un fournisseur
+  if (req.user.role !== 'fournisseur') {
+    res.status(403);
+    throw new Error('Accès réservé aux fournisseurs');
+  }
+  
+  // Construire la requête pour trouver les commandes du fournisseur
+  const orderQuery = {
+    $or: [
+      { supplier: req.user._id },
+      ...(req.user.supplierId ? [{ supplier: req.user.supplierId }] : [])
+    ]
+  };
+  
+  // Compter les produits actifs
+  const Product = (await import('../models/Product.js')).default;
+  const activeProducts = await Product.countDocuments({
+    supplier: req.user._id,
+    active: true
+  });
+  
+  // Compter les commandes en attente
+  const pendingOrders = await Order.countDocuments({
+    ...orderQuery,
+    status: 'pending'
+  });
+  
+  // Compter les clients actifs (clients uniques qui ont passé au moins une commande)
+  const uniqueClients = await Order.distinct('customer', orderQuery);
+  const activeClients = uniqueClients.length;
+  
+  // Compter le total des commandes
+  const totalOrders = await Order.countDocuments(orderQuery);
+  
+  // Calculer le montant total des commandes
+  const totalAmountResult = await Order.aggregate([
+    { $match: orderQuery },
+    {
+      $group: {
+        _id: null,
+        totalAmount: { $sum: '$pricing.total' }
+      }
+    }
+  ]);
+  const totalAmount = totalAmountResult[0]?.totalAmount || 0;
+  
+  console.log(`✅ Statistiques calculées:`, {
+    activeProducts,
+    pendingOrders,
+    activeClients,
+    totalOrders,
+    totalAmount
+  });
+  
+  res.json({
+    success: true,
+    activeProducts,
+    pendingOrders,
+    activeClients,
+    totalOrders,
+    totalAmount: totalAmount.toFixed(2)
+  });
+});
+
+// @desc    Obtenir les clients du fournisseur avec leurs statistiques
+// @route   GET /api/suppliers/clients
+// @access  Private (fournisseur)
+const getSupplierClients = asyncHandler(async (req, res) => {
+  console.log('\n👥 ===== GET SUPPLIER CLIENTS =====');
+  console.log('👤 User ID:', req.user._id);
+  console.log('👤 User role:', req.user.role);
+  
+  // Vérifier que l'utilisateur est un fournisseur
+  if (req.user.role !== 'fournisseur') {
+    res.status(403);
+    throw new Error('Accès réservé aux fournisseurs');
+  }
+  
+  // Construire la requête pour trouver les commandes du fournisseur
+  const query = {
+    $or: [
+      { supplier: req.user._id },
+      ...(req.user.supplierId ? [{ supplier: req.user.supplierId }] : [])
+    ]
+  };
+  
+  // Agrégation pour obtenir les statistiques par client
+  const clientsStats = await Order.aggregate([
+    { $match: query },
+    {
+      $group: {
+        _id: '$customer',
+        totalOrders: { $sum: 1 },
+        totalAmount: { $sum: '$pricing.total' },
+        pendingOrders: {
+          $sum: { $cond: [{ $eq: ['$status', 'pending'] }, 1, 0] }
+        },
+        confirmedOrders: {
+          $sum: { $cond: [{ $eq: ['$status', 'confirmed'] }, 1, 0] }
+        },
+        deliveredOrders: {
+          $sum: { $cond: [{ $eq: ['$status', 'delivered'] }, 1, 0] }
+        },
+        lastOrderDate: { $max: '$createdAt' },
+        firstOrderDate: { $min: '$createdAt' }
+      }
+    },
+    { $sort: { totalAmount: -1 } } // Trier par montant total décroissant
+  ]);
+  
+  // Récupérer les informations des clients
+  const clientIds = clientsStats.map(stat => stat._id);
+  const clients = await User.find({ _id: { $in: clientIds } })
+    .select('name businessName email phone address siteId')
+    .lean();
+  
+  // Créer un map pour accès rapide
+  const clientsMap = new Map(clients.map(c => [c._id.toString(), c]));
+  
+  // Combiner les statistiques avec les informations des clients
+  const clientsWithStats = clientsStats.map(stat => {
+    const client = clientsMap.get(stat._id.toString());
+    return {
+      clientId: stat._id,
+      clientName: client?.businessName || client?.name || 'Client inconnu',
+      clientEmail: client?.email || '',
+      clientPhone: client?.phone || '',
+      clientAddress: client?.address || null,
+      siteId: client?.siteId || null,
+      statistics: {
+        totalOrders: stat.totalOrders,
+        totalAmount: stat.totalAmount.toFixed(2),
+        pendingOrders: stat.pendingOrders,
+        confirmedOrders: stat.confirmedOrders,
+        deliveredOrders: stat.deliveredOrders,
+        lastOrderDate: stat.lastOrderDate,
+        firstOrderDate: stat.firstOrderDate
+      }
+    };
+  });
+  
+  console.log(`✅ ${clientsWithStats.length} client(s) trouvé(s)`);
+  
+  res.json({
+    success: true,
+    count: clientsWithStats.length,
+    data: clientsWithStats
   });
 });
 
@@ -813,5 +1012,7 @@ export {
   updateMySupplier,
   deleteSupplier,
   getSupplierStats,
+  getMySupplierStats,
+  getSupplierClients,
   seedSuppliers
 };

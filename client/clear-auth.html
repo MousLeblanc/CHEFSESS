@@ -75,8 +75,11 @@
                 });
                 status.innerHTML += '✅ Cookies nettoyés<br>';
                 
+                // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+                const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+                
                 // 4. Appeler l'API de logout
-                fetch('/api/auth/logout', {
+                fetchFn('/api/auth/logout', {
                     method: 'POST',
                     credentials: 'include'
                 }).then(() => {

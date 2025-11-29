@@ -22,6 +22,7 @@ import stockRoutes from "./routes/stockRoutes.js";
 import planningRoutes from "./routes/planningRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import supplierRoutes from "./routes/supplierRoutes.js";
+import supplierStatsRoutes from "./routes/supplierStatsRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import restaurantRoutes from "./routes/restaurantRoutes.js";
@@ -39,6 +40,14 @@ import customMenuRoutes from "./routes/customMenuRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import foodCostRoutes from "./routes/foodCostRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
+import complianceRoutes from "./routes/complianceRoutes.js";
+import nutritionalBalanceRoutes from "./routes/nutritionalBalanceRoutes.js";
+import recipeComponentRoutes from "./routes/recipeComponentRoutes.js";
+import recipeTemplateRoutes from "./routes/recipeTemplateRoutes.js";
+import modularMenuRoutes from "./routes/modularMenuRoutes.js";
+import customerOrderRoutes from "./routes/customerOrderRoutes.js";
+import deliveryReceiptRoutes from "./routes/deliveryReceiptRoutes.js";
+import barcodeRoutes from "./routes/barcodeRoutes.js";
 
 // --- OpenAI client ---
 import openai from "./services/openaiClient.js";
@@ -180,6 +189,7 @@ app.use("/api/stock", stockRoutes);
 app.use("/api/planning", planningRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/suppliers", supplierRoutes);
+app.use("/api/supplier", supplierStatsRoutes); // Route pour les statistiques du fournisseur connecté
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/restaurants", restaurantRoutes);
@@ -197,6 +207,14 @@ app.use("/api/init", initRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/foodcost", foodCostRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/compliance", complianceRoutes);
+app.use("/api/nutritional-balance", nutritionalBalanceRoutes);
+app.use("/api/recipe-components", recipeComponentRoutes);
+app.use("/api/recipe-templates", recipeTemplateRoutes);
+app.use("/api/menu-modular", modularMenuRoutes);
+app.use("/api/customer-orders", customerOrderRoutes);
+app.use("/api/delivery-receipts", deliveryReceiptRoutes);
+app.use("/api/barcode", barcodeRoutes);
 
 // === HEALTH CHECK ===
 app.get("/api/health", (req, res) => {
@@ -251,13 +269,49 @@ app.get("*", (req, res, next) => {
 
 // === CONNEXION MONGODB ===
 const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/chef-ses";
-mongoose.connect(mongoUri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 10000,
-})
-  .then(() => console.log("✅ Connecté à MongoDB"))
-  .catch((err) => console.error("❌ Erreur MongoDB:", err.message));
+
+console.log(`🔌 Tentative de connexion à MongoDB...`);
+console.log(`   URI: ${mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')}`); // Masquer les credentials
+
+// Configuration de la connexion MongoDB
+const mongooseOptions = {
+  serverSelectionTimeoutMS: 30000, // Augmenter à 30 secondes
+  socketTimeoutMS: 45000,
+  connectTimeoutMS: 30000,
+  maxPoolSize: 10,
+  minPoolSize: 1,
+};
+
+mongoose.connect(mongoUri, mongooseOptions)
+  .then(() => {
+    console.log("✅ Connecté à MongoDB");
+    console.log(`   Base de données: ${mongoose.connection.name}`);
+    console.log(`   Host: ${mongoose.connection.host}:${mongoose.connection.port}`);
+    
+    // Gérer les événements de connexion
+    mongoose.connection.on('error', (err) => {
+      console.error('❌ Erreur MongoDB:', err);
+    });
+    
+    mongoose.connection.on('disconnected', () => {
+      console.warn('⚠️ MongoDB déconnecté');
+    });
+    
+    mongoose.connection.on('reconnected', () => {
+      console.log('✅ MongoDB reconnecté');
+    });
+  })
+  .catch((err) => {
+    console.error("❌ Erreur de connexion MongoDB:");
+    console.error(`   Message: ${err.message}`);
+    console.error(`   Code: ${err.code || 'N/A'}`);
+    console.error(`   URI utilisée: ${mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')}`);
+    console.error('\n💡 Vérifications à faire:');
+    console.error('   1. MongoDB est-il démarré ? (netstat -an | findstr :27017)');
+    console.error('   2. L\'URI MongoDB est-elle correcte ?');
+    console.error('   3. Les permissions sont-elles correctes ?');
+    console.error('   4. Le firewall bloque-t-il la connexion ?\n');
+  });
 
 // === GESTIONNAIRE D’ERREURS ===
 app.use(errorHandler);

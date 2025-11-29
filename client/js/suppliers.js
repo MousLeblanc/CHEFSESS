@@ -19,8 +19,8 @@ class RestaurantSupplierManager {
     }
 
     async init() {
-        // Vérifier l'authentification et le rôle
-        const user = JSON.parse(sessionStorage.getItem('user') || 'null');
+        // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+        const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
         if (!user || (user.role !== 'resto' && user.role !== 'collectivite')) {
             window.location.href = 'index.html';
             return;
@@ -952,21 +952,60 @@ class RestaurantSupplierManager {
         }
     }
     
-    showCart() {
+    async showCart() {
         if (this.cart.length === 0) {
             this.showToast('Votre panier est vide', 'info');
             return;
         }
         
-        // Calculer le total
-        const total = this.cart.reduce((sum, item) => sum + item.total, 0);
+        // Récupérer les informations du site
+        let siteCity = '';
+        let sitePostalCode = '';
+        try {
+            // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+            const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+            if (user?.siteId) {
+                const siteResponse = await fetch(`/api/sites/${user.siteId}`, {
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (siteResponse.ok) {
+                    const site = await siteResponse.json();
+                    siteCity = site.address?.city || '';
+                    sitePostalCode = site.address?.postalCode || '';
+                }
+            }
+        } catch (error) {
+            console.warn('⚠️ Impossible de récupérer les infos du site:', error);
+        }
+        
+        // Calculer le total des produits
+        const productsTotal = this.cart.reduce((sum, item) => sum + item.total, 0);
+        
+        // Grouper les articles par fournisseur et calculer les frais de livraison
+        const suppliersInCart = [...new Set(this.cart.map(item => item.supplierId))];
+        const deliveryFees = {};
+        let totalDeliveryFees = 0;
+        
+        // Calculer les frais pour chaque fournisseur
+        for (const supplierId of suppliersInCart) {
+            const supplierTotal = this.cart
+                .filter(item => item.supplierId === supplierId)
+                .reduce((sum, item) => sum + item.total, 0);
+            
+            const deliveryInfo = await this.calculateDeliveryFee(supplierId, siteCity, sitePostalCode, supplierTotal);
+            deliveryFees[supplierId] = deliveryInfo;
+            totalDeliveryFees += deliveryInfo.fee;
+        }
+        
+        const grandTotal = productsTotal + totalDeliveryFees;
         
         // Créer la modal du panier
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'cart-modal';
         modal.innerHTML = `
-            <div class="modal-content order-modal" style="max-width: 800px;">
+            <div class="modal-content order-modal" style="max-width: 900px;">
                 <div class="modal-header">
                     <h2><i class="fas fa-shopping-cart"></i> Mon Panier</h2>
                     <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
@@ -1010,8 +1049,29 @@ class RestaurantSupplierManager {
                         </tbody>
                         <tfoot>
                             <tr style="border-top: 2px solid #ddd;">
+                                <td colspan="4" style="text-align: right; padding: 0.75rem; font-weight: bold;">Sous-total produits:</td>
+                                <td style="text-align: right; padding: 0.75rem; font-weight: bold;">${productsTotal.toFixed(2)}€</td>
+                                <td></td>
+                            </tr>
+                            ${Object.entries(deliveryFees).map(([supplierId, info]) => {
+                                const supplierName = this.cart.find(item => item.supplierId === supplierId)?.supplierName || 'Fournisseur';
+                                return `
+                                    <tr style="border-top: 1px solid #eee;">
+                                        <td colspan="4" style="text-align: right; padding: 0.75rem; font-size: 0.9rem; color: #555;">
+                                            <i class="fas fa-truck" style="margin-right: 0.5rem; color: #3498db;"></i>
+                                            Livraison ${supplierName}:
+                                            <br><small style="font-size: 0.8rem; color: #7f8c8d;">${info.message}</small>
+                                        </td>
+                                        <td style="text-align: right; padding: 0.75rem; font-weight: bold; color: ${info.fee === 0 ? '#27ae60' : '#e67e22'};">
+                                            ${info.fee === 0 ? 'Gratuit' : `${info.fee.toFixed(2)}€`}
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                            <tr style="border-top: 2px solid #ddd; background: #f8f9fa;">
                                 <td colspan="4" style="text-align: right; padding: 1rem; font-weight: bold; font-size: 1.2rem;">Total général:</td>
-                                <td style="text-align: right; padding: 1rem; font-weight: bold; font-size: 1.2rem; color: #27ae60;">${total.toFixed(2)}€</td>
+                                <td style="text-align: right; padding: 1rem; font-weight: bold; font-size: 1.2rem; color: #27ae60;">${grandTotal.toFixed(2)}€</td>
                                 <td></td>
                             </tr>
                         </tfoot>
@@ -1045,6 +1105,128 @@ class RestaurantSupplierManager {
         const deliveryDate = new Date();
         deliveryDate.setDate(deliveryDate.getDate() + 3);
         document.getElementById('cart-delivery-date').value = deliveryDate.toISOString().split('T')[0];
+    }
+    
+    async calculateDeliveryFee(supplierId, siteCity, sitePostalCode, orderTotal) {
+        try {
+            const response = await fetch(`/api/suppliers/${supplierId}`, {
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (!response.ok) {
+                console.warn(`⚠️ Impossible de récupérer les infos du fournisseur ${supplierId}`);
+                return { fee: 0, message: 'Information non disponible' };
+            }
+            
+            const result = await response.json();
+            const supplier = result.data;
+            
+            if (!supplier || !supplier.deliveryZones || supplier.deliveryZones.length === 0) {
+                return { fee: 0, message: 'Pas de zone de livraison définie' };
+            }
+            
+            // Normaliser les noms de villes (gérer les accents et variations)
+            const normalizeCityName = (city) => {
+                if (!city) return '';
+                return city.toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '') // Enlever les accents
+                    .trim();
+            };
+            
+            // Mappings pour les variations de noms de villes
+            const cityMappings = {
+                'bruxelles': ['brussels', 'bruxelles', 'brussel'],
+                'brussels': ['brussels', 'bruxelles', 'brussel'],
+                'brussel': ['brussels', 'bruxelles', 'brussel'],
+                'anvers': ['antwerp', 'anvers', 'antwerpen'],
+                'antwerp': ['antwerp', 'anvers', 'antwerpen'],
+                'antwerpen': ['antwerp', 'anvers', 'antwerpen'],
+                'gand': ['ghent', 'gand', 'gent'],
+                'ghent': ['ghent', 'gand', 'gent'],
+                'gent': ['ghent', 'gand', 'gent'],
+                'liege': ['liege', 'luik'],
+                'luik': ['liege', 'luik'],
+                'charleroi': ['charleroi'],
+                'namur': ['namur', 'namen'],
+                'namen': ['namur', 'namen'],
+                'brugge': ['brugge', 'bruges'],
+                'bruges': ['brugge', 'bruges'],
+                'oostende': ['oostende', 'ostende', 'ostend'],
+                'ostende': ['oostende', 'ostende', 'ostend'],
+                'ostend': ['oostende', 'ostende', 'ostend']
+            };
+            
+            const getCityVariations = (city) => {
+                const normalized = normalizeCityName(city);
+                return cityMappings[normalized] || [normalized];
+            };
+            
+            // Trouver la zone de livraison correspondante
+            console.log(`🔍 Recherche zone pour site: ${siteCity} (${sitePostalCode})`);
+            console.log(`📦 Zones disponibles:`, supplier.deliveryZones.map(z => `${z.city} (${z.postalCode || 'N/A'})`));
+            
+            const matchingZone = supplier.deliveryZones.find(zone => {
+                // Vérifier par code postal d'abord (plus précis)
+                if (sitePostalCode && zone.postalCode) {
+                    const match = zone.postalCode.trim() === sitePostalCode.trim();
+                    if (match) console.log(`✅ Correspondance par code postal: ${zone.postalCode}`);
+                    return match;
+                }
+                
+                // Sinon vérifier par ville (avec variations)
+                if (siteCity && zone.city) {
+                    const siteCityNormalized = normalizeCityName(siteCity);
+                    const zoneCityNormalized = normalizeCityName(zone.city);
+                    const siteCityVariations = getCityVariations(siteCity);
+                    const zoneCityVariations = getCityVariations(zone.city);
+                    
+                    // Vérifier si les villes correspondent (directement ou via variations)
+                    const match = siteCityNormalized === zoneCityNormalized ||
+                                 siteCityVariations.some(v => zoneCityVariations.includes(v)) ||
+                                 zoneCityVariations.some(v => siteCityVariations.includes(v));
+                    
+                    if (match) {
+                        console.log(`✅ Correspondance par ville: ${zone.city} (site: ${siteCity})`);
+                    }
+                    return match;
+                }
+                
+                return false;
+            });
+            
+            if (!matchingZone) {
+                console.warn(`⚠️ Aucune zone trouvée pour ${siteCity} (${sitePostalCode})`);
+                return { fee: 0, message: 'Zone non couverte' };
+            }
+            
+            if (!matchingZone.deliveryRules) {
+                console.warn(`⚠️ Zone trouvée mais pas de règles de livraison: ${matchingZone.city}`);
+                return { fee: 0, message: 'Pas de règles de livraison définies pour cette zone' };
+            }
+            
+            const rules = matchingZone.deliveryRules;
+            
+            if (rules.freeDeliveryThreshold && orderTotal >= rules.freeDeliveryThreshold) {
+                return { 
+                    fee: 0, 
+                    message: `Livraison gratuite (commande ≥ ${rules.freeDeliveryThreshold}€)`,
+                    threshold: rules.freeDeliveryThreshold
+                };
+            } else {
+                return { 
+                    fee: rules.deliveryFee || 0, 
+                    message: rules.freeDeliveryThreshold 
+                        ? `Frais de livraison: ${rules.deliveryFee || 0}€ (gratuit à partir de ${rules.freeDeliveryThreshold}€)`
+                        : `Frais de livraison: ${rules.deliveryFee || 0}€`,
+                    threshold: rules.freeDeliveryThreshold
+                };
+            }
+        } catch (error) {
+            console.error('❌ Erreur calcul frais livraison:', error);
+            return { fee: 0, message: 'Erreur de calcul' };
+        }
     }
     
     updateCartItemQuantity(index, newQuantity) {

@@ -8,9 +8,11 @@ import {
   updateMySupplier,
   deleteSupplier,
   getSupplierStats,
+  getMySupplierStats,
+  getSupplierClients,
   seedSuppliers
 } from '../controllers/supplierController.js';
-import { compareSuppliersProducts } from '../controllers/supplierComparisonController.js';
+import { compareSuppliersProducts, compareAllSuppliersProducts } from '../controllers/supplierComparisonController.js';
 import { createRating, getSupplierRatings, getSiteRatings } from '../controllers/supplierRatingController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -27,6 +29,9 @@ router.route('/')
 router.route('/stats')
   .get(getSupplierStats);
 
+router.route('/clients')
+  .get(getSupplierClients);
+
 router.route('/seed')
   .post(seedSuppliers);
 
@@ -36,6 +41,7 @@ router.route('/me')
 
 // Routes de comparaison et notation (doivent être avant /:id pour éviter les conflits)
 router.get('/compare', compareSuppliersProducts);
+router.get('/compare-all', compareAllSuppliersProducts); // Comparaison globale pour admin
 router.post('/ratings', createRating);
 router.get('/ratings/supplier/:supplierId', getSupplierRatings);
 router.get('/ratings/site', getSiteRatings);

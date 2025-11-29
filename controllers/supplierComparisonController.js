@@ -186,6 +186,237 @@ export const compareSuppliersProducts = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Comparer tous les produits similaires entre tous les fournisseurs (sans filtre par site)
+ * Pour la page admin du groupe
+ */
+export const compareAllSuppliersProducts = asyncHandler(async (req, res) => {
+  try {
+    // Vérifier les permissions (admin ou group admin)
+    const isAdmin = req.user.role === 'admin' || 
+                    req.user.role === 'groupe' ||
+                    req.user.role === 'GROUP_ADMIN' ||
+                    (req.user.roles && (req.user.roles.includes('admin') || req.user.roles.includes('GROUP_ADMIN')));
+    
+    if (!isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Accès refusé. Seuls les administrateurs peuvent voir la comparaison globale des prix.'
+      });
+    }
+
+    // Récupérer tous les produits de tous les fournisseurs
+    const allProducts = await Product.find({ active: true })
+      .populate('supplier', 'businessName name email address supplierId')
+      .lean();
+
+    // Récupérer tous les Suppliers avec leurs produits
+    const allSuppliers = await Supplier.find({ status: 'active' })
+      .select('_id name products createdBy')
+      .lean();
+
+    // Créer un map pour associer User._id -> Supplier
+    const userToSupplierMap = new Map();
+    allSuppliers.forEach(supplier => {
+      if (supplier.createdBy) {
+        userToSupplierMap.set(supplier.createdBy.toString(), supplier);
+      }
+    });
+
+    // Fonction pour normaliser le nom d'un produit pour le regroupement intelligent
+    const normalizeProductKey = (name, category, unit) => {
+      const normalized = name.toLowerCase().trim();
+      
+      // Pour les viandes, regrouper par type de viande et partie
+      if (category === 'viandes') {
+        // Extraire le type de viande (français, anglais, néerlandais)
+        const meatTypes = {
+          'poulet': ['poulet', 'chicken', 'volaille', 'kip', 'kippen', 'poulet'],
+          'boeuf': ['boeuf', 'bœuf', 'beef', 'vache', 'rund', 'rundvlees', 'rundsvlees'],
+          'porc': ['porc', 'pork', 'cochon', 'varken', 'varkensvlees'],
+          'agneau': ['agneau', 'mouton', 'lamb', 'sheep', 'lam', 'lamvlees', 'schaap', 'schapenvlees'],
+          'veau': ['veau', 'veal', 'kalf', 'kalfsvlees'],
+          'dinde': ['dinde', 'turkey', 'kalkoen', 'kalkoenvlees'],
+          'canard': ['canard', 'duck', 'eend', 'eendenvlees']
+        };
+        
+        // Extraire la partie/coupe (français, anglais, néerlandais)
+        const cuts = {
+          'cuisse': ['cuisse', 'cuisses', 'thigh', 'leg', 'dij', 'dijen', 'bout', 'bouten', 'kippenbout', 'kippenbouten', 'dijfilet'],
+          'filet': ['filet', 'filets', 'fillet', 'filet', 'filets', 'haasje'],
+          'hache': ['haché', 'hache', 'hachée', 'minced', 'ground', 'gehakt'],
+          'steak': ['steak', 'steaks', 'biefstuk', 'biefstukken'],
+          'cote': ['côte', 'cote', 'côtes', 'cotes', 'rib', 'ribs', 'ribbetjes', 'ribben'],
+          'epaule': ['épaule', 'epaule', 'shoulder', 'schouder'],
+          'gigot': ['gigot', 'leg', 'bout', 'bouten'],
+          'rôti': ['rôti', 'roti', 'roast', 'gebraad'],
+          'escalope': ['escalope', 'escalopes', 'cutlet', 'schnitzel', 'schnitzels'],
+          'poitrine': ['poitrine', 'breast', 'borst', 'borstfilet', 'kippenborst'],
+          'aile': ['aile', 'ailes', 'wing', 'wings', 'vleugel', 'vleugels', 'kippenvleugel']
+        };
+        
+        let meatType = null;
+        let cut = null;
+        
+        // Identifier le type de viande
+        for (const [type, variants] of Object.entries(meatTypes)) {
+          if (variants.some(v => normalized.includes(v))) {
+            meatType = type;
+            break;
+          }
+        }
+        
+        // Identifier la partie/coupe
+        for (const [cutName, variants] of Object.entries(cuts)) {
+          if (variants.some(v => normalized.includes(v))) {
+            cut = cutName;
+            break;
+          }
+        }
+        
+        // Si on a identifié le type et la partie, créer une clé normalisée
+        if (meatType && cut) {
+          return `${meatType}_${cut}_${category}_${unit}`;
+        } else if (meatType) {
+          // Si seulement le type est identifié, regrouper par type
+          return `${meatType}_${category}_${unit}`;
+        }
+      }
+      
+      // Pour les autres catégories ou si la normalisation n'a pas fonctionné, utiliser le nom normalisé
+      const normalizedName = normalized
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Supprimer les accents
+        .replace(/[^a-z0-9\s]/g, '') // Supprimer les caractères spéciaux
+        .replace(/\s+/g, ' '); // Normaliser les espaces
+      
+      return `${normalizedName}_${category}_${unit}`;
+    };
+
+    // Grouper les produits similaires par nom, catégorie et unité
+    const productGroups = new Map();
+
+    // Ajouter les produits du modèle Product
+    allProducts.forEach(product => {
+      const key = normalizeProductKey(product.name, product.category, product.unit);
+      if (!productGroups.has(key)) {
+        productGroups.set(key, []);
+      }
+      
+      // Calculer le prix final (avec promotions)
+      let finalPrice = product.price;
+      if (product.superPromo?.active && product.superPromo.promoPrice) {
+        finalPrice = product.superPromo.promoPrice;
+      } else if (product.toSave?.active && product.toSave.savePrice) {
+        finalPrice = product.toSave.savePrice;
+      } else if (product.promo && product.promo > 0) {
+        finalPrice = product.price * (1 - product.promo / 100);
+      }
+      
+      productGroups.get(key).push({
+        ...product,
+        source: 'Product',
+        supplierId: product.supplier?._id?.toString() || product.supplier?.supplierId?.toString(),
+        supplierName: product.supplier?.businessName || product.supplier?.name || 'Fournisseur',
+        finalPrice
+      });
+    });
+
+    // Ajouter les produits des Suppliers
+    allSuppliers.forEach(supplier => {
+      if (supplier.products && supplier.products.length > 0) {
+        supplier.products.forEach(p => {
+          if (p.name && p.category && p.unit && p.price !== undefined) {
+            const key = normalizeProductKey(p.name, p.category, p.unit);
+            if (!productGroups.has(key)) {
+              productGroups.set(key, []);
+            }
+            
+            // Calculer le prix final (avec promotions)
+            let finalPrice = p.price;
+            if (p.promotion?.active && p.promotion.discountPercent) {
+              finalPrice = p.price * (1 - p.promotion.discountPercent / 100);
+            }
+            
+            productGroups.get(key).push({
+              ...p,
+              _id: supplier._id.toString() + '_' + p.name,
+              source: 'Supplier',
+              supplierId: supplier._id.toString(),
+              supplierName: supplier.name,
+              deliveryTime: 3,
+              minOrder: 1,
+              finalPrice
+            });
+          }
+        });
+      }
+    });
+
+    // Pour chaque groupe, comparer les prix
+    const comparisons = Array.from(productGroups.entries())
+      .map(([key, products]) => {
+        if (products.length < 2) return null; // Ignorer les produits avec un seul fournisseur
+        
+        // Trier par prix final
+        const sortedProducts = [...products].sort((a, b) => a.finalPrice - b.finalPrice);
+        
+        const cheapest = sortedProducts[0];
+        const mostExpensive = sortedProducts[sortedProducts.length - 1];
+        const priceDifference = mostExpensive.finalPrice - cheapest.finalPrice;
+        const priceDifferencePercent = ((priceDifference / cheapest.finalPrice) * 100);
+        
+        // Collecter tous les noms uniques de produits dans ce groupe
+        const allProductNames = [...new Set(sortedProducts.map(p => p.name))];
+        const displayName = allProductNames.length === 1 
+          ? allProductNames[0] 
+          : allProductNames.length <= 3 
+            ? allProductNames.join(' / ') 
+            : `${allProductNames[0]} (+${allProductNames.length - 1} variantes)`;
+        
+        return {
+          productName: displayName,
+          allProductNames: allProductNames, // Garder tous les noms pour l'affichage détaillé
+          category: cheapest.category,
+          unit: cheapest.unit,
+          suppliers: sortedProducts.map(p => ({
+            supplierId: p.supplierId,
+            supplierName: p.supplierName,
+            productName: p.name, // Nom exact du produit pour ce fournisseur
+            price: p.finalPrice,
+            basePrice: p.price || p.finalPrice,
+            hasPromo: !!(p.superPromo?.active || p.toSave?.active || p.promo || p.promotion?.active),
+            stock: p.stock || 0,
+            deliveryTime: p.deliveryTime || 3,
+            minOrder: p.minOrder || 1
+          })),
+          bestPrice: cheapest.finalPrice,
+          worstPrice: mostExpensive.finalPrice,
+          priceDifference,
+          priceDifferencePercent: priceDifferencePercent.toFixed(1),
+          suppliersCount: sortedProducts.length
+        };
+      })
+      .filter(c => c !== null)
+      .sort((a, b) => parseFloat(b.priceDifferencePercent) - parseFloat(a.priceDifferencePercent)); // Trier par écart de prix
+
+    console.log(`📊 [compareAllSuppliersProducts] ${comparisons.length} produits comparables trouvés`);
+
+    res.json({
+      success: true,
+      count: comparisons.length,
+      data: comparisons
+    });
+  } catch (error) {
+    console.error('Erreur lors de la comparaison globale des fournisseurs:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la comparaison globale des fournisseurs',
+      error: error.message
+    });
+  }
+});
+
+/**
  * Grouper les produits similaires par nom, catégorie et unité
  */
 function groupSimilarProducts(products) {

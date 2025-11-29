@@ -101,9 +101,8 @@ class MessagesDisplay {
     try {
       console.log('📥 MessagesDisplay: Chargement des messages...');
       
-      // Récupérer les infos utilisateur pour le debug
-      const userStr = sessionStorage.getItem('user');
-      const user = userStr ? JSON.parse(userStr) : null;
+      // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+      const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
       console.log('👤 Utilisateur actuel:', {
         _id: user?._id,
         siteId: user?.siteId,
@@ -177,7 +176,9 @@ class MessagesDisplay {
     const messagesListContainer = modal.querySelector('#messages-list-container');
     if (messagesListContainer) {
       const unreadMessages = this.messages.filter(m => {
-        const currentUserId = window.currentUser?._id || (localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user'))._id : null);
+        // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+        const user = window.currentUser || (typeof getStoredUser === 'function' ? getStoredUser() : null);
+        const currentUserId = user?._id || null;
         return !m.readBy?.some(r => {
           const readUserId = typeof r.user === 'object' ? r.user._id : r.user;
           return String(readUserId) === String(currentUserId);
@@ -385,7 +386,9 @@ class MessagesDisplay {
     modal.style.display = 'block';
     
     const unreadMessages = this.messages.filter(m => {
-      const currentUserId = window.currentUser?._id || (localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user'))._id : null);
+      // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+      const user = window.currentUser || (typeof getStoredUser === 'function' ? getStoredUser() : null);
+      const currentUserId = user?._id || null;
       return !m.readBy?.some(r => {
         const readUserId = typeof r.user === 'object' ? r.user._id : r.user;
         return readUserId === currentUserId;
@@ -444,7 +447,9 @@ class MessagesDisplay {
       urgent: '#e74c3c'
     };
     
-    const currentUserId = window.currentUser?._id || (localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user'))._id : null);
+    // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+    const user = window.currentUser || (typeof getStoredUser === 'function' ? getStoredUser() : null);
+    const currentUserId = user?._id || null;
     
     return this.messages.map(message => {
       const isRead = message.readBy?.some(r => {

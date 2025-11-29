@@ -532,6 +532,11 @@
                         <h3>ChAIf IA</h3>
                         <p>Utiliser l'intelligence artificielle pour proposer des menus innovants et optimisés.</p>
                     </div>
+                    <div class="generation-option" data-method="modular">
+                        <div class="generation-icon">🧩</div>
+                        <h3>Génération Modulaire</h3>
+                        <p>Nouveau! Combiner protéines, sauces et accompagnements pour créer des menus variés.</p>
+                    </div>
                 </div>
                 
                 <h2>Filtres et Préférences</h2>
@@ -552,11 +557,9 @@
                         <div class="form-group">
                             <label for="meal-type">Type de Repas</label>
                             <select id="meal-type">
-                                <option value="">Tous les repas</option>
-                                <option value="main course">Plat principal</option>
-                                <option value="appetizer">Entrée</option>
-                                <option value="dessert">Dessert</option>
-                                <option value="breakfast">Petit-déjeuner</option>
+                                <option value="déjeuner">Déjeuner</option>
+                                <option value="dîner">Dîner</option>
+                                <option value="petit-déjeuner">Petit-déjeuner</option>
                             </select>
                         </div>
                     </div>
@@ -819,11 +822,14 @@
             
             // Simuler la génération de menus
             const generateBtn = document.getElementById('generate-btn');
-            generateBtn.addEventListener('click', function() {
+            generateBtn.addEventListener('click', async function() {
                 const activeOption = document.querySelector('.generation-option.active');
                 const generationMethod = activeOption.getAttribute('data-method');
                 
-                if (generationMethod === 'ai') {
+                if (generationMethod === 'modular') {
+                    // Génération modulaire - nouvelle API
+                    await generateModularMenu();
+                } else if (generationMethod === 'ai') {
                     // Afficher le modal IA pour des instructions supplémentaires
                     document.getElementById('ai-modal').classList.add('show');
                 } else {
@@ -853,6 +859,159 @@
                     });
                 });
             });
+            
+            // Fonction pour générer un menu modulaire (accessible globalement)
+            window.generateModularMenu = async function() {
+                const loading = document.getElementById('loading');
+                const menusResults = document.getElementById('menus-results');
+                const guests = parseInt(document.getElementById('guests').value) || 4;
+                let mealType = document.getElementById('meal-type').value || 'déjeuner';
+                
+                // Mapper les valeurs si nécessaire
+                if (mealType === 'main course') mealType = 'déjeuner';
+                if (mealType === 'appetizer') mealType = 'déjeuner';
+                if (mealType === 'breakfast') mealType = 'petit-déjeuner';
+                
+                // Récupérer les restrictions
+                const diet = document.getElementById('diet').value;
+                const dietaryRestrictions = diet ? [diet] : [];
+                const allergens = []; // À récupérer depuis un formulaire si nécessaire
+                
+                // Afficher le spinner
+                loading.style.display = 'flex';
+                menusResults.innerHTML = '';
+                
+                try {
+                    // Utiliser fetchWithCSRF si disponible
+                    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+                    
+                    const response = await fetchFn('/api/menu-modular/generate-modular', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            numberOfPeople: guests,
+                            mealType: mealType,
+                            dietaryRestrictions: dietaryRestrictions,
+                            allergens: allergens,
+                            useStockOnly: false,
+                            avoidProteins: [],
+                            previousMenus: []
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Erreur lors de la génération du menu modulaire');
+                    }
+                    
+                    const result = await response.json();
+                    
+                    // Afficher le résultat
+                    displayModularMenuResult(result.data);
+                    
+                    showToast('Menu modulaire généré avec succès!', 'success');
+                    
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    showToast('Erreur: ' + error.message, 'error');
+                    menusResults.innerHTML = `<div class="error-message">Erreur: ${error.message}</div>`;
+                } finally {
+                    loading.style.display = 'none';
+                }
+            }
+            
+            // Fonction pour afficher le résultat du menu modulaire
+            function displayModularMenuResult(data) {
+                const menusResults = document.getElementById('menus-results');
+                const template = data.template;
+                const combination = data.combination;
+                
+                if (!template) {
+                    menusResults.innerHTML = '<div class="error-message">Aucun menu généré</div>';
+                    return;
+                }
+                
+                let html = '<div class="menu-list">';
+                html += `
+                    <div class="menu-card" style="grid-column: 1 / -1;">
+                        <div class="menu-content">
+                            <h3 class="menu-title">${template.name || 'Menu modulaire'}</h3>
+                            <div class="menu-info">
+                                <span>🍽️ ${combination.protein || 'Protéine'}</span>
+                                ${combination.sauce ? `<span>🍯 ${combination.sauce}</span>` : ''}
+                                ${combination.accompaniment ? `<span>🥔 ${combination.accompaniment}</span>` : ''}
+                            </div>
+                            
+                            <div class="menu-components" style="margin: 1rem 0;">
+                                <h4>Composants du menu:</h4>
+                                ${template.protein ? `
+                                    <div style="margin: 0.5rem 0;">
+                                        <strong>Protéine:</strong> ${template.protein.name || 'N/A'}
+                                        ${template.protein.preparationTime ? ` (${template.protein.preparationTime + template.protein.cookingTime} min)` : ''}
+                                    </div>
+                                ` : ''}
+                                ${template.sauce ? `
+                                    <div style="margin: 0.5rem 0;">
+                                        <strong>Sauce:</strong> ${template.sauce.name || 'N/A'}
+                                        ${template.sauce.preparationTime ? ` (${template.sauce.preparationTime + template.sauce.cookingTime} min)` : ''}
+                                    </div>
+                                ` : ''}
+                                ${template.accompaniment ? `
+                                    <div style="margin: 0.5rem 0;">
+                                        <strong>Accompagnement:</strong> ${template.accompaniment.name || 'N/A'}
+                                        ${template.accompaniment.preparationTime ? ` (${template.accompaniment.preparationTime + template.accompaniment.cookingTime} min)` : ''}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            ${template.totalIngredients && template.totalIngredients.length > 0 ? `
+                                <div class="menu-ingredients">
+                                    <h4>Ingrédients nécessaires:</h4>
+                                    <ul style="list-style: none; padding: 0;">
+                                        ${template.totalIngredients.map(ing => `
+                                            <li style="margin: 0.25rem 0;">
+                                                <span class="ingredient-tag">${ing.name}: ${ing.quantity} ${ing.unit}</span>
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                            
+                            ${template.totalNutrition ? `
+                                <div style="margin: 1rem 0; padding: 1rem; background: #f9f9f9; border-radius: 4px;">
+                                    <h4>Nutrition (par portion):</h4>
+                                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                        <span>🔥 ${template.totalNutrition.calories || 0} kcal</span>
+                                        <span>🥩 ${template.totalNutrition.proteins || 0} g protéines</span>
+                                        <span>🍞 ${template.totalNutrition.carbs || 0} g glucides</span>
+                                        <span>🧈 ${template.totalNutrition.lipids || 0} g lipides</span>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${template.combinedInstructions && template.combinedInstructions.length > 0 ? `
+                                <div class="preparation-steps" style="margin: 1rem 0;">
+                                    <h4>Instructions de préparation:</h4>
+                                    <ol style="padding-left: 1.5rem;">
+                                        ${template.combinedInstructions.map(step => `<li style="margin: 0.5rem 0;">${step}</li>`).join('')}
+                                    </ol>
+                                </div>
+                            ` : ''}
+                            
+                            <div class="menu-actions" style="margin-top: 1rem;">
+                                <button class="btn-success use-menu" data-template-id="${template._id}">Utiliser ce menu</button>
+                                <button class="btn-primary" onclick="window.generateModularMenu()">Générer une alternative</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                html += '</div>';
+                
+                menusResults.innerHTML = html;
+            }
             
             function generateMenus(useAI = false) {
                 const loading = document.getElementById('loading');

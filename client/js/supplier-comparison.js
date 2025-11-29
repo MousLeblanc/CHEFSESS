@@ -573,8 +573,8 @@ async function showSupplierRatings(supplierId, supplierName) {
   try {
     console.log('📊 [showSupplierRatings] Chargement des avis pour:', supplierId, supplierName);
     
-    // Vérifier le rôle de l'utilisateur pour déterminer ce qui doit être affiché
-    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+    const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
     const isSupplier = user && (user.role === 'fournisseur' || (user.roles && (user.roles.includes('fournisseur') || user.roles.includes('SUPPLIER'))));
     
     console.log('📊 [showSupplierRatings] Utilisateur est fournisseur?', isSupplier);

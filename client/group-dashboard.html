@@ -16,7 +16,7 @@
     <header class="header">
         <div class="header-content">
             <div class="logo">
-                <img src="img/logo.png" alt="Chef SES" class="logo-img">
+                <img src="img/logo.svg" alt="Chef SES" class="logo-img">
                 <h1>Chef SES - Gestion Multi-Sites</h1>
             </div>
             <div class="user-info">
@@ -564,10 +564,28 @@
                         </div>
                     </div>
 
-                    <!-- Comparaison des fournisseurs -->
+                    <!-- Comparaison des prix par produits similaires -->
                     <div class="card" style="margin-top: 2rem;">
                         <div class="card-header">
-                            <h3><i class="fas fa-balance-scale"></i> Comparaison des Fournisseurs</h3>
+                            <h3><i class="fas fa-balance-scale"></i> Comparaison des Prix par Produits Similaires</h3>
+                            <p style="margin-top: 0.5rem; color: #666; font-size: 0.9rem;">
+                                Comparez les prix du même produit chez tous les fournisseurs pour identifier les meilleures opportunités d'économies.
+                            </p>
+                        </div>
+                        <div class="card-body">
+                            <div id="product-price-comparison">
+                                <div style="text-align: center; padding: 2rem;">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #667eea;"></i>
+                                    <p style="margin-top: 1rem; color: #666;">Chargement de la comparaison des prix...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comparaison des fournisseurs (statistiques) -->
+                    <div class="card" style="margin-top: 2rem;">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-line"></i> Statistiques des Fournisseurs</h3>
                         </div>
                         <div class="card-body">
                             <div id="supplier-comparison">
@@ -904,6 +922,7 @@
         console.log('✅ Modules supplier, stock et orders chargés');
     </script>
     
+    <script type="module" src="js/csrf-helper.js"></script>
     <script src="js/group-dashboard.js"></script>
     <script type="module" src="js/messages-manager.js"></script>
     <script src="js/modal.js"></script>

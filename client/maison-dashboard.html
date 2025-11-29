@@ -284,8 +284,8 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
 
-      
-      const user = JSON.parse(localStorage.getItem('user') || 'null');
+      // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+      const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
       const token = localStorage.getItem('token');
 
       if (!token || !user) {
@@ -337,7 +337,10 @@ async function genererMenu() {
         const apiUrl = '/api/menus/generate-home-menu';
         const token = localStorage.getItem('token');
 
-        const res = await fetch(apiUrl, {
+        // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+        const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+        
+        const res = await fetchFn(apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

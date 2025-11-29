@@ -74,6 +74,9 @@
 - ✅ Alertes automatiques de seuil d'alerte
 - ✅ Gestion des dates d'expiration
 - ✅ **Intégration OCR** : scannez une facture, le stock se met à jour automatiquement
+- ✅ **🆕 Scanner de codes-barres** : Scan par caméra pour identification instantanée des produits
+- ✅ **🆕 Open Food Facts** : Enrichissement automatique des données produits (origine, labels, nutrition)
+- ✅ **🆕 Score Yuka automatique** : Calcul du score santé (0-100) pour chaque produit
 - ✅ Calcul automatique de la valeur du stock
 - ✅ Ajout automatique au stock lors de la confirmation de réception des commandes
 
@@ -84,6 +87,7 @@
 
 - ✅ Catalogues numériques en ligne
 - ✅ Commandes en quelques clics
+- ✅ **🆕 Recherche par code-barres** : Ajout rapide de produits avec données enrichies
 - ✅ Suivi des livraisons en temps réel
 - ✅ Notifications automatiques (nouvelle commande, changement de statut)
 - ✅ Intégration automatique au stock à la réception
@@ -135,6 +139,7 @@
 3. **Multi-sites natif** : Conçu dès le départ pour les groupes
 4. **Sécurité maximale** : Validation automatique des allergies = 0 risque
 5. **Temps réel** : Notifications WebSocket instantanées
+6. **🆕 Traçabilité avancée** : Scan de codes-barres avec enrichissement automatique (Open Food Facts, score Yuka)
 
 ### Impact mesurable
 
@@ -225,6 +230,24 @@ R : Abonnement mensuel par site, ROI en 3-6 mois grâce aux économies.
 
 ---
 
-**Version : 1.0**  
-**Dernière mise à jour : Décembre 2024**
+**Version : 2.0**  
+**Dernière mise à jour : Janvier 2025**
+
+---
+
+## 🆕 Nouveautés Version 2.0
+
+### Scanner de Codes-Barres et Traçabilité
+
+**Nouvelles fonctionnalités :**
+- 📷 **Scanner par caméra** : Identification instantanée des produits
+- 🌍 **Open Food Facts** : Enrichissement automatique (origine, labels qualité, nutrition)
+- ⭐ **Score Yuka automatique** : Calcul du score santé (0-100) basé sur nutrition, additifs, transformation
+- 🔍 **Recherche multi-sources** : Base interne + Open Food Facts + GS1 (optionnel)
+- 📋 **Traçabilité complète** : Compatible AFSCA avec données d'origine et labels
+
+**Bénéfices :**
+- ⚡ Gain de temps : Scan = remplissage automatique
+- ✅ Conformité : Traçabilité complète pour AFSCA
+- 🏆 Qualité : Score Yuka pour choisir des produits plus sains
 

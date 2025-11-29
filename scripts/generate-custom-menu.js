@@ -52,14 +52,24 @@ function buildRecipeFilters({
   weekdayTheme = null,
   dynamicBanProteins = [],
   avoidMenuName = null,
+  avoidMenuNames = [], // Liste de tous les menus à éviter
   filtersAsPreferences = true,
   nutritionalGoals = []
 }) {
   const filters = {};
   
   // Filtrer par catégorie selon le type de repas
+  // EXCLURE les accompagnements (purée, légumes seuls, etc.) - ce sont des plats complets qu'on cherche
   if (mealType === 'déjeuner' || mealType === 'dîner') {
     filters.category = { $in: ['plat', 'entrée', 'plat_complet'] };
+    // Exclure les accompagnements et plats incomplets (purée seule, légumes seuls, etc.)
+    // Ces recettes ne sont pas des menus complets mais des accompagnements
+    if (!filters.$and) filters.$and = [];
+    filters.$and.push(
+      { name: { $not: { $regex: /^(purée|puree|accompagnement|garniture|légumes? seuls?|légumes? uniquement)/i } } },
+      { name: { $not: { $regex: /(purée|puree) de (carottes?|pommes? de terre|légumes?)/i } } },
+      { description: { $not: { $regex: /^(purée|puree|accompagnement|garniture|seulement des légumes)/i } } }
+    );
   } else if (mealType === 'petit-déjeuner') {
     filters.category = { $in: ['petit-déjeuner'] };
   }
@@ -119,9 +129,24 @@ function buildRecipeFilters({
     });
   }
   
-  // Éviter le menu déjà proposé
-  if (avoidMenuName) {
-    filters.name = { $ne: avoidMenuName };
+  // ✅ AMÉLIORATION: Éviter tous les menus déjà proposés (pour éviter les répétitions sur la semaine)
+  const allAvoidNames = [...(avoidMenuNames || []), ...(avoidMenuName ? [avoidMenuName] : [])];
+  if (allAvoidNames.length > 0) {
+    // Exclure tous les menus de la liste
+    const avoidConditions = allAvoidNames.map(name => ({
+      name: { $ne: name } // Exclusion exacte
+    }));
+    
+    // Ajouter aussi des exclusions par regex pour gérer les variations (ex: "Waterzooi" vs "Waterzooi à la gantoise")
+    allAvoidNames.forEach(name => {
+      const nameLower = name.toLowerCase();
+      // Exclure les noms qui contiennent le nom à éviter (ex: "waterzooi" exclut "waterzooi à la gantoise")
+      filters.$and = (filters.$and || []).concat([
+        { name: { $not: { $regex: nameLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } } }
+      ]);
+    });
+    
+    console.log(`🚫 Exclusion MongoDB de ${allAvoidNames.length} menu(s): ${allAvoidNames.join(', ')}`);
   }
   
   // Restrictions alimentaires
@@ -178,20 +203,55 @@ async function selectBestRecipeWithAI(
   numberOfPeople = 4,
   weekdayTheme = null,
   useStockOnly = false,
-  stockItems = []
+  stockItems = [],
+  allergens = [], // Allergènes à exclure strictement
+  dietaryRestrictions = [], // Restrictions alimentaires
+  avoidMenuNames = [] // Liste de tous les menus à éviter (pour éviter les répétitions sur la semaine)
 ) {
   if (recipes.length === 0) return null;
   
-  // Filtrer les recettes à éviter
+  // Filtrer les recettes à éviter (menu unique + liste de menus de la semaine)
   let availableRecipes = recipes;
-  if (avoidMenuName) {
-    availableRecipes = recipes.filter(r => 
-      r.name.toLowerCase() !== avoidMenuName.toLowerCase()
-    );
+  const allAvoidNames = [...(avoidMenuNames || []), ...(avoidMenuName ? [avoidMenuName] : [])];
+  
+  if (allAvoidNames.length > 0) {
+    console.log(`🚫 Exclusion STRICTE de ${allAvoidNames.length} menu(s) déjà généré(s): ${allAvoidNames.join(', ')}`);
+    const beforeCount = recipes.length;
+    availableRecipes = recipes.filter(r => {
+      const recipeNameLower = r.name.toLowerCase().trim();
+      const isExcluded = allAvoidNames.some(avoidName => {
+        const avoidNameLower = avoidName.toLowerCase().trim();
+        // Correspondance exacte
+        if (recipeNameLower === avoidNameLower) {
+          console.log(`   ❌ "${r.name}" exclu (correspondance exacte avec "${avoidName}")`);
+          return true;
+        }
+        // Correspondance partielle (pour gérer les variations comme "Waterzooi" vs "Waterzooi à la gantoise")
+        // Exclure si le nom de la recette contient le nom à éviter ou vice versa
+        if (recipeNameLower.includes(avoidNameLower) || avoidNameLower.includes(recipeNameLower)) {
+          // Vérifier que c'est vraiment le même plat (pas juste un mot commun)
+          const avoidWords = avoidNameLower.split(/\s+/).filter(w => w.length > 3);
+          const recipeWords = recipeNameLower.split(/\s+/).filter(w => w.length > 3);
+          const commonWords = avoidWords.filter(w => recipeWords.includes(w));
+          // Si plus de 50% des mots significatifs sont communs, c'est probablement le même plat
+          if (commonWords.length > 0 && commonWords.length >= Math.min(avoidWords.length, recipeWords.length) * 0.5) {
+            console.log(`   ❌ "${r.name}" exclu (correspondance partielle avec "${avoidName}")`);
+            return true;
+          }
+        }
+        return false;
+      });
+      return !isExcluded;
+    });
+    const excludedCount = beforeCount - availableRecipes.length;
+    console.log(`   📊 ${excludedCount} recette(s) exclue(s), ${availableRecipes.length} recette(s) restante(s)`);
   }
   
   if (availableRecipes.length === 0) {
+    console.log(`⚠️ Toutes les recettes ont été exclues, fallback avec toutes les recettes (répétitions possibles)`);
     availableRecipes = recipes; // Fallback si toutes évitées
+  } else {
+    console.log(`✅ ${availableRecipes.length} recettes disponibles après exclusion des répétitions`);
   }
   
   // Si peu de recettes, sélection aléatoire (pas besoin d'IA)
@@ -209,7 +269,8 @@ async function selectBestRecipeWithAI(
       description: r.description || '',
       ingredients: (r.ingredients || []).slice(0, 5).map(ing => ing.name).join(', '),
       nutritionalProfile: r.nutritionalProfile || {},
-      tags: (r.tags || []).slice(0, 5).join(', ')
+      tags: (r.tags || []).slice(0, 5).join(', '),
+      allergens: r.allergens || [] // ✅ Inclure les allergènes pour la sélection
     }));
     
     const goalsText = nutritionalGoals.length > 0
@@ -219,6 +280,48 @@ async function selectBestRecipeWithAI(
     const themeText = weekdayTheme 
       ? `\nThème du jour: ${weekdayTheme.label || weekdayTheme.key}`
       : '';
+    
+    // Construire les informations sur les allergies et restrictions
+    let allergensText = '';
+    if (allergens && allergens.length > 0) {
+      const allergensList = allergens.map(a => {
+        // Normaliser les noms d'allergènes pour l'affichage
+        const normalized = a.toLowerCase().trim();
+        const allergenNames = {
+          'oeufs': 'œufs', 'oeuf': 'œufs', 'eggs': 'œufs',
+          'arachides': 'arachides', 'peanuts': 'arachides',
+          'fruits_a_coque': 'fruits à coque', 'nuts': 'fruits à coque', 'noix': 'fruits à coque',
+          'soja': 'soja', 'soy': 'soja',
+          'poisson': 'poisson', 'fish': 'poisson',
+          'crustaces': 'crustacés', 'shellfish': 'crustacés',
+          'mollusques': 'mollusques', 'molluscs': 'mollusques',
+          'celeri': 'céleri', 'celery': 'céleri',
+          'moutarde': 'moutarde', 'mustard': 'moutarde',
+          'gluten': 'gluten',
+          'lactose': 'lactose',
+          'sesame': 'sésame',
+          'sulfites': 'sulfites',
+          'lupin': 'lupin'
+        };
+        return allergenNames[normalized] || a;
+      }).join(', ');
+      allergensText = `\n\n🚫 ALLERGÈNES STRICTEMENT INTERDITS (CRITIQUE - SÉCURITÉ):
+${allergensList}
+
+⚠️ INTERDICTION ABSOLUE: Tu DOIS exclure TOUTES les recettes contenant ces allergènes, même en traces.
+- Vérifie les ingrédients de chaque recette
+- Vérifie aussi les allergènes déclarés dans les tags/champs de la recette
+- Si une recette contient un de ces allergènes, elle est IMMÉDIATEMENT exclue
+- Ne propose JAMAIS une recette avec ces allergènes, même si elle répond aux objectifs nutritionnels`;
+    }
+    
+    let restrictionsText = '';
+    if (dietaryRestrictions && dietaryRestrictions.length > 0) {
+      restrictionsText = `\n\n⚠️ RESTRICTIONS ALIMENTAIRES À RESPECTER:
+${dietaryRestrictions.join(', ')}
+
+Ces restrictions doivent être respectées dans le choix de la recette.`;
+    }
     
     // Construire les informations de stock pour l'IA
     let stockInfoText = '';
@@ -234,27 +337,58 @@ ${stockItems.length > 20 ? `... et ${stockItems.length - 20} autres articles` : 
 Les recettes listées ci-dessous ont déjà été filtrées pour ne contenir que des ingrédients disponibles.`;
     }
     
+    // Construire les informations nutritionnelles détaillées pour chaque recette
+    const recipesWithNutrition = recipesForAI.map(r => {
+      const profile = r.nutritionalProfile || {};
+      let nutritionInfo = '';
+      
+      if (nutritionalGoals.length > 0) {
+        const nutritionDetails = nutritionalGoals.map(goal => {
+          const value = profile[goal.nutrient] || 0;
+          const percentage = goal.target > 0 ? ((value / goal.target) * 100).toFixed(0) : 0;
+          const status = value >= goal.target ? '✅' : value >= goal.target * 0.5 ? '⚠️' : '❌';
+          return `${goal.label}: ${value.toFixed(1)}${goal.unit} (${percentage}% de l'objectif ${goal.target}${goal.unit}) ${status}`;
+        }).join(' | ');
+        nutritionInfo = `\n   Nutrition: ${nutritionDetails}`;
+      } else {
+        nutritionInfo = `\n   ${profile.protein ? `Protéines: ${profile.protein}g | ` : ''}${profile.kcal ? `Calories: ${profile.kcal}kcal` : ''}`;
+      }
+      
+      return `[ID: ${r.id}] ${r.name}${r.description ? ' - ' + r.description : ''}
+   Ingrédients principaux: ${r.ingredients}${nutritionInfo}
+   Tags: ${r.tags || 'aucun'}`;
+    });
+    
     const prompt = `Tu es un chef expert en nutrition pour établissements de soins (EHPAD, hôpitaux).
 
 MISSION: Sélectionne la MEILLEURE recette parmi celles disponibles pour un ${mealType} pour ${numberOfPeople} personnes.
 
-CRITÈRES DE SÉLECTION:
-1. ${nutritionalGoals.length > 0 ? 'OBJECTIFS NUTRITIONNELS PRIORITAIRES:' : 'ÉQUILIBRE NUTRITIONNEL'}
-${goalsText}${themeText}${stockInfoText}
-2. VARIÉTÉ: Éviter les répétitions avec les menus précédents
-3. APPÉTENCE: Privilégier les recettes appétissantes et équilibrées
-4. QUALITÉ: Choisir des recettes complètes et bien décrites
-${useStockOnly ? '5. STOCK: Toutes les recettes proposées utilisent uniquement des ingrédients disponibles en stock' : ''}
+CRITÈRES DE SÉLECTION (par ordre de priorité):
+1. 🚫 SÉCURITÉ ALIMENTAIRE (PRIORITÉ ABSOLUE):${allergensText}
+   ${allergens && allergens.length > 0 ? '⚠️ CRITIQUE: Les allergènes listés ci-dessus sont STRICTEMENT INTERDITS. Vérifie chaque recette avant de la proposer.' : 'Aucun allergène à exclure.'}
+${restrictionsText}
+2. ${nutritionalGoals.length > 0 ? 'OBJECTIFS NUTRITIONNELS OBLIGATOIRES:' : 'ÉQUILIBRE NUTRITIONNEL'}
+${goalsText}
+${nutritionalGoals.length > 0 ? '⚠️ CRITIQUE: Tu DOIS choisir une recette qui permet d\'ATTEINDRE les objectifs nutritionnels. Les recettes sont triées par score nutritionnel (les meilleures en premier).\n   - Si une recette ne contient que 50% d\'un nutriment, il faudra doubler les quantités ou ajouter des accompagnements.\n   - PRIVILÉGIE les recettes qui contiennent déjà au moins 80-100% de chaque objectif pour éviter les ajustements.' : ''}${themeText}${stockInfoText}
+3. PLAT COMPLET OBLIGATOIRE: Choisir UNIQUEMENT des plats complets (avec protéine + légumes/féculents), PAS des accompagnements.
+   ⚠️ INTERDIT: Ne PAS choisir de recettes comme "Purée de carottes", "Purée de pommes de terre", "Légumes seuls", etc.
+   Ces recettes sont des accompagnements, pas des menus complets.
+4. VARIÉTÉ: Éviter les répétitions avec les menus précédents
+5. APPÉTENCE: Privilégier les recettes appétissantes et équilibrées
+6. QUALITÉ: Choisir des recettes complètes et bien décrites
+${useStockOnly ? '7. STOCK: Toutes les recettes proposées utilisent uniquement des ingrédients disponibles en stock' : ''}
 
-RECETTES DISPONIBLES:
-${recipesForAI.map(r => 
-  `[ID: ${r.id}] ${r.name}${r.description ? ' - ' + r.description : ''}
-   Ingrédients principaux: ${r.ingredients}
-   ${r.nutritionalProfile.protein ? `Protéines: ${r.nutritionalProfile.protein}g | ` : ''}${r.nutritionalProfile.kcal ? `Calories: ${r.nutritionalProfile.kcal}kcal` : ''}
-   Tags: ${r.tags || 'aucun'}`
-).join('\n\n')}
+RECETTES DISPONIBLES (triées par score nutritionnel):
+${recipesWithNutrition.join('\n\n')}
 
-${avoidMenuName ? `⚠️ IMPORTANT: NE PAS choisir "${avoidMenuName}" (déjà proposé).` : ''}
+${allAvoidNames.length > 0 ? `\n\n🚫 INTERDICTION ABSOLUE - MENUS DÉJÀ GÉNÉRÉS (${allAvoidNames.length} menu(s)):
+${allAvoidNames.map((name, idx) => `${idx + 1}. "${name}"`).join('\n')}
+
+⚠️ CRITIQUE: Tu DOIS ABSOLUMENT EXCLURE ces menus de ta sélection.
+- Vérifie le nom de chaque recette avant de la proposer
+- Si une recette a un nom similaire ou identique à un de ces menus, elle est INTERDITE
+- Exemple: Si "Waterzooi à la gantoise" est dans la liste, tu NE DOIS PAS choisir "Waterzooi", "Waterzooi de poulet", etc.
+- Tu DOIS proposer un menu COMPLÈTEMENT DIFFÉRENT avec un nom différent et des ingrédients différents` : ''}
 
 Réponds UNIQUEMENT avec un JSON valide:
 {
@@ -287,6 +421,125 @@ Réponds UNIQUEMENT avec un JSON valide:
       const selectedRecipe = availableRecipes.find(r => r.name === selectedName);
       
       if (selectedRecipe) {
+        // ✅ VÉRIFICATION POST-SÉLECTION 1 : Vérifier que le menu n'est pas dans la liste des menus à éviter
+        if (allAvoidNames.length > 0) {
+          const selectedNameLower = selectedRecipe.name.toLowerCase().trim();
+          const isExcluded = allAvoidNames.some(avoidName => {
+            const avoidNameLower = avoidName.toLowerCase().trim();
+            // Correspondance exacte
+            if (selectedNameLower === avoidNameLower) {
+              console.error(`❌ RECETTE REJETÉE: "${selectedRecipe.name}" correspond exactement à "${avoidName}" (déjà généré)`);
+              return true;
+            }
+            // Correspondance partielle
+            if (selectedNameLower.includes(avoidNameLower) || avoidNameLower.includes(selectedNameLower)) {
+              const avoidWords = avoidNameLower.split(/\s+/).filter(w => w.length > 3);
+              const selectedWords = selectedNameLower.split(/\s+/).filter(w => w.length > 3);
+              const commonWords = avoidWords.filter(w => selectedWords.includes(w));
+              if (commonWords.length > 0 && commonWords.length >= Math.min(avoidWords.length, selectedWords.length) * 0.5) {
+                console.error(`❌ RECETTE REJETÉE: "${selectedRecipe.name}" correspond partiellement à "${avoidName}" (déjà généré)`);
+                return true;
+              }
+            }
+            return false;
+          });
+          
+          if (isExcluded) {
+            console.error(`❌ L'IA a sélectionné un menu déjà généré ! Rejet et nouvelle tentative...`);
+            // Retirer cette recette et réessayer avec les autres
+            const remainingRecipes = availableRecipes.filter(r => r.name !== selectedRecipe.name);
+            if (remainingRecipes.length > 0) {
+              console.log(`🔄 Nouvelle tentative avec ${remainingRecipes.length} recettes restantes...`);
+              // Réessayer avec les recettes restantes (récursif, mais limité)
+              return await selectBestRecipeWithAI(
+                remainingRecipes,
+                nutritionalGoals,
+                avoidMenuName,
+                mealType,
+                numberOfPeople,
+                weekdayTheme,
+                useStockOnly,
+                stockItems,
+                allergens,
+                dietaryRestrictions,
+                avoidMenuNames || []
+              );
+            } else {
+              throw new Error(`Aucune recette compatible trouvée sans les menus déjà générés: ${allAvoidNames.join(', ')}`);
+            }
+          }
+        }
+        
+        // ✅ VÉRIFICATION POST-SÉLECTION 2 : S'assurer que la recette ne contient pas d'allergènes interdits
+        if (allergens && allergens.length > 0) {
+          const recipeAllergens = (selectedRecipe.allergens || []).map(a => a.toLowerCase().trim());
+          const recipeIngredients = (selectedRecipe.ingredients || []).map(ing => 
+            (ing.name || ing).toLowerCase()
+          ).join(' ');
+          
+          // Normaliser les allergènes pour la comparaison
+          const normalizedForbiddenAllergens = allergens.map(a => {
+            const normalized = a.toLowerCase().trim();
+            const allergenMap = {
+              'oeufs': ['oeufs', 'oeuf', 'eggs', 'œufs', 'œuf'],
+              'arachides': ['arachides', 'peanuts', 'cacahuètes', 'cacahuete'],
+              'fruits_a_coque': ['fruits à coque', 'fruits_a_coque', 'nuts', 'noix', 'amandes', 'noisettes'],
+              'soja': ['soja', 'soy', 'soya'],
+              'poisson': ['poisson', 'fish'],
+              'crustaces': ['crustacés', 'crustaces', 'shellfish', 'crevettes', 'crabe'],
+              'mollusques': ['mollusques', 'molluscs', 'moules', 'huîtres'],
+              'celeri': ['céleri', 'celeri', 'celery'],
+              'moutarde': ['moutarde', 'mustard'],
+              'gluten': ['gluten', 'blé', 'ble', 'wheat'],
+              'lactose': ['lactose', 'lait', 'milk', 'laitier', 'dairy'],
+              'sesame': ['sésame', 'sesame'],
+              'sulfites': ['sulfites', 'sulfite'],
+              'lupin': ['lupin']
+            };
+            return allergenMap[normalized] || [normalized];
+          }).flat();
+          
+          // Vérifier les allergènes déclarés dans la recette
+          const hasForbiddenAllergen = recipeAllergens.some(recipeAllergen => {
+            return normalizedForbiddenAllergens.some(forbidden => 
+              recipeAllergen.includes(forbidden) || forbidden.includes(recipeAllergen)
+            );
+          });
+          
+          // Vérifier aussi dans les ingrédients (pour les cas où l'allergène n'est pas déclaré)
+          const hasForbiddenInIngredients = normalizedForbiddenAllergens.some(forbidden => {
+            return recipeIngredients.includes(forbidden);
+          });
+          
+          if (hasForbiddenAllergen || hasForbiddenInIngredients) {
+            console.error(`❌ RECETTE REJETÉE: "${selectedRecipe.name}" contient des allergènes interdits`);
+            console.error(`   Allergènes interdits: ${allergens.join(', ')}`);
+            console.error(`   Allergènes de la recette: ${recipeAllergens.join(', ')}`);
+            
+            // Retirer cette recette et réessayer avec les autres
+            const remainingRecipes = availableRecipes.filter(r => r.name !== selectedRecipe.name);
+            if (remainingRecipes.length > 0) {
+              console.log(`🔄 Nouvelle tentative avec ${remainingRecipes.length} recettes restantes...`);
+              // Réessayer avec les recettes restantes (récursif, mais limité)
+              return await selectBestRecipeWithAI(
+                remainingRecipes,
+                nutritionalGoals,
+                avoidMenuName,
+                mealType,
+                numberOfPeople,
+                weekdayTheme,
+                useStockOnly,
+                stockItems,
+                allergens,
+                dietaryRestrictions,
+                avoidMenuNames || []
+              );
+            } else {
+              throw new Error(`Aucune recette compatible trouvée sans les allergènes: ${allergens.join(', ')}`);
+            }
+          }
+        }
+        
         console.log(`🤖 IA a sélectionné: "${selectedRecipe.name}"`);
         console.log(`   Raison: ${aiResponse.reasoning || 'Sélection optimale selon les critères'}`);
         return selectedRecipe;
@@ -576,7 +829,9 @@ export async function generateCustomMenu({
   mealType = 'déjeuner',
   nutritionalGoals = [],
   dietaryRestrictions = [],
+  allergens = [], // Allergènes à exclure strictement
   avoidMenuName = null,
+  avoidMenuNames = [], // ✅ Liste de tous les menus à éviter (pour éviter les répétitions sur la semaine)
   forceVariation = false,
   filtersAsPreferences = true,
   strictMode = false,
@@ -627,22 +882,79 @@ export async function generateCustomMenu({
   // ========== RÉCUPÉRER LES RECETTES DE MONGODB ==========
   console.log(`\n📚 Recherche de recettes dans MongoDB...`);
   
+  // ✅ AMÉLIORATION: Construire la liste complète des menus à éviter
+  const allAvoidNames = [...(avoidMenuNames || []), ...(avoidMenuName ? [avoidMenuName] : [])];
+  
+  if (allAvoidNames.length > 0) {
+    console.log(`\n🚫 ===== EXCLUSION DE MENUS DÉJÀ GÉNÉRÉS =====`);
+    console.log(`   ${allAvoidNames.length} menu(s) à éviter: ${allAvoidNames.join(', ')}`);
+    console.log(`   Ces menus seront exclus de la sélection MongoDB ET JavaScript`);
+  }
+  
   // Construire les filtres de recherche
   const recipeFilters = buildRecipeFilters({
     mealType,
     dietaryRestrictions,
     weekdayTheme,
     dynamicBanProteins,
-    avoidMenuName,
+    avoidMenuName: allAvoidNames.length > 0 ? allAvoidNames[0] : null, // Premier pour compatibilité
+    avoidMenuNames: allAvoidNames, // Liste complète
     filtersAsPreferences,
     nutritionalGoals
   });
   
-  console.log(`🔍 Filtres de recherche:`, JSON.stringify(recipeFilters, null, 2));
+  console.log(`🔍 Filtres de recherche MongoDB:`, JSON.stringify(recipeFilters, null, 2));
   
-  // Récupérer les recettes compatibles
-  let compatibleRecipes = await RecipeEnriched.find(recipeFilters);
-  console.log(`✅ ${compatibleRecipes.length} recettes trouvées`);
+  // Récupérer les recettes compatibles (inclure explicitement les allergènes)
+  let compatibleRecipes = await RecipeEnriched.find(recipeFilters).select('+allergens');
+  console.log(`✅ ${compatibleRecipes.length} recettes trouvées après filtrage MongoDB`);
+  
+  // Debug: vérifier les allergènes des premières recettes
+  if (compatibleRecipes.length > 0) {
+    const sampleRecipe = compatibleRecipes[0];
+    console.log(`🔍 Exemple - Recette "${sampleRecipe.name}" a ${(sampleRecipe.allergens || []).length} allergène(s): ${(sampleRecipe.allergens || []).join(', ') || 'AUCUN'}`);
+  }
+  
+  // ✅ FILTRAGE SUPPLÉMENTAIRE JavaScript pour s'assurer que les menus à éviter sont exclus
+  if (allAvoidNames.length > 0) {
+    const beforeCount = compatibleRecipes.length;
+    compatibleRecipes = compatibleRecipes.filter(recipe => {
+      const recipeNameLower = recipe.name.toLowerCase().trim();
+      const isExcluded = allAvoidNames.some(avoidName => {
+        const avoidNameLower = avoidName.toLowerCase().trim();
+        // Correspondance exacte
+        if (recipeNameLower === avoidNameLower) {
+          console.log(`   ❌ "${recipe.name}" exclu (correspondance exacte avec "${avoidName}")`);
+          return true;
+        }
+        // Correspondance partielle - extraire le mot principal (ex: "waterzooi" de "waterzooi à la gantoise")
+        const avoidMainWord = avoidNameLower.split(/\s+/)[0]; // Premier mot
+        const recipeMainWord = recipeNameLower.split(/\s+/)[0];
+        if (avoidMainWord.length > 4 && recipeMainWord === avoidMainWord) {
+          console.log(`   ❌ "${recipe.name}" exclu (même mot principal "${avoidMainWord}" que "${avoidName}")`);
+          return true; // Même mot principal = même plat
+        }
+        // Vérifier si le nom contient le mot principal
+        if (recipeNameLower.includes(avoidMainWord) && avoidMainWord.length > 4) {
+          console.log(`   ❌ "${recipe.name}" exclu (contient le mot principal "${avoidMainWord}" de "${avoidName}")`);
+          return true;
+        }
+        if (avoidNameLower.includes(recipeMainWord) && recipeMainWord.length > 4) {
+          console.log(`   ❌ "${recipe.name}" exclu (mot principal "${recipeMainWord}" présent dans "${avoidName}")`);
+          return true;
+        }
+        return false;
+      });
+      return !isExcluded;
+    });
+    const excludedCount = beforeCount - compatibleRecipes.length;
+    if (excludedCount > 0) {
+      console.log(`🚫 ${excludedCount} recette(s) supplémentaire(s) exclue(s) par filtrage JavaScript`);
+      console.log(`✅ ${compatibleRecipes.length} recettes restantes après double filtrage`);
+    } else {
+      console.log(`✅ Toutes les recettes sont déjà exclues par MongoDB, pas besoin de filtrage supplémentaire`);
+    }
+  }
   
   // Si pas de résultats avec filtres stricts, essayer avec filtres assouplis
   if (compatibleRecipes.length === 0 && filtersAsPreferences) {
@@ -659,22 +971,77 @@ export async function generateCustomMenu({
         ]);
       });
     }
-    if (avoidMenuName) {
-      relaxedFilters.name = { $ne: avoidMenuName };
+    // ✅ AMÉLIORATION: Exclure tous les menus déjà générés
+    if (allAvoidNames.length > 0) {
+      allAvoidNames.forEach(name => {
+        const nameLower = name.toLowerCase();
+        relaxedFilters.$and = (relaxedFilters.$and || []).concat([
+          { name: { $not: { $regex: nameLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } } }
+        ]);
+      });
     }
     compatibleRecipes = await RecipeEnriched.find(relaxedFilters);
     console.log(`✅ ${compatibleRecipes.length} recettes trouvées avec filtres assouplis`);
+    
+    // ✅ FILTRAGE JavaScript supplémentaire même en mode relaxed
+    if (allAvoidNames.length > 0) {
+      const beforeCount = compatibleRecipes.length;
+      compatibleRecipes = compatibleRecipes.filter(recipe => {
+        const recipeNameLower = recipe.name.toLowerCase().trim();
+        return !allAvoidNames.some(avoidName => {
+          const avoidNameLower = avoidName.toLowerCase().trim();
+          const avoidMainWord = avoidNameLower.split(/\s+/)[0];
+          const recipeMainWord = recipeNameLower.split(/\s+/)[0];
+          return recipeNameLower === avoidNameLower || 
+                 (avoidMainWord.length > 4 && recipeMainWord === avoidMainWord) ||
+                 (recipeNameLower.includes(avoidMainWord) && avoidMainWord.length > 4) ||
+                 (avoidNameLower.includes(recipeMainWord) && recipeMainWord.length > 4);
+        });
+      });
+      const excludedCount = beforeCount - compatibleRecipes.length;
+      if (excludedCount > 0) {
+        console.log(`🚫 ${excludedCount} recette(s) exclue(s) par filtrage JavaScript (mode relaxed)`);
+      }
+    }
   }
   
   // Si toujours aucun résultat, prendre n'importe quelle recette de la catégorie
   if (compatibleRecipes.length === 0) {
     console.log(`⚠️  Aucune recette compatible, sélection parmi toutes les recettes de la catégorie...`);
     const fallbackFilters = { category: recipeFilters.category };
-    if (avoidMenuName) {
-      fallbackFilters.name = { $ne: avoidMenuName };
+    // ✅ AMÉLIORATION: Exclure tous les menus déjà générés même en fallback
+    if (allAvoidNames.length > 0) {
+      allAvoidNames.forEach(name => {
+        const nameLower = name.toLowerCase();
+        fallbackFilters.$and = (fallbackFilters.$and || []).concat([
+          { name: { $not: { $regex: nameLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } } }
+        ]);
+      });
     }
     compatibleRecipes = await RecipeEnriched.find(fallbackFilters).limit(100);
     console.log(`✅ ${compatibleRecipes.length} recettes disponibles pour fallback`);
+    
+    // ✅ FILTRAGE JavaScript supplémentaire même en mode fallback
+    if (allAvoidNames.length > 0) {
+      const beforeCount = compatibleRecipes.length;
+      compatibleRecipes = compatibleRecipes.filter(recipe => {
+        const recipeNameLower = recipe.name.toLowerCase().trim();
+        return !allAvoidNames.some(avoidName => {
+          const avoidNameLower = avoidName.toLowerCase().trim();
+          const avoidMainWord = avoidNameLower.split(/\s+/)[0];
+          const recipeMainWord = recipeNameLower.split(/\s+/)[0];
+          return recipeNameLower === avoidNameLower || 
+                 (avoidMainWord.length > 4 && recipeMainWord === avoidMainWord) ||
+                 (recipeNameLower.includes(avoidMainWord) && avoidMainWord.length > 4) ||
+                 (avoidNameLower.includes(recipeMainWord) && recipeMainWord.length > 4);
+        });
+      });
+      const excludedCount = beforeCount - compatibleRecipes.length;
+      if (excludedCount > 0) {
+        console.log(`🚫 ${excludedCount} recette(s) exclue(s) par filtrage JavaScript (mode fallback)`);
+        console.log(`✅ ${compatibleRecipes.length} recettes restantes après filtrage`);
+      }
+    }
   }
   
   if (compatibleRecipes.length === 0) {
@@ -699,7 +1066,98 @@ export async function generateCustomMenu({
     throw new Error('Mode "Stock uniquement" activé mais aucun stock disponible. Veuillez ajouter des articles au stock.');
   }
   
+  // ========== FILTRER PAR OBJECTIFS NUTRITIONNELS SI SPÉCIFIÉS ==========
+  if (nutritionalGoals.length > 0) {
+    console.log(`\n🎯 Filtrage des recettes selon les objectifs nutritionnels...`);
+    console.log(`   ${compatibleRecipes.length} recettes avant filtrage nutritionnel`);
+    
+    // Filtrer les recettes qui ont au moins un minimum de nutriments requis
+    const filteredByNutrition = compatibleRecipes.filter(recipe => {
+      const profile = recipe.nutritionalProfile || {};
+      
+        // Vérifier que la recette peut potentiellement atteindre les objectifs
+        // On accepte si la recette contient au moins 30% de chaque objectif
+        // (on pourra ajuster les quantités pour atteindre 100%)
+        let goalsMet = 0;
+        nutritionalGoals.forEach(goal => {
+          const value = profile[goal.nutrient] || 0;
+          // Accepter si la recette contient au moins 30% de l'objectif
+          // (on peut augmenter les quantités pour atteindre 100%)
+          if (value >= goal.target * 0.3) {
+            goalsMet++;
+          }
+        });
+        
+        // Accepter si au moins 70% des objectifs sont partiellement respectés
+        // (plus strict qu'avant pour garantir qu'on peut atteindre les objectifs)
+        return goalsMet >= Math.ceil(nutritionalGoals.length * 0.7);
+    });
+    
+    if (filteredByNutrition.length > 0) {
+      compatibleRecipes = filteredByNutrition;
+      console.log(`✅ ${compatibleRecipes.length} recettes respectent au moins partiellement les objectifs nutritionnels`);
+      
+      // Trier par score nutritionnel (recettes qui respectent le plus d'objectifs en premier)
+      compatibleRecipes.sort((a, b) => {
+        const profileA = a.nutritionalProfile || {};
+        const profileB = b.nutritionalProfile || {};
+        
+        let scoreA = 0;
+        let scoreB = 0;
+        
+        nutritionalGoals.forEach(goal => {
+          const valueA = profileA[goal.nutrient] || 0;
+          const valueB = profileB[goal.nutrient] || 0;
+          
+          // Score basé sur le pourcentage de l'objectif atteint
+          scoreA += Math.min(valueA / goal.target, 1.5); // Bonus si dépasse l'objectif
+          scoreB += Math.min(valueB / goal.target, 1.5);
+        });
+        
+        return scoreB - scoreA; // Tri décroissant
+      });
+      
+      console.log(`📊 Top 3 recettes par score nutritionnel:`);
+      compatibleRecipes.slice(0, 3).forEach((r, i) => {
+        const profile = r.nutritionalProfile || {};
+        const scores = nutritionalGoals.map(goal => {
+          const value = profile[goal.nutrient] || 0;
+          return `${goal.label}: ${value.toFixed(1)}${goal.unit} (${((value / goal.target) * 100).toFixed(0)}%)`;
+        }).join(', ');
+        console.log(`   ${i + 1}. ${r.name} - ${scores}`);
+      });
+    } else {
+      console.log(`⚠️  Aucune recette ne respecte les objectifs nutritionnels, utilisation de toutes les recettes disponibles`);
+      console.log(`   L'IA essaiera de sélectionner la meilleure option possible`);
+    }
+  }
+  
   // Sélectionner intelligemment une recette avec l'IA
+  // Utiliser les allergènes passés en paramètre (priorité) ou extraire depuis les restrictions
+  let allAllergens = allergens || [];
+  
+  // Si pas d'allergènes explicites, essayer de les extraire des restrictions
+  if (allAllergens.length === 0) {
+    const allergensFromRestrictions = dietaryRestrictions
+      .filter(r => r.toLowerCase().includes('sans') || r.toLowerCase().includes('allergie'))
+      .map(r => {
+        // Extraire le nom de l'allergène (ex: "sans oeufs" -> "oeufs")
+        const match = r.toLowerCase().match(/sans\s+(\w+)/);
+        return match ? match[1] : null;
+      })
+      .filter(Boolean);
+    allAllergens = allergensFromRestrictions;
+  }
+  
+  if (allAllergens.length > 0) {
+    console.log(`🚫 Allergènes à exclure strictement: ${allAllergens.join(', ')}`);
+  }
+  
+  // allAvoidNames est déjà défini plus haut dans la fonction
+  if (allAvoidNames.length > 0) {
+    console.log(`🚫 Exclusion de ${allAvoidNames.length} menu(s) déjà généré(s) pour éviter les répétitions`);
+  }
+  
   const selectedRecipe = await selectBestRecipeWithAI(
     compatibleRecipes,
     nutritionalGoals,
@@ -708,7 +1166,10 @@ export async function generateCustomMenu({
     numberOfPeople,
     weekdayTheme,
     useStockOnly,
-    stockItems
+    stockItems,
+    allAllergens.length > 0 ? allAllergens : undefined,
+    dietaryRestrictions,
+    allAvoidNames // Passer la liste complète des menus à éviter
   );
   
   if (!selectedRecipe) {
@@ -718,6 +1179,7 @@ export async function generateCustomMenu({
   console.log(`\n✅ Recette sélectionnée: "${selectedRecipe.name}"`);
   console.log(`   Catégorie: ${selectedRecipe.category}`);
   console.log(`   Ingrédients: ${selectedRecipe.ingredients?.length || 0}`);
+  console.log(`   Allergènes: ${(selectedRecipe.allergens || []).join(', ') || 'AUCUN'}`);
   
   // Si forceVariation est activé, générer une variation avec l'IA
   let menuData;
@@ -745,7 +1207,8 @@ export async function generateCustomMenu({
         tempsCuisson: selectedRecipe.cookingTime || selectedRecipe.tempsCuisson || '30 min',
         difficulte: selectedRecipe.difficulty || selectedRecipe.difficulte || 'Moyenne',
         isVariation: true,
-        variationNote: variation.variationNote
+        variationNote: variation.variationNote,
+        allergens: selectedRecipe.allergens || [] // Allergènes AFSCA/UE 1169/2011 (hérités de la recette de base)
       };
       console.log(`✅ Variation créée: "${menuData.nomMenu}"`);
     } else {
@@ -759,13 +1222,62 @@ export async function generateCustomMenu({
   if (!useVariation) {
     // Convertir la recette MongoDB au format attendu
     // Les recettes n'ont pas toujours de servings défini, on utilise une base de 4
-    const baseServings = 4; // Base standard pour les recettes
+    const baseServings = selectedRecipe.servings || 4; // Utiliser le nombre de portions de la recette si disponible
     const servingMultiplier = numberOfPeople / baseServings;
     
     // Adapter les ingrédients au nombre de personnes
     adaptedIngredients = (selectedRecipe.ingredients || []).map(ing => {
-      const quantityPerPerson = (ing.quantity || 0) * servingMultiplier / numberOfPeople;
-      const quantityTotal = (ing.quantity || 0) * servingMultiplier;
+      const rawQuantity = ing.quantity || 0;
+      
+      // Les quantités dans MongoDB peuvent être :
+      // 1. Par personne (ex: 150g de pomme de terre par personne)
+      // 2. Pour baseServings personnes (ex: 600g de pomme de terre pour 4 personnes = 150g/personne)
+      // 3. Quantité totale mal formatée (ex: 5000g pour toute la recette)
+      //
+      // On teste d'abord si c'est pour baseServings personnes
+      let quantityPerPerson = rawQuantity / baseServings;
+      
+      // Si la quantité par personne est anormalement élevée (>500g), analyser le cas
+      if (quantityPerPerson > 500) {
+        // Si rawQuantity lui-même est > 2000g, c'est probablement une quantité totale mal formatée
+        // On limite alors à une valeur réaliste
+        if (rawQuantity > 2000) {
+          console.log(`⚠️  Quantité très élevée pour "${ing.name}": ${rawQuantity}g. Probablement une quantité totale mal formatée.`);
+          console.log(`   → Limitation à 500g/personne maximum (au lieu de ${quantityPerPerson.toFixed(1)}g/personne)`);
+          quantityPerPerson = 500; // Limiter à 500g max par personne
+        } else if (rawQuantity < 1000) {
+          // Si rawQuantity < 1000g mais quantityPerPerson > 500g, c'est probablement déjà par personne
+          console.log(`⚠️  Quantité suspecte pour "${ing.name}": ${quantityPerPerson.toFixed(1)}g/personne si divisé par ${baseServings}. Utilisation directe: ${rawQuantity}g/personne`);
+          quantityPerPerson = rawQuantity;
+        } else {
+          // Entre 1000-2000g : probablement pour baseServings mais trop élevé, limiter
+          console.log(`⚠️  Quantité élevée pour "${ing.name}": ${rawQuantity}g pour ${baseServings} personnes = ${quantityPerPerson.toFixed(1)}g/personne. Limitation à 500g/personne.`);
+          quantityPerPerson = 500;
+        }
+      }
+      
+      // Limiter les quantités à des valeurs réalistes par catégorie d'ingrédient
+      const ingredientData = getIngredientData(ing.name);
+      if (ingredientData) {
+        const category = ingredientData.category;
+        const maxPerPerson = {
+          'cereales': 200,  // Max 200g de céréales/personne (riz, pâtes, quinoa)
+          'legumes': 250,   // Max 250g de légumes/personne (accompagnement)
+          'viandes': 200,   // Max 200g de viande/personne
+          'poissons': 200,  // Max 200g de poisson/personne
+          'produits-laitiers': 150, // Max 150g de produits laitiers/personne
+          'fruits': 200,    // Max 200g de fruits/personne
+          'autres': 300     // Max 300g pour autres
+        };
+        
+        const maxAllowed = maxPerPerson[category] || maxPerPerson['autres'];
+        if (quantityPerPerson > maxAllowed) {
+          console.log(`⚠️  Quantité limitée pour "${ing.name}": ${quantityPerPerson.toFixed(1)}g → ${maxAllowed}g/personne (max réaliste pour ${category})`);
+          quantityPerPerson = maxAllowed;
+        }
+      }
+      
+      const quantityTotal = quantityPerPerson * numberOfPeople;
       
       return {
         nom: ing.name,
@@ -775,7 +1287,65 @@ export async function generateCustomMenu({
       };
     });
     
+    // Ajuster les quantités pour atteindre les objectifs nutritionnels si nécessaire
+    if (nutritionalGoals.length > 0 && !useVariation) {
+      console.log(`\n🎯 Ajustement des quantités pour atteindre les objectifs nutritionnels...`);
+      
+      // Calculer les valeurs nutritionnelles actuelles (par personne)
+      const currentNutrition = {};
+      adaptedIngredients.forEach(ing => {
+        const ingredientData = getIngredientData(ing.nom);
+        if (ingredientData) {
+          const factor = ing.quantiteParPersonne / 100;
+          Object.entries(ingredientData.nutritionalValues).forEach(([key, value]) => {
+            currentNutrition[key] = (currentNutrition[key] || 0) + (value * factor);
+          });
+        }
+      });
+      
+      // Pour chaque objectif non atteint, augmenter les quantités des ingrédients riches en ce nutriment
+      nutritionalGoals.forEach(goal => {
+        const current = currentNutrition[goal.nutrient] || 0;
+        if (current < goal.target) {
+          const missing = goal.target - current;
+          const ratio = goal.target / Math.max(current, 0.1); // Ratio pour atteindre l'objectif
+          
+          console.log(`   ${goal.label}: ${current.toFixed(1)}${goal.unit} / ${goal.target}${goal.unit} (manque ${missing.toFixed(1)}${goal.unit})`);
+          console.log(`   → Ajustement nécessaire: multiplier par ${ratio.toFixed(2)}`);
+          
+          // Trouver les ingrédients riches en ce nutriment dans la recette
+          const richIngredients = adaptedIngredients
+            .map(ing => {
+              const ingredientData = getIngredientData(ing.nom);
+              if (!ingredientData) return null;
+              const value = ingredientData.nutritionalValues[goal.nutrient] || 0;
+              return { ing, value, data: ingredientData };
+            })
+            .filter(item => item && item.value > 0)
+            .sort((a, b) => b.value - a.value);
+          
+          if (richIngredients.length > 0) {
+            // Augmenter les quantités des ingrédients les plus riches
+            const topIngredient = richIngredients[0];
+            const currentValue = (topIngredient.data.nutritionalValues[goal.nutrient] || 0) * (topIngredient.ing.quantiteParPersonne / 100);
+            const neededValue = missing;
+            const additionalQuantity = (neededValue / (topIngredient.data.nutritionalValues[goal.nutrient] || 1)) * 100;
+            
+            // Ajuster la quantité de l'ingrédient principal
+            topIngredient.ing.quantiteParPersonne = Math.round((topIngredient.ing.quantiteParPersonne + additionalQuantity) * 10) / 10;
+            topIngredient.ing.quantiteTotal = topIngredient.ing.quantiteParPersonne * numberOfPeople;
+            
+            console.log(`   → ${topIngredient.ing.nom}: ${(topIngredient.ing.quantiteParPersonne - additionalQuantity).toFixed(1)}${topIngredient.ing.unite} → ${topIngredient.ing.quantiteParPersonne.toFixed(1)}${topIngredient.ing.unite}`);
+          }
+        }
+      });
+    }
+    
     // Construire le menu depuis la recette MongoDB
+    const recipeAllergens = selectedRecipe.allergens || [];
+    console.log(`📋 Allergènes de la recette "${selectedRecipe.name}": ${recipeAllergens.length > 0 ? recipeAllergens.join(', ') : 'AUCUN'}`);
+    console.log(`   Type de selectedRecipe.allergens: ${typeof selectedRecipe.allergens}, IsArray: ${Array.isArray(selectedRecipe.allergens)}`);
+    
     menuData = {
       nomMenu: selectedRecipe.name,
       description: selectedRecipe.description || selectedRecipe.name,
@@ -786,8 +1356,11 @@ export async function generateCustomMenu({
       })),
       instructions: selectedRecipe.preparationSteps || selectedRecipe.instructions || ['Préparer selon la recette de base.'],
       tempsCuisson: selectedRecipe.cookingTime || selectedRecipe.tempsCuisson || '30 min',
-      difficulte: selectedRecipe.difficulty || selectedRecipe.difficulte || 'Moyenne'
+      difficulte: selectedRecipe.difficulty || selectedRecipe.difficulte || 'Moyenne',
+      allergens: recipeAllergens // Allergènes AFSCA/UE 1169/2011
     };
+    
+    console.log(`✅ Allergènes inclus dans menuData: ${menuData.allergens.length > 0 ? menuData.allergens.join(', ') : 'AUCUN'}`);
   } else {
     // Pour les variations, les ingrédients viennent déjà de l'IA
     adaptedIngredients = (menuData.ingredients || []).map(ing => ({
@@ -799,6 +1372,8 @@ export async function generateCustomMenu({
   }
   
   // Calculer les valeurs nutritionnelles
+  // FORMULE SIMPLE: Pour chaque ingrédient, multiplier la valeur pour 100g par (quantité / 100)
+  // Puis additionner tous les ingrédients pour obtenir les totaux
   const enrichedIngredients = adaptedIngredients.map(ing => {
     const ingredientData = getIngredientData(ing.nom);
     if (!ingredientData) {
@@ -806,8 +1381,9 @@ export async function generateCustomMenu({
       return null;
     }
     
-    // Calculer les valeurs nutritionnelles pour la quantité totale
-    const factor = ing.quantiteTotal / 100;
+    // Les quantités sont DÉJÀ par personne (ex: 406.6g quinoa par personne)
+    // Calcul direct: (quantité par personne / 100) × valeur pour 100g
+    const factor = ing.quantiteParPersonne / 100;
     
     const nutritionCalculated = {};
     for (const [key, value] of Object.entries(ingredientData.nutritionalValues)) {
@@ -820,25 +1396,65 @@ export async function generateCustomMenu({
       quantiteParPersonne: ing.quantiteParPersonne,
       quantiteTotal: ing.quantiteTotal,
       nutritionalValues: ingredientData.nutritionalValues,
-      calculated: nutritionCalculated
+      calculated: nutritionCalculated // Valeurs nutritionnelles POUR UNE PERSONNE
     };
   }).filter(ing => ing !== null);
   
-  // Calculer les totaux nutritionnels
-  const totals = {};
+  // Additionner toutes les valeurs nutritionnelles de tous les ingrédients
+  // Les valeurs calculated sont déjà par personne, donc on additionne directement
+  const totalsPerPerson = {};
   enrichedIngredients.forEach(ing => {
     for (const [key, value] of Object.entries(ing.calculated)) {
-      totals[key] = (totals[key] || 0) + value;
+      totalsPerPerson[key] = (totalsPerPerson[key] || 0) + value;
     }
   });
   
+  // VÉRIFICATION CRITIQUE: Détecter les valeurs anormalement élevées
+  // Une personne ne peut pas consommer > 3000 kcal en un seul repas (normalement 500-1000 kcal)
+  if (totalsPerPerson.calories > 3000) {
+    console.log(`\n⚠️  ⚠️  ⚠️  VALEURS NUTRITIONNELLES ANORMALEMENT ÉLEVÉES DÉTECTÉES !`);
+    console.log(`   Calories par personne: ${totalsPerPerson.calories.toFixed(1)} kcal (normalement 500-1000 kcal)`);
+    console.log(`   Les quantités dans la recette sont probablement incorrectes.`);
+    
+    // Calculer le facteur de correction (diviser par le ratio anormal)
+    const normalCalories = 800; // Calories normales pour un repas
+    const correctionFactor = normalCalories / totalsPerPerson.calories;
+    console.log(`   Correction: Division par ${(1/correctionFactor).toFixed(2)} pour obtenir des valeurs réalistes.`);
+    
+    // Corriger toutes les valeurs
+    for (const [key, value] of Object.entries(totalsPerPerson)) {
+      totalsPerPerson[key] = value * correctionFactor;
+    }
+  }
+  
+  // Calculer les totaux pour toutes les personnes
+  const totals = {};
+  for (const [key, value] of Object.entries(totalsPerPerson)) {
+    totals[key] = value * numberOfPeople;
+  }
+  
   const nutrition = {
-    total: totals,
-    perPerson: {}
+    total: totals,           // Totaux pour toutes les personnes
+    perPerson: totalsPerPerson  // Valeurs par personne (déjà calculées, pas besoin de diviser)
   };
   
-  for (const [key, value] of Object.entries(totals)) {
-    nutrition.perPerson[key] = value / numberOfPeople;
+  // Vérifier les objectifs avant de retourner
+  let allGoalsMet = true;
+  const unmetGoals = [];
+  
+  if (nutritionalGoals.length > 0) {
+    nutritionalGoals.forEach(goal => {
+      const value = nutrition.perPerson[goal.nutrient] || 0;
+      if (value < goal.target) {
+        allGoalsMet = false;
+        unmetGoals.push({
+          ...goal,
+          current: value,
+          missing: goal.target - value,
+          percentage: goal.target > 0 ? ((value / goal.target) * 100) : 0
+        });
+      }
+    });
   }
   
   return {
@@ -849,7 +1465,20 @@ export async function generateCustomMenu({
     ingredients: enrichedIngredients,
     source: useVariation ? 'mongodb+ai-variation' : 'mongodb+ai-selection',
     recipeId: useVariation ? null : selectedRecipe._id,
-    baseRecipeId: useVariation ? selectedRecipe._id : null
+    baseRecipeId: useVariation ? selectedRecipe._id : null,
+    goalsStatus: {
+      allMet: allGoalsMet,
+      unmetGoals: unmetGoals,
+      goalsDetails: nutritionalGoals.map(goal => {
+        const value = nutrition.perPerson[goal.nutrient] || 0;
+        return {
+          ...goal,
+          current: value,
+          met: value >= goal.target,
+          percentage: goal.target > 0 ? ((value / goal.target) * 100) : 0
+        };
+      })
+    }
   };
 }
 
@@ -1083,14 +1712,25 @@ export function displayMenu(result) {
   console.log(`   • Lipides : ${(nutrition.perPerson.lipids || 0).toFixed(1)} g`);
   console.log(`   • Fibres : ${(nutrition.perPerson.fibers || 0).toFixed(1)} g`);
   
-  // Vérifier les objectifs
+  // Vérifier les objectifs et ajuster si nécessaire
   let allGoalsMet = true;
+  const unmetGoals = [];
+  
   nutritionalGoals.forEach(goal => {
     const value = nutrition.perPerson[goal.nutrient] || 0;
     const met = value >= goal.target;
     const icon = met ? '✅' : '⚠️';
-    console.log(`   • ${goal.label} : ${value.toFixed(1)} ${goal.unit} ${icon}`);
-    if (!met) allGoalsMet = false;
+    const percentage = goal.target > 0 ? ((value / goal.target) * 100).toFixed(0) : 0;
+    console.log(`   • ${goal.label} : ${value.toFixed(1)} ${goal.unit} / ${goal.target}${goal.unit} (${percentage}%) ${icon}`);
+    if (!met) {
+      allGoalsMet = false;
+      unmetGoals.push({
+        ...goal,
+        current: value,
+        missing: goal.target - value,
+        percentage: parseFloat(percentage)
+      });
+    }
   });
   
   console.log('\n' + '='.repeat(70));
@@ -1099,8 +1739,38 @@ export function displayMenu(result) {
     console.log('✅ Tous les objectifs nutritionnels sont atteints !');
   } else {
     console.log('⚠️  Certains objectifs ne sont pas atteints');
+    console.log('\n📋 Objectifs non atteints:');
+    unmetGoals.forEach(goal => {
+      console.log(`   • ${goal.label}: ${goal.current.toFixed(1)}${goal.unit} / ${goal.target}${goal.unit} (manque ${goal.missing.toFixed(1)}${goal.unit})`);
+    });
+    console.log('\n💡 Suggestion: Augmenter les quantités des ingrédients riches en ces nutriments ou ajouter des accompagnements.');
   }
   
   console.log('='.repeat(70) + '\n');
+  
+  // Retourner aussi les informations sur les objectifs non atteints
+  return {
+    menu: menuData,
+    nutrition: nutrition,
+    numberOfPeople: numberOfPeople,
+    nutritionalGoals: nutritionalGoals,
+    ingredients: enrichedIngredients,
+    source: useVariation ? 'mongodb+ai-variation' : 'mongodb+ai-selection',
+    recipeId: useVariation ? null : selectedRecipe._id,
+    baseRecipeId: useVariation ? selectedRecipe._id : null,
+    goalsStatus: {
+      allMet: allGoalsMet,
+      unmetGoals: unmetGoals,
+      goalsDetails: nutritionalGoals.map(goal => {
+        const value = nutrition.perPerson[goal.nutrient] || 0;
+        return {
+          ...goal,
+          current: value,
+          met: value >= goal.target,
+          percentage: goal.target > 0 ? ((value / goal.target) * 100) : 0
+        };
+      })
+    }
+  };
 }
 

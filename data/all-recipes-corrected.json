@@ -1,0 +1,216 @@
+[
+  {
+    "_id": "68ee3196bdefc434dc0ea6dd",
+    "name": "Waterzooi de Poulet aux Légumes, Riz et Crème",
+    "category": "plat",
+    "establishmentType": ["collectivite"],
+    "texture": "normale",
+    "diet": [],
+    "pathologies": [],
+    "allergens": ["celeri", "lactose"],
+    "nutritionalProfile": {
+      "kcal": 550,
+      "protein": 45,
+      "lipids": 35,
+      "carbs": 20,
+      "fiber": 3,
+      "sodium": 800
+    },
+    "ingredients": [
+      {
+        "name": "Filets de poulet ou morceaux (avec os)",
+        "quantity": 150,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e90641f6"
+      },
+      {
+        "name": "Bouillon de volaille",
+        "quantity": 250,
+        "unit": "ml",
+        "_id": "68ece0eea5b41c48e90641f7"
+      },
+      {
+        "name": "Poireaux (rondelles)",
+        "quantity": 50,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e90641f8"
+      },
+      {
+        "name": "Carottes (rondelles)",
+        "quantity": 75,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e90641f9"
+      },
+      {
+        "name": "Céleri-rave ou branches (dés)",
+        "quantity": 25,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e90641fa"
+      },
+      {
+        "name": "Jaunes d'œufs",
+        "quantity": 0.5,
+        "unit": "pièce",
+        "_id": "68ece0eea5b41c48e90641fb"
+      },
+      {
+        "name": "Crème fraîche liquide",
+        "quantity": 50,
+        "unit": "ml",
+        "_id": "68ece0eea5b41c48e90641fc"
+      },
+      {
+        "name": "Beurre",
+        "quantity": 5,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e90641fd"
+      },
+      {
+        "name": "Sel, poivre, muscade",
+        "quantity": 1,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e90641fe"
+      },
+      {
+        "name": "Riz",
+        "quantity": 20,
+        "unit": "g",
+        "_id": "6924b68f129872278e03913b"
+      }
+    ],
+    "preparationSteps": [
+      "Préparer les légumes : laver et couper les poireaux en rondelles, les carottes en rondelles et le céleri en dés.",
+      "Faire fondre le beurre dans une grande casserole à feu moyen. Ajouter les poireaux, les carottes et le céleri. Faire suer pendant environ 5 minutes jusqu'à ce qu'ils soient légèrement tendres.",
+      "Ajouter les morceaux de poulet et verser le bouillon de volaille. Porter à ébullition, puis réduire le feu et laisser mijoter à couvert pendant 30 minutes.",
+      "Retirer le poulet de la casserole et l'effilocher à l'aide de deux fourchettes.",
+      "Dans un bol, mélanger les jaunes d'œufs et la crème fraîche. Ajouter une louche de bouillon chaud au mélange en remuant constamment pour éviter la coagulation.",
+      "Verser le mélange de crème et d'œufs dans la casserole en remuant constamment pour lier la sauce. Ne pas laisser bouillir.",
+      "Ajouter le poulet effiloché dans la casserole. Assaisonner avec du sel, du poivre et une pincée de muscade. Réchauffer doucement sans faire bouillir.",
+      "Servir le waterzooi chaud avec du riz cuit à part et du pain grillé."
+    ],
+    "compatibleFor": ["normale"],
+    "aiCompatibilityScore": 1,
+    "__v": 9,
+    "ageGroup": {
+      "min": 2.5,
+      "max": 99
+    },
+    "description": "Soupe-repas crémeuse et réconfortante à base de poulet, de légumes (carottes, poireaux, céleri) et de crème fraîche.",
+    "hashtags": ["#plat principal", "#soupe", "#belge", "#crémeux"],
+    "portions": 1,
+    "establishmentTypes": ["ehpad", "hopital", "cantine_scolaire", "cantine_entreprise"],
+    "dietaryRestrictions": ["halal"],
+    "tags": ["cantine_entreprise", "cantine_scolaire", "ehpad", "facile_à_mâcher", "feculent", "halal", "hopital", "laitier", "plat", "proteine", "repas_complet", "riche_proteines", "riz", "senior", "volaille"],
+    "allergenCategories": {
+      "sans_arachides": true,
+      "sans_celeri": false,
+      "sans_crustaces": true,
+      "sans_fruits_a_coque": true,
+      "sans_gluten": true,
+      "sans_lactose": false,
+      "sans_lupin": true,
+      "sans_mollusques": true,
+      "sans_moutarde": true,
+      "sans_oeufs": false,
+      "sans_poisson": true,
+      "sans_sesame": true,
+      "sans_soja": true,
+      "sans_sulfites": true
+    }
+  },
+  {
+    "_id": "68ee3196bdefc434dc0ea6e9",
+    "name": "Velouté de Potimarron et Châtaignes",
+    "category": "plat",
+    "establishmentType": ["collectivite"],
+    "texture": "mixée",
+    "diet": [],
+    "pathologies": [],
+    "allergens": ["lactose"],
+    "nutritionalProfile": {
+      "kcal": 290,
+      "protein": 7,
+      "lipids": 14,
+      "carbs": 35,
+      "fiber": 7,
+      "sodium": 600
+    },
+    "ingredients": [
+      {
+        "name": "Potimarron (sans le peler)",
+        "quantity": 200,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e9064209"
+      },
+      {
+        "name": "Châtaignes cuites",
+        "quantity": 37.5,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e906420a"
+      },
+      {
+        "name": "Oignon ou échalote",
+        "quantity": 25,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e906420b"
+      },
+      {
+        "name": "Bouillon de volaille ou légumes",
+        "quantity": 187.5,
+        "unit": "ml",
+        "_id": "68ece0eea5b41c48e906420c"
+      },
+      {
+        "name": "Crème liquide",
+        "quantity": 25,
+        "unit": "ml",
+        "_id": "68ece0eea5b41c48e906420d"
+      },
+      {
+        "name": "Beurre",
+        "quantity": 5,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e906420e"
+      }
+    ],
+    "preparationSteps": [
+      "Éplucher et émincer l'oignon ou l'échalote.",
+      "Dans une grande casserole, faire fondre le beurre à feu moyen.",
+      "Ajouter l'oignon émincé et faire suer pendant environ 5 minutes jusqu'à ce qu'il soit translucide.",
+      "Couper le potimarron en morceaux et les ajouter à la casserole avec les châtaignes.",
+      "Verser le bouillon de légumes sur les légumes et porter à ébullition.",
+      "Réduire le feu et laisser mijoter pendant 25 à 30 minutes jusqu'à ce que le potimarron soit tendre.",
+      "Mixer la soupe jusqu'à obtenir une texture lisse et homogène.",
+      "Incorporer la crème liquide, assaisonner selon le goût et servir chaud avec quelques brisures de châtaignes en garniture."
+    ],
+    "compatibleFor": ["normale"],
+    "aiCompatibilityScore": 1,
+    "__v": 7,
+    "ageGroup": {
+      "min": 2.5,
+      "max": 99
+    },
+    "description": "Soupe d'automne, naturellement douce et crémeuse, associant le potimarron à la saveur boisée des châtaignes.",
+    "hashtags": ["#soupe", "#velouté", "#automne", "#français"],
+    "portions": 1,
+    "establishmentTypes": ["ehpad", "hopital", "cantine_scolaire", "cantine_entreprise"],
+    "dietaryRestrictions": ["végétarien"],
+    "tags": ["type:volaille"],
+    "allergenCategories": {
+      "sans_arachides": true,
+      "sans_celeri": true,
+      "sans_crustaces": true,
+      "sans_fruits_a_coque": true,
+      "sans_gluten": true,
+      "sans_lactose": false,
+      "sans_lupin": true,
+      "sans_mollusques": true,
+      "sans_moutarde": true,
+      "sans_oeufs": true,
+      "sans_poisson": true,
+      "sans_sesame": true,
+      "sans_soja": true,
+      "sans_sulfites": true
+    }
+  }
+]

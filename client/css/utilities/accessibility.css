@@ -116,6 +116,37 @@ label {
   font-weight: 500;
 }
 
+/* ===== Correction spécifique pour les labels dans le calculateur de portions ===== */
+.card-border-purple .form-group label,
+.card-border-purple label {
+  color: #2d3748 !important; /* Texte foncé pour contraste sur fond blanc */
+  font-weight: 500;
+}
+
+/* ===== Correction du texte mauve sur fond mauve dans le calculateur ===== */
+/* Surcharger le style inline qui met le texte en mauve */
+.card-border-purple .card h2,
+.card-border-purple h2,
+.card-border-purple .card-header-title {
+  color: #ffffff !important; /* Texte blanc sur fond mauve (header) */
+}
+
+/* Texte dans le corps de la carte (pas dans le header) */
+.card-border-purple .card-body,
+.card-border-purple > div:not(.card-header-purple),
+.card-border-purple .form-group,
+.card-border-purple .summary-box,
+.card-border-purple .summary-box-alt {
+  color: #2d3748 !important; /* Texte foncé sur fond blanc */
+}
+
+/* S'assurer que les spans dans les summary-box ont aussi la bonne couleur */
+.card-border-purple .summary-box span,
+.card-border-purple .summary-box-alt span {
+  color: #1a202c !important; /* Texte très foncé pour les valeurs */
+  font-weight: 600;
+}
+
 /* ===== Amélioration du focus pour l'accessibilité ===== */
 button:focus,
 input:focus,

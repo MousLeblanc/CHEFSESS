@@ -23,14 +23,20 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log("DASHBOARD: DOMContentLoaded - Initialisation pour accueil.html");
 
     // 🍪 Token géré via cookie HTTP-Only (pas besoin de le récupérer)
-    const userString = sessionStorage.getItem('user');
+    // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
     let user = null;
-
-    if (userString) {
-        try {
-            user = JSON.parse(userString);
-        } catch (e) {
-            console.error("DASHBOARD: Erreur parsing user localStorage", e);
+    if (typeof getStoredUser === 'function') {
+        user = getStoredUser();
+    } else {
+        const userString = sessionStorage.getItem('user');
+        if (userString) {
+            try {
+                user = typeof safeJSONParse === 'function' 
+                    ? safeJSONParse(userString, null)
+                    : JSON.parse(userString);
+            } catch (e) {
+                console.error("DASHBOARD: Erreur parsing user localStorage", e);
+            }
         }
     }
 

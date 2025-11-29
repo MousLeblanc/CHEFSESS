@@ -1,4 +1,5 @@
 import asyncHandler from 'express-async-handler';
+import mongoose from 'mongoose';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import Stock from '../models/Stock.js';
@@ -10,6 +11,13 @@ import { isValidObjectId, isValidArray, isValidInteger, sanitizeInteger } from '
 // @route   POST /api/orders
 // @access  Private (collectivite)
 export const createOrder = asyncHandler(async (req, res) => {
+  // Vérifier que MongoDB est connecté
+  if (mongoose.connection.readyState !== 1) {
+    console.error('❌ CREATE ORDER - MongoDB non connecté. État:', mongoose.connection.readyState);
+    res.status(503);
+    throw new Error('Service temporairement indisponible. Connexion à la base de données en cours...');
+  }
+  
   console.log('📦 CREATE ORDER - Données reçues:', JSON.stringify(req.body, null, 2));
   console.log('📦 CREATE ORDER - User:', req.user);
   
@@ -50,22 +58,57 @@ export const createOrder = asyncHandler(async (req, res) => {
   // Vérifier si c'est un ID MongoDB valide (24 caractères hexadécimaux)
   const isObjectId = /^[0-9a-fA-F]{24}$/.test(supplier);
   
+  console.log(`🔍 Recherche fournisseur: ${supplier} (type: ${isObjectId ? 'ObjectId' : 'nom'})`);
+  
   if (isObjectId) {
-    // C'est déjà un ID, vérifier qu'il existe
+    // C'est déjà un ID, vérifier qu'il existe et qu'il est un fournisseur
     const supplierUser = await User.findById(supplier);
+    
     if (!supplierUser) {
+      console.error(`❌ Utilisateur non trouvé avec l'ID: ${supplier}`);
       res.status(400);
       throw new Error(`Fournisseur non trouvé: ${supplier}`);
     }
+    
+    console.log(`📋 Utilisateur trouvé:`, {
+      id: supplierUser._id,
+      name: supplierUser.name,
+      email: supplierUser.email,
+      role: supplierUser.role,
+      isActive: supplierUser.isActive,
+      businessName: supplierUser.businessName
+    });
+    
+    // Vérifier que c'est bien un fournisseur
+    if (supplierUser.role !== 'fournisseur') {
+      console.error(`❌ L'utilisateur ${supplier} n'est pas un fournisseur (rôle: ${supplierUser.role})`);
+      res.status(400);
+      throw new Error(`L'utilisateur ${supplierUser.name || supplierUser.email} n'est pas un fournisseur`);
+    }
+    
+    // Vérifier que le fournisseur est actif
+    if (!supplierUser.isActive) {
+      console.error(`❌ Le fournisseur ${supplier} n'est pas actif`);
+      res.status(400);
+      throw new Error(`Le fournisseur ${supplierUser.businessName || supplierUser.name} n'est pas actif`);
+    }
+    
     supplierId = supplierUser._id;
     console.log(`✅ Fournisseur trouvé par ID: ${supplierUser.businessName || supplierUser.name}`);
   } else {
     // C'est un nom, chercher par businessName
-    const supplierUser = await User.findOne({ businessName: supplier });
+    const supplierUser = await User.findOne({ 
+      businessName: supplier,
+      role: 'fournisseur',
+      isActive: true
+    });
+    
     if (!supplierUser) {
+      console.error(`❌ Fournisseur non trouvé avec le nom: ${supplier}`);
       res.status(400);
       throw new Error(`Fournisseur non trouvé: ${supplier}`);
     }
+    
     supplierId = supplierUser._id;
     console.log(`✅ Fournisseur trouvé par nom: ${supplier}`);
   }
@@ -120,28 +163,79 @@ export const createOrder = asyncHandler(async (req, res) => {
   const count = await Order.countDocuments();
   const orderNumber = `CMD-${Date.now()}-${(count + 1).toString().padStart(4, '0')}`;
 
-  const order = new Order({
-    orderNumber: orderNumber,
+  // ✅ VALIDATION : Valider la date de livraison
+  if (!deliveryDate) {
+    console.log('❌ CREATE ORDER - Validation échouée: date de livraison manquante');
+    res.status(400);
+    throw new Error('Date de livraison requise');
+  }
+  
+  const deliveryDateObj = new Date(deliveryDate);
+  if (isNaN(deliveryDateObj.getTime())) {
+    console.log('❌ CREATE ORDER - Validation échouée: date de livraison invalide');
+    res.status(400);
+    throw new Error(`Date de livraison invalide: ${deliveryDate}`);
+  }
+
+  console.log('📋 Données de commande à créer:', {
+    orderNumber,
     customer: req.user._id,
     supplier: supplierId,
-    siteId: req.user.siteId, // 🎯 AJOUT DU SITE ID pour Food Cost
-    items: orderItems,
-    delivery: {
-      requestedDate: new Date(deliveryDate),
-      notes: notes || ''
-    },
-    pricing: {
-      subtotal: subtotal,
-      tax: 0, // Pas de TVA pour les collectivités
-      total: subtotal
-    },
-    notes: {
-      customer: notes || ''
-    },
+    siteId: req.user.siteId || null,
+    itemsCount: orderItems.length,
+    subtotal,
+    deliveryDate: deliveryDateObj,
     establishmentType: req.user.establishmentType || 'restaurant'
   });
 
-  await order.save();
+  // Déclarer order avant le try-catch pour qu'il soit accessible après
+  let order;
+  
+  try {
+    order = new Order({
+      orderNumber: orderNumber,
+      customer: req.user._id,
+      supplier: supplierId,
+      siteId: req.user.siteId || null, // 🎯 AJOUT DU SITE ID pour Food Cost (peut être null)
+      items: orderItems,
+      delivery: {
+        requestedDate: deliveryDateObj,
+        notes: notes || ''
+      },
+      pricing: {
+        subtotal: subtotal,
+        tax: 0, // Pas de TVA pour les collectivités
+        total: subtotal
+      },
+      notes: {
+        customer: notes || ''
+      },
+      establishmentType: req.user.establishmentType || 'restaurant'
+    });
+
+    await order.save();
+    console.log(`✅ Commande ${orderNumber} sauvegardée avec succès`);
+  } catch (saveError) {
+    console.error('❌ ERREUR lors de la sauvegarde de la commande:');
+    console.error('   Type:', saveError.name);
+    console.error('   Message:', saveError.message);
+    console.error('   Stack:', saveError.stack);
+    if (saveError.errors) {
+      console.error('   Erreurs de validation:');
+      Object.keys(saveError.errors).forEach(key => {
+        console.error(`     - ${key}: ${saveError.errors[key].message}`);
+      });
+    }
+    // Re-lancer l'erreur pour qu'elle soit gérée par asyncHandler
+    throw saveError;
+  }
+  
+  if (!order) {
+    console.error('❌ ERREUR: La commande n\'a pas été créée');
+    res.status(500);
+    throw new Error('Erreur lors de la création de la commande');
+  }
+  
   console.log(`✅ Commande ${orderNumber} créée avec succès`);
   
   // 🔔 NOTIFIER LE FOURNISSEUR DE LA NOUVELLE COMMANDE

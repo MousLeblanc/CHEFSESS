@@ -1,7 +1,20 @@
 // Fonction pour récupérer l'utilisateur connecté (version locale)
+// ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
 function getCurrentUser() {
+    if (typeof getStoredUser === 'function') {
+        return getStoredUser();
+    }
+    // Fallback si getStoredUser n'est pas disponible
     const user = sessionStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    if (!user) return null;
+    if (typeof safeJSONParse === 'function') {
+        return safeJSONParse(user, null);
+    }
+    try {
+        return JSON.parse(user);
+    } catch {
+        return null;
+    }
 }
 
 console.log('🚀 Chargement de supplier-dashboard.js');
@@ -28,6 +41,39 @@ class SupplierDashboard {
                 }
             }
         });
+        
+        // Écouter les changements de session depuis d'autres onglets
+        if (window.sessionSync) {
+            window.sessionSync.onSessionChange((user) => {
+                if (user) {
+                    // Vérifier que le rôle correspond avant de recharger
+                    if (user.role === 'fournisseur') {
+                        console.log('🔄 Session mise à jour depuis un autre onglet, rechargement...');
+                        // Recharger les informations utilisateur
+                        this.loadUserInfo();
+                    } else {
+                        console.log(`⚠️ Changement de rôle détecté (${user.role}) - Ne pas recharger cet onglet`);
+                        // Ne pas recharger si le rôle ne correspond pas
+                    }
+                } else {
+                    // Vérifier si on est vraiment déconnecté avant de rediriger
+                    fetch('/api/auth/me', {
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' }
+                    }).then(response => {
+                        if (response.status === 401) {
+                            console.log('🚪 Déconnexion confirmée depuis un autre onglet');
+                            window.location.href = '/index.html';
+                        } else {
+                            console.log('⚠️ Pas vraiment déconnecté - probablement changement de rôle');
+                        }
+                    }).catch(() => {
+                        // En cas d'erreur, rediriger quand même
+                        window.location.href = '/index.html';
+                    });
+                }
+            });
+        }
         
         // TOUJOURS vérifier avec le serveur pour garantir que l'utilisateur est toujours authentifié
         console.log('🔐 Vérification de l\'authentification avec le serveur...');
@@ -191,6 +237,22 @@ class SupplierDashboard {
             addZoneBtn.addEventListener('click', () => this.addDeliveryZone());
         }
         
+        // Gestion de l'affichage du champ seuil de livraison gratuite
+        const freeDeliveryEnabled = document.getElementById('free-delivery-enabled');
+        const freeDeliveryThresholdGroup = document.getElementById('free-delivery-threshold-group');
+        if (freeDeliveryEnabled && freeDeliveryThresholdGroup) {
+            freeDeliveryEnabled.addEventListener('change', (e) => {
+                freeDeliveryThresholdGroup.style.display = e.target.checked ? 'flex' : 'none';
+                if (!e.target.checked) {
+                    // Réinitialiser le champ si désactivé
+                    const thresholdInput = document.getElementById('free-delivery-threshold');
+                    if (thresholdInput) {
+                        thresholdInput.value = '';
+                    }
+                }
+            });
+        }
+        
         // Initialiser l'autocomplete pour le champ ville quand l'onglet profil est visible
         // On l'initialisera aussi quand l'onglet est activé
         const profileTab = document.getElementById('profile-tab');
@@ -225,12 +287,148 @@ class SupplierDashboard {
 
             if (response.ok) {
                 const stats = await response.json();
-                document.getElementById('active-products-count').textContent = stats.activeProducts;
-                document.getElementById('pending-orders-count').textContent = stats.pendingOrders;
-                document.getElementById('active-clients-count').textContent = stats.activeClients;
+                document.getElementById('active-products-count').textContent = stats.activeProducts || 0;
+                document.getElementById('pending-orders-count').textContent = stats.pendingOrders || 0;
+                document.getElementById('active-clients-count').textContent = stats.activeClients || 0;
+                document.getElementById('total-orders-count').textContent = stats.totalOrders || 0;
             }
         } catch (error) {
+            console.error('❌ Erreur lors du chargement des statistiques:', error);
             this.showToast('Erreur lors du chargement des statistiques', 'error');
+        }
+    }
+    
+    toggleClientsList() {
+        const clientsSection = document.getElementById('clients-section');
+        if (!clientsSection) return;
+        
+        if (clientsSection.style.display === 'none') {
+            clientsSection.style.display = 'block';
+            // Charger les clients si pas encore chargés
+            if (document.getElementById('clients-list').querySelector('.loading-container')) {
+                this.loadClients();
+            }
+        } else {
+            clientsSection.style.display = 'none';
+        }
+    }
+    
+    async loadClients() {
+        try {
+            const response = await fetch('/api/suppliers/clients', {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const clientsListEl = document.getElementById('clients-list');
+            if (!clientsListEl) return;
+            
+            if (response.ok) {
+                const result = await response.json();
+                const clients = result.data || [];
+                
+                // Mettre à jour le compteur de clients actifs
+                const activeClientsCountEl = document.getElementById('active-clients-count');
+                if (activeClientsCountEl) {
+                    activeClientsCountEl.textContent = clients.length;
+                }
+                
+                if (clients.length === 0) {
+                    clientsListEl.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #666;">
+                            <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                            <p>Aucun client pour le moment</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Afficher les clients
+                clientsListEl.innerHTML = clients.map(client => {
+                    const lastOrderDate = client.statistics.lastOrderDate 
+                        ? new Date(client.statistics.lastOrderDate).toLocaleDateString('fr-FR', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })
+                        : 'N/A';
+                    
+                    const firstOrderDate = client.statistics.firstOrderDate
+                        ? new Date(client.statistics.firstOrderDate).toLocaleDateString('fr-FR', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })
+                        : 'N/A';
+                    
+                    return `
+                        <div class="client-card" style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                <div>
+                                    <h3 style="margin: 0 0 0.5rem 0; color: #2c3e50; font-size: 1.2rem;">
+                                        <i class="fas fa-building" style="color: #16a085; margin-right: 0.5rem;"></i>
+                                        ${client.clientName}
+                                    </h3>
+                                    ${client.clientEmail ? `<p style="margin: 0.25rem 0; color: #666;"><i class="fas fa-envelope" style="margin-right: 0.5rem;"></i>${client.clientEmail}</p>` : ''}
+                                    ${client.clientPhone ? `<p style="margin: 0.25rem 0; color: #666;"><i class="fas fa-phone" style="margin-right: 0.5rem;"></i>${client.clientPhone}</p>` : ''}
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 1.5rem; font-weight: bold; color: #16a085;">
+                                        ${client.statistics.totalAmount}€
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: #666;">Total commandé</div>
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
+                                <div>
+                                    <div style="font-size: 1.1rem; font-weight: bold; color: #2c3e50;">${client.statistics.totalOrders}</div>
+                                    <div style="font-size: 0.85rem; color: #666;">Commandes totales</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 1.1rem; font-weight: bold; color: #e67e22;">${client.statistics.pendingOrders}</div>
+                                    <div style="font-size: 0.85rem; color: #666;">En attente</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 1.1rem; font-weight: bold; color: #3498db;">${client.statistics.confirmedOrders}</div>
+                                    <div style="font-size: 0.85rem; color: #666;">Confirmées</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 1.1rem; font-weight: bold; color: #27ae60;">${client.statistics.deliveredOrders}</div>
+                                    <div style="font-size: 0.85rem; color: #666;">Livrées</div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee; font-size: 0.85rem; color: #666;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span><i class="fas fa-calendar-check" style="margin-right: 0.5rem;"></i>Première commande: ${firstOrderDate}</span>
+                                    <span><i class="fas fa-calendar" style="margin-right: 0.5rem;"></i>Dernière commande: ${lastOrderDate}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                clientsListEl.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #e74c3c;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Erreur lors du chargement des clients</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('❌ Erreur lors du chargement des clients:', error);
+            const clientsListEl = document.getElementById('clients-list');
+            if (clientsListEl) {
+                clientsListEl.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #e74c3c;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Erreur lors du chargement des clients</p>
+                    </div>
+                `;
+            }
         }
     }
 
@@ -309,8 +507,12 @@ class SupplierDashboard {
         container.innerHTML = '';
         
         try {
-            // Récupérer l'ID du fournisseur depuis le profil utilisateur
-            const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+            // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+            const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+            if (!user || !user._id) {
+              console.error('❌ Utilisateur non connecté ou ID manquant');
+              return;
+            }
             const supplierId = user._id;
             
             console.log('📊 [loadRatings] User:', user);
@@ -580,6 +782,10 @@ class SupplierDashboard {
         console.log('   - toSaveActive (select):', toSaveActiveSelect);
         console.log('   - toSaveActive (final):', toSaveActive);
         
+        // Récupérer les informations de traçabilité
+        const hasLabel = document.getElementById('traceability-has-label')?.checked || false;
+        const labelType = hasLabel ? (document.getElementById('traceability-label-type')?.value || '') : '';
+        
         const formData = {
             name: document.getElementById('product-name').value,
             category: document.getElementById('product-category').value,
@@ -590,6 +796,28 @@ class SupplierDashboard {
             description: document.getElementById('product-description').value,
             promo: parseInt(document.getElementById('product-promo').value) || 0,
             saveProduct: toSaveActive, // Synchronisé avec toSave
+            // Code-barres
+            barcode: document.getElementById('product-barcode')?.value || null,
+            // Informations de traçabilité (AFSCA)
+            traceability: {
+                countryOfOrigin: document.getElementById('traceability-country')?.value || '',
+                batchNumber: document.getElementById('traceability-batch')?.value || '',
+                traceabilityNumber: document.getElementById('traceability-number')?.value || '',
+                healthStamp: document.getElementById('traceability-health-stamp')?.value || '',
+                commercialPresentation: document.getElementById('traceability-presentation')?.value || '',
+                category: document.getElementById('traceability-category')?.value || '',
+                class: document.getElementById('traceability-class')?.value || '',
+                qualityLabel: {
+                    hasLabel: hasLabel,
+                    labelType: labelType
+                },
+                productionDate: document.getElementById('traceability-production-date')?.value ? 
+                    new Date(document.getElementById('traceability-production-date').value) : null,
+                useByDate: document.getElementById('traceability-use-by-date')?.value ? 
+                    new Date(document.getElementById('traceability-use-by-date').value) : null,
+                bestBeforeDate: document.getElementById('traceability-best-before-date')?.value ? 
+                    new Date(document.getElementById('traceability-best-before-date').value) : null
+            },
             superPromo: {
                 active: superPromoActive,
                 promoPrice: superPromoActive ? parseFloat(document.getElementById('super-promo-price').value) : null,
@@ -700,6 +928,17 @@ class SupplierDashboard {
                 priceDisplay = `<span class="original-price" style="text-decoration: line-through; color: #999;">${product.price}€</span> <span class="promo-price" style="color: #3498db; font-weight: bold;">${finalPrice}€</span>`;
             }
 
+            // Image du produit si disponible
+            const productImage = product.imageUrl ? 
+                `<div style="text-align: center; margin-bottom: 1rem;">
+                    <img src="${product.imageUrl}" alt="${product.name}" 
+                         style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 2px solid #ddd; object-fit: contain; background: #f9f9f9; padding: 0.5rem;">
+                </div>` : '';
+            
+            // Code-barres si disponible
+            const barcodeInfo = product.barcode ? 
+                `<p style="font-size: 0.85rem; color: #7f8c8d;"><i class="fas fa-barcode"></i> Code-barres: ${product.barcode}</p>` : '';
+            
             card.innerHTML = `
                 <div class="product-header">
                     <h3>${product.name}</h3>
@@ -710,6 +949,7 @@ class SupplierDashboard {
                         ${saveBadge}
                     </div>
                 </div>
+                ${productImage}
                 <div class="product-info">
                     <p><strong>Catégorie:</strong> ${product.category}</p>
                     <p><strong>Prix:</strong> ${priceDisplay}/${product.unit}</p>
@@ -723,6 +963,7 @@ class SupplierDashboard {
                     ` : ''}
                     <p><strong>Délai de livraison:</strong> ${product.deliveryTime} jours</p>
                     <p><strong>Commande minimum:</strong> ${product.minOrder} ${product.unit}</p>
+                    ${barcodeInfo}
                     ${product.description ? `<p><strong>Description:</strong> ${product.description}</p>` : ''}
                 </div>
                 <div class="action-buttons">
@@ -818,8 +1059,31 @@ class SupplierDashboard {
                 document.getElementById('supplier-isBio').checked = supplier.isBio || false;
                 document.getElementById('supplier-notes').value = supplier.notes || '';
                 
-                // Charger les zones de livraison
-                this.deliveryZones = supplier.deliveryZones || [];
+                // Charger la livraison gratuite
+                const freeDeliveryEnabled = document.getElementById('free-delivery-enabled');
+                const freeDeliveryThreshold = document.getElementById('free-delivery-threshold');
+                const freeDeliveryThresholdGroup = document.getElementById('free-delivery-threshold-group');
+                
+                if (freeDeliveryEnabled && freeDeliveryThreshold) {
+                    freeDeliveryEnabled.checked = supplier.freeDelivery?.enabled || false;
+                    freeDeliveryThreshold.value = supplier.freeDelivery?.threshold || '';
+                    
+                    // Afficher/masquer le champ du seuil selon l'état de la checkbox
+                    if (freeDeliveryThresholdGroup) {
+                        freeDeliveryThresholdGroup.style.display = freeDeliveryEnabled.checked ? 'flex' : 'none';
+                    }
+                }
+                
+                // Charger les zones de livraison avec leurs règles
+                this.deliveryZones = (supplier.deliveryZones || []).map(zone => ({
+                    city: zone.city || '',
+                    postalCode: zone.postalCode || '',
+                    deliveryRules: zone.deliveryRules || {
+                        freeDeliveryThreshold: null,
+                        deliveryFee: 0,
+                        currency: 'EUR'
+                    }
+                }));
                 this.renderDeliveryZones();
             } else {
                 console.error('❌ Erreur lors du chargement du profil');
@@ -856,10 +1120,15 @@ class SupplierDashboard {
             return;
         }
 
-        // Ajouter la zone
+        // Ajouter la zone avec règles de livraison par défaut
         this.deliveryZones.push({
             city: city || undefined,
-            postalCode: postalCode || undefined
+            postalCode: postalCode || undefined,
+            deliveryRules: {
+                freeDeliveryThreshold: null,
+                deliveryFee: 0,
+                currency: 'EUR'
+            }
         });
 
         // Réinitialiser les champs
@@ -955,6 +1224,94 @@ class SupplierDashboard {
     renderDeliveryZones() {
         const container = document.getElementById('delivery-zones-list');
         if (!container) return;
+        
+        if (this.deliveryZones.length === 0) {
+            container.innerHTML = '<p style="color: #7f8c8d; font-style: italic;">Aucune zone de livraison définie</p>';
+            return;
+        }
+        
+        container.innerHTML = this.deliveryZones.map((zone, index) => {
+            const city = zone.city || '';
+            const postalCode = zone.postalCode || '';
+            const deliveryRules = zone.deliveryRules || {};
+            const freeThreshold = deliveryRules.freeDeliveryThreshold || '';
+            const deliveryFee = deliveryRules.deliveryFee || '';
+            
+            return `
+                <div style="border: 1px solid #e74c3c; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+                        <!-- Colonne gauche : Ville et règles de livraison -->
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                <i class="fas fa-map-marker-alt" style="color: #e74c3c;"></i>
+                                <strong style="color: #2c3e50; font-size: 1rem;">
+                                    ${city}${postalCode ? ` (${postalCode})` : ''}
+                                </strong>
+                            </div>
+                            
+                            <!-- Règles de livraison compactes -->
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 200px;">
+                                    <label style="font-size: 0.85rem; color: #555; white-space: nowrap; min-width: 180px;">
+                                        <i class="fas fa-gift" style="color: #e67e22; margin-right: 0.25rem;"></i>
+                                        Livraison gratuite à pd (€):
+                                    </label>
+                                    <input 
+                                        type="number" 
+                                        min="0" 
+                                        step="0.01" 
+                                        placeholder="Ex: 50" 
+                                        value="${freeThreshold}"
+                                        onchange="window.dashboard.updateDeliveryRule(${index}, 'freeDeliveryThreshold', this.value)"
+                                        style="flex: 1; padding: 0.4rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem; max-width: 100px;">
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 200px;">
+                                    <label style="font-size: 0.85rem; color: #555; white-space: nowrap; min-width: 180px;">
+                                        <i class="fas fa-euro-sign" style="color: #27ae60; margin-right: 0.25rem;"></i>
+                                        Sinon frais (€):
+                                    </label>
+                                    <input 
+                                        type="number" 
+                                        min="0" 
+                                        step="0.01" 
+                                        placeholder="Ex: 5" 
+                                        value="${deliveryFee}"
+                                        onchange="window.dashboard.updateDeliveryRule(${index}, 'deliveryFee', this.value)"
+                                        style="flex: 1; padding: 0.4rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem; max-width: 100px;">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bouton supprimer -->
+                        <button type="button" class="btn btn-danger" onclick="window.dashboard.removeDeliveryZone(${index})" style="padding: 0.5rem 0.75rem; font-size: 0.85rem; align-self: flex-start;">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    updateDeliveryRule(zoneIndex, ruleKey, value) {
+        if (!this.deliveryZones[zoneIndex]) return;
+        
+        if (!this.deliveryZones[zoneIndex].deliveryRules) {
+            this.deliveryZones[zoneIndex].deliveryRules = {};
+        }
+        
+        if (ruleKey === 'freeDeliveryThreshold') {
+            this.deliveryZones[zoneIndex].deliveryRules.freeDeliveryThreshold = value && value > 0 ? parseFloat(value) : null;
+        } else if (ruleKey === 'deliveryFee') {
+            this.deliveryZones[zoneIndex].deliveryRules.deliveryFee = value && value > 0 ? parseFloat(value) : 0;
+        }
+        
+        // Sauvegarder automatiquement (optionnel)
+        // this.saveSupplierProfile();
+    }
+    
+    renderDeliveryZonesOld() {
+        const container = document.getElementById('delivery-zones-list');
+        if (!container) return;
 
         if (this.deliveryZones.length === 0) {
             container.innerHTML = '<p style="color: #7f8c8d; font-style: italic;">Aucune zone de livraison définie</p>';
@@ -990,6 +1347,9 @@ class SupplierDashboard {
         try {
             console.log('💾 Sauvegarde du profil fournisseur...');
             
+            const freeDeliveryEnabled = document.getElementById('free-delivery-enabled')?.checked || false;
+            const freeDeliveryThreshold = document.getElementById('free-delivery-threshold')?.value || '';
+            
             const supplierData = {
                 name: document.getElementById('supplier-name').value,
                 contact: document.getElementById('supplier-contact').value,
@@ -1004,7 +1364,12 @@ class SupplierDashboard {
                 type: document.getElementById('supplier-type').value,
                 isBio: document.getElementById('supplier-isBio').checked,
                 notes: document.getElementById('supplier-notes').value,
-                deliveryZones: this.deliveryZones
+                deliveryZones: this.deliveryZones,
+                freeDelivery: {
+                    enabled: freeDeliveryEnabled,
+                    threshold: freeDeliveryEnabled && freeDeliveryThreshold ? parseFloat(freeDeliveryThreshold) : null,
+                    currency: 'EUR'
+                }
             };
 
             console.log('📦 Données à sauvegarder:', supplierData);
@@ -1058,6 +1423,21 @@ window.editProduct = async function(productId) {
             document.getElementById('product-description').value = product.description || '';
             document.getElementById('product-promo').value = product.promo || 0;
             document.getElementById('product-save').value = product.saveProduct ? 'true' : 'false';
+            
+            // Code-barres et image
+            if (document.getElementById('product-barcode')) {
+                document.getElementById('product-barcode').value = product.barcode || '';
+            }
+            if (product.imageUrl) {
+                let imageUrlInput = document.getElementById('product-image-url');
+                if (!imageUrlInput) {
+                    imageUrlInput = document.createElement('input');
+                    imageUrlInput.type = 'hidden';
+                    imageUrlInput.id = 'product-image-url';
+                    document.getElementById('add-product-form').appendChild(imageUrlInput);
+                }
+                imageUrlInput.value = product.imageUrl;
+            }
             
             // Super Promo
             const superPromoActive = product.superPromo?.active || false;

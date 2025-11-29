@@ -1,6 +1,19 @@
 export function getCurrentUser() {
+  // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+  if (typeof getStoredUser === 'function') {
+    return getStoredUser();
+  }
+  // Fallback si getStoredUser n'est pas disponible
   const user = sessionStorage.getItem('user');
-  return user ? JSON.parse(user) : null;
+  if (!user) return null;
+  if (typeof safeJSONParse === 'function') {
+    return safeJSONParse(user, null);
+  }
+  try {
+    return JSON.parse(user);
+  } catch {
+    return null;
+  }
 }
 
 // Fonction pour rafraîchir les données utilisateur depuis le serveur
@@ -73,13 +86,21 @@ export function getToken() {
 
 export async function logout() {
   try {
+    // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+    
     // 🔐 Appeler l'API pour supprimer le cookie côté serveur
-    await fetch('/api/auth/logout', {
+    await fetchFn('/api/auth/logout', {
       method: 'POST',
       credentials: 'include' // Important pour envoyer le cookie
     });
   } catch (error) {
     console.error('Erreur lors de la déconnexion:', error);
+  }
+  
+  // Notifier les autres onglets de la déconnexion
+  if (typeof window !== 'undefined' && window.sessionSync) {
+    window.sessionSync.notifyLogout();
   }
   
   // Nettoyer sessionStorage

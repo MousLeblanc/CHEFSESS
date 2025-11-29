@@ -54,6 +54,74 @@ const productSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  // Image du produit (URL depuis Open Food Facts ou autre source)
+  imageUrl: {
+    type: String,
+    trim: true
+  },
+  // Code-barres (EAN-13, UPC, etc.)
+  barcode: {
+    type: String,
+    trim: true,
+    sparse: true, // Permet plusieurs produits sans code-barres
+    validate: {
+      validator: function(v) {
+        // Valider le format du code-barres (8-13 chiffres)
+        return !v || /^\d{8,13}$/.test(v);
+      },
+      message: 'Le code-barres doit contenir entre 8 et 13 chiffres'
+    }
+  },
+  // Informations de traçabilité (exigences AFSCA)
+  traceability: {
+    countryOfOrigin: {
+      type: String,
+      trim: true
+    },
+    batchNumber: {
+      type: String,
+      trim: true
+    },
+    traceabilityNumber: {
+      type: String,
+      trim: true
+    },
+    healthStamp: {
+      type: String,
+      trim: true
+    },
+    productionDate: {
+      type: Date
+    },
+    useByDate: {
+      type: Date
+    },
+    bestBeforeDate: {
+      type: Date
+    },
+    commercialPresentation: {
+      type: String,
+      enum: ['réfrigéré', 'surgelé', 'conserve', '4ème gamme', '5ème gamme', 'autre']
+    },
+    qualityLabel: {
+      hasLabel: {
+        type: Boolean,
+        default: false
+      },
+      labelType: {
+        type: String,
+        enum: ['AOC', 'Label Rouge', 'AB', 'autre', '']
+      }
+    },
+    category: {
+      type: String,
+      trim: true
+    },
+    class: {
+      type: String,
+      enum: ['A', 'B', '']
+    }
+  },
   promo: {
     type: Number,
     default: 0,
@@ -129,6 +197,7 @@ productSchema.index({ category: 1 });
 productSchema.index({ supplier: 1 });
 productSchema.index({ active: 1 });
 productSchema.index({ stock: 1 });
+productSchema.index({ barcode: 1 }); // Index pour recherche par code-barres
 
 const Product = mongoose.model('Product', productSchema); // Changé pour définir Product avant d'exporter
 export default Product; // Changé de module.exports

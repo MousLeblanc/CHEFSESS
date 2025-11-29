@@ -14,7 +14,10 @@ class AuthAPI {
      */
     async login(email, password) {
         try {
-            const response = await fetch(`${this.baseURL}/login`, {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+            
+            const response = await fetchFn(`${this.baseURL}/login`, {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {
@@ -42,7 +45,10 @@ class AuthAPI {
      */
     async register(userData) {
         try {
-            const response = await fetch(`${this.baseURL}/register`, {
+            // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+            
+            const response = await fetchFn(`${this.baseURL}/register`, {
                 credentials: 'include', // 🍪 Cookie HTTP-Only
                 method: 'POST',
                 headers: {

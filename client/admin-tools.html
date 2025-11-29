@@ -216,7 +216,8 @@
     <script>
         // Vérifier l'authentification au chargement
         window.addEventListener('DOMContentLoaded', () => {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+            const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
             const authStatus = document.getElementById('auth-status');
             
             if (user.role === 'admin' || user.roles?.includes('GROUP_ADMIN')) {

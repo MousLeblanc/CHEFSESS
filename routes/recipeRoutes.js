@@ -1,6 +1,7 @@
 // routes/recipeRoutes.js
 import express from 'express';
 import Recipe from '../recipe.model.js';
+import RecipeEnriched from '../models/Recipe.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -122,6 +123,121 @@ router.get('/stats/overview', protect, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erreur lors de la récupération des statistiques'
+        });
+    }
+});
+
+// POST /api/recipes/compatible - Récupérer les menus compatibles avec les restrictions
+router.post('/compatible', async (req, res) => {
+    try {
+        const { allergens = [], dietaryRestrictions = [], intolerances = [] } = req.body;
+        
+        // Normaliser les allergènes (combiner allergies et intolérances)
+        const allAllergens = [...new Set([...allergens, ...intolerances])].map(a => a.toLowerCase());
+        
+        // Construire le filtre
+        let filter = {
+            category: { $in: ['plat', 'entrée', 'dessert'] } // Seulement les plats principaux
+        };
+        
+        // Exclure les recettes contenant les allergènes
+        if (allAllergens.length > 0) {
+            filter.allergens = { $nin: allAllergens };
+        }
+        
+        // Filtrer par restrictions alimentaires
+        if (dietaryRestrictions && dietaryRestrictions.length > 0) {
+            const restrictionsLower = dietaryRestrictions.map(r => r.toLowerCase());
+            
+            // Construire des conditions OR pour les restrictions
+            const orConditions = [];
+            
+            // Si végétarien demandé
+            if (restrictionsLower.includes('vegetarien') || restrictionsLower.includes('végétarien')) {
+                orConditions.push(
+                    { dietaryRestrictions: { $in: ['vegetarien', 'végétarien'] } },
+                    { diet: { $in: ['vegetarien', 'végétarien'] } }
+                );
+            }
+            
+            // Si végétalien/vegan demandé
+            if (restrictionsLower.includes('vegan') || restrictionsLower.includes('végétalien')) {
+                orConditions.push(
+                    { dietaryRestrictions: { $in: ['vegan', 'végétalien'] } },
+                    { diet: { $in: ['vegan', 'végétalien'] } }
+                );
+                // Exclure aussi les allergènes lait et œufs
+                if (allAllergens.length > 0) {
+                    filter.allergens = { 
+                        $nin: [...allAllergens, 'lactose', 'lait', 'oeufs', 'oeuf']
+                    };
+                } else {
+                    filter.allergens = { 
+                        $nin: ['lactose', 'lait', 'oeufs', 'oeuf']
+                    };
+                }
+            }
+            
+            // Si halal demandé
+            if (restrictionsLower.includes('halal')) {
+                orConditions.push(
+                    { dietaryRestrictions: { $in: ['halal'] } },
+                    { diet: { $in: ['halal'] } }
+                );
+            }
+            
+            // Si casher demandé
+            if (restrictionsLower.includes('casher')) {
+                orConditions.push(
+                    { dietaryRestrictions: { $in: ['casher'] } },
+                    { diet: { $in: ['casher'] } }
+                );
+            }
+            
+            // Si sans gluten
+            if (restrictionsLower.includes('sans_gluten') || restrictionsLower.includes('sans gluten')) {
+                if (allAllergens.length > 0) {
+                    filter.allergens = { 
+                        $nin: [...allAllergens, 'gluten']
+                    };
+                } else {
+                    filter.allergens = { $nin: ['gluten'] };
+                }
+            }
+            
+            // Si sans lactose
+            if (restrictionsLower.includes('sans_lactose') || restrictionsLower.includes('sans lactose')) {
+                if (allAllergens.length > 0) {
+                    filter.allergens = { 
+                        $nin: [...allAllergens, 'lactose', 'lait']
+                    };
+                } else {
+                    filter.allergens = { $nin: ['lactose', 'lait'] };
+                }
+            }
+            
+            // Si on a des conditions OR, les ajouter au filtre
+            if (orConditions.length > 0) {
+                filter.$or = orConditions;
+            }
+        }
+        
+        // Récupérer les recettes compatibles
+        const recipes = await RecipeEnriched.find(filter)
+            .select('name category description frenchTitle allergens dietaryRestrictions diet tags')
+            .limit(50)
+            .sort({ name: 1 });
+        
+        res.json({
+            success: true,
+            count: recipes.length,
+            data: recipes
+        });
+    } catch (error) {
+        console.error('Erreur récupération menus compatibles:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des menus compatibles'
         });
     }
 });

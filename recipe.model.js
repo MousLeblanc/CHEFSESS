@@ -148,6 +148,6 @@ recipeSchema.index({ texture: 1 });
 recipeSchema.index({ mealComponent: 1 });
 recipeSchema.index({ tags: 1 });
 recipeSchema.index({ 'nutrition.calories': 1 });
-recipeSchema.index({ originalId: 1 });
+// originalId a déjà un index unique créé automatiquement par { unique: true } dans la définition du champ
 
 export default mongoose.model('Recipe', recipeSchema);

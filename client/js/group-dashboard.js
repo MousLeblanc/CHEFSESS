@@ -24,6 +24,13 @@ class GroupDashboard {
         this.$loader = null;
         this.$progressModal = null;
         
+        // Références aux graphiques Chart.js pour pouvoir les détruire
+        this.charts = {
+            costPerSite: null,
+            expensesEvolution: null,
+            categoryBreakdown: null
+        };
+        
         // Bind methods
         this.init = this.init.bind(this);
         this.switchTab = this.switchTab.bind(this);
@@ -1874,6 +1881,9 @@ class GroupDashboard {
             this.displaySavingsSuggestions(data.suggestions);
             this.displaySupplierComparison(data.suppliers);
             
+            // Charger la comparaison des prix par produits similaires
+            await this.loadProductPriceComparison();
+            
             this.hideLoader();
         } catch (error) {
             console.error('❌ Erreur loadFinancialAnalysis:', error);
@@ -1918,8 +1928,14 @@ class GroupDashboard {
         const canvas = document.getElementById('cost-per-site-chart');
         if (!canvas || !sitesData) return;
         
+        // Détruire le graphique existant s'il existe
+        if (this.charts.costPerSite) {
+            this.charts.costPerSite.destroy();
+            this.charts.costPerSite = null;
+        }
+        
         const ctx = canvas.getContext('2d');
-        new Chart(ctx, {
+        this.charts.costPerSite = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: sitesData.map(s => s.name),
@@ -1947,8 +1963,14 @@ class GroupDashboard {
         const canvas = document.getElementById('expenses-evolution-chart');
         if (!canvas || !evolutionData) return;
         
+        // Détruire le graphique existant s'il existe
+        if (this.charts.expensesEvolution) {
+            this.charts.expensesEvolution.destroy();
+            this.charts.expensesEvolution = null;
+        }
+        
         const ctx = canvas.getContext('2d');
-        new Chart(ctx, {
+        this.charts.expensesEvolution = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: evolutionData.map(e => e.period),
@@ -1976,8 +1998,14 @@ class GroupDashboard {
         const canvas = document.getElementById('category-breakdown-chart');
         if (!canvas || !categories) return;
         
+        // Détruire le graphique existant s'il existe
+        if (this.charts.categoryBreakdown) {
+            this.charts.categoryBreakdown.destroy();
+            this.charts.categoryBreakdown = null;
+        }
+        
         const ctx = canvas.getContext('2d');
-        new Chart(ctx, {
+        this.charts.categoryBreakdown = new Chart(ctx, {
             type: 'doughnut',
             data: {
                 labels: categories.map(c => c.name),
@@ -2060,6 +2088,211 @@ class GroupDashboard {
         `).join('');
     }
     
+    async loadProductPriceComparison() {
+        const container = document.getElementById('product-price-comparison');
+        if (!container) return;
+        
+        try {
+            const response = await fetch('/api/suppliers/compare-all', {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            this.displayProductPriceComparison(result.data || []);
+        } catch (error) {
+            console.error('❌ Erreur loadProductPriceComparison:', error);
+            container.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #e74c3c;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <p>Erreur lors du chargement de la comparaison: ${error.message}</p>
+                </div>
+            `;
+        }
+    }
+    
+    displayProductPriceComparison(comparisons) {
+        const container = document.getElementById('product-price-comparison');
+        if (!container) return;
+        
+        if (!comparisons || comparisons.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">Aucune comparaison disponible. Assurez-vous d\'avoir plusieurs fournisseurs avec des produits similaires.</div>';
+            return;
+        }
+        
+        // Filtrer et trier : prendre les 20 produits avec les plus grands écarts de prix
+        const topComparisons = comparisons
+            .filter(c => parseFloat(c.priceDifferencePercent) > 5) // Écart minimum de 5%
+            .slice(0, 20);
+        
+        if (topComparisons.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">Aucun écart de prix significatif trouvé entre les fournisseurs.</div>';
+            return;
+        }
+        
+        // Créer l'interface avec recherche et filtres
+        container.innerHTML = `
+            <div style="margin-bottom: 1.5rem;">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <input type="text" id="product-comparison-search" placeholder="Rechercher un produit..." 
+                           style="flex: 1; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
+                    <select id="product-comparison-category" style="padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
+                        <option value="">Toutes les catégories</option>
+                        ${[...new Set(comparisons.map(c => c.category))].map(cat => 
+                            `<option value="${cat}">${cat}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; color: #666; font-size: 0.85rem;">
+                    <i class="fas fa-info-circle"></i>
+                    <span>${topComparisons.length} produit(s) avec des écarts de prix significatifs (>5%)</span>
+                </div>
+            </div>
+            
+            <div id="product-comparison-list">
+                ${this.renderProductComparisons(topComparisons)}
+            </div>
+        `;
+        
+        // Ajouter les event listeners pour la recherche et le filtre
+        const searchInput = document.getElementById('product-comparison-search');
+        const categorySelect = document.getElementById('product-comparison-category');
+        
+        const filterComparisons = () => {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedCategory = categorySelect.value;
+            
+            const filtered = topComparisons.filter(c => {
+                const matchesSearch = c.productName.toLowerCase().includes(searchTerm);
+                const matchesCategory = !selectedCategory || c.category === selectedCategory;
+                return matchesSearch && matchesCategory;
+            });
+            
+            const listContainer = document.getElementById('product-comparison-list');
+            if (listContainer) {
+                listContainer.innerHTML = this.renderProductComparisons(filtered);
+            }
+        };
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', filterComparisons);
+        }
+        if (categorySelect) {
+            categorySelect.addEventListener('change', filterComparisons);
+        }
+    }
+    
+    renderProductComparisons(comparisons) {
+        if (comparisons.length === 0) {
+            return '<div style="text-align: center; padding: 2rem; color: #666;">Aucun produit ne correspond aux critères de recherche.</div>';
+        }
+        
+        return comparisons.map(comp => {
+            const cheapestSupplier = comp.suppliers[0];
+            const savingsPercent = parseFloat(comp.priceDifferencePercent);
+            const hasMultipleNames = comp.allProductNames && comp.allProductNames.length > 1;
+            
+            return `
+                <div style="background: white; border: 1px solid #e9ecef; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0 0 0.5rem 0; color: #2c3e50; font-size: 1.1rem;">
+                                ${comp.productName}
+                            </h4>
+                            ${hasMultipleNames ? `
+                                <div style="font-size: 0.8rem; color: #667eea; margin-bottom: 0.5rem; font-style: italic;">
+                                    <i class="fas fa-info-circle"></i> Produits similaires regroupés: ${comp.allProductNames.join(', ')}
+                                </div>
+                            ` : ''}
+                            <div style="display: flex; gap: 1rem; font-size: 0.85rem; color: #666;">
+                                <span><i class="fas fa-tag"></i> ${comp.category}</span>
+                                <span><i class="fas fa-ruler"></i> ${comp.unit}</span>
+                                <span><i class="fas fa-store"></i> ${comp.suppliersCount} fournisseur(s)</span>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.85rem; color: #666; margin-bottom: 0.25rem;">Écart de prix</div>
+                            <div style="font-size: 1.2rem; font-weight: bold; color: ${savingsPercent > 20 ? '#e74c3c' : savingsPercent > 10 ? '#f39c12' : '#27ae60'};">
+                                ${comp.priceDifferencePercent}%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; border-radius: 8px; padding: 1rem;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            ${comp.suppliers.map((supplier, index) => {
+                                const isCheapest = index === 0;
+                                const productNameDiffers = supplier.productName && supplier.productName !== comp.productName;
+                                return `
+                                    <div style="background: ${isCheapest ? '#d4edda' : 'white'}; border: 2px solid ${isCheapest ? '#27ae60' : '#e9ecef'}; border-radius: 8px; padding: 1rem; ${isCheapest ? 'position: relative;' : ''}">
+                                        ${isCheapest ? `
+                                            <div style="position: absolute; top: -10px; right: 10px; background: #27ae60; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">
+                                                <i class="fas fa-trophy"></i> Meilleur prix
+                                            </div>
+                                        ` : ''}
+                                        <div style="font-weight: 600; margin-bottom: 0.5rem; color: #2c3e50;">${supplier.supplierName}</div>
+                                        ${productNameDiffers ? `
+                                            <div style="font-size: 0.75rem; color: #666; margin-bottom: 0.25rem; font-style: italic;">
+                                                ${supplier.productName}
+                                            </div>
+                                        ` : ''}
+                                        <div style="font-size: 1.5rem; font-weight: bold; color: ${isCheapest ? '#27ae60' : '#2c3e50'}; margin-bottom: 0.5rem;">
+                                            ${supplier.price.toFixed(2)}€/${comp.unit}
+                                        </div>
+                                        ${supplier.hasPromo ? `
+                                            <div style="font-size: 0.75rem; color: #e74c3c; margin-bottom: 0.5rem;">
+                                                <i class="fas fa-tag"></i> Promotion active
+                                            </div>
+                                        ` : ''}
+                                        <div style="font-size: 0.85rem; color: #666;">
+                                            <div><i class="fas fa-truck"></i> Livraison: ${supplier.deliveryTime} jour(s)</div>
+                                            <div><i class="fas fa-shopping-cart"></i> Commande min: ${supplier.minOrder} ${comp.unit}</div>
+                                            ${supplier.stock > 0 ? `
+                                                <div><i class="fas fa-box"></i> Stock: ${supplier.stock} ${comp.unit}</div>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e9ecef; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-size: 0.85rem; color: #666;">
+                            <strong>Économie potentielle:</strong> ${comp.priceDifference.toFixed(2)}€/${comp.unit} 
+                            (${comp.priceDifferencePercent}% de différence entre le moins cher et le plus cher)
+                        </div>
+                        <button onclick="groupDashboard.orderFromSupplier('${cheapestSupplier.supplierId}', '${comp.productName}')" 
+                                style="background: #27ae60; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                            <i class="fas fa-shopping-cart"></i> Commander au meilleur prix
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    orderFromSupplier(supplierId, productName) {
+        // Rediriger vers l'onglet fournisseurs et ouvrir le catalogue du fournisseur
+        const suppliersTab = document.querySelector('[data-tab="suppliers"]');
+        if (suppliersTab) {
+            suppliersTab.click();
+            setTimeout(() => {
+                if (typeof window.browseSupplierProductsGlobal === 'function') {
+                    window.browseSupplierProductsGlobal(supplierId, 'Fournisseur');
+                }
+            }, 300);
+        } else {
+            this.showToast(`Redirection vers le catalogue du fournisseur pour "${productName}"`, 'info');
+        }
+    }
+
     displaySupplierComparison(suppliers) {
         const container = document.getElementById('supplier-comparison');
         if (!container || !suppliers || suppliers.length === 0) {
@@ -3145,7 +3378,180 @@ class GroupDashboard {
     }
 
     showAddSiteModal() {
-        this.showToast('Ajout de site - en cours de développement', 'info');
+        const modal = document.getElementById('add-site-modal');
+        if (!modal) {
+            this.showToast('Erreur: Modal non trouvé', 'error');
+            return;
+        }
+
+        // Réinitialiser le formulaire
+        const form = document.getElementById('add-site-form');
+        if (form) {
+            form.reset();
+        }
+
+        // Afficher le modal
+        modal.style.display = 'block';
+
+        // Gérer la fermeture du modal
+        const closeButtons = modal.querySelectorAll('.modal-close');
+        closeButtons.forEach(btn => {
+            btn.onclick = () => {
+                modal.style.display = 'none';
+            };
+        });
+
+        // Fermer en cliquant en dehors
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+        // Gérer la soumission du formulaire
+        if (form) {
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                await this.handleAddSite(form);
+            };
+        }
+    }
+
+    async handleAddSite(form) {
+        try {
+            if (!this.currentGroup) {
+                // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+                const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+                if (user?.groupId) {
+                    this.currentGroup = user.groupId;
+                } else {
+                    throw new Error('Aucun groupe sélectionné. Veuillez vous reconnecter.');
+                }
+            }
+
+            this.showLoader('Création du site en cours...');
+
+            const formData = new FormData(form);
+            const addressText = formData.get('address') || '';
+            
+            // Parser l'adresse (format simple: "Rue, Ville, Code Postal")
+            const addressParts = addressText.split(',').map(s => s.trim());
+            
+            const siteData = {
+                siteName: formData.get('siteName'),
+                type: formData.get('type'),
+                address: {
+                    street: addressParts[0] || 'À définir',
+                    city: addressParts[1] || 'Bruxelles',
+                    postalCode: addressParts[2] || '',
+                    country: 'Belgique'
+                },
+                contact: {
+                    phone: formData.get('phone') || '',
+                    email: formData.get('email') || ''
+                },
+                syncMode: formData.get('syncMode') || 'auto',
+                settings: {
+                    timezone: 'Europe/Brussels',
+                    mealTimes: {
+                        lunch: { start: '12:00', end: '14:00' },
+                        dinner: { start: '18:00', end: '20:00' }
+                    },
+                    capacity: {
+                        lunch: 80,
+                        dinner: 80
+                    }
+                }
+            };
+
+            // Utiliser fetchWithCSRF si disponible
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn(`/api/groups/${this.currentGroup}/sites`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify(siteData)
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Erreur lors de la création du site');
+            }
+
+            const newSite = await response.json();
+            this.showToast(`Site "${newSite.siteName}" créé avec succès !`, 'success');
+
+            // Fermer le modal
+            const modal = document.getElementById('add-site-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+
+            // Recharger la liste des sites
+            await this.loadSitesData();
+
+            // Optionnel: Proposer de créer un utilisateur pour ce site
+            const createUser = confirm(`Site créé ! Voulez-vous créer un compte utilisateur pour "${newSite.siteName}" maintenant ?`);
+            if (createUser) {
+                await this.showCreateSiteUserModal(newSite._id, newSite.siteName);
+            }
+
+        } catch (error) {
+            console.error('❌ Erreur lors de la création du site:', error);
+            this.showToast(`Erreur: ${error.message}`, 'error');
+        } finally {
+            this.hideLoader();
+        }
+    }
+
+    async showCreateSiteUserModal(siteId, siteName) {
+        const email = prompt(`Entrez l'email pour le compte utilisateur de "${siteName}":`);
+        if (!email) return;
+
+        const password = prompt(`Entrez le mot de passe pour ${email}:`);
+        if (!password) return;
+
+        const name = prompt(`Entrez le nom du responsable:`, `Responsable ${siteName}`);
+        if (!name) return;
+
+        try {
+            this.showLoader('Création du compte utilisateur...');
+
+            const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+            const response = await fetchFn(`/api/sites/${siteId}/users`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    name: name,
+                    username: email.split('@')[0], // Utiliser la partie avant @ comme username
+                    email: email,
+                    password: password,
+                    roles: ['SITE_MANAGER', 'CHEF']
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Erreur lors de la création de l\'utilisateur');
+            }
+
+            const result = await response.json();
+            this.showToast(`Compte utilisateur créé ! Email: ${email}`, 'success');
+            console.log(`✅ Compte créé pour ${email} - Mot de passe: ${password}`);
+
+        } catch (error) {
+            console.error('❌ Erreur lors de la création de l\'utilisateur:', error);
+            this.showToast(`Erreur: ${error.message}`, 'error');
+        } finally {
+            this.hideLoader();
+        }
     }
 
     async syncAllSites() {
@@ -3297,8 +3703,24 @@ class GroupDashboard {
         
         // Bouton "Ajouter et fermer"
         if (addAndCloseBtn) {
-            addAndCloseBtn.addEventListener('click', () => {
-                this.addNutritionalGoal(true); // Fermer la modale
+            addAndCloseBtn.addEventListener('click', (e) => {
+                e.preventDefault(); // Empêcher toute soumission de formulaire
+                e.stopPropagation(); // Empêcher la propagation de l'événement
+                
+                // Valider le formulaire avant d'ajouter
+                const form = document.getElementById('add-nutritional-goal-form');
+                if (form && !form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+                
+                const success = this.addNutritionalGoal(false); // Ne pas fermer ici, on le fait après
+                // Si l'ajout a réussi, fermer la modale immédiatement
+                if (success) {
+                    setTimeout(() => {
+                        this.closeGoalModal();
+                    }, 100); // Petit délai pour laisser le temps au toast de s'afficher
+                }
             });
         }
         
@@ -3344,10 +3766,20 @@ class GroupDashboard {
     closeGoalModal() {
         const modal = document.getElementById('add-nutritional-goal-modal');
         if (modal) {
+            console.log('🔒 Fermeture de la modale d\'objectif nutritionnel');
+            // Fermer la modale de plusieurs façons pour être sûr
             modal.style.display = 'none';
+            modal.style.setProperty('display', 'none', 'important'); // Forcer avec !important
+            modal.classList.remove('show');
             // Réinitialiser le formulaire
             const form = document.getElementById('add-nutritional-goal-form');
             if (form) form.reset();
+            // Débloquer le scroll du body si nécessaire
+            document.body.style.overflow = '';
+            // Vérifier que la modale est bien fermée
+            console.log('✅ Modale fermée, display:', modal.style.display);
+        } else {
+            console.warn('⚠️ Modale non trouvée');
         }
     }
     
@@ -3355,7 +3787,7 @@ class GroupDashboard {
         const nutrientSelect = document.getElementById('goal-nutrient');
         const targetInput = document.getElementById('goal-target');
         
-        if (!nutrientSelect || !targetInput) return;
+        if (!nutrientSelect || !targetInput) return false;
         
         const nutrient = nutrientSelect.value;
         const nutrientLabel = nutrientSelect.options[nutrientSelect.selectedIndex].text;
@@ -3364,13 +3796,13 @@ class GroupDashboard {
         // Validation
         if (!target || target <= 0) {
             this.showToast('Veuillez saisir un objectif valide', 'warning');
-            return;
+            return false;
         }
         
         // Vérifier si ce nutriment n'est pas déjà ajouté
         if (this.nutritionalGoals.some(g => g.nutrient === nutrient)) {
             this.showToast('Ce nutriment est déjà dans la liste', 'warning');
-            return;
+            return false;
         }
         
         // Extraire l'unité du label
@@ -3400,10 +3832,8 @@ class GroupDashboard {
         // Mettre à jour la liste dans la modale
         this.updateModalGoalsList();
         
-        // Fermer la modale seulement si demandé
-        if (closeModal) {
-            this.closeGoalModal();
-        }
+        // Retourner true pour indiquer le succès
+        return true;
     }
     
     updateModalGoalsList() {

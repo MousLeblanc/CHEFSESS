@@ -1549,17 +1549,24 @@ export const getFinancialAnalysis = async (req, res) => {
     // Récupérer le nombre total de résidents et calculer les portions
     let totalResidents = 0;
     let totalPortions = 0;
+    let vegetarianResidents = 0;
+    let vegetarianPortions = 0;
     let averageCostPerResident = 0;
     
     try {
       const residents = await Resident.find({
         groupId: groupIdFilter,
         status: 'actif'
-      }).select('portionSize');
+      }).select('portionSize nutritionalProfile.dietaryRestrictions');
       
       totalResidents = residents.length;
       
-      // Calculer le total de portions équivalentes
+      // Calculer le total de portions équivalentes et identifier les restrictions alimentaires
+      let halalResidents = 0;
+      let halalPortions = 0;
+      let casherResidents = 0;
+      let casherPortions = 0;
+      
       residents.forEach(resident => {
         // Si portionSize n'est pas défini, utiliser 1 (portion normale) par défaut
         const portionSize = resident.portionSize;
@@ -1574,9 +1581,63 @@ export const getFinancialAnalysis = async (req, res) => {
         }
         
         totalPortions += portionEquivalent;
+        
+        // Vérifier les restrictions alimentaires
+        const dietaryRestrictions = resident.nutritionalProfile?.dietaryRestrictions || [];
+        
+        // Vérifier si le résident est végétarien
+        const isVegetarian = dietaryRestrictions.some(restriction => {
+          const restrictionValue = restriction.restriction?.toLowerCase() || '';
+          return restrictionValue.includes('végétarien') || 
+                 restrictionValue.includes('vegetarien') || 
+                 restrictionValue.includes('vegetarian') ||
+                 restrictionValue === 'veg' ||
+                 restriction.type === 'éthique' && restrictionValue.includes('viande');
+        });
+        
+        if (isVegetarian) {
+          vegetarianResidents++;
+          vegetarianPortions += portionEquivalent;
+        }
+        
+        // Vérifier si le résident est halal
+        const isHalal = dietaryRestrictions.some(restriction => {
+          const restrictionValue = restriction.restriction?.toLowerCase() || '';
+          return restrictionValue.includes('halal') || 
+                 restrictionValue.includes('islam') ||
+                 restriction.type === 'religieuse' && restrictionValue.includes('halal');
+        });
+        
+        if (isHalal) {
+          halalResidents++;
+          halalPortions += portionEquivalent;
+        }
+        
+        // Vérifier si le résident est casher
+        const isCasher = dietaryRestrictions.some(restriction => {
+          const restrictionValue = restriction.restriction?.toLowerCase() || '';
+          return restrictionValue.includes('casher') || 
+                 restrictionValue.includes('kasher') ||
+                 restrictionValue.includes('kashrut') ||
+                 restriction.type === 'religieuse' && (restrictionValue.includes('casher') || restrictionValue.includes('kasher'));
+        });
+        
+        if (isCasher) {
+          casherResidents++;
+          casherPortions += portionEquivalent;
+        }
       });
       
       console.log('📊 Total résidents:', totalResidents, 'Total portions:', totalPortions);
+      console.log('🥬 Résidents végétariens:', vegetarianResidents, 'Portions végétariennes:', vegetarianPortions);
+      console.log('🕌 Résidents halal:', halalResidents, 'Portions halal:', halalPortions);
+      console.log('✡️ Résidents casher:', casherResidents, 'Portions casher:', casherPortions);
+      
+      // Stocker les valeurs pour les suggestions (définir en dehors du scope du forEach)
+      const halalResidentsCount = halalResidents;
+      const halalPortionsCount = halalPortions;
+      const casherResidentsCount = casherResidents;
+      const casherPortionsCount = casherPortions;
       
       // Calculer le coût par résident/jour
       // On suppose une période d'un mois (30 jours) pour le calcul
@@ -1677,6 +1738,131 @@ export const getFinancialAnalysis = async (req, res) => {
       }))
       .sort((a, b) => b.totalAmount - a.totalAmount);
     
+    // Récupérer tous les produits de tous les fournisseurs pour la comparaison des prix
+    let productComparisons = [];
+    try {
+      const Product = (await import('../models/Product.js')).default;
+      const Supplier = (await import('../models/Supplier.js')).default;
+      
+      // Récupérer tous les produits actifs
+      const allProducts = await Product.find({ active: true })
+        .populate('supplier', 'businessName name email supplierId')
+        .lean();
+      
+      // Récupérer tous les Suppliers avec leurs produits
+      const allSuppliers = await Supplier.find({ status: 'active' })
+        .select('_id name products createdBy')
+        .lean();
+      
+      // Créer un map pour associer User._id -> Supplier
+      const userToSupplierMap = new Map();
+      allSuppliers.forEach(supplier => {
+        if (supplier.createdBy) {
+          userToSupplierMap.set(supplier.createdBy.toString(), supplier);
+        }
+      });
+      
+      // Grouper les produits similaires par nom, catégorie et unité
+      const productGroups = new Map();
+      
+      // Ajouter les produits du modèle Product
+      allProducts.forEach(product => {
+        const key = `${product.name.toLowerCase().trim()}_${product.category}_${product.unit}`;
+        if (!productGroups.has(key)) {
+          productGroups.set(key, []);
+        }
+        productGroups.get(key).push({
+          ...product,
+          source: 'Product',
+          supplierId: product.supplier?._id?.toString() || product.supplier?.supplierId?.toString(),
+          supplierName: product.supplier?.businessName || product.supplier?.name || 'Fournisseur'
+        });
+      });
+      
+      // Ajouter les produits des Suppliers
+      allSuppliers.forEach(supplier => {
+        if (supplier.products && supplier.products.length > 0) {
+          supplier.products.forEach(p => {
+            if (p.name && p.category && p.unit && p.price !== undefined) {
+              const key = `${p.name.toLowerCase().trim()}_${p.category}_${p.unit}`;
+              if (!productGroups.has(key)) {
+                productGroups.set(key, []);
+              }
+              productGroups.get(key).push({
+                ...p,
+                _id: supplier._id.toString() + '_' + p.name,
+                source: 'Supplier',
+                supplierId: supplier._id.toString(),
+                supplierName: supplier.name,
+                deliveryTime: 3,
+                minOrder: 1
+              });
+            }
+          });
+        }
+      });
+      
+      // Analyser chaque groupe pour trouver les écarts de prix
+      productGroups.forEach((products, key) => {
+        if (products.length >= 2) {
+          // Calculer le prix final pour chaque produit (avec promotions)
+          const productsWithFinalPrice = products.map(p => {
+            let finalPrice = p.price;
+            if (p.superPromo?.active && p.superPromo.promoPrice) {
+              finalPrice = p.superPromo.promoPrice;
+            } else if (p.toSave?.active && p.toSave.savePrice) {
+              finalPrice = p.toSave.savePrice;
+            } else if (p.promo && p.promo > 0) {
+              finalPrice = p.price * (1 - p.promo / 100);
+            }
+            return {
+              ...p,
+              finalPrice
+            };
+          });
+          
+          // Trier par prix final
+          productsWithFinalPrice.sort((a, b) => a.finalPrice - b.finalPrice);
+          
+          const cheapest = productsWithFinalPrice[0];
+          const mostExpensive = productsWithFinalPrice[productsWithFinalPrice.length - 1];
+          const priceDifference = mostExpensive.finalPrice - cheapest.finalPrice;
+          const priceDifferencePercent = ((priceDifference / cheapest.finalPrice) * 100);
+          
+          // Si l'écart est significatif (> 10%), ajouter à la comparaison
+          if (priceDifferencePercent > 10 && cheapest.finalPrice > 0) {
+            productComparisons.push({
+              productName: cheapest.name,
+              category: cheapest.category,
+              unit: cheapest.unit,
+              cheapestSupplier: cheapest.supplierName,
+              cheapestPrice: cheapest.finalPrice,
+              mostExpensiveSupplier: mostExpensive.supplierName,
+              mostExpensivePrice: mostExpensive.finalPrice,
+              priceDifference,
+              priceDifferencePercent: priceDifferencePercent.toFixed(1),
+              suppliersCount: productsWithFinalPrice.length,
+              allSuppliers: productsWithFinalPrice.map(p => ({
+                supplierName: p.supplierName,
+                price: p.finalPrice,
+                basePrice: p.price,
+                hasPromo: !!(p.superPromo?.active || p.toSave?.active || p.promo)
+              }))
+            });
+          }
+        }
+      });
+      
+      // Trier par écart de prix (du plus élevé au plus faible)
+      productComparisons.sort((a, b) => b.priceDifferencePercent - a.priceDifferencePercent);
+      
+      console.log(`💰 ${productComparisons.length} produit(s) avec écarts de prix significatifs trouvés`);
+      
+    } catch (comparisonError) {
+      console.error('⚠️ Erreur lors de la comparaison des prix entre fournisseurs:', comparisonError);
+      // Continuer sans comparaisons plutôt que de faire échouer toute la requête
+    }
+    
     // Générer les suggestions d'économies
     let suggestions = [];
     try {
@@ -1688,7 +1874,14 @@ export const getFinancialAnalysis = async (req, res) => {
         suppliers,
         averageCostPerResident,
         totalResidents,
-        totalPortions
+        totalPortions,
+        vegetarianResidents,
+        vegetarianPortions,
+        halalResidents: halalResidentsCount,
+        halalPortions: halalPortionsCount,
+        casherResidents: casherResidentsCount,
+        casherPortions: casherPortionsCount,
+        productComparisons // Ajouter les comparaisons de produits
       });
     } catch (suggestionsError) {
       console.error('⚠️ Erreur lors de la génération des suggestions:', suggestionsError);
@@ -1942,76 +2135,315 @@ function generateSavingsSuggestions(data) {
   console.log('🔍 Vérification suggestion animaux complets:', {
     totalPortions: data.totalPortions,
     totalResidents: data.totalResidents,
+    vegetarianResidents: data.vegetarianResidents || 0,
+    vegetarianPortions: data.vegetarianPortions || 0,
+    halalResidents: data.halalResidents || 0,
+    casherResidents: data.casherResidents || 0,
     hasPortions: !!data.totalPortions,
     portionsGreaterThanZero: data.totalPortions > 0
   });
   
   if (data.totalPortions && data.totalPortions > 0 && data.totalResidents && data.totalResidents > 0) {
-    // Estimation : en moyenne, 4-5 repas avec viande par semaine (soit ~64% des repas)
-    // data.totalPortions = nombre total de portions par jour pour tous les résidents
-    const meatMealsRatio = 4.5 / 7; // 64% des repas contiennent de la viande
+    // Répartition réelle des repas sur une semaine :
+    // - 2 jours de volaille (poulet, dinde, etc.)
+    // - 2 jours de poisson
+    // - 1 jour végétarien
+    // - 2 jours de viande rouge/blanche (bœuf, porc, agneau)
+    // Donc seulement 2 jours sur 7 avec de la viande rouge/blanche
+    
+    // Répartition des résidents selon leurs restrictions alimentaires :
+    // - Végétariens : ne mangent pas de viande du tout
+    // - Casher/Halal : mangent de la viande (bœuf, mouton) mais PAS de porc
+    // - Autres : mangent toutes les viandes y compris le porc (moins cher)
+    const vegetarianResidents = data.vegetarianResidents || 0;
+    const vegetarianPortions = data.vegetarianPortions || 0;
+    const halalResidents = data.halalResidents || 0;
+    const halalPortions = data.halalPortions || 0;
+    const casherResidents = data.casherResidents || 0;
+    const casherPortions = data.casherPortions || 0;
+    
+    // Groupe 1 : Portions qui peuvent manger du porc (moins cher)
+    // = Total - Végétariens - Casher - Halal
+    const porkEatingPortions = data.totalPortions - vegetarianPortions - halalPortions - casherPortions;
+    const porkEatingResidents = data.totalResidents - vegetarianResidents - halalResidents - casherResidents;
+    
+    // Groupe 2 : Portions casher/halal (mangent bœuf/mouton, pas de porc)
+    const halalCasherPortions = halalPortions + casherPortions;
+    const halalCasherResidents = halalResidents + casherResidents;
+    
+    const meatDaysPerWeek = 2; // Bœuf, porc, agneau
+    const poultryDaysPerWeek = 2; // Volaille (calculée séparément)
+    const fishDaysPerWeek = 2; // Poisson
+    const vegetarianDaysPerWeek = 1; // Végétarien
+    const daysPerWeek = 7;
     const daysPerYear = 365;
+    const weeksPerYear = 52;
     
-    // Calculer le total de portions de viande par année
-    // Portions de viande par jour = portions totales/jour * ratio repas avec viande
-    const meatPortionsPerDay = data.totalPortions * meatMealsRatio;
-    const totalMeatPortionsPerYear = meatPortionsPerDay * daysPerYear;
+    // Ratio de repas avec viande rouge/blanche (hors volaille)
+    const meatMealsRatio = meatDaysPerWeek / daysPerWeek; // 2/7 ≈ 28.6% des repas
     
-    // Estimation de la quantité de viande par portion (en grammes)
-    // - Portion normale (1): 120-150g de viande
-    // - Demi-portion (0.5): 60-75g
-    // - Double portion (1.5): 180-225g
-    // Moyenne pondérée: environ 130g par portion équivalente
-    const meatPerPortionGrams = 130;
-    const totalMeatKgPerYear = (totalMeatPortionsPerYear * meatPerPortionGrams) / 1000;
+    // Quantité de viande par portion (en grammes) - Utiliser 150g comme indiqué par l'utilisateur
+    const meatPerPortionGrams = 150;
     
-    // Prix moyen au détail vs prix de l'animal complet
-    // Exemple pour le bœuf:
-    // - Au détail: 15-25€/kg selon les morceaux
-    // - Animal complet (carcasse): 8-12€/kg (rendement ~60-65% de viande)
-    // Économie potentielle: 30-40% sur le prix au kg
-    const avgRetailPricePerKg = 18; // Prix moyen au détail (€/kg)
-    const avgWholeAnimalPricePerKg = 10; // Prix de l'animal complet (€/kg carcasse)
-    const yieldPercentage = 0.62; // Rendement moyen (62% de viande utilisable)
+    // Calcul pour le Groupe 1 : Portions qui mangent du porc (moins cher)
+    const porkMeatPortionsPerDay = porkEatingPortions * meatMealsRatio;
+    const porkMeatPortionsPerWeek = porkMeatPortionsPerDay * meatDaysPerWeek; // 2 jours par semaine
+    const porkMeatPortionsPerYear = porkMeatPortionsPerDay * daysPerYear;
+    const porkMeatKgPerWeek = (porkMeatPortionsPerWeek * meatPerPortionGrams) / 1000;
+    const porkMeatKgPerYear = (porkMeatPortionsPerYear * meatPerPortionGrams) / 1000;
     
-    // Calculer les coûts
-    const retailCost = totalMeatKgPerYear * avgRetailPricePerKg;
-    const wholeAnimalKgNeeded = totalMeatKgPerYear / yieldPercentage;
-    const wholeAnimalCost = wholeAnimalKgNeeded * avgWholeAnimalPricePerKg;
-    const potentialSavings = retailCost - wholeAnimalCost;
+    // Calcul pour le Groupe 2 : Portions casher/halal (mangent bœuf/mouton)
+    const halalCasherMeatPortionsPerDay = halalCasherPortions * meatMealsRatio;
+    const halalCasherMeatPortionsPerWeek = halalCasherMeatPortionsPerDay * meatDaysPerWeek;
+    const halalCasherMeatPortionsPerYear = halalCasherMeatPortionsPerDay * daysPerYear;
+    const halalCasherMeatKgPerWeek = (halalCasherMeatPortionsPerWeek * meatPerPortionGrams) / 1000;
+    const halalCasherMeatKgPerYear = (halalCasherMeatPortionsPerYear * meatPerPortionGrams) / 1000;
     
-    console.log('💰 Calcul économies animaux complets:', {
-      totalMeatKgPerYear,
-      retailCost,
-      wholeAnimalCost,
-      potentialSavings,
-      threshold: 1000
+    // Total général (pour affichage)
+    const totalMeatPortionsPerDay = porkMeatPortionsPerDay + halalCasherMeatPortionsPerDay;
+    const totalMeatPortionsPerWeek = porkMeatPortionsPerWeek + halalCasherMeatPortionsPerWeek;
+    const totalMeatPortionsPerYear = porkMeatPortionsPerYear + halalCasherMeatPortionsPerYear;
+    const totalMeatKgPerWeek = porkMeatKgPerWeek + halalCasherMeatKgPerWeek;
+    const totalMeatKgPerYear = porkMeatKgPerYear + halalCasherMeatKgPerYear;
+    
+    console.log('🥩 Calcul viande détaillé (avec séparation porc/bœuf-mouton):', {
+      totalResidents: data.totalResidents,
+      totalPortions: data.totalPortions,
+      vegetarianPortions,
+      halalPortions,
+      casherPortions,
+      porkEatingPortions,
+      halalCasherPortions,
+      porkMeatKgPerWeek: porkMeatKgPerWeek.toFixed(2),
+      halalCasherMeatKgPerWeek: halalCasherMeatKgPerWeek.toFixed(2),
+      totalMeatKgPerWeek: totalMeatKgPerWeek.toFixed(2),
+      totalMeatKgPerYear: totalMeatKgPerYear.toFixed(2)
     });
     
-    // Baisser le seuil à 500€ pour que la suggestion apparaisse plus facilement
-    if (potentialSavings > 500) { // Seulement si les économies sont significatives (>500€)
-      // Calculer combien d'animaux complets il faudrait
-      // Exemple: un bœuf complet fait environ 300-400kg de carcasse
-      const avgAnimalWeight = 350; // kg de carcasse
-      const animalsNeeded = Math.ceil(wholeAnimalKgNeeded / avgAnimalWeight);
+    // Vérifier les restrictions religieuses (halal/casher)
+    const hasHalalResidents = (data.halalResidents || 0) > 0;
+    const hasCasherResidents = (data.casherResidents || 0) > 0;
+    const hasReligiousRestrictions = hasHalalResidents || hasCasherResidents;
+    
+    // Prix moyen au détail vs prix de l'animal complet
+    // Données réelles des animaux complets (poids et rendements)
+    // IMPORTANT: Les résidents casher/halal mangent de la viande mais pas de porc
+    // On va donc proposer :
+    // - Porc (moins cher) pour les non-casher/non-halal
+    // - Bœuf/Mouton pour les casher/halal
+    const animalTypes = {
+      boeuf: {
+        name: 'Bœuf',
+        poidsVifMoyen: 650, // kg (600-700 kg)
+        poidsCarcasseMoyen: 400, // kg (360-440 kg, ~61.5% du PV)
+        poidsViandeVendable: 250, // kg (220-300 kg, ~62.5% du poids carcasse)
+        prixCarcassePerKg: 10, // €/kg carcasse
+        prixRetailPerKg: 20, // €/kg au détail (15-25€ selon morceaux)
+        compatibleHalal: true,
+        compatibleCasher: true
+      },
+      vache: {
+        name: 'Vache',
+        poidsVifMoyen: 600, // kg (similaire au bœuf)
+        poidsCarcasseMoyen: 380, // kg (~63% du PV)
+        poidsViandeVendable: 240, // kg (~63% du poids carcasse)
+        prixCarcassePerKg: 10, // €/kg carcasse
+        prixRetailPerKg: 20, // €/kg au détail
+        compatibleHalal: true,
+        compatibleCasher: true
+      },
+      mouton: {
+        name: 'Mouton/Agneau',
+        poidsVifMoyen: 50, // kg (40-60 kg adulte)
+        poidsCarcasseMoyen: 23, // kg (18-28 kg, ~46% du PV)
+        poidsViandeVendable: 18, // kg (14-22 kg, ~78% du poids carcasse)
+        prixCarcassePerKg: 12, // €/kg carcasse (légèrement plus cher)
+        prixRetailPerKg: 18, // €/kg au détail
+        compatibleHalal: true,
+        compatibleCasher: true
+      },
+      porc: {
+        name: 'Porc',
+        poidsVifMoyen: 120, // kg (100-140 kg)
+        poidsCarcasseMoyen: 85, // kg (70-100 kg, ~71% du PV)
+        poidsViandeVendable: 67.5, // kg (55-80 kg, ~79% du poids carcasse)
+        prixCarcassePerKg: 8, // €/kg carcasse
+        prixRetailPerKg: 15, // €/kg au détail
+        compatibleHalal: false, // ❌ Non compatible halal
+        compatibleCasher: false // ❌ Non compatible casher
+      }
+    };
+    
+    // Séparer les types d'animaux selon les groupes
+    // Groupe 1 : Porc pour les non-casher/non-halal (moins cher)
+    const porkAnimalTypes = Object.entries(animalTypes).filter(([key, animal]) => 
+      key === 'porc'
+    ).reduce((acc, [key, animal]) => {
+      acc[key] = animal;
+      return acc;
+    }, {});
+    
+    // Groupe 2 : Bœuf/Mouton pour les casher/halal (pas de porc)
+    const halalCasherAnimalTypes = Object.entries(animalTypes).filter(([key, animal]) => 
+      animal.compatibleHalal && animal.compatibleCasher && key !== 'porc'
+    ).reduce((acc, [key, animal]) => {
+      acc[key] = animal;
+      return acc;
+    }, {});
+    
+    // Calculer les économies pour chaque groupe séparément
+    
+    // Groupe 1 : Porc pour les non-casher/non-halal (si applicable)
+    const porkSuggestions = [];
+    if (porkMeatKgPerYear > 0 && Object.keys(porkAnimalTypes).length > 0) {
+      Object.values(porkAnimalTypes).forEach(animal => {
+        const animalsNeeded = Math.ceil(porkMeatKgPerYear / animal.poidsViandeVendable);
+        const totalCarcasseKg = animalsNeeded * animal.poidsCarcasseMoyen;
+        const retailCost = porkMeatKgPerYear * animal.prixRetailPerKg;
+        const wholeAnimalCost = totalCarcasseKg * animal.prixCarcassePerKg;
+        const potentialSavings = retailCost - wholeAnimalCost;
+        
+        if (potentialSavings > 500) {
+          porkSuggestions.push({
+            type: animal.name,
+            animalsNeeded,
+            totalCarcasseKg,
+            retailCost,
+            wholeAnimalCost,
+            potentialSavings,
+            savingsPercentage: ((potentialSavings / retailCost) * 100).toFixed(1),
+            poidsViandeVendable: animal.poidsViandeVendable,
+            group: 'pork',
+            portions: porkEatingPortions,
+            meatKg: porkMeatKgPerYear
+          });
+        }
+      });
+    }
+    
+    // Groupe 2 : Bœuf/Mouton pour les casher/halal
+    const halalCasherSuggestions = [];
+    if (halalCasherMeatKgPerYear > 0 && Object.keys(halalCasherAnimalTypes).length > 0) {
+      Object.values(halalCasherAnimalTypes).forEach(animal => {
+        const animalsNeeded = Math.ceil(halalCasherMeatKgPerYear / animal.poidsViandeVendable);
+        const totalCarcasseKg = animalsNeeded * animal.poidsCarcasseMoyen;
+        const retailCost = halalCasherMeatKgPerYear * animal.prixRetailPerKg;
+        const wholeAnimalCost = totalCarcasseKg * animal.prixCarcassePerKg;
+        const potentialSavings = retailCost - wholeAnimalCost;
+        
+        if (potentialSavings > 500) {
+          halalCasherSuggestions.push({
+            type: animal.name,
+            animalsNeeded,
+            totalCarcasseKg,
+            retailCost,
+            wholeAnimalCost,
+            potentialSavings,
+            savingsPercentage: ((potentialSavings / retailCost) * 100).toFixed(1),
+            poidsViandeVendable: animal.poidsViandeVendable,
+            group: 'halalCasher',
+            portions: halalCasherPortions,
+            meatKg: halalCasherMeatKgPerYear
+          });
+        }
+      });
+    }
+    
+    // Trier chaque groupe par économies potentielles
+    porkSuggestions.sort((a, b) => b.potentialSavings - a.potentialSavings);
+    halalCasherSuggestions.sort((a, b) => b.potentialSavings - a.potentialSavings);
+    
+    console.log('💰 Calcul économies animaux complets (séparé par groupe):', {
+      porkMeatKgPerYear,
+      halalCasherMeatKgPerYear,
+      porkSuggestions,
+      halalCasherSuggestions
+    });
+    
+    // Créer une suggestion pour le porc (Groupe 1)
+    if (porkSuggestions.length > 0 && porkEatingPortions > 0) {
+      const bestPorkOption = porkSuggestions[0];
+      const porkAnimalType = animalTypes.porc;
+      
+      let porkDescription = `Avec ${porkEatingResidents.toLocaleString('fr-FR')} résidents non-casher/non-halal (${porkEatingPortions.toFixed(1)} portions/jour), vous consommez environ ${porkMeatKgPerYear.toLocaleString('fr-FR')} kg de viande par an (${porkMeatPortionsPerYear.toLocaleString('fr-FR')} portions). Le porc étant moins cher que le bœuf/mouton, l'achat d'animaux complets de porc peut générer des économies significatives.`;
+      
+      porkDescription += `\n\n📊 Calcul détaillé pour ${bestPorkOption.type}:`;
+      porkDescription += `\n• Quantité nécessaire: ${porkMeatKgPerYear.toLocaleString('fr-FR')} kg/an`;
+      porkDescription += `\n• ${bestPorkOption.type} moyen: ${bestPorkOption.poidsViandeVendable} kg de viande vendable par animal`;
+      porkDescription += `\n• Nombre d'animaux nécessaires: ${bestPorkOption.animalsNeeded} ${bestPorkOption.type.toLowerCase()}${bestPorkOption.animalsNeeded > 1 ? 's' : ''}`;
+      porkDescription += `\n• Poids total carcasse: ${bestPorkOption.totalCarcasseKg.toLocaleString('fr-FR')} kg`;
+      porkDescription += `\n• Coût au détail: ${bestPorkOption.retailCost.toLocaleString('fr-FR')}€/an`;
+      porkDescription += `\n• Coût animal complet: ${bestPorkOption.wholeAnimalCost.toLocaleString('fr-FR')}€/an`;
       
       suggestions.push({
-        title: 'Achat d\'animaux complets pour optimiser les coûts de viande',
-        description: `Avec ${data.totalResidents.toLocaleString('fr-FR')} résidents (${data.totalPortions.toFixed(1)} portions/jour), vous consommez environ ${totalMeatKgPerYear.toLocaleString('fr-FR')} kg de viande par an (${totalMeatPortionsPerYear.toLocaleString('fr-FR')} portions de viande). L'achat d'animaux complets (bœuf, porc, agneau) au lieu du détail peut générer des économies significatives.`,
-        potentialSavings: Math.round(potentialSavings),
+        title: `Achat d'animaux complets de porc pour optimiser les coûts (résidents non-casher/non-halal)`,
+        description: porkDescription,
+        potentialSavings: Math.round(bestPorkOption.potentialSavings),
         icon: 'fa-drumstick-bite',
         actions: [
-          `Acheter ${animalsNeeded} animal${animalsNeeded > 1 ? 'aux' : ''} complet${animalsNeeded > 1 ? 's' : ''} par an (bœuf, porc, agneau) au lieu d'acheter au détail`,
-          `Économie estimée: ${potentialSavings.toLocaleString('fr-FR')}€/an (${((potentialSavings / retailCost) * 100).toFixed(1)}% de réduction)`,
+          `Acheter ${bestPorkOption.animalsNeeded} ${bestPorkOption.type.toLowerCase()}${bestPorkOption.animalsNeeded > 1 ? 's' : ''} complet${bestPorkOption.animalsNeeded > 1 ? 's' : ''} par an (${bestPorkOption.totalCarcasseKg.toLocaleString('fr-FR')} kg de carcasse) pour ${porkEatingResidents} résidents non-casher/non-halal`,
+          `Économie estimée: ${bestPorkOption.potentialSavings.toLocaleString('fr-FR')}€/an (${bestPorkOption.savingsPercentage}% de réduction)`,
+          `Chaque ${bestPorkOption.type.toLowerCase()} fournit environ ${bestPorkOption.poidsViandeVendable} kg de viande vendable`,
+          'Le porc est moins cher que le bœuf/mouton, idéal pour optimiser les coûts pour les résidents sans restrictions religieuses',
           'Négocier avec des éleveurs locaux pour des prix encore plus avantageux',
-          'Investir dans un congélateur professionnel pour stocker la viande',
-          'Planifier les découpes selon les besoins des menus (rôtis, steaks, hachés, etc.)',
-          'Utiliser tous les morceaux (y compris les moins nobles) pour varier les plats',
+          `Investir dans un congélateur professionnel pour stocker la viande (capacité nécessaire: ~${Math.ceil(porkMeatKgPerYear / 12).toLocaleString('fr-FR')} kg/mois)`
+        ]
+      });
+    }
+    
+    // Créer une suggestion pour bœuf/mouton (Groupe 2 - Casher/Halal)
+    if (halalCasherSuggestions.length > 0 && halalCasherPortions > 0) {
+      const bestHalalCasherOption = halalCasherSuggestions[0];
+      const halalCasherAnimalType = animalTypes[Object.keys(animalTypes).find(key => 
+        animalTypes[key].name === bestHalalCasherOption.type
+      )];
+      
+      let halalCasherDescription = `Avec ${halalCasherResidents.toLocaleString('fr-FR')} résidents casher/halal (${halalCasherPortions.toFixed(1)} portions/jour), vous consommez environ ${halalCasherMeatKgPerYear.toLocaleString('fr-FR')} kg de viande par an (${halalCasherMeatPortionsPerYear.toLocaleString('fr-FR')} portions). Ces résidents ne peuvent pas consommer de porc, donc l'achat d'animaux complets de bœuf, vache ou mouton (halal/casher) peut générer des économies significatives.`;
+      
+      if (hasHalalResidents && hasCasherResidents) {
+        halalCasherDescription += `\n\n⚠️ Important: Assurez-vous que les animaux soient certifiés halal ET casher pour servir les deux groupes.`;
+      } else if (hasHalalResidents) {
+        halalCasherDescription += `\n\n⚠️ Important: Assurez-vous que les animaux soient certifiés halal.`;
+      } else if (hasCasherResidents) {
+        halalCasherDescription += `\n\n⚠️ Important: Assurez-vous que les animaux soient certifiés casher.`;
+      }
+      
+      halalCasherDescription += `\n\n📊 Calcul détaillé pour ${bestHalalCasherOption.type}:`;
+      halalCasherDescription += `\n• Quantité nécessaire: ${halalCasherMeatKgPerYear.toLocaleString('fr-FR')} kg/an`;
+      halalCasherDescription += `\n• ${bestHalalCasherOption.type} moyen: ${bestHalalCasherOption.poidsViandeVendable} kg de viande vendable par animal`;
+      halalCasherDescription += `\n• Nombre d'animaux nécessaires: ${bestHalalCasherOption.animalsNeeded} ${bestHalalCasherOption.type.toLowerCase()}${bestHalalCasherOption.animalsNeeded > 1 ? 's' : ''}`;
+      halalCasherDescription += `\n• Poids total carcasse: ${bestHalalCasherOption.totalCarcasseKg.toLocaleString('fr-FR')} kg`;
+      halalCasherDescription += `\n• Coût au détail: ${bestHalalCasherOption.retailCost.toLocaleString('fr-FR')}€/an`;
+      halalCasherDescription += `\n• Coût animal complet: ${bestHalalCasherOption.wholeAnimalCost.toLocaleString('fr-FR')}€/an`;
+      
+      // Ajouter des alternatives si disponibles
+      if (halalCasherSuggestions.length > 1) {
+        halalCasherDescription += `\n\n💡 Alternatives possibles:`;
+        halalCasherSuggestions.slice(1, 3).forEach(alt => {
+          halalCasherDescription += `\n• ${alt.type}: ${alt.animalsNeeded} animal${alt.animalsNeeded > 1 ? 'aux' : ''} → Économie: ${alt.potentialSavings.toLocaleString('fr-FR')}€/an (${alt.savingsPercentage}%)`;
+        });
+      }
+      
+      suggestions.push({
+        title: `Achat d'animaux complets (${bestHalalCasherOption.type}) pour résidents casher/halal`,
+        description: halalCasherDescription,
+        potentialSavings: Math.round(bestHalalCasherOption.potentialSavings),
+        icon: 'fa-drumstick-bite',
+        actions: [
+          `Acheter ${bestHalalCasherOption.animalsNeeded} ${bestHalalCasherOption.type.toLowerCase()}${bestHalalCasherOption.animalsNeeded > 1 ? 's' : ''} complet${bestHalalCasherOption.animalsNeeded > 1 ? 's' : ''} par an (${bestHalalCasherOption.totalCarcasseKg.toLocaleString('fr-FR')} kg de carcasse) certifiés halal/casher pour ${halalCasherResidents} résidents`,
+          `Économie estimée: ${bestHalalCasherOption.potentialSavings.toLocaleString('fr-FR')}€/an (${bestHalalCasherOption.savingsPercentage}% de réduction)`,
+          `Chaque ${bestHalalCasherOption.type.toLowerCase()} fournit environ ${bestHalalCasherOption.poidsViandeVendable} kg de viande vendable`,
+          'S\'assurer que les animaux sont certifiés halal/casher selon les besoins des résidents',
+          'Négocier avec des éleveurs locaux certifiés pour des prix avantageux',
+          `Investir dans un congélateur professionnel pour stocker la viande (capacité nécessaire: ~${Math.ceil(halalCasherMeatKgPerYear / 12).toLocaleString('fr-FR')} kg/mois)`,
+          'Envisager un mix bœuf/mouton pour diversifier les menus tout en respectant les restrictions',
           'Coordonner les achats entre plusieurs sites pour augmenter le volume et négocier de meilleurs prix'
         ]
       });
-    } else {
-      console.log('⚠️ Suggestion animaux complets non ajoutée: économies trop faibles', potentialSavings);
+    }
+    
+    if (porkSuggestions.length === 0 && halalCasherSuggestions.length === 0) {
+      console.log('⚠️ Suggestion animaux complets non ajoutée: économies trop faibles pour tous les types');
     }
   } else {
     console.log('⚠️ Suggestion animaux complets non ajoutée: données manquantes', {
@@ -2020,11 +2452,102 @@ function generateSavingsSuggestions(data) {
     });
   }
   
+  // Suggestion 8: Comparaison des prix entre fournisseurs pour les mêmes produits
+  if (data.productComparisons && data.productComparisons.length > 0) {
+    // Prendre les 10 produits avec les plus grands écarts de prix
+    const topComparisons = data.productComparisons.slice(0, 10);
+    
+    // Calculer les économies potentielles totales
+    // Estimation basée sur la consommation moyenne par catégorie
+    let totalPotentialSavings = 0;
+    const categoryConsumption = {}; // Estimer la consommation par catégorie
+    
+    // Utiliser les données de catégories pour estimer la consommation
+    if (data.categories && data.categories.length > 0) {
+      data.categories.forEach(cat => {
+        categoryConsumption[cat.name] = cat.amount || 0;
+      });
+    }
+    
+    // Calculer les économies pour chaque produit comparé
+    const savingsByProduct = topComparisons.map(comp => {
+      // Estimer la consommation annuelle basée sur la catégorie
+      const categoryAmount = categoryConsumption[comp.category] || 0;
+      // Estimer que ce produit représente 5-10% de la catégorie (selon le nombre de produits dans la catégorie)
+      const estimatedAnnualConsumption = categoryAmount * 0.07; // 7% en moyenne
+      
+      // Calculer l'économie potentielle (en supposant qu'on achète tout au meilleur prix)
+      const savingsPerUnit = comp.priceDifference;
+      const estimatedUnitsPerYear = estimatedAnnualConsumption / comp.cheapestPrice;
+      const potentialSavings = savingsPerUnit * estimatedUnitsPerYear;
+      
+      return {
+        ...comp,
+        estimatedAnnualConsumption,
+        estimatedUnitsPerYear,
+        potentialSavings
+      };
+    });
+    
+    // Somme des économies potentielles
+    totalPotentialSavings = savingsByProduct.reduce((sum, item) => sum + (item.potentialSavings || 0), 0);
+    
+    if (totalPotentialSavings > 500) {
+      // Créer une description détaillée avec les meilleures opportunités
+      let description = `Analyse des prix de ${data.productComparisons.length} produits similaires disponibles chez plusieurs fournisseurs. Des écarts de prix significatifs ont été identifiés, offrant des opportunités d'économies importantes.`;
+      
+      description += `\n\n📊 Top 5 opportunités d'économies :`;
+      savingsByProduct.slice(0, 5).forEach((item, index) => {
+        description += `\n${index + 1}. ${item.productName} (${item.category})`;
+        description += `\n   • Meilleur prix: ${item.cheapestPrice.toFixed(2)}€/${item.unit} chez ${item.cheapestSupplier}`;
+        description += `\n   • Prix le plus élevé: ${item.mostExpensivePrice.toFixed(2)}€/${item.unit} chez ${item.mostExpensiveSupplier}`;
+        description += `\n   • Écart: ${item.priceDifferencePercent}% (${item.priceDifference.toFixed(2)}€/${item.unit})`;
+        description += `\n   • Économie potentielle estimée: ${item.potentialSavings.toFixed(0)}€/an`;
+      });
+      
+      description += `\n\n💡 En achetant systématiquement au meilleur prix, vous pourriez économiser jusqu'à ${totalPotentialSavings.toLocaleString('fr-FR')}€ par an.`;
+      
+      const actions = [
+        'Mettre en place un système de comparaison automatique des prix avant chaque commande',
+        'Privilégier les fournisseurs avec les meilleurs prix pour chaque produit',
+        'Négocier avec les fournisseurs les plus chers pour s\'aligner sur les prix du marché',
+        'Créer une liste de produits prioritaires à comparer systématiquement',
+        'Automatiser les commandes pour les produits où un fournisseur est clairement moins cher'
+      ];
+      
+      // Ajouter des actions spécifiques pour les meilleures opportunités
+      savingsByProduct.slice(0, 3).forEach(item => {
+        actions.push(`Passer commande de "${item.productName}" chez ${item.cheapestSupplier} (${item.priceDifferencePercent}% moins cher que ${item.mostExpensiveSupplier})`);
+      });
+      
+      suggestions.push({
+        title: 'Optimisation des achats : Comparaison des prix entre fournisseurs',
+        description: description,
+        potentialSavings: Math.round(totalPotentialSavings),
+        icon: 'fa-balance-scale',
+        actions: actions,
+        metadata: {
+          comparisonsCount: data.productComparisons.length,
+          topComparisons: savingsByProduct.slice(0, 5).map(item => ({
+            productName: item.productName,
+            category: item.category,
+            cheapestSupplier: item.cheapestSupplier,
+            cheapestPrice: item.cheapestPrice,
+            mostExpensiveSupplier: item.mostExpensiveSupplier,
+            mostExpensivePrice: item.mostExpensivePrice,
+            savingsPercent: item.priceDifferencePercent,
+            potentialSavings: Math.round(item.potentialSavings)
+          }))
+        }
+      });
+    }
+  }
+  
   // Trier les suggestions par économies potentielles (du plus élevé au plus faible)
   suggestions.sort((a, b) => (b.potentialSavings || 0) - (a.potentialSavings || 0));
   
-  // Limiter à 5 suggestions les plus pertinentes
-  return suggestions.slice(0, 5);
+  // Limiter à 6 suggestions les plus pertinentes (augmenté pour inclure la nouvelle suggestion)
+  return suggestions.slice(0, 6);
 }
 
 /* 

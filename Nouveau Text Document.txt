@@ -1,0 +1,146 @@
+import os
+import sys
+import json
+import time
+from openai import OpenAI
+
+# ------------------------------------------------------------------
+# CONFIG
+# ------------------------------------------------------------------
+MODEL = "gpt-4o-mini"   # tu peux mettre "gpt-4.1" ou "gpt-5.1" si tu veux
+SLEEP_BETWEEN_CALLS = 0.2  # petite pause entre les requêtes
+
+client = OpenAI(
+    api_key=os.environ.get("OPENAI_API_KEY")
+)
+
+SYSTEM_PROMPT = """
+Tu es un assistant culinaire pour une application de restauration collective française.
+On te donne **UNE** recette au format JSON (schéma Chef SES).
+
+Tu dois renvoyer EXACTEMENT le même JSON, mais en appliquant les règles suivantes :
+
+1. LANGUE
+   - Tous les champs textuels doivent être en FRANÇAIS :
+     - name
+     - description
+     - ingredients[i].name
+     - preparationSteps[i]
+     - category, hashtags, tags, diet, pathologies (quand ce sont des chaînes)
+   - Si un texte est déjà en français : corrige l’orthographe et améliore légèrement le style si nécessaire.
+
+2. UNITÉS
+   - Convertis les unités de cuisine anglo-saxonnes en unités métriques françaises.
+   - Exemples :
+       * tsp, teaspoon  → c. à café (~5 ml)
+       * tbsp, tablespoon → c. à soupe (~15 ml)
+       * cup → généralement 240 ml (liquides) ou 120–140 g (secs, adapte selon l’ingrédient)
+       * oz (fluid ounce) → ~30 ml
+       * oz (poids) → ~28 g
+       * lb → ~450 g
+   - Utilise uniquement : g, kg, ml, cl, dl, L, c. à café, c. à soupe, pièce(s).
+   - Ajuste les QUANTITÉS en conséquence, avec des valeurs réalistes (arrondies pour la cuisine).
+   - Si l’unité est déjà métrique correcte (g, ml, cl, L, etc.), garde-la mais corrige si besoin (par ex. "gr" → "g").
+
+3. ORTHOGRAPHE & STYLE
+   - Corrige les fautes d’orthographe et de grammaire en français.
+   - Garde un style simple, clair, adapté à une fiche technique de cuisine de collectivité.
+   - Ne change pas le sens des recettes.
+
+4. STRUCTURE
+   - NE CHANGE PAS la structure JSON :
+       * Ne supprime pas de clés existantes.
+       * Ne rajoute pas de nouvelles clés.
+       * Laisse tous les champs non textuels intacts (id, quantités numériques, nutriments, âge, etc.) SAUF les unités et quantités que tu dois adapter aux conversions.
+   - Si un champ n’est pas concerné, laisse-le tel quel.
+
+5. SORTIE
+   - Réponds UNIQUEMENT par un JSON valide.
+   - PAS de texte explicatif, PAS de Markdown, PAS de commentaires, juste l’objet JSON.
+"""
+
+def process_recipe(recipe: dict, index: int, total: int, target_lang: str = "fr") -> dict:
+    """
+    Envoie UNE recette au modèle OpenAI, récupère la recette traduite/nettoyée.
+    """
+    print(f"\n=== Recette {index+1}/{total} ===")
+    name = recipe.get("name", "(sans nom)")
+    print("   Nom original :", name[:80])
+
+    # On envoie la recette telle quelle au modèle
+    user_prompt = (
+        "Voici une recette au format JSON. "
+        "Applique toutes les règles décrites dans le message système et renvoie UNIQUEMENT le JSON transformé.\n\n"
+        + json.dumps(recipe, ensure_ascii=False, indent=2)
+    )
+
+    try:
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.2,
+        )
+        content = response.choices[0].message.content.strip()
+        # Debug éventuel :
+        # print(content)
+
+        # On essaye de parser le JSON retourné
+        new_recipe = json.loads(content)
+        print("   ✅ Recette traitée avec succès.")
+        return new_recipe
+
+    except Exception as e:
+        print("   ⚠️ Erreur sur cette recette, on garde l’originale. Détail :", str(e))
+        return recipe
+
+
+def main():
+    if len(sys.argv) < 3:
+        print("Usage : python translate_recipes_openai.py <input_json> fr")
+        sys.exit(1)
+
+    input_file = sys.argv[1]
+    target_lang = sys.argv[2]
+
+    if not os.path.exists(input_file):
+        print("Fichier introuvable :", input_file)
+        sys.exit(1)
+
+    print("📂 Chargement du fichier :", input_file)
+    with open(input_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    if not isinstance(data, list):
+        print("Le fichier ne contient pas une liste de recettes JSON.")
+        sys.exit(1)
+
+    total = len(data)
+    print(f"🔄 Nombre de recettes à traiter : {total}")
+
+    output = []
+    for i, recipe in enumerate(data):
+        new_recipe = process_recipe(recipe, i, total, target_lang)
+        output.append(new_recipe)
+
+        # Sauvegarde de secours tous les 50 pour ne rien perdre
+        if (i + 1) % 50 == 0:
+            backup_file = f"translated_partial_{target_lang}_{i+1}.json"
+            with open(backup_file, "w", encoding="utf-8") as bf:
+                json.dump(output, bf, ensure_ascii=False, indent=2)
+            print(f"   💾 Sauvegarde intermédiaire : {backup_file}")
+
+        time.sleep(SLEEP_BETWEEN_CALLS)
+
+    output_file = f"translated_openai_{target_lang}.json"
+    print("\n💾 Enregistrement final dans :", output_file)
+    with open(output_file, "w", encoding="utf-8") as out:
+        json.dump(output, out, ensure_ascii=False, indent=2)
+
+    print("\n✅ TRAVAIL TERMINÉ !")
+
+
+if __name__ == "__main__":
+    main()

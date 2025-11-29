@@ -18,8 +18,12 @@ export async function loadCustomerOrders(filterStatus = null) {
   }
 
   try {
-    // Déterminer l'endpoint selon le rôle de l'utilisateur
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+    const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+    if (!user) {
+      console.warn('⚠️ Utilisateur non connecté');
+      return;
+    }
     const endpoint = user.role === 'fournisseur' ? '/api/orders/supplier' : '/api/orders';
     
     console.log(`📡 Appel API: GET ${endpoint}`);
@@ -390,8 +394,8 @@ window.confirmDelivery = async function(orderId) {
   try {
     // Récupérer le siteId depuis sessionStorage pour l'envoyer au serveur
     const storedSiteId = sessionStorage.getItem('currentSiteId');
-    const userStr = sessionStorage.getItem('user');
-    const user = userStr ? JSON.parse(userStr) : null;
+    // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+    const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
     const userSiteId = user?.siteId;
     const siteIdToSend = storedSiteId || userSiteId;
     
@@ -419,6 +423,15 @@ window.confirmDelivery = async function(orderId) {
     if (response.ok) {
       const result = await response.json();
       console.log('✅ Réception confirmée et articles ajoutés au stock');
+      
+      // Proposer d'ouvrir le formulaire de réception
+      const openForm = confirm(`✅ Réception confirmée !\n\n📦 Les articles ont été ajoutés à votre stock.\n\n📋 Souhaitez-vous remplir le formulaire de contrôle à la réception des marchandises ?`);
+      
+      if (openForm) {
+        // Rediriger vers le formulaire avec l'ID de la commande
+        window.location.href = `/delivery-receipt.html?orderId=${orderId}`;
+        return;
+      }
       
       // Afficher un toast de succès amélioré
       const successToast = document.createElement('div');
@@ -541,8 +554,8 @@ window.reportIssue = async function(orderId) {
   try {
     // Récupérer le siteId depuis sessionStorage pour l'envoyer au serveur
     const storedSiteId = sessionStorage.getItem('currentSiteId');
-    const userStr = sessionStorage.getItem('user');
-    const user = userStr ? JSON.parse(userStr) : null;
+    // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+    const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
     const userSiteId = user?.siteId;
     const siteIdToSend = storedSiteId || userSiteId;
     
@@ -619,7 +632,12 @@ window.cancelOrder = async function(orderId) {
 // Charger les commandes en arrière-plan pour le badge
 export async function loadOrdersBadgeOnly() {
   try {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+    const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+    if (!user) {
+      console.warn('⚠️ Utilisateur non connecté');
+      return;
+    }
     const endpoint = user.role === 'fournisseur' ? '/api/orders/supplier' : '/api/orders';
     
     const response = await fetch(endpoint, {

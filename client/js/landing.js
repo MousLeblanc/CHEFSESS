@@ -59,27 +59,171 @@ document.addEventListener('DOMContentLoaded', () => {
     observer.observe(card);
   });
 
-  // Contact form handling
+  // Animate statistics on scroll
+  function animateStats() {
+    const stats = document.querySelectorAll('.stat-card-animated');
+    const statObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const target = parseFloat(entry.target.dataset.target);
+          const statNumber = entry.target.querySelector('.stat-number');
+          animateNumber(statNumber, 0, target, 2000);
+          statObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    stats.forEach(stat => statObserver.observe(stat));
+  }
+
+  function animateNumber(element, start, end, duration) {
+    const range = end - start;
+    const increment = range / (duration / 16);
+    let current = start;
+
+    const timer = setInterval(() => {
+      current += increment;
+      if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+        current = end;
+        clearInterval(timer);
+      }
+      element.textContent = end % 1 === 0 ? Math.floor(current) : current.toFixed(1);
+    }, 16);
+  }
+
+  // Initialize stats animation
+  animateStats();
+
+  // Contact form handling with validation
   const contactForm = document.getElementById('contact-form');
   if (contactForm) {
-    contactForm.addEventListener('submit', (e) => {
+    // Real-time validation
+    const inputs = contactForm.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+      input.addEventListener('blur', () => validateField(input));
+      input.addEventListener('input', () => {
+        if (input.classList.contains('error')) {
+          validateField(input);
+        }
+      });
+    });
+
+    contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      const name = document.getElementById('contact-name').value;
-      const email = document.getElementById('contact-email').value;
-      const message = document.getElementById('contact-message').value;
+      // Validate all fields
+      let isValid = true;
+      inputs.forEach(input => {
+        if (!validateField(input)) {
+          isValid = false;
+        }
+      });
+
+      if (!isValid) {
+        showNotification('Veuillez corriger les erreurs dans le formulaire.', 'error');
+        return;
+      }
+
+      const submitBtn = document.getElementById('submit-btn');
+      const btnText = submitBtn.querySelector('.btn-text');
+      const btnLoader = submitBtn.querySelector('.btn-loader');
       
-      // Create mailto link
-      const subject = encodeURIComponent('Contact depuis Chef SES');
-      const body = encodeURIComponent(`Nom: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
-      const mailtoLink = `mailto:info@chefses.com?subject=${subject}&body=${body}`;
+      // Show loader
+      btnText.style.display = 'none';
+      btnLoader.style.display = 'inline-block';
+      submitBtn.disabled = true;
       
-      // Open email client
-      window.location.href = mailtoLink;
-      
-      // Show success message
-      showNotification('Message préparé ! Votre client email va s\'ouvrir.', 'success');
+      try {
+        const formData = {
+          name: document.getElementById('contact-name').value,
+          email: document.getElementById('contact-email').value,
+          phone: document.getElementById('contact-phone').value,
+          organization: document.getElementById('contact-organization').value,
+          message: document.getElementById('contact-message').value
+        };
+
+        // Try to send via API first
+        try {
+          // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+          const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+          
+          const response = await fetchFn('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+          });
+          
+          if (response.ok) {
+            showNotification('Message envoyé avec succès ! Nous vous répondrons sous 24h.', 'success');
+            contactForm.reset();
+            return;
+          }
+        } catch (apiError) {
+          console.log('API not available, using mailto fallback');
+        }
+
+        // Fallback to mailto
+        const subject = encodeURIComponent('Contact depuis Chef SES');
+        const body = encodeURIComponent(
+          `Nom: ${formData.name}\nEmail: ${formData.email}\nTéléphone: ${formData.phone || 'N/A'}\nÉtablissement: ${formData.organization || 'N/A'}\n\nMessage:\n${formData.message}`
+        );
+        const mailtoLink = `mailto:info@chefses.com?subject=${subject}&body=${body}`;
+        window.location.href = mailtoLink;
+        showNotification('Message préparé ! Votre client email va s\'ouvrir.', 'success');
+        contactForm.reset();
+      } catch (error) {
+        showNotification('Erreur lors de l\'envoi. Veuillez réessayer.', 'error');
+      } finally {
+        btnText.style.display = 'inline-block';
+        btnLoader.style.display = 'none';
+        submitBtn.disabled = false;
+      }
     });
+  }
+
+  function validateField(field) {
+    const errorElement = field.parentElement.querySelector('.form-error');
+    let isValid = true;
+    let errorMessage = '';
+
+    // Remove previous error styling
+    field.classList.remove('error');
+
+    // Check required fields
+    if (field.hasAttribute('required') && !field.value.trim()) {
+      isValid = false;
+      errorMessage = 'Ce champ est requis';
+    }
+    // Validate email
+    else if (field.type === 'email' && field.value) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(field.value)) {
+        isValid = false;
+        errorMessage = 'Email invalide';
+      }
+    }
+    // Validate minlength
+    else if (field.hasAttribute('minlength')) {
+      const minLength = parseInt(field.getAttribute('minlength'));
+      if (field.value.length < minLength) {
+        isValid = false;
+        errorMessage = `Minimum ${minLength} caractères requis`;
+      }
+    }
+
+    // Update error display
+    if (errorElement) {
+      errorElement.textContent = errorMessage;
+    }
+
+    if (!isValid) {
+      field.classList.add('error');
+      field.style.borderColor = '#dc3545';
+    } else {
+      field.style.borderColor = '';
+    }
+
+    return isValid;
   }
 
   // Video fallback if video fails to load
@@ -108,9 +252,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
     
-    // Initialiser l'opacité
-    heroVideo.style.opacity = '0';
+    // Initialiser l'opacité - la vidéo doit être visible
+    heroVideo.style.opacity = '1';
     heroVideo.style.transition = 'opacity 0.5s ease';
+    heroVideo.style.display = 'block';
   }
 
   // Scroll indicator click

@@ -4,8 +4,18 @@ export function getToken() {
 }
 
 export function getCurrentUser() {
+  // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+  if (typeof getStoredUser === 'function') {
+    return getStoredUser();
+  }
+  // Fallback si getStoredUser n'est pas disponible (utiliser safeJSONParse si disponible)
   try {
-    return JSON.parse(sessionStorage.getItem('user')) || null;
+    const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
+    if (!storedUser) return null;
+    if (typeof safeJSONParse === 'function') {
+      return safeJSONParse(storedUser, null);
+    }
+    return JSON.parse(storedUser) || null;
   } catch {
     return null;
   }

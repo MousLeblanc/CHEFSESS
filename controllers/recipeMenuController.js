@@ -1237,6 +1237,13 @@ export const getRecipeSuggestions = asyncHandler(async (req, res) => {
  * CORRIGÉ : Décompose chaque restriction/allergie avec son propre nombre de personnes
  */
 function calculateVariantGroups(ageGroups) {
+  console.log(`\n🔍 CALCUL VARIANTES - Analyse de ${ageGroups.length} groupe(s)`);
+  ageGroups.forEach((group, index) => {
+    console.log(`   Groupe ${index + 1}: ${group.count} personnes`);
+    console.log(`      Allergènes: ${JSON.stringify(group.allergens || [])}`);
+    console.log(`      Restrictions: ${JSON.stringify(group.dietaryRestrictions || [])}`);
+  });
+  
   const variantMap = new Map();
   let totalPeople = 0;
   let totalWithRestrictions = 0;
@@ -1246,51 +1253,123 @@ function calculateVariantGroups(ageGroups) {
     totalPeople += group.count;
     
     // Décomposer les restrictions alimentaires individuelles
+    // ✅ CORRECTION: Gérer deux formats possibles:
+    // 1. Tableau d'objets: [{ type: 'vegetarien', count: 3 }]
+    // 2. Tableau de strings: ['vegetarien', 'sans_gluten'] (tous les membres du groupe ont ces restrictions)
     if (group.dietaryRestrictions && group.dietaryRestrictions.length > 0) {
-      group.dietaryRestrictions.forEach(restriction => {
+      // Vérifier le format
+      const firstRestriction = group.dietaryRestrictions[0];
+      const isObjectFormat = typeof firstRestriction === 'object' && firstRestriction !== null && 'type' in firstRestriction;
+      
+      if (isObjectFormat) {
+        // Format objet: [{ type: 'vegetarien', count: 3 }]
+        group.dietaryRestrictions.forEach(restriction => {
+          const restrictionType = restriction.type || restriction;
+          const restrictionCount = restriction.count || group.count;
+          
+          const profileKey = JSON.stringify({
+            allergens: [],
+            restrictions: [restrictionType].sort()
+          });
+          
+          if (variantMap.has(profileKey)) {
+            const existing = variantMap.get(profileKey);
+            existing.count += restrictionCount;
+          } else {
+            variantMap.set(profileKey, {
+              allergens: [],
+              dietaryRestrictions: [restrictionType],
+              count: restrictionCount,
+              ageRange: group.ageRange
+            });
+          }
+          
+          totalWithRestrictions += restrictionCount;
+        });
+      } else {
+        // Format string: ['vegetarien', 'sans_gluten'] - tous les membres du groupe ont ces restrictions
+        const restrictionTypes = group.dietaryRestrictions.map(r => typeof r === 'string' ? r : (r.type || r));
+        const restrictionCount = group.count; // Tous les membres du groupe ont ces restrictions
+        
         const profileKey = JSON.stringify({
           allergens: [],
-          restrictions: [restriction.type].sort()
+          restrictions: restrictionTypes.sort()
         });
         
         if (variantMap.has(profileKey)) {
           const existing = variantMap.get(profileKey);
-          existing.count += restriction.count;
+          existing.count += restrictionCount;
         } else {
           variantMap.set(profileKey, {
             allergens: [],
-            dietaryRestrictions: [restriction.type],
-            count: restriction.count,
+            dietaryRestrictions: restrictionTypes,
+            count: restrictionCount,
             ageRange: group.ageRange
           });
         }
         
-        totalWithRestrictions += restriction.count;
-      });
+        totalWithRestrictions += restrictionCount;
+      }
     }
     
     // Décomposer les allergies individuelles
+    // ✅ CORRECTION: Gérer deux formats possibles:
+    // 1. Tableau d'objets: [{ type: 'oeufs', count: 5 }]
+    // 2. Tableau de strings: ['oeufs', 'lactose'] (tous les membres du groupe ont ces allergies)
     if (group.allergens && group.allergens.length > 0) {
-      group.allergens.forEach(allergen => {
+      // Vérifier le format
+      const firstAllergen = group.allergens[0];
+      const isObjectFormat = typeof firstAllergen === 'object' && firstAllergen !== null && 'type' in firstAllergen;
+      
+      if (isObjectFormat) {
+        // Format objet: [{ type: 'oeufs', count: 5 }]
+        group.allergens.forEach(allergen => {
+          const allergenType = allergen.type || allergen;
+          const allergenCount = allergen.count || group.count;
+          
+          const profileKey = JSON.stringify({
+            allergens: [allergenType].sort(),
+            restrictions: []
+          });
+          
+          if (variantMap.has(profileKey)) {
+            const existing = variantMap.get(profileKey);
+            existing.count += allergenCount;
+          } else {
+            variantMap.set(profileKey, {
+              allergens: [allergenType],
+              dietaryRestrictions: [],
+              count: allergenCount,
+              ageRange: group.ageRange
+            });
+          }
+          
+          totalWithRestrictions += allergenCount;
+        });
+      } else {
+        // Format string: ['oeufs', 'lactose'] - tous les membres du groupe ont ces allergies
+        const allergenTypes = group.allergens.map(a => typeof a === 'string' ? a : (a.type || a));
+        const allergenCount = group.count; // Tous les membres du groupe ont ces allergies
+        
         const profileKey = JSON.stringify({
-          allergens: [allergen.type].sort(),
+          allergens: allergenTypes.sort(),
           restrictions: []
         });
         
         if (variantMap.has(profileKey)) {
           const existing = variantMap.get(profileKey);
-          existing.count += allergen.count;
+          existing.count += allergenCount;
         } else {
           variantMap.set(profileKey, {
-            allergens: [allergen.type],
+            allergens: allergenTypes,
             dietaryRestrictions: [],
-            count: allergen.count,
+            count: allergenCount,
             ageRange: group.ageRange
           });
         }
         
-        totalWithRestrictions += allergen.count;
-      });
+        totalWithRestrictions += allergenCount;
+      }
     }
   });
   
@@ -1324,7 +1403,14 @@ function calculateVariantGroups(ageGroups) {
     variantGroups = variants.slice(1);
   }
   
-  console.log(`📊 Calcul variantes: ${totalPeople} pers. total, ${mainGroupCount} sans restrictions, ${variants.length} variantes`);
+  console.log(`\n📊 RÉSULTAT CALCUL VARIANTES:`);
+  console.log(`   Total personnes: ${totalPeople}`);
+  console.log(`   Personnes sans restrictions: ${mainGroupCount}`);
+  console.log(`   Nombre de variantes: ${variants.length}`);
+  console.log(`   Menu principal: ${mainGroup.count} personnes, allergènes: ${JSON.stringify(mainGroup.allergens || [])}, restrictions: ${JSON.stringify(mainGroup.dietaryRestrictions || [])}`);
+  variantGroups.forEach((v, index) => {
+    console.log(`   Variante ${index + 1}: ${v.count} personnes, allergènes: ${JSON.stringify(v.allergens || [])}, restrictions: ${JSON.stringify(v.dietaryRestrictions || [])}`);
+  });
   
   return {
     totalPeople,
@@ -1491,24 +1577,38 @@ function isDishCompatible(dish, allergens = [], dietaryRestrictions = []) {
  * Trouve un plat de remplacement compatible
  */
 async function findReplacementDish(allRecipes, originalDish, allergens, dietaryRestrictions, medicalConditions) {
+  console.log(`   🔍 Recherche remplacement pour "${originalDish.name}"`);
+  console.log(`      Catégorie recherchée: ${originalDish.category || 'toutes'}`);
+  console.log(`      Allergènes à éviter: ${allergens.join(', ') || 'aucun'}`);
+  console.log(`      Restrictions: ${dietaryRestrictions.join(', ') || 'aucune'}`);
+  
   // Filtrer les recettes compatibles de la même catégorie
   const compatibleRecipes = allRecipes.filter(recipe => {
-    // Même catégorie si possible
+    // Même catégorie si possible (mais pas obligatoire)
     if (recipe.category && originalDish.category && recipe.category !== originalDish.category) {
       return false;
     }
     
+    // Exclure la recette originale
+    if (recipe._id && originalDish.recipeId && recipe._id.toString() === originalDish.recipeId.toString()) {
+      return false;
+    }
+    
+    // Vérifier la compatibilité
     return isDishCompatible(recipe, allergens, dietaryRestrictions);
   });
   
+  console.log(`   📊 ${compatibleRecipes.length} recette(s) compatible(s) trouvée(s)`);
+  
   if (compatibleRecipes.length === 0) {
-    console.log(`⚠️ Aucune recette de remplacement trouvée pour "${originalDish.name}"`);
+    console.log(`   ⚠️ Aucune recette de remplacement trouvée pour "${originalDish.name}"`);
     return null;
   }
   
-  // Prendre une recette aléatoire parmi les compatibles
+  // ✅ AMÉLIORATION: Prioriser les recettes similaires (même type de protéine, même style)
+  // Pour l'instant, on prend une recette aléatoire, mais on pourrait améliorer avec un scoring
   const replacement = compatibleRecipes[Math.floor(Math.random() * compatibleRecipes.length)];
-  console.log(`   ↳ Remplacement: "${originalDish.name}" → "${replacement.name}"`);
+  console.log(`   ✅ Remplacement sélectionné: "${replacement.name}"`);
   
   return {
     recipeId: replacement._id,
@@ -1517,10 +1617,10 @@ async function findReplacementDish(allRecipes, originalDish, allergens, dietaryR
     description: replacement.description,
     servings: replacement.servings,
     ingredients: replacement.ingredients,
-    instructions: replacement.preparationSteps,
-    nutrition: replacement.nutritionalProfile,
-    allergens: replacement.allergens,
-    dietaryRestrictions: replacement.diet,
+    instructions: replacement.preparationSteps || replacement.instructions,
+    nutrition: replacement.nutritionalProfile || replacement.nutrition,
+    allergens: replacement.allergens || [],
+    dietaryRestrictions: replacement.diet || replacement.dietaryRestrictions || [],
     texture: replacement.texture
   };
 }
@@ -1581,6 +1681,12 @@ async function generateMenuWithVariants(
   console.log(`🔄 ${variants.length} variante(s) nécessaire(s)`);
   
   // 1. Générer le menu principal (pour le groupe majoritaire)
+  // ✅ IMPORTANT: Le menu principal peut contenir des allergènes si le groupe principal n'en a pas
+  // Exemple: 10 personnes, 5 allergiques aux œufs → menu principal peut avoir des œufs pour les 5 non-allergiques
+  console.log(`\n🎯 Génération menu principal pour ${mainGroup.count} personnes`);
+  console.log(`   Allergènes du groupe principal: ${(mainGroup.allergens || []).join(', ') || 'aucun'}`);
+  console.log(`   Restrictions du groupe principal: ${(mainGroup.dietaryRestrictions || []).join(', ') || 'aucune'}`);
+  
   const mainMenuRecipes = await selectMenuWithAI(
     allRecipes,
     numDishes,
@@ -1588,8 +1694,8 @@ async function generateMenuWithVariants(
     [{ ageRange: mainGroup.ageRange, count: mainGroup.count }],
     establishmentType,
     theme,
-    mainGroup.allergens || [],
-    mainGroup.dietaryRestrictions || [],
+    mainGroup.allergens || [], // Seulement les allergènes du groupe principal
+    mainGroup.dietaryRestrictions || [], // Seulement les restrictions du groupe principal
     medicalConditions,
     menuStructure
   );
@@ -1621,7 +1727,10 @@ async function generateMenuWithVariants(
         reusedDishes.push(mainDish.name);
       } else {
         // ❌ Plat incompatible → Trouver un remplacement
-        console.log(`   ❌ "${mainDish.name}" incompatible → Remplacement nécessaire`);
+        console.log(`   ❌ "${mainDish.name}" incompatible pour variante "${variant.name}" → Remplacement nécessaire`);
+        console.log(`      Raison: Allergènes interdits: ${(variant.allergens || []).join(', ') || 'aucun'}, Restrictions: ${(variant.dietaryRestrictions || []).join(', ') || 'aucune'}`);
+        
+        // ✅ AMÉLIORATION: Chercher un plat de remplacement de la même catégorie mais compatible
         const replacement = await findReplacementDish(
           allRecipes,
           mainDish,
@@ -1631,11 +1740,47 @@ async function generateMenuWithVariants(
         );
         
         if (replacement) {
+          console.log(`   ✅ Remplacement trouvé: "${replacement.name}" (compatible avec les restrictions)`);
           variantDishes.push(replacement);
-          replacedDishes.push({ original: mainDish.name, replacement: replacement.name });
+          replacedDishes.push({ 
+            original: mainDish.name, 
+            replacement: replacement.name,
+            reason: `Incompatible avec les restrictions: ${(variant.allergens || []).concat(variant.dietaryRestrictions || []).join(', ')}`
+          });
         } else {
-          // Si pas de remplacement trouvé, ne pas inclure ce plat
-          console.log(`   ⚠️ Pas de remplacement pour "${mainDish.name}" - plat omis`);
+          // Si pas de remplacement trouvé, essayer de trouver n'importe quel plat compatible de la même catégorie
+          console.log(`   ⚠️ Pas de remplacement direct trouvé, recherche élargie...`);
+          const fallbackRecipes = allRecipes.filter(recipe => {
+            // Même catégorie si possible
+            const sameCategory = !mainDish.category || !recipe.category || recipe.category === mainDish.category;
+            return sameCategory && isDishCompatible(recipe, variant.allergens || [], variant.dietaryRestrictions || []);
+          });
+          
+          if (fallbackRecipes.length > 0) {
+            const fallback = fallbackRecipes[Math.floor(Math.random() * fallbackRecipes.length)];
+            console.log(`   ✅ Remplacement de secours trouvé: "${fallback.name}"`);
+            variantDishes.push({
+              recipeId: fallback._id,
+              name: fallback.name,
+              category: fallback.category,
+              description: fallback.description,
+              servings: fallback.servings,
+              ingredients: fallback.ingredients,
+              instructions: fallback.preparationSteps,
+              nutrition: fallback.nutritionalProfile,
+              allergens: fallback.allergens,
+              dietaryRestrictions: fallback.diet,
+              texture: fallback.texture
+            });
+            replacedDishes.push({ 
+              original: mainDish.name, 
+              replacement: fallback.name,
+              reason: `Remplacement de secours (compatible avec restrictions)`
+            });
+          } else {
+            // Si vraiment aucun remplacement, ne pas inclure ce plat
+            console.log(`   ⚠️ Aucun remplacement trouvé pour "${mainDish.name}" - plat omis de cette variante`);
+          }
         }
       }
     }

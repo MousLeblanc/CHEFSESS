@@ -1,0 +1,128 @@
+RAPPORT DE VÉRIFICATION DES CATÉGORIES - DYSPHAGIES RECIPES
+Date: 28/11/2025 21:18:51
+Total recettes: 88
+
+RÉPARTITION PAR CATÉGORIE:
+  ACCOMPAGNEMENT: 12 recettes
+  BOISSON: 4 recettes
+  DESSERT: 8 recettes
+  ENTRÉE: 6 recettes
+  PLAT: 52 recettes
+  SOUPE: 6 recettes
+
+
+LISTE PAR CATÉGORIE:
+
+
+ACCOMPAGNEMENT (12 recettes):
+  1. Baked Cod with Lemon and Mashed
+  2. Mashed Potatoes
+  3. Creamed Corn
+  4. Roasted Asparagus
+  5. Roasted Cauliflower
+  6. Quinoa
+  7. Farro
+  8. Buckwheat
+  9. Barley
+  10. Grits
+  11. Beans
+  12. Scrambled Eggs and Mashed
+
+BOISSON (4 recettes):
+  1. The Motor City Shake
+  2. The Memphis Shake
+  3. The Manhattan Shake
+  4. Mango Lassi
+
+DESSERT (8 recettes):
+  1. Cathie G.’s Banana Cream Pie
+  2. Texas Sheet Cake with Oh-SoDelicious Chocolate Frosting
+  3. Pumpkin Flan
+  4. Thickened Ice Cream
+  5. The Ice Cream Sandwich
+  6. Homemade Vanilla Pudding
+  7. Homemade Chocolate Pudding
+  8. Cheesecake Puree
+
+ENTRÉE (6 recettes):
+  1. Tomato Cucumber Salad with Red
+  2. Tuna Avocado Salad
+  3. Celery Root Remoulade
+  4. Red Beet Salad with Ranch Dressing
+  5. Summer Slaw
+  6. Chunk Chicken Salad
+
+PLAT (52 recettes):
+  1. Chawan Mushi (Japanese Teacup
+  2. Chicken Pot Pie
+  3. Cornish Game Hens with Pan Gravy
+  4. Chicken Marsala
+  5. Roast Turkey Breast with Lemon and
+  6. Mom’s Turkey Meatloaf
+  7. Tempeh, Black Bean, and Veggie
+  8. Asparagus and Mushroom Pot Pie
+  9. Eggplant Parmesan with Ricotta
+  10. Vegetarian Almond Lentil Loaf
+  11. Vegetable Curry
+  12. Cod and Vegetable Parcels
+  13. Salmon in Puff Pastry
+  14. New England Crab Cakes
+  15. Shrimp, Cheese, and Spinach–Stuffed
+  16. Shrimp and Vegetable Stir-Fry
+  17. Shepherd’s Pie
+  18. Beef Stew
+  19. Pot Roast
+  20. Mild Steak Chili
+  21. Barbecued Pork Loin
+  22. Pork Fried Rice
+  23. Garlic and Rosemary Lamb Chops
+  24. Holiday Ham
+  25. Stuffed Cabbage
+  26. Sausage and Rice–Stuffed Peppers
+  27. Sausage and Peppers
+  28. Stuffed Shells
+  29. Spaghetti with Tomato Sauce
+  30. Ziti with Meat Sauce
+  31. Lasagna
+  32. Turkey Meatballs and Spaghetti
+  33. Linguine with Clam Sauce
+  34. Zucchini Noodles with Lemon,
+  35. Penne with Pesto
+  36. Slow-Baked Sweet Potatoes with
+  37. Grilled Summer Vegetables
+  38. Roasted Winter Vegetables
+  39. Roasted Mushrooms
+  40. Ratatouille (Summer Vegetable
+  41. Spinach and Parmesan Sauté
+  42. Braised Greens
+  43. Broccoli Parmesan
+  44. Brussels Sprouts with Shallots
+  45. Cabbage Sauté
+  46. Garlic Green Beans
+  47. Ginger Carrots
+  48. Minty Pureed Peas
+  49. Rice Congee (Soft Rice Porridge)
+  50. Steel-Cut Oatmeal with Yogurt and
+  51. Butternut Squash Quiche
+  52. Blintzes with Blueberry Sauce and
+
+SOUPE (6 recettes):
+  1. Roasted Tomato Soup
+  2. Matzo Ball Soup
+  3. Split Pea Soup
+  4. Minestrone
+  5. Wonton Soup
+  6. Mushroom Barley Soup
+
+
+⚠️  RECETTES À VÉRIFIER (3):
+
+1. Minestrone (soupe)
+   Problèmes: Ne contient pas de mot-clé "soupe"
+
+2. Mango Lassi (boisson)
+   Problèmes: Ne contient pas de mot-clé "boisson"
+
+3. Pumpkin Flan (dessert)
+   Problèmes: Ne contient pas de mot-clé "dessert"
+

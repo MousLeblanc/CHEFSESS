@@ -1,0 +1,4194 @@
+[
+  {
+    "name": "Sicilian Chicken",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "4 boneless chicken breast fillets",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "14 oz. of quartered marinated artichoke hearts, jarred",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 sliced red onion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 oz. of chopped capers",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "18 oz. of new baby potatoes, halved",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz. of chopped tomatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 thinly sliced squash",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 thinly sliced zucchini",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of pitted and sliced olives",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of white wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of chicken broth",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tablespoons of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 teaspoons of ground cumin",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tablespoons of finely chopped basil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat your oven to 400 degrees Fahrenheit and fill a large mixing bowl ¾ of the way with hot water. Add the baby potatoes to the bowl and cover them with saran wrap, then put them in the microwave for 3 minutes.",
+      "Add oil to a deep pan and gently heat it at a medium temperature for 60 seconds.",
+      "Remove the potatoes from the microwave and put them into the pan with the tomatoes, olives, artichokes, onion, capers, zucchini, and squash. Season them generously with salt and pepper and cook for 5 minutes, but stir them often so they cook evenly.",
+      "Sprinkle salt, pepper, and cumin on both sides of the chicken then place it on top of the vegetables. Pour the broth and wine into the pan and cook for a good 35-40 minutes or until the chicken is cooked through.",
+      "Finish with a sprinkle of basil on top."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 50,
+    "servings": 4,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#poulet",
+      "#volaille"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Beefsteak (Bistecca alla Fiorentina)",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "35 oz. of T-bone steak (1-inch thick)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 slices of white bread, cubed and with the crusts removed",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "24 oz. of chopped romaine lettuce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cubed bell pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of grated parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of pitted and halved black olives",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 chopped red onion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz. of sliced fresh tomatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of sugar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of crushed chili flakes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ teaspoon of garlic powder",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tablespoons of red wine vinegar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 ½ tablespoons of finely chopped basil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat your oven to 400 degrees Fahrenheit for 7-10 minutes, then coat the bread with 1 tablespoon of olive oil. Scatter the bread on a baking sheet and bake it in the oven for 8-12 minutes to make croutons. Remove and set them aside to cool once ready.",
+      "Heat a griddle pan at a medium-to-high temperature for 2-3 minutes, then season the steak with salt and pepper. Rub 1 tablespoon of oil on top then add to the grill and sear for 3 minutes. Flip the steak over and cook for a further 3 minutes. Cooking times, however, depend on the size and thickness of the steak. You can cook a few minutes longer on each side if you prefer a medium-rare steak.",
+      "Remove the steak from the griddle pan and let it rest for 10",
+      "Add the remaining oil to a measuring jug and combine it with red wine vinegar, sugar, garlic powder, 5 teaspoons of parmesan, chili flakes, 1 teaspoon of basil, and a pinch of salt and pepper. Whisk well until a thin dressing forms.",
+      "Add the lettuce, bell pepper, onion, tomatoes, olives, croutons, and the remaining parmesan to a large serving bowl. Use salad tongs to toss to combine then drizzle the dressing on top to create the ultimate Italian salad.",
+      "Slice the steak and serve alongside the salad. Finish with a sprinkle of basil on top."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 15,
+    "servings": 2,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#boeuf",
+      "#viande"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Mozzarella, Red Onion, and Bacon Calzone",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "6 oz. of thinly sliced mozzarella cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "12 oz. of passata",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 ½ tablespoons of sunflower oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 chopped tomatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 chopped bacon rashers",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 beaten eggs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 ½ teaspoons of baking powder",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 oz. of plain flour",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 oz. of sliced pepperoni",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 oz. of finely grated cheddar cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 finely diced jalapeno peppers",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 sliced red onion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of Italian seasoning",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tablespoons of water",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Heat a skillet at a medium temperature for 1 minute then add the bacon and gently fry it for 5 minutes. Remove it from the skillet and set it on paper towels to drain any excess grease or fat from the bacon.",
+      "Add the beaten eggs to a large mixing bowl then combine it with oil, baking powder, a pinch of salt and pepper, and all but 2 tablespoons of flour until a dough begins to form. This might take 2-3 minutes, depending on how quickly the dough comes together. You might need to add a tablespoon or two of water to thin the dough out as well.",
+      "Preheat the oven to 400 degrees Fahrenheit and place a large baking sheet in the oven to heat through for 10 minutes.",
+      "Use 2 tablespoons of flour to dust a clean surface then split the dough into two equal-sized pieces. Roll each piece of dough into 10-inch semi-thick consistencies.",
+      "Spread the passata on each dough piece then sprinkle 1 teaspoon of Italian seasoning on top of the sauce. Spread the mozzarella, bacon, onion, pepperoni, tomatoes, cheddar cheese, jalapeno, and a pinch of salt and pepper on each calzone then carefully fold the dough over and seal the edges with a fork.",
+      "Remove the baking sheet from the oven and place it on a cooling rack for a moment while you carefully place each calzone onto it. Place the calzones in the oven to bake for a good 20 minutes.",
+      "Remove and serve immediately to enjoy the full flavor of the"
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "oeufs"
+    ],
+    "dietaryRestrictions": [],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 23,
+    "servings": 2,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#pizza"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Fish Puttanesca (Pesce alla Puttanesca)",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "18 oz. of tilapia fillets, halved",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 white diced onion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 oz. of chopped anchovies",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "32 oz. of crushed tomatoes, canned",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 minced garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tablespoons of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 slices of thick-cut rustic bread",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 teaspoons of garlic butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of dry white wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tablespoon of rinsed and drained capers",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup of pitted and halved olives",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "5 tablespoons of finely chopped parsley",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of ground oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ teaspoon of cinnamon",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Pour the oil into a large pan or soup pot and gently heat it at a medium temperature for 1 minute. When the oil is hot, add the onions and cook them for 6 minutes, then add the garlic and cook for a further 1 minute.",
+      "Add the anchovies to the pan and cook them for 3 minutes and stir every minute to prevent anything from burning.",
+      "Pour the wine into the pan and cook for 2-3 minutes (as this will burn off the alcohol element), then mix in the cinnamon, oregano, and tomatoes. Let the mixture simmer for a good 10 minutes and stir every few minutes.",
+      "Add the capers and olives and cook them for 2 minutes. Season the mixture with salt and pepper then mix in half of the parsley and cook for 1 minute more.",
+      "Rub salt and pepper on the tilapia fillets then add them to the pan. Spoon the sauce over the fish and cover and cook for 8 minutes or until the tilapia is cooked through.",
+      "Spread the garlic butter on the bread then remove the puttanesca from the heat and divide onto plates. Top with the remaining parsley and serve the bread on the side to finish."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "poisson"
+    ],
+    "dietaryRestrictions": [
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 35,
+    "servings": 4,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#poisson"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Mascarpone and Tomato Crispy Cod Bake",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "4 cod fillets",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "32 oz. of chopped tomatoes, canned",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 oz. of breadcrumbs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 oz. of mascarpone cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 minced garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tablespoons of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 slices of thick-cut rustic bread",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tablespoons of finely chopped basil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tablespoons of roughly chopped parsley",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8, 1-inch-thick slices of mozzarella cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 oz. of parmigiano Reggiano cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "To create the mascarpone and tomato sauce, add oil to a saucepan and gently heat it for 30 seconds. Add the garlic and fry it for 2 minutes to help release the aromas better.",
+      "Put the tomatoes into the saucepan and bring them to a boil at a medium heat, then let them simmer and cook for 6-7 minutes. Stir the mascarpone and basil into the pan and mix well until a creamy sauce-like texture forms. This might take 2 or 3 minutes to achieve.",
+      "Season the cod with salt and pepper then add it to the pan and bring it to a boil. Mix in the parsley and let it simmer for a good 10 minutes.",
+      "Preheat your grill to a medium temperature for 5 minutes, then combine the breadcrumbs and Parmigiano Reggiano cheese to create a topping for the fish.",
+      "Remove the cod from the heat and layer the mozzarella on top of the cod. Sprinkle the breadcrumb mixture on top and put under the grill for 5 minutes to finish cooking.",
+      "Divide the puttanesca onto plates and serve with a few slices of thick-cut bread."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "oeufs",
+      "poisson"
+    ],
+    "dietaryRestrictions": [
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 20,
+    "servings": 4,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#poisson"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Roman Pasta (Cacio E Pepe)",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "3 cups of finely grated pecorino cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "16 oz. of spaghetti pasta",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tablespoons of crushed black peppercorns",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Put the crushed peppercorns into a skillet and toast them at a medium temperature for 3 minutes. You want to move the peppercorns every few minutes with a wooden spoon so they don’t burn.",
+      "Remove the peppercorns from the heat and set them aside on a plate for a few moments.",
+      "Pour cold water into a large pot, filling it to 75% capacity, and season with a pinch of salt. Heat the water over medium-high heat until it reaches a rolling boil. Subsequently, stir in the spaghetti and allow it to cook for 7 minutes.",
+      "Drain the pasta once it’s ready but retain at least 2 or 3 cups of cooking liquid.",
+      "Add 1 cup of cooking liquid to a second saucepan and heat it at a medium temperature for 1 minute then add the pecorino cheese and melt. Stir the cheese as it melts until it creates a creamy ricotta-like consistency. Season with a pinch of salt, then add ¼ cup of water if the sauce is too thick.",
+      "Put the peppercorns into the pan and heat them through with the sauce for 2 minutes. Add 4 tablespoons of water then put the spaghetti into the sauce. Heat it through for a minute then remove and serve immediately."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 10,
+    "servings": 4,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Stuffed Manicotti",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "10 manicotti pasta tubes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 oz. of washed and torn spinach leaves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 ½ cups of ricotta cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cups of shredded parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "32 oz. of chopped tomatoes, canned",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 finely diced red onion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "7 minced garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup of red wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tablespoons of finely chopped basil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tablespoons of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Add 3 tablespoons of oil to a large pan and heat at a medium temperature for 60 seconds, then add the diced onions and garlic and cook them for a good 7 minutes. Stir often so they don’t burn, then add the basil, tomatoes, and wine. Cover and cook for 40 minutes to create a thin sauce.",
+      "Fill a large pan with water and a pinch of salt, then bring it to a boil at a medium-to-high temperature. Add the manicotti pasta to the pan and cook for 10 minutes as the water continues to boil.",
+      "Add 1 tablespoon of oil to a saucepan and gently heat it at a medium temperature for 60 seconds. Put the spinach into the pan and cook it for 3 minutes or until it begins to wilt.",
+      "Remove the spinach from the heat and drain the excess oil. Add the ricotta to the pan and season with a pinch of salt and pepper then combine with the spinach to create the manicotti",
+      "Preheat your oven to 400 degrees Fahrenheit then remove the manicotti sauce from the heat and use an immersion blender to thin the sauce out (if necessary). You may not have to do this, depending on the consistency of the sauce. Add a pinch of salt and pepper and give the mixture one final stir.",
+      "Drain the manicotti pasta thoroughly then carefully fill each with the spinach and ricotta cheese mixture.",
+      "Pour ¾ of the manicotti sauce onto a baking dish then add the manicotti-filled pasta and pour the remaining sauce on top. Sprinkle the parmesan over the pasta then cover with aluminum foil and bake in the oven for 35-40 minutes."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Eggplant Parmesan",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "1 thinly sliced eggplant",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 cups of tomato and basil pasta sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 beaten eggs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup of finely grated parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of breadcrumbs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 ¼ cup of flour",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Cooking spray",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat your oven to 400 degrees Fahrenheit then grease 2 ovenproof dishes with cooking spray.",
+      "Crack and beat the eggs in one bowl, then add flour to a second bowl and combine it with a pinch of salt and pepper.",
+      "Coat each slice of eggplant in the flour mixture then dip it in the egg and place it into one of the greased dishes. Put the eggplant in the oven for 10-12 minutes but put the second dish in the oven as well so that it can heat through.",
+      "Remove the eggplant from the oven and reduce your oven to 350 degrees Fahrenheit.",
+      "Remove the dish from the oven and place it on a cooling rack for a moment. Pour half of the pasta sauce into the bottom of the dish, then add a layer of eggplant followed by the remaining sauce.",
+      "Sprinkle half of the parmesan on top and cover with aluminum foil. Bake the eggplant parmesan in the oven for 15",
+      "Combine the remaining parmesan with breadcrumbs, then remove the dish from the oven. Discard the foil and sprinkle the parmesan and breadcrumb mixture on top.",
+      "Bake uncovered for a further 10 minutes.",
+      "Once cooked, remove from the oven and let it rest for 7-10 minutes before serving."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "oeufs"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 50,
+    "servings": 4,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Tuna, Capers, and Chili Linguine",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "8 oz. of linguine pasta",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 freshly diced tomato",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz. of drained tuna, canned",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of drained and chopped capers",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 diced red chili pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 minced garlic clove",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "The zest of 1 lemon",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 oz. of washed rocket leaves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tablespoons of finely chopped parsley",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tablespoon of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "The juice of 1 lemon",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Fill a pan with water and a pinch of salt then bring it to a boil at a medium-to-high heat. Once the water boils, add the linguine and cook it for a good 6-7 minutes at a medium heat.",
+      "Once ready, remove the linguine from the heat and drain it but retain at least 1 cup of cooking liquid.",
+      "Add oil to a pan and gently heat it at a low temperature for 1 minute. Add the chili pepper and garlic and cook them for 2 minutes but stir them often to prevent them from burning.",
+      "Add the linguine and ½ cup of cooking liquid to the pan and toss to mix with the chili and garlic. Put the tuna, capers, and lemon zest into the pan and season with a pinch of salt and pepper then cook for 2 minutes.",
+      "Mix in the lemon juice, rocket, and tomatoes and cook for 1 minute more. Then remove and top with parsley to finish."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "poisson"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "vegan",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 15,
+    "servings": 2,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Lasagna Soup",
+    "category": "soupe",
+    "ingredients": [
+      {
+        "name": "24 oz. of ground beef",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 oz. of lasagna noodles, broken into small squares",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "7 minced garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 diced shallots",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "18 oz. of crushed tomatoes, canned",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "18 oz. of diced Roma tomatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tablespoons of tomato puree",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 oz. of ricotta cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz. of finely shredded mozzarella cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 oz. of finely grated parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "6 cups of chicken stock",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tablespoons of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of ground thyme",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of ground oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of crushed red chili pepper flakes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 oz. of chopped basil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Pour 1 tablespoon of oil into a skillet and heat it at a mediumto-high temperature for 30 seconds. Add the ground beef and brown it for a good 7 minutes. Season the beef well with salt and pepper and use a wooden spoon or spatula to break the meat up as it cooks so that it browns evenly.",
+      "Once the beef is browned fully, remove it from the heat and carefully drain any fat from the skillet. Set the beef to one side for a few moments.",
+      "Add the remaining oil to a large soup pot and heat it at a medium temperature for 1 minute. Put the shallots into the pot and cook them for 3-4 minutes or until they’ve softened, then add the garlic and cook for 2 minutes.",
+      "Pour the stock into the pot and stir well, then mix in the diced tomatoes, tomato puree, crushed tomatoes, thyme, oregano, chili flakes, and ¾ of the basil. Add the beef to the pot and mix well to combine.",
+      "Bring the soup to a boil then reduce to a low-to-medium heat. Cover and let the soup simmer gently for 20 minutes.",
+      "Pour water into a pan and bring to boil at a medium-to-high heat, then add the egg noodles and cook them for 7 minutes.",
+      "In a bowl, combine the mozzarella, ricotta, and parmesan",
+      "Drain the pasta and mix it into the soup with the remaining basil, then divide it into bowls and top it off with the cheese mixture to finish."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 40,
+    "servings": 6,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#poulet",
+      "#volaille",
+      "#boeuf",
+      "#viande"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Onion, Sausage, Potato, and Pepper Bake",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "32 oz. of Italian or Kielbasa sausages, sliced thickly (around",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2-inches)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "6 peeled and sliced potatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "5 thinly sliced bell peppers",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 white onions sliced into thin wedges",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 peeled and diced carrots",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 sprigs of thyme",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of ground rosemary",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of ground basil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup of vegetable stock",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup of dry white wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Cooking spray",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat your oven to 400 degrees Fahrenheit then grease an ovenproof casserole dish with cooking spray.",
+      "Pour 1 tablespoon of oil into a skillet and heat it at a medium temperature for 30 seconds, then add the sausages and brown them for 7-8 minutes. Flip the sausages over every 2 minutes so that both sides cook evenly.",
+      "Once the sausages are browned, remove them from the heat and drain any excess fat from them. Then put the sausages into the greased casserole dish.",
+      "Pour the remaining oil into the skillet and heat for 30 seconds before adding the potatoes. Cook them for a good 5 minutes but stir them often, then add the bell peppers, onions, and carrots, and continue to cook for 5-6 minutes.",
+      "Remove the potatoes, onions, carrots, and bell peppers from the heat and pour them into the casserole dish.",
+      "Pour the stock and wine into the casserole dish, then mix in the oregano, basil, rosemary, and a pinch of salt and pepper. Add the sprigs of thyme then place in the oven for 25",
+      "Once cooked, remove the bake from the oven and lightly season, if necessary, to finish."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 45,
+    "servings": 10,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Pan Seared Steaks with Onions, Radishes, and",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "2, 8 oz. steaks",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 sliced white onion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 thinly sliced radishes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "14 oz. of fresh quartered tomatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup of red wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 oz. of butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tablespoon of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 diced red chili pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tablespoons of finely chopped basil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Heat a skillet at a medium-to-high temperature for 2 minutes, then add half of the butter and let it melt for a few seconds.",
+      "Season the steaks generously with salt and pepper then add them to the hot skillet. Cook the steaks for a good 4 minutes then flip them over and cook for a further 4 minutes. Spoon the butter over the steaks as they cook as this helps make them juicer. Cooking times for the steaks, however, will depend on your preferences.",
+      "Remove the steaks from the pan and set them on a chopping board to rest for 8-10 minutes.",
+      "Add oil to the skillet (that you cooked the steaks in) and heat it at a low-to-medium temperature for 1 minute then add the sliced onions and cook them for 10-12 minutes.",
+      "Put the remaining butter into a saucepan and melt it at a medium heat for 1 minute. Add the radishes and season them with a pinch of salt and pepper, then cook them for 10 minutes but flip halfway through.",
+      "Add the wine to the pan and gently bring it to the boil. Let the pan simmer for 3 minutes to burn the alcohol from the wine, then add the tomatoes and diced chili pepper and cook for a further 3-5 minutes.",
+      "Slice the steaks then add them and the onions to the pan with the radishes. Mix well then let the steaks briefly heat through for 30-60 seconds.",
+      "Remove and top with basil to finish."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 15,
+    "servings": 2,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Sauteed Mushrooms, Onions, and Peppers",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "32 oz. of sliced button mushrooms",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 diced red onion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 finely sliced bell pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "12 oz. of spinach leaves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cups of Italian dressing",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 diced chili pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 oz. of chopped parsley",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tablespoons of soft butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tablespoons of water",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Heat a large skillet at a medium-to-high temperature for 1 minute, then add the butter and mushrooms. Season them with a pinch of salt and pepper then cook for 7 minutes. Coat the mushrooms in the butter then add the bell pepper, chili pepper, and diced onions to the skillet, then cook them for 3",
+      "Mix the Italian dressing and oregano into the skillet and cook for a further 4-5 minutes, then add the water and spinach and cook it for around 3-4 minutes or until it begins to wilt.",
+      "Remove the skillet from the heat and finish with a sprinkle of parsley on top."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 10,
+    "servings": 2,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Homemade Diavolo Pizza",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "2 ¾ cups of flour",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup of water",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ teaspoon of rapid-rise or instant yeast",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tablespoons of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ teaspoon of salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of spicy pizza sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 oz. of shredded mozzarella cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup of pitted and chopped olives",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 sliced hot chili peppers",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "12 slices of spicy salami",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ teaspoon of crushed black pepper (optional)",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "To a stand mixer, add 2 ½ cups of flour, salt, and yeast. Use a dough hook to gently mix the flour, then slowly add the water and 2 tablespoons of oil. Knead until a dough forms (around 5-6 minutes on a low speed).",
+      "Grease a bowl with the remaining tablespoon of oil then remove the dough from the mixer and place it in the bowl. Cover the bowl with saran wrap and let it rise for 2 ½ hours.",
+      "Remove the dough from the bowl then sprinkle the remaining flour on a clean surface and gently roll the dough into a ball shape. Cover the dough with saran wrap and let it rest for 30 minutes more.",
+      "Preheat your oven to 425 degrees Fahrenheit then roll the dough out into a 12-inch medium-thick base. Put the base on a large baking sheet then place it in the oven for 5 minutes to",
+      "Remove the pizza from the oven then place it on a cooling rack for a moment. Pour the sauce on the base but stop around an inch from the edge. You might not need all of the sauce; it depends on how much you prefer to use.",
+      "Sprinkle the mozzarella cheese on the pizza, then add the salami, hot chili peppers, and olives. If you want to add a little more heat, sprinkle a pinch of pepper on top too. Place the pizza in the oven for 8-12 minutes or until cooked to your"
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 15,
+    "servings": 1,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#pizza"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Chicken Parmesan",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "4 boneless chicken breast fillets, halved",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "32 oz. of crushed tomatoes, canned",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ teaspoon of dried oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "7 tablespoons of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 ½ cups of grated mozzarella cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 ½ tablespoons of finely minced basil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 small diced white onion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "5 minced garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup of breadcrumbs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup of all-purpose flour",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup of finely grated parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of ground cumin",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ teaspoon of red chili powder",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "16 oz. of spaghetti",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 eggs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tablespoons of finely chopped parsley",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Cooking spray",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "To create a marinara sauce, add diced onions and 3 tablespoons of olive oil to a saucepan and fry them for 6 minutes. Mix the garlic into the pan and cook for a further 2",
+      "Add the tomatoes to the pan, then mix in the chili powder, oregano, basil, cumin, and a pinch of salt and pepper. Stir well to combine then bring the mixture to a gentle boil. Cover with the lid and simmer gently on a low heat for 15-20 minutes or until a marinara-like texture is formed. Remove the sauce from the heat and set aside for a moment.",
+      "Add flour to a bowl and season it with a pinch of salt and pepper. In a second bowl, break and whisk the eggs for 15-20 seconds. In a third bowl, add the breadcrumbs and combine them with parmesan.",
+      "Preheat your oven to 425 degrees Fahrenheit then grease a baking dish with cooking spray and place it in the oven for 10",
+      "Pour the remaining oil into a large pan and gently heat it at a medium temperature for 2-3 minutes.",
+      "Wrap the chicken in saran wrap and gently pound it for 30 seconds with a cooking mallet to tenderize the meat so they have the same thickness. Unwrap the chicken then dip each piece into the flour, followed by the eggs, and finally the breadcrumb mixture.",
+      "Add the coated chicken to the pan and cook it for 3 minutes. Turn the chicken over and cook it for a further 3 minutes.",
+      "Remove the baking dish from the oven and place it on a cooling rack for a few minutes. Pour ½ of the marinara sauce into the baking dish then add the chicken. Pour the remaining sauce on top of the chicken then sprinkle on the mozzarella",
+      "Bake uncovered in the oven for 15 minutes.",
+      "Pour water into a pan and bring it to a boil at a medium-to-high heat. Once boiling, add the spaghetti and cook for 7 minutes.",
+      "Remove the chicken parmesan from the oven and set aside to rest for 5 minutes. Drain the spaghetti and divide it onto plates with the chicken.",
+      "Finish with a sprinkling of parsley on top."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "oeufs"
+    ],
+    "dietaryRestrictions": [
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 50,
+    "servings": 4,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#poulet",
+      "#volaille",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Eggplant Caponata",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "3 sliced celery stalks",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "18 oz. of crushed tomatoes, canned",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cubed eggplant",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 chopped red onion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cubed bell pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tablespoon of drained and chopped capers",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tablespoons of drained and chopped anchovies",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of pitted and chopped olives",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 minced garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "7 tablespoons of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "5 tablespoons of red wine vinegar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tablespoons of honey",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 oz. of chopped basil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of crushed chili pepper flakes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 bay leaf",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of ground cumin",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of ground oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Cooking spray",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat your oven to 425 degrees Fahrenheit and line a roasting pan or baking sheet with parchment paper. Grease the paper with cooking spray then add the eggplant to the pan and drizzle half of the oil over the eggplant.",
+      "Add a pinch of salt and roast the eggplant in the oven for 15 minutes. Turn the eggplant over then cook for a further 15-20",
+      "Put the remaining oil into a pan and heat it at a medium heat for 30 seconds. Add the onion, garlic, celery, and bell pepper, then season them with salt and pepper and cook for 10 minutes. Stir the vegetables often so they don’t burn, then add the crushed tomatoes, capers, anchovies, olives, red wine vinegar, honey, cumin, oregano, chili flakes, and bay leaf.",
+      "Season generously with salt and pepper then bring the mixture to a simmer at a low-to-medium heat for 10 minutes. Stir occasionally so that the vegetables don’t burn or stick to the",
+      "Remove the eggplant from the oven and set on a cooling rack for a moment.",
+      "Carefully discard the bay leaf then add the eggplant to the pan and cook for 3 minutes more, then remove from the heat and top with basil to finish."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "oeufs",
+      "poisson",
+      "celeri"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 43,
+    "servings": 2,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Shrimp and Polenta",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "24 oz. of peeled and deveined shrimp",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "5 minced garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of ghee",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup of white wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of crushed chili flakes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tablespoons of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup of milk",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "The juice of 1 lemon",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tablespoons of chopped parsley",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of sesame seeds",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 finely chopped scallion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 cups of water",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup of cornmeal",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of paprika",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of dried marjoram",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tablespoons of butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat your oven to 350 degrees Fahrenheit then add cornmeal, water, and a pinch of salt to an ovenproof dish. Whisk well to combine and infuse together, then cover with aluminum foil and cook for 15-17 minutes. Stir the polenta well, then cover and continue to cook for 15-17 minutes more.",
+      "Remove the dish from the oven and place on a cooling rack as you add the butter, milk, marjoram, paprika, and a pinch of pepper. Give the polenta a good whisk to help melt and mix the butter. Cover the polenta again with aluminum foil and switch off the oven. Put the dish back in the oven to keep warm for a few minutes.",
+      "Add oil and garlic to a pan and heat it at a medium temperature for 1 minute. Add the shrimp and wine and cook for 2 minutes, then flip them and cook for a further minute. Add the ghee and swirl the pan every few seconds to help it melt faster and cover the shrimp. Mix in the lemon juice, scallions, chili flakes, and parsley, and cook for 1 minute",
+      "Remove the shrimp from the heat and remove the polenta from the oven. Divide the polenta onto plates then place the shrimp on top and sprinkle on some sesame seeds."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose",
+      "crustaces",
+      "sesame"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Italian Summer Bake",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "2 sliced zucchinis",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 thinly sliced bell peppers",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 small sliced yellow squash",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "12 oz. of cubed new baby potatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 quartered tomatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 thinly sliced eggplants",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "32 oz. of marinara sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup of breadcrumbs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 ½ cups of finely grated parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 cups of shredded mozzarella cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 oz. of torn spinach leaves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 oz. of chopped basil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 grated garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of smoked paprika",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tablespoons of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of garlic powder",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of onion powder",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Cooking spray",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat your oven to 375 degrees Fahrenheit then grease a large baking dish with cooking spray.",
+      "Add the eggplants, tomatoes, baby potatoes, spinach, bell peppers, zucchinis, and squash to a large mixing bowl and sprinkle onion powder, grated garlic cloves, olive oil, oregano, salt, paprika, pepper, and garlic powder on top. Toss the vegetables to ensure the seasoning reaches everywhere and the vegetables are mixed up.",
+      "Pour ¼ of the marinara sauce in the bottom of the baking dish then add half of the mixed vegetables followed by another ¼ of the sauce. Sprinkle a half of mozzarella on top then add another ¼ of the sauce.",
+      "Add the remaining vegetables to the baking dish followed by the remaining sauce and mozzarella.",
+      "Combine the breadcrumbs and parmesan and sprinkle over the vegetables. Bake in the oven for 50-55 minutes then remove and top with basil to finish."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "oeufs"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 53,
+    "servings": 8,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Broccoli Pasta with Pecorino Cheese",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "32 oz. of frozen broccoli florets, thawed",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "24 oz. of fusilli pasta",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 oz. of mint leaves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "5 oz. of chopped walnuts",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 ½ cups of finely grated pecorino cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 minced garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ teaspoon of crushed chili pepper flakes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tablespoons of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Fill a large pan ¾ of the way with water and bring it to a boil at a medium-to-high heat. Once the water boils, add the fusilli pasta and cook it for 2 minutes, then add the broccoli and cook for 5 minutes.",
+      "Put the walnuts into a skillet and gently toast them for 5-7 minutes at a low-to-medium heat. Keep an eye on the walnuts as they can burn easily so move them often.",
+      "To a second pan, add the oil and chili flakes and cook them for 3 minutes at a medium temperature.",
+      "Remove the broccoli and pasta from the heat and drain them thoroughly but retain 2 cups of cooking liquid. Add the pasta and broccoli to the pan with the garlic and pour in 1 ½ cups of",
+      "Season the pasta with a pinch of salt and pepper, then add the pecorino cheese to the pan and cook for 3 minutes.",
+      "Mix the walnuts into the pasta then remove and divide onto plates. Finish with a few mint leaves on top."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "fruits_a_coque"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 20,
+    "servings": 4,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Italian Chicken Skillet",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "4 skinless chicken breast fillets",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz. of soft cream cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "18 oz. of crushed tomatoes, canned",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 sliced zucchini",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 sliced bell pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 diced fresh tomatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 peeled and cubed yellow squash",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 sliced white onion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tablespoons of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "5 minced garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ teaspoon of ground rosemary",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup of vegetable stock",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of finely chopped basil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Put the chicken into a skillet with oil and gently heat at a medium-to-high temperature. Season the chicken generously with some salt and pepper then cook it for a good 8-9 minutes. Turn the chicken over and cook for 8-9 minutes",
+      "Heat a second skillet at a medium-to-high temperature for 30 seconds, then add the squash, bell pepper, and onion, and cook for 5 minutes. Then add the zucchini to the skillet and cook for 4 minutes.",
+      "Mix the garlic, rosemary, oregano, and a pinch of salt and pepper in the chicken and let it cook for a further 1-2 minutes but stir frequently so that the spices release their aromas.",
+      "Remove the chicken from the heat once cooked, then set it aside for 10 minutes.",
+      "Pour the canned and fresh tomatoes, cream cheese, and stock into the skillet then bring to a boil at a medium temperature. Season with ¼ teaspoon of salt and a ¼ teaspoon of pepper and let the mixture simmer for 10 minutes.",
+      "Mix the basil into the pan with the tomatoes, then add the chicken and heat it through for a few minutes before serving"
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 43,
+    "servings": 4,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#poulet",
+      "#volaille"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Creamy Salmon Fillet with Herby Mashed Potatoes",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "4, 2-inch-thick salmon fillets, with the skin",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 finely diced white onion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup of heavy cream",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tablespoons of white wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "6 tablespoons of soft unsalted butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 oz. of chopped chives",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 oz. of finely chopped cilantro",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 minced garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tablespoons of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup of washed and torn spinach leaves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup of finely grated parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "The juice of 1 lemon",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "The zest of 1 lemon",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "24 oz. of peeled and cubed potatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup of milk",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ teaspoon of nutmeg",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of grated pecorino cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup of chopped chives",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tablespoons of flour",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ teaspoon of oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ teaspoon of ground cumin",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Add the potatoes to a large pot and fill ¾ to the top with water. Put a pinch of salt into the water and bring it to a boil at a medium-to-high heat. Reduce to a medium heat once boiling, then cook the potatoes for 15-17 minutes or until they’re soft.",
+      "Heat olive oil in a large skillet at a medium-to-high temperature for 60 seconds, then season the salmon with salt and pepper. Place the salmon (the non-skin side down) into the skillet and cook the fillets for 6 minutes, then turn and cook for a further 6 minutes. It’s important you use a large enough skillet so that the fillets don’t overlap with one",
+      "Once cooked, remove the salmon from the skillet and set aside on a cold plate to stop the cooking process.",
+      "Add 3 tablespoons of butter to the skillet, along with the onions and garlic, and cook them for 3 minutes. Stir often so that the butter melts and coats the onions and garlic, then add the flour and cook for a further 1 minute. Again, you want to coat the onions and garlic in the flour as best as you can.",
+      "Pour the wine into the skillet and burn off the alcohol for 1-2",
+      "Stir in the heavy cream, cumin, oregano, lemon zest, parmesan, and a dash of salt and pepper to create a sauce. Mix in the spinach then reduce to a medium heat and simmer for 5 minutes, but stir often to prevent the sauce from becoming",
+      "Put the salmon into the pan and coat the fillets in the sauce. Pour the lemon juice on top and remove immediately from the",
+      "Remove the potatoes from the heat once they’re cooked and drain thoroughly before putting them back into the pot. Mash them gently for a few minutes, then pour in the milk, nutmeg, remaining butter, cilantro, and a pinch of salt and pepper. Continue to mash the potatoes until they’re creamy and free from lumps.",
+      "Fold the pecorino cheese and chives into the potatoes and serve alongside the salmon."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "poisson"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Italian Pork and Potato Casserole",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "52 oz. of peeled and 1-inch sliced potatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "6 boneless pork loin chops",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 thickly sliced red onions",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 thickly sliced bell peppers",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 peeled and diced carrot",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "32 oz. of marinara sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 minced garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of cumin",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of ground rosemary",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of chopped thyme",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 diced hot chili peppers",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of finely grated parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Cooking spray",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat your oven to 350 degrees Fahrenheit and fill a large microwave-safe bowl (or casserole dish) with water and potatoes. Cover them with a lid then cook the potatoes for 5",
+      "Grease a casserole dish with cooking spray then remove the potatoes from the microwave and drain them. Put the potatoes into the casserole dish then add carrots, chili peppers, onions, and bell peppers.",
+      "Season the vegetables with thyme, cumin, oregano, garlic, rosemary, and a pinch of salt and pepper. Place the pork chops on top then pour the marinara sauce on top.",
+      "Cover the casserole dish with its lid then bake in the oven for 45 minutes.",
+      "Remove the casserole from the oven and sprinkle parmesan cheese on top. Bake for a further 5 minutes uncovered."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 48,
+    "servings": 6,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Baked Ziti",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "18 oz. of passata",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "14 oz. of ziti noodles",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "18 oz. of ground beef",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 diced red onion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 ¼ cup of milk",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "6 tablespoons of flour",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "6 tablespoons of butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of nutmeg",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "18 oz. of torn mozzarella cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz. of finely grated parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of ground basil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of sugar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of crushed fennel seeds",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of cayenne pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "To create a homemade ziti sauce, add the onions and butter to a pan and cook them for 3-4 minutes. Mix the flour into the onions then add the passata, milk, salt, pepper, sugar, oregano, basil, and fennel seeds, and bring it to a boil. Reduce to a low heat and cook for a further 25 minutes. Keep an eye on the sauce, however, as you don’t want to burn it or let it run dry.",
+      "Heat a skillet at a medium-to-high temperature for 1 minute then add the ground beef, cayenne pepper, and a pinch of salt and pepper, and cook for 6 minutes. Use a spatula or spoon to break the beef up so that it cooks evenly.",
+      "Preheat your oven to 350 degrees Fahrenheit then fill a pan ¾ of the way to the top with water. Bring it to a boil at a medium-to-high heat then add the ziti noodles and cook them for 4-5 minutes.",
+      "Remove the noodles and ground beef from the heat and pour the beef into a deep baking dish. Drain the noodles thoroughly then add them in with the beef. Season it with nutmeg and a small pinch of salt and pepper, then add the mozzarella. Mix well to combine then pour the passata sauce on top.",
+      "Sprinkle the parmesan across the ziti then cook for a good 20 minutes in the oven."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 43,
+    "servings": 4,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#boeuf",
+      "#viande"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Italian Turkey Skillet with Pasta",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "1 cup of peas",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 oz. of grape tomatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 oz. of chopped mushrooms",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 peeled and diced carrots",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz. of quartered new baby potatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 diced zucchinis",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cubed bell peppers",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "32 oz. of diced tomatoes and their juices, canned",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 diced red onions",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup of red wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 minced garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "18 oz. of ground turkey",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ teaspoon of nutmeg",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "16 oz. of fusilli pasta",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ teaspoon of cinnamon",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup of heavy cream",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ teaspoon of garlic powder",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ teaspoon of onion powder",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 oz. of finely grated parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Add the ground turkey and onion to a large skillet and season them with cinnamon, nutmeg, salt, and pepper. Cook them for 7 minutes at a medium-to-high heat but stir and break the turkey up as it cooks. You don’t want clumps to merge, but rather the turkey to evenly cook.",
+      "Add the garlic to the skillet and cook for 1 minute, then add the bell peppers, zucchini, baby potatoes, mushrooms, and carrots. Pour the wine into the skillet and cook for 3 minutes.",
+      "Mix the peas and diced tomatoes into the skillet and cook for 10 minutes. Stir the mixture every few minutes so that nothing burns or sticks to the skillet.",
+      "Fill a pan ¾ of the way with water, then bring it to a boil at a medium-to-high temperature. Add the pasta once the water boils, then cook for 7 minutes.",
+      "Add heavy cream to a saucepan and heat it at a medium temperature for 2 minutes, then add the garlic powder and onion powder and simmer gently. Stir frequently as it comes to a boil. Then reduce to a low heat and slowly add the parmesan. Let the cheese melt by constantly stirring for around 3-4 minutes or until fully melted.",
+      "Season the sauce with salt and pepper, then cook for 1 minute",
+      "Drain the pasta and pour it into the creamy sauce.",
+      "Remove the turkey and vegetable skillet from the heat and divide onto plates. Serve alongside the fusilli pasta and top with grape tomatoes to finish."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 6,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Mushroom and Asparagus Orzo Bake",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "8 oz. of baby spinach",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "18 oz. of trimmed asparagus",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "18 oz. of orzo pasta",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 chopped white onions",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "16 oz. of chopped button mushrooms",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of peas",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 cups of vegetable broth",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of white wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup of breadcrumbs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup of pitted and chopped black olives",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup of finely grated mozzarella cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 oz. of grated parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of paprika",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 teaspoons of chopped cilantro",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tablespoons of butter",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat your oven to 400 degrees Fahrenheit and put a baking dish into the oven to heat through for 10 minutes.",
+      "Pour the orzo and broth into a pan and bring it to a boil at a medium-to-high heat. Once the broth has boiled, reduce to a medium heat and cook a for a further 8 minutes. It’s important to stir the orzo often so that it doesn’t stick to the bottom of",
+      "Add butter and onions to a saucepan and cook them for 5-6 minutes at a medium heat. Put the mushrooms into the pan and cook for 5 minutes.",
+      "Stir and coat the mushrooms in the butter before adding the peas and wine. Season the mixture with salt, pepper, and paprika, and continue to cook them for a further 5 minutes.",
+      "Pour the orzo and broth into the saucepan and stir it into the mushroom mixture for 1 minute. Add the baby spinach and asparagus and cook for 30 seconds more.",
+      "Take the baking dish from the oven and place it onto a cooling rack for a moment. Carefully pour the orzo mixture into the baking dish and mix in the olives and mozzarella.",
+      "Sprinkle the parmesan and breadcrumbs over the orzo then bake uncovered for 20 minutes.",
+      "Remove and divide onto plates before topping with some cilantro to finish."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 33,
+    "servings": 4,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Chicken with Cheesy Broccoli and Rice",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "6 boneless and skinless chicken breast fillets",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "6 teaspoons of Dijon mustard",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "6 grated garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 thinly sliced red onions",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 thinly sliced tomatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup of finely chopped parsley",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "52 oz. of chopped broccoli florets",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cups of long-grain rice",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 cups of water",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 small diced white onion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cups of green beans",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "5 tablespoons of flour",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "5 tablespoons of butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 ¼ cups of milk",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 ¼ cups of finely shredded cheddar cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup of soft cream cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of mustard powder",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ teaspoon of paprika",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Add 3 cups of water and 2 cups of rice to a saucepan and bring it to a boil at a medium heat. Once the water boils, reduce to a low heat then cover and cook for 15 minutes or until the water has been absorbed.",
+      "Preheat your oven to 350 degrees Fahrenheit then add the diced onion and butter to a saucepan and cook them at a lowto-medium heat for 5 minutes. Add mustard powder, flour, and a pinch of salt and pepper, and cook for 3 minutes more.",
+      "Slowly pour the milk into the pan and whisk until combined. Increase to a medium heat and continue to stir until it thickens which could take up to 2 or 3 minutes. Remove the pan from the heat, then add the paprika, cream cheese, and cheddar cheese. Continue to stir until the cheese melts and creates a",
+      "Add the broccoli to the pan with the rice and cook it for 3-4 minutes, then remove them from the heat and drain them. Pour the broccoli and rice into a large baking dish and top with the cheese sauce. Place the cheesy broccoli and rice into the oven to bake for 35-40 minutes.",
+      "Slit a pocket into each chicken fillet and rub some garlic and a teaspoon of mustard in them.",
+      "Slit a pocket into chicken fillets then add a teaspoon of mustard and some garlic to each piece of chicken. Rub the extra mustard on top and sprinkle some salt and pepper on top. Loosely wrap the chicken in aluminum foil then put them onto a large baking dish.",
+      "Add the green beans, onions, and tomatoes to the dish and bake uncovered for 25-30 minutes or until cooked through.",
+      "Remove the chicken from the oven and let it rest for 5 minutes, then remove the broccoli and rice from the oven and divide onto plates. Put the chicken on top and finish with a sprinkle of parsley."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "moutarde"
+    ],
+    "dietaryRestrictions": [
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 38,
+    "servings": 6,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#poulet",
+      "#volaille",
+      "#riz"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Slow-Cooked Lamb with Vegetables",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "52 oz. of boneless leg of lamb",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "The juice of 3 lemons",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "5 tablespoons of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "The zest of 1 lemon",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup of vegetable stock",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "12 oz. of cherry tomatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 oz. of halved baby potatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz. of trimmed button mushrooms",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cubed zucchini",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cubed small yellow squash",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tablespoons of ground oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of paprika",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of crushed red chili pepper flakes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 teaspoons of finely chopped thyme",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of vegetable oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of finely chopped rosemary",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "7 grated garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of mint sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat your oven to 325 degrees Fahrenheit then score the top of the lamb lightly with a knife.",
+      "Combine lemon juice, oil, lemon zest, rosemary, garlic, and a pinch of salt and pepper to create a rub for the lamb. Pour the rub over the lamb and use your hands to work it into the",
+      "Place the lamb into a roasting pan and pour the vegetable stock into the pan as well. Cover with aluminum foil and roast for 3 hours and 30 minutes. Remove the foil and cook uncovered for a further 30 minutes.",
+      "To create a seasoning mix for the vegetables, combine paprika, oregano, chili flakes, thyme, and some salt and pepper in a measuring jug.",
+      "Add the mushrooms, tomatoes, potatoes, squash, and zucchini to a second roasting pan and drizzle vegetable oil on top. Sprinkle the seasoning mix over the vegetables and toss to combine, then roast them in the oven for 10 minutes.",
+      "Turn the vegetables over and continue to cook for a further 20-25 minutes or until cooked through.",
+      "Remove the lamb from the oven and let it rest for 10 minutes before slicing and serving with vegetables and some mint sauce on the side."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 6,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Summer Bake",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "16 oz. of rinsed and drained cannellini beans",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "16 oz. of diced tomatoes, canned",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 quartered red onions",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "32 oz. of cubed potatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 sliced bell peppers",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 thinly sliced zucchini",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 thinly sliced eggplant",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup of vegetable broth",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 grated garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of sugar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of crushed red chili pepper flakes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of ground oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of ground basil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of ground rosemary",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of onion powder",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of Italian seasoning",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 ½ teaspoons of garlic powder",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 minced green chili pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup of breadcrumbs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of finely grated parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat your oven to 400 degrees Fahrenheit then combine garlic powder, chili flakes, onion powder, basil, chili peppers, oregano, rosemary, and Italian seasoning to create a spice",
+      "Add tomatoes to a baking dish and sprinkle sugar on top (as this will cancel out the acidity of the tomatoes). Then add the onions, potatoes, bell peppers, garlic, eggplant, and zucchini to the dish. Toss to mix then pour the vegetable broth on top.",
+      "Sprinkle the spice mix over the vegetables then cover with aluminum foil and bake for 40-45 minutes.",
+      "Take off the foil and incorporate the cannellini beans into the mixture. Then, scatter breadcrumbs and Parmesan cheese over it and continue to bake for another 20 minutes, or until the crust becomes golden brown and deliciously melty."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "oeufs"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Spaghetti Bolognese with Chili Peppers and",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "16 oz. of ground beef",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "16 oz. of spaghetti noodles",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tablespoons of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 diced shallots",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "5 grated garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "24 oz. of crushed tomatoes, canned",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup of red wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tablespoons of tomato puree",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 oz. of finely chopped basil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of dried oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 finely diced red bell pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 finely diced jalapenos",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ teaspoon of crushed pepper flakes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 drained and finely chopped anchovies",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz. of chopped white mushrooms",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of sugar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of heavy cream",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup of grated parmesan",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Add oil and beef to a skillet and season with a pinch of salt then cook them at a medium-to-high heat for 5 minutes. Put the shallots and garlic into the skillet and cook for a further 3",
+      "Mix in the oregano, chili flakes, and tomato puree and stir well for 1 minute. Pour the wine into the skillet and cook for 5-7 minutes, then mix in the anchovies, tomatoes, bell peppers, mushrooms, jalapenos, basil, sugar, and a pinch of",
+      "Bring the beef Bolognese to a boil then reduce to a low heat and simmer gently for a good 20-22 minutes.",
+      "Put the spaghetti into a pan filled with water and bring it to a boil. Once boiled, let the spaghetti cook for around 6-7 minutes. Once cooked, drain the pasta in a colander and set it aside for a moment.",
+      "Pour the heavy cream and half of the parmesan into the Bolognese and mix well to create a creamy sauce. Let the sauce heat through for 1-2 minutes then add the spaghetti and toss to mix through the sauce and Bolognese.",
+      "Remove the spaghetti Bolognese from the heat and divide it into plates. Finish by sprinkling the remaining parmesan on"
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "poisson"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 45,
+    "servings": 4,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#boeuf",
+      "#viande",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Italian Sausage Casserole",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "2 peeled and diced carrots",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz. of chopped button mushrooms",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 diced bell peppers",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 diced chili pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup of beef stock",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "24 oz. of sliced Italian sausages",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "18 oz. of chopped cauliflower",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "12 oz. of chopped broccoli florets",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of finely chopped parsley",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 oz. of shredded mature cheddar cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz. of soft cream cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tablespoon of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Salt and pepper for seasoning",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat your oven to 375 degrees Fahrenheit then pour oil into a large skillet. Heat the oil at a medium-to-high temperature for 1 minute then add the carrots, mushrooms, bell peppers, chili pepper, broccoli, and stock, and cook for 7 minutes. Add the sausages to the skillet, season them with salt and pepper and cook them for 10 minutes. It’s important you move and flip the sausages every few minutes so that they brown evenly. Then mix the cream cheese into the skillet and let it melt for 1-2 minutes. Put the cauliflower into a blender and blitz it for 30-40 seconds or until fine rice-like grains form. Remove the sausages and vegetables from the heat then pour them into a baking dish. Sprinkle half of the cheddar cheese into the dish and mix around with the sausages and vegetables. Add the cauliflower rice and remaining cheese then cover and bake for 25 minutes. Remove the bake from the oven and cook uncovered for a further 10-15 minutes. Finish with a sprinkle of parsley on top."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 40,
+    "servings": 6,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat",
+      "#boeuf",
+      "#viande"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Chocolate Pudding (Budino al Cioccolato)",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "5 oz. of chopped dark chocolate",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "7 tablespoons of butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of caster sugar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 ¾ cups of milk",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tablespoons of cornstarch",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 mint leaves",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Add the butter to a saucepan and let it melt for 1-2 minutes at a medium heat. Stir it every so often to speed up the melting process and ensure the butter doesn’t burn.",
+      "Slowly pour and whisk the sugar into the melted butter for a minute or until it begins to thicken. Reduce to a low heat then add the chocolate and stir for a good 3-5 minutes until it fully melts. You must stir constantly as the chocolate melts so that it doesn’t burn.",
+      "Pour the milk into a second saucepan and gently bring it to the boil at a medium heat. It may take around 2-3 minutes to do",
+      "Once the chocolate has melted, sift in the cornstarch and stir for a good minute to ensure no lumps remain.",
+      "Remove the milk from the heat and slowly (and carefully) pour it into the chocolate mixture. It’s important to do this slowly otherwise the mixture might curdle. Increase to a medium heat and continue stirring for 4-5 minutes or until the chocolate pudding begins to thicken up.",
+      "Remove the pudding from the heat and carefully spoon it into dessert glasses then set it aside to chill for an hour at room temperature. Then put the pudding into the refrigerator for a further 3 hours to firm up fully.",
+      "Serve with a few mint leaves on top to finish."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 10,
+    "servings": 4,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Lemon Olive Oil Cake",
+    "category": "dessert",
+    "ingredients": [
+      {
+        "name": "2 ¼ cups of flour",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cups of granulated sugar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 ½ cups of whole milk",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 ½ cups of virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 eggs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ teaspoon of baking soda",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ teaspoon of baking powder",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of limoncello",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "The zest of 1 lemon",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup of lemon juice",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ teaspoon of salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup of confectioners’ sugar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Cooking spray",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat your oven to 325 degrees Fahrenheit then line a circular 9-inch springform pan with parchment paper. Grease the paper with cooking spray and set the pan to one side for a few moments.",
+      "Crack the eggs into a mixing bowl then add the oil and whisk them for 30-40 seconds or until they have incorporated with one another. Add the milk, lemon juice, lemon zest, and limoncello to the bowl and whisk well for a further 30",
+      "Slowly pour the granulated sugar into the mixture, along with the flour, salt, baking powder, and baking soda, then whisk well until a thin batter forms. This might take 2 or 3 minutes to achieve.",
+      "Pour the batter into the springform pan and smooth it out with a spoon or spatula. Gently bang the pan on your worktop so that you can release air trapped in the batter.",
+      "Place the cake in the oven to bake for 1 hour and 15 minutes. You should, however, check on the cake after 1 hour as it can cook faster depending on your appliance. Use a toothpick to check on the cake: a clean toothpick indicates it’s cooked",
+      "Once cooked, remove the cake from the oven and set it aside to cool on a cooling rack for 50-60 minutes. Remove the cake from the springform pan and dust it with confectioners’ sugar"
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "oeufs"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 8,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Anise Biscotti",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "¾ cup of soft butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 ¾ cups of all-purpose flour",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 teaspoons of crushed anise seeds",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "5 teaspoons of baking powder",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 eggs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 ¼ cup of sugar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 ¼ cup of almonds",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tablespoon of milk",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 teaspoon of anise extract",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ teaspoon of vanilla extract",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ teaspoon of nutmeg",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ teaspoon of cinnamon",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ teaspoon of salt",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Add the almonds to a skillet and toast them gently at a low-tomedium heat for 10 minutes. It’s important to stir and move them often so they don’t burn. Once toasted, remove the almonds from the heat and set them on a chopping board to cool down for a few minutes, then chop them finely.",
+      "Preheat your oven to 375 degrees Fahrenheit and line 2 baking sheets with parchment paper or silicone cooking mats.",
+      "In a bowl, combine nutmeg with flour, cinnamon, salt, baking powder, and anise seeds, then set the mixture aside for a few",
+      "To a stand mixer, add the butter and 1 cup of sugar, then cream them for 2-3 minutes or until they’re nice and fluffy. Crack each egg into the mixer then add the vanilla extract and anise extract and beat them for a further 30-40 seconds until they’re incorporated into the butter mixture.",
+      "Add the almonds and flour mixture to the stand mixer and combine them until a dough forms.",
+      "Split the dough into 2 pieces and shape them into semi-thick large squares. Ideally, you want each piece of dough to be of equal size and weight otherwise cooking times might vary.",
+      "Put each piece of dough onto a baking sheet then brush them with milk and sprinkle the remaining sugar on top. Place the biscotti into the oven to bake for 12-15 minutes.",
+      "Remove the biscotti from the oven (and remove them from the baking sheets too) and set them on a cooling rack for 20 minutes. Reduce your oven to 300 degrees Fahrenheit then slice the biscotti into rectangles and bake them for a further 8",
+      "Once crispy, remove the biscotti from the oven and let them cool down for 30 minutes before serving."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "oeufs",
+      "fruits_a_coque"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 40,
+    "servings": 10,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Pignoli",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "1 ¾ cups of granulated sugar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "18 oz. of almond paste",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz. of pine nuts",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 egg whites",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ teaspoon of salt",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat your oven to 350 degrees Fahrenheit and line 2 baking sheets with parchment paper.",
+      "To a food processor, add the almond paste and pulse it for 10- 12 seconds. Pour the sugar and salt into the processor and pulse for a further 45 seconds.",
+      "Add 2 egg whites to the processor then mix for a further 30 seconds. Pour the remaining egg whites into the processor and mix for a further 30-60 seconds or until a dough-like texture",
+      "Remove the pignoli dough from the food process and split it into small circles. Roll each pignoli circle into the pine nuts to form the crispy outer coating. Place the pignoli onto the baking sheets but space them apart as they can expand as they",
+      "Put the pignoli into the oven for 15 minutes, then remove them and let them cool down for 30 minutes before serving"
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "oeufs",
+      "fruits_a_coque"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 23,
+    "servings": 16,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "Zeppole",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "½ cup of confectioners’ sugar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 ½ cups of all-purpose flour",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup of soft butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "5 eggs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 ¼ cup of water",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ teaspoon of salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup of olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "5 tablespoons of sugar",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat your deep-fat fryer to 375 degrees Fahrenheit then add water, butter, sugar, and salt to a saucepan. If you don’t have a fryer, fill a pot with 1 or 2 cups of oil and heat it until it reaches 375 degrees Fahrenheit. Please note that you will need a cooking thermometer to check the temperature.",
+      "Heat the butter and water mixture at a medium temperature for 2-3 minutes. Stir constantly so that the butter and sugar incorporate fully with the water. Once combined, reduce to a low heat and slowly stir the flour into the pan until a dough",
+      "Remove the dough from the heat and carefully put it into a bowl. Set the dough aside for 5-7 minutes to cool down.",
+      "Once cooled, carefully crack and mix the eggs (one at a time) into the dough. Use a wooden spoon to combine the eggs into the dough and be thorough. You don’t, however, want to add the eggs if the dough is still warm otherwise the eggs will cook and curdle.",
+      "Scoop a tablespoon or two of batter and shape it into a donut or ball. Continue to do this until you have used all of the batter to create the zeppole. Place them on a plate and set up a wire cooling rack.",
+      "Put 5 zeppole dough pieces into the fryer and cook them for 6 minutes. Turn the zeppole over every 1-2 minutes until both sides are golden brown. Once cooked, remove the zeppole with a slotted spoon and place them on the wire rack to drain excess oil from them.",
+      "Repeat the process until you have used up all of the zeppole batter. Dust the zeppole with confectioners’ sugar to finish."
+    ],
+    "nutrition": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "lipids": 0,
+      "fibers": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "oeufs"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "restaurant",
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 20,
+    "servings": 8,
+    "tags": [
+      "#italian",
+      "#italie",
+      "#mediterranean",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  }
+]

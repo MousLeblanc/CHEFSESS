@@ -1,6 +1,6 @@
 import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
-import { compareSuppliersProducts } from '../controllers/supplierComparisonController.js';
+import { compareSuppliersProducts, compareAllSuppliersProducts } from '../controllers/supplierComparisonController.js';
 import { createRating, getSupplierRatings, getSiteRatings } from '../controllers/supplierRatingController.js';
 
 const router = express.Router();
@@ -10,6 +10,7 @@ router.use(protect);
 
 // Comparaison des produits entre fournisseurs
 router.get('/compare', compareSuppliersProducts);
+router.get('/compare-all', compareAllSuppliersProducts); // Comparaison globale pour admin
 
 // Ratings/Avis
 router.post('/ratings', createRating);

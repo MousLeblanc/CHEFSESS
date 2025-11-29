@@ -38,7 +38,12 @@
     "enrich-production": "node scripts/enrich-recipe-tags-production.js",
     "enrich-diet-production": "node scripts/enrich-diet-production.js",
     "test-vulpia-menu": "node scripts/test-vulpia-menu-generation.js",
-    "fix-residents": "node scripts/fix-residents-groupid.js"
+    "fix-residents": "node scripts/fix-residents-groupid.js",
+    "extract-pdf-recipes": "node scripts/extract-recipes-from-pdf.js",
+    "extract-all-pdfs": "node scripts/extract-all-pdfs.js",
+    "extract-single-pdf": "node scripts/extract-single-pdf.js",
+    "inject-pdf-recipes": "node scripts/inject-pdf-recipes-to-mongo.js",
+    "inject-medecine-recipes": "node scripts/inject-medecine-recipes-to-mongo.js"
   },
   "keywords": [
     "chef",
@@ -63,11 +68,15 @@
     "express-rate-limit": "^7.5.0",
     "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
+    "jsdom": "^27.2.0",
     "jsonwebtoken": "^9.0.2",
+    "jszip": "^3.10.1",
+    "mammoth": "^1.11.0",
     "mongoose": "^8.15.1",
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
     "openai": "^4.104.0",
+    "pdf-parse": "^2.4.5",
     "socket.io": "^4.8.1",
     "tesseract.js": "^6.0.1",
     "ws": "^8.18.3"

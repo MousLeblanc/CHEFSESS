@@ -911,6 +911,7 @@
 
   <!-- 🧹 Script de nettoyage des anciens tokens (doit être chargé en premier) -->
   <script src="js/token-cleanup.js"></script>
+  <script type="module" src="js/session-sync.js"></script>
   
   <!-- 🔒 Helper CSRF (doit être chargé avant les autres scripts qui font des requêtes) -->
   <script type="module" src="js/csrf-helper.js"></script>
@@ -918,23 +919,28 @@
   <!-- ✅ Helper de validation (doit être chargé avant les scripts qui utilisent les données utilisateur) -->
   <script type="module" src="js/validation-helper.js"></script>
   
-  <script type="module" src="js/supplier-common.js"></script>
-  <script type="module" src="js/supplier-comparison.js"></script>
-  <script type="module" src="js/order-tracking.js"></script>
-  <script type="module" src="js/stock-common.js"></script>
+  <!-- 📦 Gestionnaire de chargement lazy des scripts -->
+  <script type="module" src="js/lazy-script-loader.js"></script>
+  
+  <!-- Scripts essentiels (toujours chargés) -->
   <script type="module" src="js/ehpad-dashboard.js"></script>
-  <script type="module" src="js/resident-management.js"></script>
-  <script src="js/recipe-generator.js"></script>
-  <script src="js/foodcost-manager.js"></script>
   <script src="js/init.js"></script>
   <!-- Classe Modal réutilisable (doit être chargée avant les scripts qui l'utilisent) -->
   <script src="js/modal.js"></script>
-  <!-- Générateur de menu personnalisé avec objectifs nutritionnels -->
-  <script src="js/custom-menu-generator.js"></script>
-  <!-- Utilitaires pour les résidents (doit être chargé avant ehpad-menu-calculator.js) -->
-  <script src="js/resident-utils.js"></script>
-  <!-- Module pour le calculateur de portions et la génération de menu pour résidents -->
-  <script src="js/ehpad-menu-calculator.js"></script>
+  
+  <!-- ⚡ Scripts chargés lazy (chargés uniquement quand l'onglet correspondant est activé) -->
+  <!-- 
+    - js/supplier-common.js (onglet suppliers)
+    - js/supplier-comparison.js (onglet supplier-comparison)
+    - js/order-tracking.js (onglet suppliers)
+    - js/stock-common.js (onglet stock)
+    - js/resident-management.js (onglet residents)
+    - js/recipe-generator.js (onglet recipe-generator)
+    - js/foodcost-manager.js (onglet foodcost)
+    - js/custom-menu-generator.js (onglet menus)
+    - js/resident-utils.js (onglet menus)
+    - js/ehpad-menu-calculator.js (onglet menus)
+  -->
   
   <script>
       // ===== Helper pour la gestion cohérente des erreurs =====

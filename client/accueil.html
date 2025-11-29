@@ -291,6 +291,436 @@
             text-align: center;
             padding: 1rem;
         }
+        
+        /* Styles pour les onglets */
+        .tab-navigation {
+            display: flex;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            background: #f8f9fa;
+            border: none;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-width: 150px;
+        }
+        
+        .tab-btn:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+        
+        .tab-btn.active {
+            background: #e67e22;
+            color: white;
+        }
+        
+        .tab-btn i {
+            font-size: 1.1em;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Styles pour la tablette client */
+        select[multiple] {
+            background-color: white;
+            cursor: pointer;
+        }
+        
+        select[multiple] option {
+            padding: 0.5rem;
+            cursor: pointer;
+        }
+        
+        select[multiple] option:hover {
+            background-color: #e9ecef;
+        }
+        
+        select[multiple] option:checked {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .client-tablet-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .step {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        .step.active {
+            display: block !important;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .loading-container {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #e67e22;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .selection-section {
+            margin-bottom: 2rem;
+        }
+        
+        .proteins-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .protein-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .protein-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .protein-card.selected {
+            border-color: #e67e22;
+            background: #fff5e6;
+        }
+        
+        .protein-image {
+            width: 100%;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .protein-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+        
+        .protein-placeholder {
+            font-size: 4rem;
+        }
+        
+        .protein-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin: 0.5rem 0;
+        }
+        
+        .tag {
+            background: #e9ecef;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        
+        .select-protein-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: #e67e22;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+        
+        .select-protein-btn:hover {
+            background: #d35400;
+        }
+        
+        .restrictions-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .restrictions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .restriction-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .order-summary {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .restrictions-alert {
+            background: #fff3cd;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            border-left: 4px solid #f39c12;
+        }
+        
+        /* Styles pour le dashboard chef */
+        .chef-kitchen-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .status-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .status-filter-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #e67e22;
+            background: white;
+            color: #e67e22;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .status-filter-btn:hover {
+            background: #e67e22;
+            color: white;
+        }
+        
+        .status-filter-btn.active {
+            background: #e67e22;
+            color: white;
+        }
+        
+        .orders-section {
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        
+        .section-title.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .section-title.preparing {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .section-title.ready {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .order-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #e67e22;
+        }
+        
+        .order-card.pending {
+            border-left-color: #f39c12;
+        }
+        
+        .order-card.preparing {
+            border-left-color: #3498db;
+        }
+        
+        .order-card.ready {
+            border-left-color: #27ae60;
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .order-status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .order-status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .order-status-badge.preparing {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .order-status-badge.ready {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .restrictions-warning {
+            background: #fff3cd;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            border-left: 4px solid #f39c12;
+        }
+        
+        .restrictions-warning ul {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+        
+        .allergy-badge {
+            background: #dc3545;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .order-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .btn-action {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-start {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-start:hover {
+            background: #2980b9;
+        }
+        
+        .btn-ready {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-ready:hover {
+            background: #229954;
+        }
+        
+        .btn-served {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .btn-served:hover {
+            background: #7f8c8d;
+        }
+        
+        .btn-cancel {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-cancel:hover {
+            background: #c0392b;
+        }
+        
+        .no-orders {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 
@@ -316,7 +746,23 @@
     </header>
     
     <div class="container">
-        <h1>Tableau de bord</h1>
+        <h1>Tableau de bord Restaurant</h1>
+        
+        <!-- Navigation par onglets -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" data-tab="dashboard">
+                <i class="fas fa-home"></i> Tableau de bord
+            </button>
+            <button class="tab-btn" data-tab="client-tablet">
+                <i class="fas fa-tablet-alt"></i> Tablette Client
+            </button>
+            <button class="tab-btn" data-tab="chef-kitchen">
+                <i class="fas fa-utensils"></i> Cuisine Chef
+            </button>
+        </div>
+        
+        <!-- Onglet Tableau de bord -->
+        <div id="dashboard-tab" class="tab-content active">
         
 <div class="card">
     <h2><i class="fas fa-exclamation-triangle"></i> Alertes de Stock Détaillées</h2>
@@ -386,6 +832,64 @@
             <a href="suppliers.html" class="btn-primary">Gérer les fournisseurs</a>
         </div>
         
+        <!-- Badges de Qualité -->
+        <div class="card">
+            <h2><i class="fas fa-certificate"></i> Certifications et Conformité</h2>
+            <div id="quality-badges" class="quality-badges-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                <div class="quality-badge" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <h3 style="margin: 0.5rem 0; font-size: 1.2rem;">Équilibre Nutritionnel</h3>
+                    <p style="margin: 0.5rem 0; font-size: 0.9rem; opacity: 0.9;">Menus équilibrés adaptés à chaque groupe</p>
+                    <div id="nutritional-balance-status" class="badge-status" style="margin-top: 1rem; padding: 0.5rem; background: rgba(255,255,255,0.2); border-radius: 8px; min-height: 3rem; display: flex; flex-direction: column; justify-content: center;">
+                        <i class="fas fa-spinner fa-spin"></i> <span>Vérification...</span>
+                    </div>
+                </div>
+                
+                <div class="quality-badge" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 1.5rem; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <h3 style="margin: 0.5rem 0; font-size: 1.2rem;">Conformité AVIQ</h3>
+                    <p style="margin: 0.5rem 0; font-size: 0.9rem; opacity: 0.9;">Respect du fréquentiel AVIQ</p>
+                    <div id="aviq-compliance-status" class="badge-status" style="margin-top: 1rem; padding: 0.5rem; background: rgba(255,255,255,0.2); border-radius: 8px; min-height: 3rem; display: flex; flex-direction: column; justify-content: center;">
+                        <i class="fas fa-spinner fa-spin"></i> <span>Vérification...</span>
+                    </div>
+                </div>
+                
+                <div class="quality-badge" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 1.5rem; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <h3 style="margin: 0.5rem 0; font-size: 1.2rem;">Annexe 120</h3>
+                    <p style="margin: 0.5rem 0; font-size: 0.9rem; opacity: 0.9;">Conformité aux normes wallonnes</p>
+                    <div id="annexe120-compliance-status" class="badge-status" style="margin-top: 1rem; padding: 0.5rem; background: rgba(255,255,255,0.2); border-radius: 8px; min-height: 3rem; display: flex; flex-direction: column; justify-content: center;">
+                        <i class="fas fa-spinner fa-spin"></i> <span>Vérification...</span>
+                    </div>
+                </div>
+                
+                <div class="quality-badge" style="background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); color: white; padding: 1.5rem; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3 style="margin: 0.5rem 0; font-size: 1.2rem;">Dressage de l'Assiette</h3>
+                    <p style="margin: 0.5rem 0; font-size: 0.9rem; opacity: 0.9;">Suggestions de présentation esthétique</p>
+                    <div id="plating-status" class="badge-status" style="margin-top: 1rem; padding: 0.5rem; background: rgba(255,255,255,0.2); border-radius: 8px;">
+                        <i class="fas fa-check-circle"></i> <span>Activé</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section des conseils AVIQ (sera remplie dynamiquement) -->
+            <div id="aviq-advice-section" style="display: none; margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                <h3 style="margin-top: 0; color: #2c3e50; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-lightbulb"></i> Conseils AVIQ - Fréquences recommandées
+                </h3>
+                <div id="aviq-advice-list" style="display: grid; gap: 1rem; margin-top: 1rem;"></div>
+            </div>
+        </div>
+        
         <!-- Section des raccourcis rapides -->
 <div class="quick-actions">
     <h2>Actions rapides</h2>
@@ -398,6 +902,171 @@
 </div>
             </div>
         </div>
+        </div>
+        
+        <!-- Onglet Tablette Client -->
+        <div id="client-tablet-tab" class="tab-content">
+            <div class="client-tablet-container">
+                <div class="card">
+                    <h2><i class="fas fa-tablet-alt"></i> Sélection de Menu Modulaire</h2>
+                    
+                    <div id="error-message" class="alert" style="display: none;"></div>
+                    <div id="success-message" class="alert" style="display: none;"></div>
+                    
+                    <!-- Étape 1: Restrictions alimentaires (PREMIÈRE ÉTAPE) -->
+                    <div id="step-restrictions" class="step active" style="display: block;">
+                        <h3 style="color: #2c3e50; margin-bottom: 1rem;">1. Vos allergies et intolérances</h3>
+                        <p style="color: #666; margin-bottom: 1.5rem; text-align: center;">
+                            Indiquez vos restrictions alimentaires pour que nous puissions vous proposer des options adaptées
+                        </p>
+                        
+                        <!-- Restrictions alimentaires -->
+                        <div class="restrictions-section">
+                            <div class="restrictions-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                                    <h4 style="color: #2c3e50; margin-bottom: 1rem;">🥛 Allergies</h4>
+                                    <select name="allergies" id="allergies-select" multiple style="width: 100%; min-height: 200px; padding: 0.75rem; border-radius: 8px; border: 2px solid #ddd; font-size: 1em; font-family: inherit;">
+                                        <option value="gluten">🌾 Gluten</option>
+                                        <option value="lactose">🥛 Lait/Lactose</option>
+                                        <option value="oeufs">🥚 Œufs</option>
+                                        <option value="arachides">🥜 Arachides</option>
+                                        <option value="fruits_a_coque">🌰 Fruits à coque</option>
+                                        <option value="soja">🫘 Soja</option>
+                                        <option value="poisson">🐟 Poisson</option>
+                                        <option value="crustaces">🦐 Crustacés</option>
+                                        <option value="mollusques">🐚 Mollusques</option>
+                                        <option value="celeri">🥬 Céleri</option>
+                                        <option value="moutarde">🌶️ Moutarde</option>
+                                        <option value="sesame">🌾 Sésame</option>
+                                        <option value="sulfites">⚗️ Sulfites</option>
+                                        <option value="lupin">🌱 Lupin</option>
+                                    </select>
+                                    <p style="font-size: 0.85em; color: #666; margin-top: 0.5rem;">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs options</p>
+                                </div>
+                                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                                    <h4 style="color: #2c3e50; margin-bottom: 1rem;">⚠️ Intolérances</h4>
+                                    <select name="intolerances" id="intolerances-select" multiple style="width: 100%; min-height: 150px; padding: 0.75rem; border-radius: 8px; border: 2px solid #ddd; font-size: 1em; font-family: inherit;">
+                                        <option value="lactose">🥛 Intolérance au lactose</option>
+                                        <option value="gluten">🌾 Intolérance au gluten</option>
+                                        <option value="fructose">🍎 Intolérance au fructose</option>
+                                    </select>
+                                    <p style="font-size: 0.85em; color: #666; margin-top: 0.5rem;">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs options</p>
+                                </div>
+                                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                                    <h4 style="color: #2c3e50; margin-bottom: 1rem;">🥗 Régimes alimentaires</h4>
+                                    <select name="dietary-restrictions" id="dietary-restrictions-select" multiple style="width: 100%; min-height: 180px; padding: 0.75rem; border-radius: 8px; border: 2px solid #ddd; font-size: 1em; font-family: inherit;">
+                                        <option value="vegetarien">🌱 Végétarien</option>
+                                        <option value="vegan">🌿 Végétalien</option>
+                                        <option value="halal">🕌 Halal</option>
+                                        <option value="casher">✡️ Casher</option>
+                                        <option value="sans_gluten">🌾 Sans gluten</option>
+                                        <option value="sans_lactose">🥛 Sans lactose</option>
+                                    </select>
+                                    <p style="font-size: 0.85em; color: #666; margin-top: 0.5rem;">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs options</p>
+                                </div>
+                            </div>
+                            <div style="margin-top: 1rem;">
+                                <label for="customer-notes" style="font-weight: bold; color: #2c3e50;">📝 Notes spéciales (optionnel):</label>
+                                <textarea id="customer-notes" rows="3" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #ddd; margin-top: 0.5rem; font-family: inherit;" placeholder="Précisez toute autre restriction ou préférence alimentaire..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 2rem;">
+                            <button id="btn-continue-selection" class="btn-primary" style="padding: 1rem 2rem; font-size: 1.1em;">
+                                Continuer vers la sélection →
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Étape 2: Sélection modulaire (DEUXIÈME ÉTAPE) -->
+                    <div id="step-selection" class="step" style="display: none;">
+                        <h3 style="color: #2c3e50; margin-bottom: 1rem;">2. Composez votre menu</h3>
+                        
+                        <!-- Informations table -->
+                        <div class="selection-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                            <div>
+                                <label for="table-number" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #2c3e50;">Numéro de table:</label>
+                                <input type="number" id="table-number" min="1" value="1" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
+                            <div>
+                                <label for="guest-number" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #2c3e50;">Numéro de convive:</label>
+                                <input type="number" id="guest-number" min="1" value="1" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
+                        </div>
+                        
+                        <!-- Sélection protéine -->
+                        <div class="selection-section">
+                            <h3 style="color: #2c3e50; margin-bottom: 1rem;">1. Choisissez votre protéine</h3>
+                            <div id="proteins-container" class="proteins-grid">
+                                <div style="text-align: center; padding: 2rem; color: #666; grid-column: 1 / -1;">
+                                    <p>Chargement des protéines compatibles avec vos restrictions...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sélection sauce -->
+                        <div class="selection-section" id="sauces-section" style="display: none;">
+                            <h3 style="color: #2c3e50; margin-bottom: 1rem;">2. Choisissez votre sauce (optionnel)</h3>
+                            <select id="sauces-container" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #ddd; font-size: 1em;">
+                                <option value="">Aucune sauce</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Sélection accompagnement -->
+                        <div class="selection-section" id="accompaniments-section" style="display: none;">
+                            <h3 style="color: #2c3e50; margin-bottom: 1rem;">3. Choisissez votre accompagnement (optionnel)</h3>
+                            <select id="accompaniments-container" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #ddd; font-size: 1em;">
+                                <option value="">Aucun accompagnement</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Récapitulatif -->
+                        <div id="order-summary" class="order-summary" style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-top: 2rem; display: none;"></div>
+                        
+                        <!-- Actions -->
+                        <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: center;">
+                            <button id="btn-back-restrictions" class="btn-secondary" style="padding: 0.75rem 1.5rem; background: #95a5a6; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                ← Retour aux restrictions
+                            </button>
+                            <button id="submit-order-btn" class="btn-primary" style="flex: 1; padding: 0.75rem 1.5rem; display: none;">
+                                <i class="fas fa-paper-plane"></i> Envoyer la commande au chef
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Onglet Cuisine Chef -->
+        <div id="chef-kitchen-tab" class="tab-content">
+            <div class="chef-kitchen-container">
+                <div class="card">
+                    <h2><i class="fas fa-utensils"></i> Commandes en Cuisine</h2>
+                    
+                    <div id="error-message-kitchen" class="alert" style="display: none;"></div>
+                    <div id="success-message-kitchen" class="alert" style="display: none;"></div>
+                    
+                    <!-- Filtres par statut -->
+                    <div class="status-filters">
+                        <button class="status-filter-btn active" data-status="all">Toutes</button>
+                        <button class="status-filter-btn" data-status="pending">En attente</button>
+                        <button class="status-filter-btn" data-status="preparing">En préparation</button>
+                        <button class="status-filter-btn" data-status="ready">Prêtes</button>
+                        <button id="refresh-orders-btn" style="margin-left: auto; padding: 0.75rem 1.5rem; background: #e67e22; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            <i class="fas fa-sync-alt"></i> Actualiser
+                        </button>
+                    </div>
+                    
+                    <!-- Liste des commandes -->
+                    <div id="orders-container">
+                        <div class="loading-container">
+                            <div class="loader"></div>
+                            <p>Chargement des commandes...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Footer -->
@@ -405,7 +1074,7 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-logo">
-                    <img src="img/logo.png" alt="ChAIf SES" id="footer-logo-placeholder" class="footer-logo-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22><text y=%2230%22 font-size=%2230%22>👨‍🍳</text></svg>';">
+                    <img src="img/logo.svg" alt="Chef SES" id="footer-logo-placeholder" class="footer-logo-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22><text y=%2230%22 font-size=%2230%22>👨‍🍳</text></svg>';">
                     <span>ChAIf SES</span>
                 </div>
                 
@@ -435,26 +1104,74 @@
 
 </script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
-  const token = localStorage.getItem('token');
-  if (!token || !user) {
-    window.location.href = 'index.html';
-    return;
-  }
-  // Protection par rôle : ici “resto”, adapte si besoin
-  if (user.role !== 'resto') {
-    window.location.href = 'index.html';
-    return;
+document.addEventListener('DOMContentLoaded', async () => {
+  // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+  const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+  
+  // 🍪 Vérifier l'authentification via cookie HTTP-Only au lieu de localStorage
+  if (!user) {
+    // Vérifier si l'utilisateur est authentifié via l'API
+    try {
+      const authCheck = await fetch('/api/auth/me', {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (!authCheck.ok) {
+        window.location.href = 'index.html';
+        return;
+      }
+      
+      const authData = await authCheck.json();
+      const currentUser = authData?.user || authData;
+      
+      // Protection par rôle : ici "resto", adapte si besoin
+      if (currentUser.role !== 'resto') {
+        window.location.href = 'index.html';
+        return;
+      }
+      
+      // Stocker l'utilisateur dans sessionStorage pour compatibilité
+      sessionStorage.setItem('user', JSON.stringify(currentUser));
+    } catch (error) {
+      console.error('Erreur lors de la vérification de l\'authentification:', error);
+      window.location.href = 'index.html';
+      return;
+    }
+  } else {
+    // Si l'utilisateur est déjà dans sessionStorage, vérifier le rôle
+    if (user.role !== 'resto') {
+      window.location.href = 'index.html';
+      return;
+    }
   }
 
   // Logout
   const logoutBtn = document.querySelector('.logout-btn');
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', (e) => {
+    logoutBtn.addEventListener('click', async (e) => {
       e.preventDefault();
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      
+      // 🔐 Appeler l'API pour supprimer le cookie côté serveur
+      try {
+        const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+        await fetchFn('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+      } catch (error) {
+        console.error('Erreur lors de la déconnexion:', error);
+      }
+      
+      // Nettoyer sessionStorage
+      sessionStorage.removeItem('user');
+      sessionStorage.removeItem('cart');
+      
+      // Notifier les autres onglets de la déconnexion
+      if (typeof window !== 'undefined' && window.sessionSync) {
+        window.sessionSync.notifyLogout();
+      }
+      
       window.location.href = 'index.html';
     });
   }
@@ -486,6 +1203,47 @@ document.addEventListener('DOMContentLoaded', () => {
      <script type="module" src="js/common.js"></script> 
      <script type="module" src="js/dashboard.js"></script>
      <script type="module" src="js/auth.js"></script>
+     <script src="js/quality-badges.js"></script>
+     <script src="js/client-tablet.js"></script>
+     <script src="js/chef-kitchen.js"></script>
+     
+     <script>
+        // Gestion des onglets
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tab = btn.dataset.tab;
+                    
+                    // Retirer la classe active de tous les boutons et contenus
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Ajouter la classe active au bouton et contenu sélectionné
+                    btn.classList.add('active');
+                    const tabContent = document.getElementById(`${tab}-tab`);
+                    if (tabContent) {
+                        tabContent.classList.add('active');
+                    }
+                    
+                    // Initialiser les composants selon l'onglet
+                    if (tab === 'client-tablet' && window.clientTablet) {
+                        // Recharger les protéines si nécessaire
+                        if (!window.clientTablet.restaurantId) {
+                            window.clientTablet.init();
+                        }
+                    }
+                    
+                    if (tab === 'chef-kitchen' && window.chefKitchen) {
+                        // Recharger les commandes
+                        window.chefKitchen.loadOrders();
+                    }
+                });
+            });
+        });
+     </script>
 
      
 </body>

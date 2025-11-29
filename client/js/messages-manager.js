@@ -257,8 +257,9 @@ class MessagesManager {
     const container = document.getElementById('messages-list');
     if (!container) return;
     
-    // Récupérer l'utilisateur courant
-    const currentUserId = window.currentUser?._id || (localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user'))._id : null);
+    // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+    const user = window.currentUser || (typeof getStoredUser === 'function' ? getStoredUser() : null);
+    const currentUserId = user?._id || null;
     const getSenderId = (m) => typeof m.sender === 'object' ? m.sender._id : m.sender;
     
     const filteredMessages = this.currentFilter === 'sent' 
@@ -276,8 +277,9 @@ class MessagesManager {
     }
     
     container.innerHTML = filteredMessages.map(message => {
-      // Récupérer l'utilisateur courant
-      const currentUserId = window.currentUser?._id || (localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user'))._id : null);
+      // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+      const user = window.currentUser || (typeof getStoredUser === 'function' ? getStoredUser() : null);
+      const currentUserId = user?._id || null;
       const isRead = message.readBy?.some(r => {
         const readUserId = typeof r.user === 'object' ? r.user._id : r.user;
         return readUserId === currentUserId;

@@ -1,0 +1,525 @@
+[
+  {
+    "_id": "68ee3196bdefc434dc0ea6dd",
+    "name": "Waterzooi de Poulet aux Légumes, Riz et Crème",
+    "category": "plat",
+    "establishmentType": [
+      "collectivite"
+    ],
+    "texture": "normale",
+    "diet": [],
+    "pathologies": [],
+    "allergens": [
+      "celeri",
+      "lactose",
+      "oeufs"
+    ],
+    "nutritionalProfile": {
+      "kcal": 550,
+      "protein": 45,
+      "lipids": 35,
+      "carbs": 20,
+      "fiber": 3,
+      "sodium": 800
+    },
+    "ingredients": [
+      {
+        "name": "Filets de poulet ou morceaux (avec os)",
+        "quantity": 600,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e90641f6"
+      },
+      {
+        "name": "Bouillon de volaille",
+        "quantity": 1,
+        "unit": "L",
+        "_id": "68ece0eea5b41c48e90641f7"
+      },
+      {
+        "name": "Poireaux (rondelles)",
+        "quantity": 2,
+        "unit": "pièces",
+        "_id": "68ece0eea5b41c48e90641f8"
+      },
+      {
+        "name": "Carottes (rondelles)",
+        "quantity": 3,
+        "unit": "pièces",
+        "_id": "68ece0eea5b41c48e90641f9"
+      },
+      {
+        "name": "Céleri-rave ou branches (dés)",
+        "quantity": 100,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e90641fa"
+      },
+      {
+        "name": "Jaunes d'œufs",
+        "quantity": 2,
+        "unit": "pièces",
+        "_id": "68ece0eea5b41c48e90641fb"
+      },
+      {
+        "name": "Crème fraîche liquide",
+        "quantity": 20,
+        "unit": "cl",
+        "_id": "68ece0eea5b41c48e90641fc"
+      },
+      {
+        "name": "Beurre",
+        "quantity": 20,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e90641fd"
+      },
+      {
+        "name": "Sel, poivre, muscade",
+        "quantity": 1,
+        "unit": "pincée",
+        "_id": "68ece0eea5b41c48e90641fe"
+      },
+      {
+        "name": "Riz",
+        "quantity": 80,
+        "unit": "g",
+        "_id": "6924b68f129872278e03913b"
+      }
+    ],
+    "preparationSteps": [
+      "Préparer les légumes : laver et couper les poireaux en rondelles, les carottes en rondelles et le céleri en dés.",
+      "Faire fondre le beurre dans une grande casserole à feu moyen. Ajouter les poireaux, les carottes et le céleri. Faire suer pendant environ 5 minutes jusqu'à ce qu'ils soient légèrement tendres.",
+      "Ajouter les morceaux de poulet et verser le bouillon de volaille. Porter à ébullition, puis réduire le feu et laisser mijoter à couvert pendant 30 minutes.",
+      "Retirer le poulet de la casserole et l'effilocher à l'aide de deux fourchettes.",
+      "Dans un bol, mélanger les jaunes d'œufs et la crème fraîche. Ajouter une louche de bouillon chaud au mélange en remuant constamment pour éviter la coagulation.",
+      "Verser le mélange de crème et d'œufs dans la casserole en remuant constamment pour lier la sauce. Ne pas laisser bouillir.",
+      "Ajouter le poulet effiloché dans la casserole. Assaisonner avec du sel, du poivre et une pincée de muscade. Réchauffer doucement sans faire bouillir.",
+      "Servir le waterzooi chaud avec du riz cuit à part et du pain grillé."
+    ],
+    "compatibleFor": [
+      "normale"
+    ],
+    "aiCompatibilityScore": 1,
+    "__v": 9,
+    "ageGroup": {
+      "min": 2.5,
+      "max": 99
+    },
+    "description": "Soupe-repas crémeuse et réconfortante à base de poulet, de légumes (carottes, poireaux, céleri) et de crème fraîche.",
+    "hashtags": [
+      "#plat principal",
+      "#soupe",
+      "#belge",
+      "#crémeux"
+    ],
+    "portions": 4,
+    "establishmentTypes": [
+      "ehpad",
+      "hopital",
+      "cantine_scolaire",
+      "cantine_entreprise"
+    ],
+    "dietaryRestrictions": [],
+    "tags": [
+      "cantine_entreprise",
+      "cantine_scolaire",
+      "ehpad",
+      "facile_à_mâcher",
+      "feculent",
+      "hopital",
+      "laitier",
+      "plat",
+      "proteine",
+      "repas_complet",
+      "riche_proteines",
+      "riz",
+      "senior",
+      "type:volaille"
+    ],
+    "allergenCategories": {
+      "sans_arachides": true,
+      "sans_celeri": false,
+      "sans_crustaces": true,
+      "sans_fruits_a_coque": true,
+      "sans_gluten": true,
+      "sans_lactose": false,
+      "sans_lupin": true,
+      "sans_mollusques": true,
+      "sans_moutarde": true,
+      "sans_oeufs": false,
+      "sans_poisson": true,
+      "sans_sesame": true,
+      "sans_soja": true,
+      "sans_sulfites": true
+    }
+  },
+  {
+    "_id": "68ee3196bdefc434dc0ea6e9",
+    "name": "Velouté de Potimarron et Châtaignes",
+    "category": "plat",
+    "establishmentType": [
+      "collectivite"
+    ],
+    "texture": "mixée",
+    "diet": [],
+    "pathologies": [],
+    "allergens": [
+      "lactose"
+    ],
+    "nutritionalProfile": {
+      "kcal": 290,
+      "protein": 7,
+      "lipids": 14,
+      "carbs": 35,
+      "fiber": 7,
+      "sodium": 600
+    },
+    "ingredients": [
+      {
+        "name": "Potimarron (sans le peler)",
+        "quantity": 800,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e9064209"
+      },
+      {
+        "name": "Châtaignes cuites",
+        "quantity": 150,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e906420a"
+      },
+      {
+        "name": "Oignon ou échalote",
+        "quantity": 1,
+        "unit": "pièce",
+        "_id": "68ece0eea5b41c48e906420b"
+      },
+      {
+        "name": "Bouillon de légumes",
+        "quantity": 75,
+        "unit": "cl",
+        "_id": "68ece0eea5b41c48e906420c"
+      },
+      {
+        "name": "Crème liquide",
+        "quantity": 10,
+        "unit": "cl",
+        "_id": "68ece0eea5b41c48e906420d"
+      },
+      {
+        "name": "Beurre",
+        "quantity": 20,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e906420e"
+      }
+    ],
+    "preparationSteps": [
+      "Éplucher et émincer l'oignon ou l'échalote.",
+      "Dans une grande casserole, faire fondre le beurre à feu moyen.",
+      "Ajouter l'oignon émincé et faire suer pendant environ 5 minutes jusqu'à ce qu'il soit translucide.",
+      "Couper le potimarron en morceaux et les ajouter à la casserole avec les châtaignes.",
+      "Verser le bouillon de légumes sur les légumes et porter à ébullition.",
+      "Réduire le feu et laisser mijoter pendant 25 à 30 minutes jusqu'à ce que le potimarron soit tendre.",
+      "Mixer la soupe jusqu'à obtenir une texture lisse et homogène.",
+      "Incorporer la crème liquide, assaisonner selon le goût et servir chaud avec quelques brisures de châtaignes en garniture."
+    ],
+    "compatibleFor": [
+      "normale"
+    ],
+    "aiCompatibilityScore": 1,
+    "__v": 7,
+    "ageGroup": {
+      "min": 2.5,
+      "max": 99
+    },
+    "description": "Soupe d'automne, naturellement douce et crémeuse, associant le potimarron à la saveur boisée des châtaignes.",
+    "hashtags": [
+      "#soupe",
+      "#velouté",
+      "#automne",
+      "#français"
+    ],
+    "portions": 4,
+    "establishmentTypes": [
+      "ehpad",
+      "hopital",
+      "cantine_scolaire",
+      "cantine_entreprise"
+    ],
+    "dietaryRestrictions": [
+      "végétarien"
+    ],
+    "tags": [
+      "type:végétarien"
+    ],
+    "allergenCategories": {
+      "sans_arachides": true,
+      "sans_celeri": true,
+      "sans_crustaces": true,
+      "sans_fruits_a_coque": true,
+      "sans_gluten": true,
+      "sans_lactose": false,
+      "sans_lupin": true,
+      "sans_mollusques": true,
+      "sans_moutarde": true,
+      "sans_oeufs": true,
+      "sans_poisson": true,
+      "sans_sesame": true,
+      "sans_soja": true,
+      "sans_sulfites": true
+    }
+  },
+  {
+    "_id": "68ee3196bdefc434dc0ea6f2",
+    "name": "Velouté de Poireaux et Pommes de Terre Crémé",
+    "category": "plat",
+    "establishmentType": [
+      "collectivite"
+    ],
+    "texture": "mixée",
+    "diet": [],
+    "pathologies": [],
+    "allergens": [
+      "lactose"
+    ],
+    "nutritionalProfile": {
+      "kcal": 290,
+      "protein": 6,
+      "lipids": 17,
+      "carbs": 30,
+      "fiber": 3,
+      "sodium": 600
+    },
+    "ingredients": [
+      {
+        "name": "Blancs de poireaux (émincés)",
+        "quantity": 400,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e9064223"
+      },
+      {
+        "name": "Pommes de terre (en dés)",
+        "quantity": 300,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e9064224"
+      },
+      {
+        "name": "Bouillon ou eau",
+        "quantity": 75,
+        "unit": "cl",
+        "_id": "68ece0eea5b41c48e9064225"
+      },
+      {
+        "name": "Crème fraîche liquide",
+        "quantity": 10,
+        "unit": "cl",
+        "_id": "68ece0eea5b41c48e9064226"
+      },
+      {
+        "name": "Beurre",
+        "quantity": 20,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e9064227"
+      },
+      {
+        "name": "Ciboulette (pour servir)",
+        "quantity": 1,
+        "unit": "quantité suffisante",
+        "_id": "68ece0eea5b41c48e9064228"
+      }
+    ],
+    "preparationSteps": [
+      "Émincer les blancs de poireaux et couper les pommes de terre en dés.",
+      "Dans une grande casserole, faire fondre le beurre à feu moyen.",
+      "Ajouter les poireaux émincés et les faire suer sans coloration pendant environ 5 minutes.",
+      "Ajouter les pommes de terre en dés et verser le bouillon ou l'eau.",
+      "Porter à ébullition, puis réduire le feu et laisser mijoter pendant 20 minutes jusqu'à ce que les légumes soient tendres.",
+      "Mixer la soupe finement à l'aide d'un mixeur plongeant jusqu'à obtenir une texture lisse.",
+      "Incorporer la crème fraîche liquide et bien mélanger.",
+      "Servir chaud, garni de ciboulette ciselée."
+    ],
+    "compatibleFor": [
+      "normale"
+    ],
+    "aiCompatibilityScore": 1,
+    "__v": 7,
+    "ageGroup": {
+      "min": 2.5,
+      "max": 99
+    },
+    "description": "Potage crémeux et doux, souvent servi froid (Vichyssoise) ou chaud, à base de blancs de poireaux et pommes de terre.",
+    "hashtags": [
+      "#soupe",
+      "#velouté",
+      "#français",
+      "#froid"
+    ],
+    "portions": 4,
+    "establishmentTypes": [
+      "ehpad",
+      "hopital",
+      "cantine_scolaire",
+      "cantine_entreprise"
+    ],
+    "dietaryRestrictions": [
+      "casher",
+      "halal",
+      "végétarien"
+    ],
+    "tags": [
+      "type:végétarien"
+    ],
+    "allergenCategories": {
+      "sans_arachides": true,
+      "sans_celeri": true,
+      "sans_crustaces": true,
+      "sans_fruits_a_coque": true,
+      "sans_gluten": true,
+      "sans_lactose": false,
+      "sans_lupin": true,
+      "sans_mollusques": true,
+      "sans_moutarde": true,
+      "sans_oeufs": true,
+      "sans_poisson": true,
+      "sans_sesame": true,
+      "sans_soja": true,
+      "sans_sulfites": true
+    }
+  },
+  {
+    "_id": "68ee3196bdefc434dc0ea6fb",
+    "name": "Cannellonis à la Ricotta, Épinards et Emmental",
+    "category": "plat",
+    "establishmentType": [
+      "collectivite"
+    ],
+    "texture": "normale",
+    "diet": [
+      "végétarien"
+    ],
+    "pathologies": [],
+    "allergens": [
+      "gluten",
+      "lactose"
+    ],
+    "nutritionalProfile": {
+      "kcal": 450,
+      "protein": 20,
+      "lipids": 22,
+      "carbs": 45,
+      "fiber": 5,
+      "sodium": 650
+    },
+    "ingredients": [
+      {
+        "name": "Cannellonis secs",
+        "quantity": 300,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e9064247"
+      },
+      {
+        "name": "Épinards frais",
+        "quantity": 500,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e9064248"
+      },
+      {
+        "name": "Ricotta",
+        "quantity": 300,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e9064249"
+      },
+      {
+        "name": "Emmental râpé (farce et gratin)",
+        "quantity": 150,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e906424a"
+      },
+      {
+        "name": "Pulpe de tomate",
+        "quantity": 800,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e906424b"
+      },
+      {
+        "name": "Carottes (râpées pour sauce)",
+        "quantity": 100,
+        "unit": "g",
+        "_id": "68ece0eea5b41c48e906424c"
+      },
+      {
+        "name": "Oignon doux",
+        "quantity": 1,
+        "unit": "pièce",
+        "_id": "68ece0eea5b41c48e906424d"
+      },
+      {
+        "name": "Huile d'olive",
+        "quantity": 3,
+        "unit": "c. à soupe",
+        "_id": "68ece0eea5b41c48e906424e"
+      },
+      {
+        "name": "Sel, poivre, muscade",
+        "quantity": 1,
+        "unit": "pincée",
+        "_id": "68ece0eea5b41c48e906424f"
+      }
+    ],
+    "preparationSteps": [
+      "Préchauffer le four à 180°C.",
+      "Faire chauffer 1 cuillère à soupe d'huile d'olive dans une grande poêle à feu moyen. Ajouter les épinards et les faire tomber pendant environ 5 minutes jusqu'à ce qu'ils soient tendres. Égoutter l'excès de liquide.",
+      "Dans un bol, mélanger les épinards cuits avec la ricotta et 50g d'emmental. Assaisonner avec une pincée de sel, de poivre et de muscade.",
+      "Dans une casserole, chauffer 2 cuillères à soupe d'huile d'olive à feu moyen. Ajouter l'oignon finement haché et les carottes râpées. Faire revenir pendant environ 5 minutes jusqu'à ce que l'oignon soit translucide.",
+      "Ajouter la pulpe de tomate à la casserole, assaisonner avec du sel et du poivre, et laisser mijoter pendant 20 minutes. Mixer la sauce pour obtenir une texture lisse.",
+      "Farcir les cannellonis avec le mélange de ricotta et épinards. Les disposer dans un plat à gratin.",
+      "Napper les cannellonis de sauce tomate, puis parsemer du reste d'emmental.",
+      "Couvrir le plat de papier aluminium et cuire au four pendant 20 minutes. Retirer le papier aluminium et poursuivre la cuisson pendant 10 minutes supplémentaires pour gratiner."
+    ],
+    "compatibleFor": [
+      "normale",
+      "vegetarien"
+    ],
+    "aiCompatibilityScore": 1,
+    "__v": 8,
+    "ageGroup": {
+      "min": 2.5,
+      "max": 99
+    },
+    "description": "Cannellonis farcis d'une farce douce à la ricotta et aux épinards, nappés d'une sauce tomate lisse et gratinés au four.",
+    "hashtags": [
+      "#plat principal",
+      "#végétarien",
+      "#gratin",
+      "#pâtes"
+    ],
+    "portions": 6,
+    "establishmentTypes": [
+      "ehpad",
+      "hopital",
+      "cantine_scolaire",
+      "cantine_entreprise"
+    ],
+    "dietaryRestrictions": [
+      "casher",
+      "halal",
+      "végétarien"
+    ],
+    "tags": [
+      "type:végétarien"
+    ],
+    "allergenCategories": {
+      "sans_gluten": false,
+      "sans_lactose": false,
+      "sans_oeufs": true,
+      "sans_poisson": true,
+      "sans_crustaces": true,
+      "sans_mollusques": true,
+      "sans_arachides": true,
+      "sans_soja": true,
+      "sans_fruits_a_coque": true,
+      "sans_celeri": true,
+      "sans_moutarde": true,
+      "sans_sesame": true,
+      "sans_sulfites": true,
+      "sans_lupin": true
+    }
+  }
+]

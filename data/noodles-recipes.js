@@ -1,0 +1,5233 @@
+// Recettes Noodles extraites de NOODLES.json
+
+export const recipes = [
+  {
+    "name": "SPICY RIGATONI VODKA",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "12 oz (340 g) dried rigatoni",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ tbsp (22 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tbsp (42 g) butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 small onion, nely chopped",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 oz (113 g) diced pancetta",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ tsp (4 g) minced garlic",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tbsp (28 g) chopped Calabrian chili peppers (jarred is ne)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (120 ml) vodka",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (132 g) tomato paste",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1¼ cups (300 ml) heavy cream",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Kosher salt and black pepper to taste",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of salted water to boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Scoop out and reserve 1 cup (240 ml) of the pasta water before draining the pasta. Meanwhile, place a large skillet over medium-high heat and warm the olive oil and butter. When the butter has melted, add the onion and pancetta and cook, stirring occasionally, until the onion has softened, about 5 minutes. Add the garlic and chili peppers and",
+      "cook for 1 minute. Add the vodka and cook for 30 seconds. Remove from the heat, add the tomato paste and stir until well blended.",
+      "Return the skillet to medium-low heat, add the cream and bring the sauce to a gentle simmer. Season to taste with salt and pepper.",
+      "Add the cooked pasta and ½ cup (120 ml) of reserved pasta water and stir to combine. If the sauce appears too thick, add more of the reserved pasta water by the tablespoon (15 ml), while stirring, until it reaches the desired consistency.",
+      "Divide the pasta among four bowls, then top with the Parmesan and basil before serving."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose"
+    ],
+    "dietaryRestrictions": [],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "BIG FAT SHELLS",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "2 tbsp (36 g) plus a pinch of kosher salt, divided",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "16 dried jumbo pasta shells",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz (226 g) ground sweet Italian sausage",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 egg",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1⅓ cups (328 g) ricotta cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cups (225 g) shredded mozzarella cheese, divided",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅓ cup (33 g) grated Parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1¼ tsp (2 g) Italian seasoning",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Pinch of black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2½ cups (600 ml) jarred marinara, divided (we like Rao’s",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Homemade brand)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (28 g) panko breadcrumbs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tbsp (4 g) chopped fresh parsley, for garnish",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat the oven to 375°F (190°C).",
+      "To a large pot of water, add 2 tablespoons (36 g) of salt and bring to a boil over high heat. Add the shells and cook until al dente, stirring occasionally, according to the package directions. Drain, rinse with cold water, drain again and set aside (see the Note below for tips).",
+      "Place a large skillet over medium-high heat. Cook the sausage,",
+      "breaking the meat apart with a wooden spoon, until nicely browned, about 10 minutes. Drain and set aside.",
+      "In a large mixing bowl, whisk together the egg, ricotta, 1 cup (112 g) of the mozzarella, the Parmesan, Italian seasoning, and a pinch each of kosher salt and pepper. Add the cooked sausage and stir to",
+      "Grease a 9 × 13–inch (23 × 33–cm) baking dish with nonstick",
+      "cooking spray. Pour in 1½ cups (360 ml) of the marinara and spread it evenly across the bottom. Stu each shell with the lling and arrange them open-side up in the baking pan. Spoon the remaining marinara over the shells. Top with the remaining mozzarella. Evenly sprinkle the breadcrumbs over the top.",
+      "Cover the pan tightly with aluminum foil and cook for 20 minutes.",
+      "Remove the foil and continue cooking until the cheese is completely",
+      "melted, about 10 minutes. Top with the chopped parsley.",
+      "Our cooking tips for working with shells are to cook them",
+      "to al dente (or the lowest number for the cook time range given on the package instructions), not any longer or the shells will break easily while stu ng. Drain the shells in a colander and",
+      "rinse them under cold running water until they’re completely cooled, then drain them thoroughly; this makes them easier to"
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "oeufs"
+    ],
+    "dietaryRestrictions": [
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "TUSCAN SHRIMP PASTA",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "10 oz (282 g) dried rotini",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (28 g) butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 lb (454 g) medium to large shrimp, peeled and deveined (you can",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "leave the tails on or peel o )",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Kosher salt and black pepper to preference",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 garlic cloves, minced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (240 ml) heavy cream",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp sweet paprika",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp Italian seasoning",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup (25 g) freshly grated Parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (27 g) jarred oil-packed sun-dried tomatoes, chopped",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (30 g) chopped baby spinach",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Drain and set aside. Meanwhile, place a large skillet over medium heat and warm the butter. When the butter has melted, add the shrimp, season to your preference with salt and pepper and cook until opaque, 2½ minutes per side. Transfer the shrimp to a plate. In the same skillet, cook the garlic for 30 seconds, until fragrant.",
+      "Add the cream, paprika and Italian seasoning and stir to blend. Add the Parmesan and stir until melted and smooth. Reduce the heat to low, stir in the sun-dried tomatoes and simmer for 2 minutes. Add the spinach and cook until wilted, about 2 minutes. Add the drained pasta and shrimp and cook for 1 minute to warm them through. Plate and serve immediately."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "crustaces"
+    ],
+    "dietaryRestrictions": [
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#poisson",
+      "#fruits-de-mer",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "CACIO E PEPE",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "2 tbsp (36 g) kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "12 oz (340 g) dried bucatini or spaghetti",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tsp (4 g) fresh-cracked black pepper, plus more for serving",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ cups (150 g) freshly grated Pecorino Romano or Parmesan",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "cheese, plus more for serving",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "To a large pot of water, add the salt and bring to a boil over high",
+      "heat. Add the pasta and cook, stirring occasionally, until al dente, for about 2 minutes less than the package directions. Meanwhile, in a large skillet over medium heat, cook the black pepper while shaking the pan, until aromatic, about 2 minutes.",
+      "Remove from the heat. When the pasta is almost done, remove ½ cup (120 ml) of the pasta water and add it to the skillet containing the black pepper and",
+      "return the skillet to a high heat. Place the Pecorino Romano in a large bowl, add another ½ cup (120 ml) of the hot pasta water, and blend with a silicone spatula until creamy and smooth. If the sauce appears too thick, continue adding pasta water by the tablespoon (15 ml), while stirring, until it reaches the desired consistency. When the pasta is done, transfer it with tongs directly from the water to the skillet with the black pepper and continue cooking until just tender, about 2 minutes. Remove from the heat, add the cheese sauce, and stir to blend. If the sauce appears too thick, stir in another tablespoon or two (15 or 30 ml) of the pasta water. Taste and adjust the seasoning, adding more black pepper if desired. Plate immediately and top with more freshly grated cheese and black pepper."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "FRIED RAVIOLI WITH CHUNKY",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "CHUNKY MARINARA",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (30 ml) olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 medium yellow onion, diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 garlic cloves, minced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "5 tomatoes, roughly chopped",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp crushed red pepper akes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp dried oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tbsp (3 g) chopped fresh basil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (120 ml) heavy cream",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "FRIED RAVIOLI",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 eggs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅓ cup (80 ml) whole milk",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1¾ cups (189 g) Italian breadcrumbs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup (25 g) grated Parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "20 cheese ravioli (refrigerated or frozen and thawed)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 quarts (1.9 L) vegetable oil or peanut oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "To make the marinara, place a large saucepan over medium-high",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "cook until softened, about 5 minutes. Add the garlic and cook,",
+      "stirring frequently, until aromatic, about 2 minutes. Add the tomatoes, red pepper akes, oregano, basil, salt and pepper and",
+      "bring to a simmer. Reduce the heat to maintain a gentle simmer,",
+      "cover and cook, stirring occasionally, for 25 minutes. Stir in the heavy cream and continue simmering for 5 minutes. Remove from To make the fried ravioli, in a shallow bowl, place the eggs and milk and beat to combine. In a separate shallow bowl, place the breadcrumbs and Parmesan and stir to combine. Working with one ravioli at a time, dip it in the egg and milk mixture, allowing the excess to drip o . Then, dredge it in the breadcrumbs, making sure it’s evenly coated, and place it on a plate. Repeat with the remaining ravioli. Into a tabletop fryer or a large, heavy pot over medium-high heat,",
+      "pour the vegetable oil. Heat to 350°F (175°C). Cover a large sheet pan with paper towels. Working in batches, carefully lower the ravioli into the hot oil and fry until golden brown, about 3 minutes. Use a slotted spoon to remove the ravioli onto the paper towel-lined sheet pan to drain. Season the ravioli with salt immediately after removing them from the oil.",
+      "Serve with the chunky marinara for dipping."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "oeufs",
+      "arachides"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#vegetarien"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "PESTO GNOCCHI WITH BURRATA",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "4 cups (96 g) fresh basil leaves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 garlic cloves, roughly chopped",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (68 g) pine nuts",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (100 g) grated Parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Juice of 2 lemons",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (240 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 lb (454 g) gnocchi",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 oz (57 g) prosciutto, diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 (4-oz [113-g]) balls of Burrata, for garnish",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "In a food processor or blender, combine the basil, garlic, pine nuts, Parmesan, salt and lemon juice and pulse about 10 times, making sure to scrape down the sides a few times. While the machine is running, add the oil in a slow, steady stream. Continue blending until thoroughly combined, about 30 seconds.",
+      "Bring a large pot of salted water to a boil over high heat. Add the gnocchi and cook until al dente, stirring occasionally, according to the package directions. Scoop out and reserve ½ cup (120 ml) of the gnocchi water before draining the gnocchi. Meanwhile, place a small skillet over medium-high heat. Cook the prosciutto, stirring occasionally, until golden brown and crisp, about 5 minutes. Remove to a paper towel–lined plate to drain.",
+      "Return the drained gnocchi to the large pot, add the pesto and stir to combine. If the sauce appears too thick, add the reserved pasta water by the tablespoon (15 ml) while stirring, until it reaches the desired consistency.",
+      "Divide the gnocchi among four bowls, top each with a ball of Burrata and garnish with some of the crispy prosciutto."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose",
+      "fruits_a_coque"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "ORECCHIETTE WITH BACON,",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "12 oz (340 g) dried orecchiette",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "6 cups (402 g) chopped fresh or frozen kale leaves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 slices bacon, diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tsp (11 g) minced garlic",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (27 g) jarred sun-dried tomatoes, thinly sliced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ tsp crushed red pepper akes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tbsp (25 g) freshly grated Parmesan cheese, for garnish",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. When there are 2 minutes remaining in the cook time, add the kale. Scoop out and reserve ½ cup (120 ml) of the pasta water before draining the pasta and kale. Meanwhile, place a large skillet over medium-high heat. Cook the bacon, stirring occasionally, until crisp, about 5 minutes. Transfer to a paper towel–lined plate to drain, leaving the rendered fat in the Reduce the skillet’s heat to medium-low and cook the garlic, sun dried tomatoes and red pepper akes, stirring constantly, for 30 seconds. Add the pasta, kale and reserved pasta water and cook, while stirring, for 1 minute.",
+      "Remove from the heat and top with the Parmesan and bacon before",
+      "serving."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "HEARTY RIGATONI BOLOGNESE",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "1 small yellow onion, roughly chopped",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 small carrot, roughly chopped",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 celery stalk, roughly chopped",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (30 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 oz (113 g) pancetta, nely chopped",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 lb (454 g) ground beef (80/20)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 garlic cloves, minced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (240 ml) dry white wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (32 g) tomato paste",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2¼ cups (540 g) tomato puree",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Pinch of nutmeg 1 bay leaf",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (36 g) plus a pinch of kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (240 ml) whole milk",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 lb (454 g) dried rigatoni",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (50 g) grated Parmesan cheese, plus more for serving",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Place the onion, carrot and celery in a food processor or blender and pulse until very nely chopped, making sure to scrape down the sides a few times.",
+      "Place a large saucepan over medium heat and warm the olive oil. When the oil is hot, add the pancetta and cook until browned, about 5 minutes. Add the chopped vegetable mixture and cook, stirring occasionally, until the vegetables have softened, about 8 minutes.",
+      "Add the ground beef and garlic and cook, breaking the meat apart with a wooden spoon, until nicely browned, about 8 minutes. Add the wine, increase the heat to high and cook until most of the liquid has evaporated, 2 to 4 minutes. Reduce the heat to low, add the tomato paste, tomato puree, nutmeg, bay leaf and a pinch of salt, stirring well to fully combine.",
+      "Cover and cook, stirring occasionally, for about 2 hours. Periodically check to make sure there’s enough liquid in the saucepan to prevent scorching. If it appears dry, add a few tablespoons (about 45 ml) of After 2 hours, remove the bay leaf, stir in the milk and continue",
+      "cooking for 15 minutes. Remove the sauce from the heat. Meanwhile, to a large pot of water add 2 tablespoons (36 g) of the salt and bring to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions.",
+      "Scoop out and reserve 1 cup (240 ml) of the pasta water before",
+      "draining the pasta.",
+      "Add the drained pasta, Parmesan and some of the reserved pasta water to the sauce and stir for 1 minute. Add more of the pasta water until you get a consistency that you like.",
+      "Serve with additional Parmesan cheese."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "celeri"
+    ],
+    "dietaryRestrictions": [],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#boeuf",
+      "#viande",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "FETTUCCINE ALFREDO WITH",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "ALFREDO SAUCE",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (114 g) salted butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ cups (360 ml) heavy whipping cream",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tsp (6 g) minced garlic",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp Italian seasoning",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (36 g) plus ½ tsp kosher salt, divided",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cups (200 g) freshly grated Parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "12 oz (340 g) dried fettuccine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "SCALLOPS",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 lb (454 g) scallops",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Kosher salt and black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (30 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tbsp (42 g) unsalted butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (30 ml) fresh lemon juice",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ tbsp (13 g) minced garlic",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "To make the Alfredo sauce, place a large skillet over low heat, and",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "warm the butter and cream for 2 minutes, until the butter is melted.",
+      "Add the garlic, Italian seasoning, ½ teaspoon of salt and pepper and",
+      "cook, while whisking, for 1 minute. Add the Parmesan and whisk until completely melted and smooth. Turn o the heat.",
+      "In a large pot of water, add 2 tablespoons (36 g) of salt and bring to a boil over high heat. Add the pasta and cook, stirring occasionally, until al dente according to the package instructions. When the pasta is done, scoop out and reserve 1 cup (240 ml) of the pasta water before draining the pasta.",
+      "Return the Alfredo sauce to medium-low heat. Transfer the pasta to the sauce and gently toss to blend and heat through. If the sauce appears too thick, add the reserved pasta water by the tablespoon (15 ml), while stirring, until it reaches the desired consistency. Keep",
+      "warm over very low heat while you cook the scallops. To make the scallops, use paper towels to pat them dry on both sides. Season both sides of the scallops with salt and pepper. Place a large skillet over high heat and warm the olive oil. When the oil is very hot, add the scallops in a single layer and cook, without disturbing, until golden brown, about 3 minutes. Flip and continue",
+      "cooking until the second side is golden brown and the scallops are",
+      "cooked through, about 2 minutes. Transfer to a plate. Reduce the heat to medium-low and wait 1 minute for the pan to cool slightly, then warm the butter. When the butter has melted,",
+      "add the lemon juice and garlic. Cook, while stirring, for 1 minute.",
+      "Pour the sauce over the cooked scallops. To serve, divide the pasta among four bowls and top with the"
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose",
+      "mollusques"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "LEMON PESTO FARFALLE",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "2 tbsp (36 g) plus ¼ tsp kosher salt, divided",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 lb (454 g) dried farfalle",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 cups (96 g) fresh basil leaves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (68 g) pine nuts",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (100 g) grated Parmesan cheese, plus more for serving",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Juice of 2 lemons",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 garlic cloves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (240 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "To a large pot of water, add 2 tablespoons (36 g) of salt and bring to a boil over high heat. Add the pasta and cook, stirring occasionally, until al dente, about 1 minute less than the package directions. Meanwhile, in a food processor or blender, place the basil, pine nuts, Parmesan, lemon juice, garlic and the remaining ¼ teaspoon of salt and pulse about 10 times. While the machine is running, add the olive oil in a slow, steady stream. Process until smooth, making sure to scrape down the sides a few times, about 1 minute. When the pasta is almost done cooking, begin heating a large skillet over medium-high heat. Scoop out and reserve ½ cup (120 ml) of the pasta water. Drain the pasta and place it in the skillet along with ¼ cup (60 ml) of the reserved pasta water. Add the pesto to the skillet and stir to combine it with the pasta. Cook for about 2 minutes, stirring constantly, or until the pasta has nished cooking to your liking. If the sauce appears too thick, add more of the reserved pasta water by the tablespoon (15 ml), while stirring, until it reaches the desired consistency. Transfer the pasta to plates and top with additional grated"
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose",
+      "fruits_a_coque"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "SHRIMP SCAMPI LINGUINE",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "12 oz (340 g) dried linguine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3½ tbsp (50 g) unsalted butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2½ tbsp (38 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tsp (11 g) minced garlic",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tbsp (2 g) crushed red pepper akes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (120 ml) dry white wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 lb (454 g) tail-on shrimp, peeled and deveined",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Kosher salt and black pepper to taste",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (30 ml) fresh lemon juice",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup (15 g) chopped fresh parsley",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Drain the pasta and set aside. Meanwhile, place a large skillet over medium heat and warm the butter and olive oil. When the butter has melted, add the garlic and",
+      "cook, stirring constantly, for 1 minute. Add the red pepper akes and wine and cook until the liquid reduces by half, about 2 minutes.",
+      "Add the shrimp and cook until opaque, 2 minutes per side. Season to taste with salt and pepper. Add the lemon juice, parsley and",
+      "drained pasta and toss to combine."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose",
+      "crustaces"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#poisson",
+      "#fruits-de-mer",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "SPINACH ALFREDO RADIATORI",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "10 oz (283 g) dried radiatori",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (114 g) butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ cups (360 ml) heavy whipping cream",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (30 g) chopped fresh spinach leaves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tsp (6 g) minced garlic",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp Italian seasoning",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cups (200 g) freshly grated Parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Scoop out and reserve 1 cup (240 ml) of the pasta water before draining the pasta. Meanwhile, place a large skillet over medium heat and warm the butter and cream. When the butter has melted, add the spinach. Reduce the heat to low and cook for 2 minutes. Add the garlic, Italian seasoning, salt and pepper and cook, while stirring, for 1 minute. Working with a handful at a time, add the Parmesan and",
+      "stir until completely melted and smooth. Add the drained pasta and",
+      "stir to combine. If the sauce appears too thick, add the reserved pasta water by the tablespoon (15 ml), while stirring, until it reaches the desired consistency."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "CAVATAPPI & PROSCIUTTO",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "12 oz (340 g) dried cavatappi",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ tsp (7 g) butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ tsp (4 g) minced garlic",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tbsp (45 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 oz (113 g) prosciutto, chopped",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ tbsp (6 g) chopped fresh parsley",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (50 g) shaved Parmigiano-Reggiano, for garnish",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Scoop out and reserve ¼ cup (60 ml) of the pasta water before draining the pasta.",
+      "Place a large skillet over medium heat and warm the butter. When the butter has melted, add the garlic and cook for 30 seconds, until fragrant. Remove from the heat. When the pasta is done, use a slotted spoon to transfer it directly from the water to the skillet along with the reserved pasta water. Toss or stir to combine with the garlic butter. Add the olive oil, prosciutto, parsley and black pepper and stir to blend.",
+      "Garnish with the shaved Parmigiano-Reggiano."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose",
+      "oeufs"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "SPAGHETTI CARBONARA",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "8 oz (226 g) pancetta, diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "12 oz (340 g) dried spaghetti",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 egg, at room temperature",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 egg yolks, at room temperature",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp freshly ground black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 tbsp (50 g) freshly grated Parmigiano-Reggiano, divided",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "In a large skillet over medium-high heat, cook the pancetta, stirring frequently, until lightly crisp and golden brown, about 8 minutes. Transfer to a paper towel–lined plate to drain, leaving the rendered fat in the skillet. Meanwhile, bring a large pot of salted water to a boil over high",
+      "heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Scoop out and reserve 1 cup (240 ml) of the pasta water before draining the pasta.",
+      "In a large mixing bowl, whisk the egg and the egg yolks until completely blended. Add the black pepper and 6 tablespoons (38 g) of Parmigiano-Reggiano and whisk to combine.",
+      "Return the skillet to medium-high heat. When the rendered fat is hot, add the drained pasta. Heat, tossing or stirring, for 1 minute.",
+      "Remove the skillet from the heat, immediately pour in the egg and cheese mixture and toss until the noodles are completely coated.",
+      "Add the reserved pasta water by the tablespoon (15 ml), while",
+      "stirring, until it reaches a creamy consistency. Stir in the pancetta.",
+      "Divide the pasta among four bowls and top with the remaining 2 tablespoons (12 g) of Parmigiano-Reggiano."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "oeufs"
+    ],
+    "dietaryRestrictions": [],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "SPAGHETTI AGLIO E OLIO",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "12 oz (340 g) dried spaghetti",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅓ cup plus 2 tsp (90 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "5 garlic cloves, thinly sliced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp crushed red pepper akes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (8 g) nely chopped fresh parsley",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Freshly grated Parmesan cheese, for garnish",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of salted water to a boil over high heat. Add the spaghetti and cook until al dente, stirring occasionally, according to the package directions. Scoop out and reserve ½ cup (120 ml) of the pasta water before draining the pasta. Meanwhile, place a large saucepan over medium-high heat and",
+      "warm the olive oil. When the oil is hot, add the garlic and red pepper akes and cook, stirring frequently, until the garlic is fragrant and golden brown, about 3 minutes. Be careful not to burn the garlic. Reduce the heat to low. Transfer the drained pasta to the saucepan along with ¼ cup (60 ml) of the reserved pasta water. Stir well to evenly coat the pasta in the sauce. If the sauce appears too dry, add more of the reserved pasta water by the tablespoon (15 ml), while stirring, until it reaches the desired consistency. Remove from the heat and stir in the parsley.",
+      "Divide the pasta among four bowls and top with the Parmesan"
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "CALAMARATA PASTA WITH",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "6 whole calamari (thawed if frozen)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "12 oz (340 g) dried calamarata",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tbsp (60 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp crushed red pepper akes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tsp (6 g) minced garlic",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tbsp (16 g) chopped fresh parsley, divided",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup (180 ml) dry white wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tbsp (16 g) double-concentrated tomato paste",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz (226 g) cherry tomatoes, halved",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Pinch of kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "If the calamari tentacles are attached to the bodies, separate them",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "with a knife. Slice the bodies into thick rings that are the",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "approximate shape of the pasta",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Scoop out and reserve ½ cup (120 ml) of the pasta water before draining the pasta.",
+      "Place a large skillet over medium heat. Cook the olive oil, red pepper akes, garlic, 3 tablespoons (12 g) of parsley and the calamari tubes and tentacles (if using), while stirring, until the garlic begins to brown, about 2 minutes. Add the white wine and tomato paste and cook, while stirring, until the liquid is reduced by half, about 5 minutes. Add the tomatoes and salt, reduce the heat to low and cook, stirring occasionally, for 6 minutes.",
+      "Add the drained pasta and the remaining 1 tablespoon (4 g) of parsley and cook, while gently stirring and tossing, until heated through, about 2 minutes. If the sauce appears too thick, add the reserved pasta water by the tablespoon (15 ml) while stirring, until it reaches the desired consistency Plate and serve Immediately."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "vegan",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "SPAGHETTI WITH CLASSIC",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "1 tbsp (15 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 medium yellow onion, chopped",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 garlic cloves, minced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp crushed red pepper akes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp dried oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (36 g) plus 1 tsp kosher salt, divided",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 (28-oz [794-g]) cans whole peeled San Marzano tomatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 fresh basil leaves, chopped",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 lb (454 g) dried spaghetti",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Place a large skillet over medium-low heat and warm the olive oil. When the oil is hot, add the onion, garlic, red pepper akes, oregano, 1 teaspoon of salt and pepper and cook, stirring occasionally, until the vegetables have softened, about 15 minutes.",
+      "Add the tomatoes and their juices, increase the heat to medium and",
+      "bring to a simmer. Reduce the heat to maintain a gentle simmer and",
+      "cook, uncovered, for 1 hour. Occasionally stir and break up the tomatoes with a wooden spoon. Add the basil to the sauce, stir,",
+      "cover and turn o the heat. Meanwhile, to a large pot of water add 2 tablespoons (36 g) of salt and bring to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions.",
+      "Drain the pasta and then transfer it to the skillet with the sauce or a large serving bowl, tossing to combine."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "vegan",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "ORANGE CITRUS PESTO PASTA",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "½ cup (12 g) fresh basil leaves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (54 g) slivered almonds",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp chopped garlic",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 orange, peeled and roughly chopped (check for seeds and discard",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "any)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Juice of ½ lemon",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup (60 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 oz (283 g) dried rotini",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "In a food processor or blender, place the basil, almonds, garlic, orange, lemon juice, salt and pepper and pulse until nely chopped, making sure to scrape down the sides a few times. With the machine running, slowly add the olive oil. Process until smooth, occasionally scraping down the sides, about 1 minute.",
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Scoop out and reserve 1 cup (240 ml) of the pasta water before draining the pasta and returning it to the pot.",
+      "Add the pesto and stir to combine. While stirring, slowly add the reserved pasta water a tablespoon (15 ml) at a time until you reach your desired consistency."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "fruits_a_coque"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "vegan",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "SPICY PEANUT NOODLES",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "8 oz (226 g) knife-cut noodles or other wheat noodles",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tbsp (48 g) smooth peanut butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tsp (20 ml) rice vinegar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tsp (15 ml) soy sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tbsp (60 ml) chili crisp",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (30 ml) sesame oil or sesame chili oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (18 g) fried garlic, for garnish",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 scallions, thinly sliced, for garnish",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of water to a boil over high heat. Add the noodles and cook, stirring occasionally, according to the package directions.",
+      "Scoop out and reserve 3 tablespoons (45 ml) of the cooking water before draining the noodles.",
+      "In a large mixing bowl, stir together the peanut butter, rice vinegar, soy sauce, chili crisp, sesame oil and 1 tablespoon (15 ml) of the reserved noodle water and mix until smooth. Add the cooked noodles and toss with tongs until they are completely coated in sauce. If the sauce appears too thick, add more reserved water by the tablespoon (15 ml), while stirring, until it reaches the desired consistency.",
+      "Divide the noodles among four bowls and top with the fried garlic and scallions."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "soja",
+      "arachides",
+      "sesame"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "GARLIC-CHILI NOODLES",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "1 scallion, thinly sliced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (18 g) minced garlic",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tsp (20 ml) light soy sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tsp (10 ml) dark soy sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp black vinegar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (15 g) dried Sichuan red chili powder",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp ground ginger",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz (226 g) knife-cut noodles or other wheat noodles",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "6 tbsp (90 ml) vegetable oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (2 g) chopped fresh cilantro, for garnish (optional)",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "In a medium mixing bowl, combine the scallion, garlic, light and dark soy sauces, black vinegar, chili powder, ginger and salt. Set",
+      "Bring a large pot of water to a boil over high heat. Add the noodles and cook, stirring occasionally, according to the package directions.",
+      "Drain and transfer them to a large mixing bowl when done. Meanwhile, place a small saucepan over high heat and warm the vegetable oil. When the oil begins to smoke, carefully pour it into the bowl with the scallion mixture and whisk to combine. This is your chili oil! Add all of the chili oil to the noodles and toss or stir until thoroughly combined. Plate and garnish with the cilantro (if using)."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "soja"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "vegan",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 2,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates",
+      "#vegetarien"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "GARLICKY LO MEIN WITH",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "10 oz (283 g) dried lo mein (egg noodles or spaghetti will work too)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tbsp (45 ml) soy sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tbsp (15 ml) oyster sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tbsp (8 g) garlic powder",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp plus 1 tbsp (20 ml) sesame oil, divided",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp plus 1 tsp (21 g) minced garlic, divided",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 tbsp (112 g) unsalted butter, divided",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 scallions, thinly sliced, plus more for garnish",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 lb (454 g) medium tail-on shrimp, cleaned and deveined",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Chili crisp, for garnish (optional)",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of water to a boil over high heat. Add the lo mein and cook, stirring occasionally, according to the package directions.",
+      "Drain the noodles and set aside. Meanwhile, in a medium bowl, combine the soy sauce, oyster sauce, garlic powder and 2 tablespoons (30 ml) of water.",
+      "Place a large skillet over medium heat. Put in 1 teaspoon of sesame oil and heat for 30 seconds. Add 2 tablespoons (18 g) of minced garlic and cook for 1 minute. Add 6 tablespoons (84 g) of butter and",
+      "cook until the garlic begins to brown, about 1 minute. Add the soy sauce mixture and stir to combine. Reduce the heat to low, add the",
+      "drained lo mein and the scallions and cook, stirring to combine, for 1 minute. Remove from the heat.",
+      "In a second large skillet over medium heat, place 1 tablespoon (15 ml) of sesame oil and heat for 30 seconds. Add 1 teaspoon of",
+      "minced garlic and 2 tablespoons (28 g) of butter and stir to blend.",
+      "Add the shrimp in a single layer and cook until they become opaque and the tails crisp up, 2 minutes per side. Transfer the cooked shrimp and any accumulated liquid to the skillet containing the noodles. Place the skillet over medium-low heat and cook for about 1 minute, stirring to combine and warm all the ingredients.",
+      "Divide the noodles and shrimp among four bowls, then garnish with scallions and chili crisp (if using)."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "oeufs",
+      "crustaces",
+      "mollusques",
+      "soja",
+      "sesame"
+    ],
+    "dietaryRestrictions": [
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#poisson",
+      "#fruits-de-mer",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "SHANGHAI NOODLES",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "MARINADE",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp Shaoxing wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp light soy sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp dark soy sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp cornstarch",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp sugar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz (226 g) chicken breast, cut to 1-inch (2.5-cm) dice",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "UDON SAUCE",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp Shaoxing wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2½ tsp (12 ml) light soy sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2½ tsp (12 ml) dark soy sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp cornstarch",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp sugar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp minced garlic",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "NOODLES",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 lb (454 g) fresh udon (we like Myojo brand)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 bunch baby bok choy",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tbsp (15 ml) sesame oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 scallions, cut into 2-inch (5-cm) pieces",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "To make the marinade, in a medium-sized mixing bowl, whisk the",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "wine, light soy sauce, dark soy sauce, cornstarch and sugar until",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "combined. Add the chicken breast and toss to coat. Cover and set",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "aside to marinate at room temperature for 30 minutes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "To make the udon sauce, in a separate medium-sized mixing bowl",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "whisk the wine, light soy sauce, dark soy sauce, cornstarch, sugar and garlic until combined. Cover and set aside. To make the noodles, bring a large pot of water to a boil over high",
+      "heat. Add the udon and bok choy and cook for 2 minutes. Drain and separate the bok choy from the udon.",
+      "Place a wok or large skillet over medium heat and warm the sesame oil. When the oil is hot, add the chicken (discarding the marinade) and cook, while stirring, until lightly golden brown and nearly",
+      "cooked through, about 5 minutes. Add the noodles and the udon sauce and cook, stirring constantly, for 2 minutes. Add the bok choy and scallions and cook, while stirring, for 2 minutes."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "soja",
+      "sesame"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#poulet",
+      "#volaille",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "BANG BANG SHRIMP NOODLES",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "SAUCE",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (120 ml) plain unsweetened Greek yogurt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ tsp (7 ml) sriracha",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ tsp (4 g) minced garlic",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅓ cup (80 ml) sweet Thai chili sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Juice of ½ a lime",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "NOODLES",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz (226 g) dried spaghetti",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 oz (283 g) shrimp, peeled and deveined",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Pinch of sweet paprika",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Pinch of kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Pinch of black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (28 g) butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tsp (6 g) minced garlic",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tbsp (4 g) chopped fresh parsley, for garnish",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅛ tsp crushed red pepper akes, for garnish (optional)",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "In a medium bowl, whisk the yogurt, sriracha, garlic, chili sauce and lime juice until well combined. Set aside.",
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Drain and set aside. Meanwhile, in a large bowl, combine the shrimp, paprika, salt and pepper and toss to coat. Place a large skillet over medium-high heat and warm the butter. When the butter has melted, add the shrimp, arranged in a single layer, and cook for 90 seconds. Flip the shrimp and continue cooking for 90 seconds. Add the garlic and cook,",
+      "stirring constantly, for 30 seconds. Remove the shrimp from the",
+      "heat, add the yogurt–chili sauce mixture and drained pasta and toss or stir with tongs until everything is well combined. Plate and garnish with parsley and red pepper akes (if using)."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "crustaces"
+    ],
+    "dietaryRestrictions": [
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#poisson",
+      "#fruits-de-mer",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "FIERY RAM-DON",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "12 oz (340 g) sirloin or ribeye steak, cut to ¾-inch (2-cm) dice",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tbsp (6 g) kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2½ tbsp (38 ml) ponzu sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tsp (10 ml) vegetable oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 (4.5-oz [127-g]) packages chapagetti",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 (4.2-oz [120-g]) packages neoguri",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 scallions, thinly sliced, for garnish",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Sesame chili oil or regular sesame oil to taste, for garnish",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "In a medium bowl, stir together the steak, salt and ponzu sauce.",
+      "Cover the bowl and set aside to marinate for 30 minutes.",
+      "Place a large skillet over medium-high heat and warm the vegetable oil. When the oil is hot, add the steak (discarding the marinade) in a single layer. Cook, without stirring, until golden brown, about 2 minutes. Flip the steak and continue cooking until medium, about 2 minutes. Transfer to a plate, cover and set aside.",
+      "Bring a large pot of water to a boil over high heat. Add all four packages of instant noodles (setting aside all of the seasoning packets for now) and cook, stirring occasionally, for 3 minutes.",
+      "Scoop out and reserve 2 cups (480 ml) of the noodle water. Drain, but do not rinse, the noodles.",
+      "In a large bowl, combine the reserved noodle water and the contents of all of the seasoning packets that came with the four packages of noodles, including any soup bases, vegetables and/or oil. The exact contents of the seasonings may vary from brand to brand; that’s okay, just add them all. Whisk together. Add the drained noodles and toss until the noodles are completely coated with the sauce. Add the steak and toss to combine.",
+      "Divide among four bowls, and top with the scallions and sesame"
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "sesame"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#boeuf",
+      "#viande",
+      "#vegetarien"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "GREEN ONION OIL NOODLES",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "12 oz (340 g) thin wheat noodles",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tbsp (60 ml) vegetable oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "6 scallions, 4 cut to 2-inch (5-cm) lengths and 2 thinly sliced",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "divided 2 tbsp (30 ml) light soy sauce 2 tbsp (30 ml) dark soy sauce 1 tsp sugar",
+      "Bring a large pot of water to a boil over high heat. Add the noodles and cook, stirring occasionally, according to the package directions.",
+      "Drain, rinse with cold water and drain again.",
+      "Place a wok or large skillet over medium-low heat and warm the vegetable oil. When the oil is hot, add the 2-inch (5-cm) scallions.",
+      "Cook, while tossing or stirring, until golden brown, about 5 minutes. Immediately remove the scallions from the wok, place them on a paper towel–lined plate to drain and set aside. In the wok, cook the light and dark soy sauces and the sugar until the mixture starts to bubble. Remove from the heat and add the noodles. Toss or stir the noodles until they are fully coated in the sauce. Depending on the temperature of the wok and sauce, you might want to heat the noodles over low heat for a couple of minutes to warm through.",
+      "Divide the noodles among four bowls, then top with the crispy scallions and sliced fresh scallions."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "vegan",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates",
+      "#vegetarien"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "SHRIMP PAD THAI",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "12 oz (340 g) ¼-inch (6-mm)-wide rice noodles",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2½ tbsp (37 ml) vegetable oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "12 oz (340 g) large shrimp, shelled and deveined",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 garlic cloves, minced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 eggs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (240 ml) pad thai sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cups (208 g) bean sprouts",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (48 g) chives, cut into 2-inch (5-cm) pieces",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "TOPPING 2 tbsp (18 g) chopped peanuts 1 lime, cut into wedges Sriracha (optional) Soak the rice noodles in warm water until soft, about 10 minutes.",
+      "Place a wok or large skillet over medium-high heat and warm the vegetable oil. When the oil is hot, add the shrimp and garlic. Cook the shrimp for 90 seconds per side. Add the noodles and cook, while",
+      "tossing or stirring, for 1 minute. Once the shrimp turn opaque, slide the shrimp and noodles to one side of the wok. In the open space,",
+      "cook the eggs, stirring until scrambled, about 3 minutes. Mix the eggs into the noodles and toss or stir to combine everything evenly for 1 minute. Add the pad thai sauce and toss or stir to completely coat the noodles. Reduce the heat to low, add the bean sprouts and chives and cook, while tossing or stirring, for 1 minute.",
+      "Remove the wok from the heat, divide among bowls and top the noodles with the peanuts and lime wedges, and Sriracha to taste (if"
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "oeufs",
+      "crustaces"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#poisson",
+      "#fruits-de-mer",
+      "#pates",
+      "#vegetarien"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "SPICY SOY SAUCE CHOW MEIN",
+    "category": "accompagnement",
+    "ingredients": [
+      {
+        "name": "8 oz (226 g) dried chow mein (see Note)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "6 tbsp (90 ml) dark soy sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tsp (20 ml) light soy sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (120 ml) black vinegar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tsp (16 g) sugar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (30 ml) sesame chili oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tsp (20 ml) chili crisp",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (30 ml) sesame oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 scallions, thinly sliced, for garnish",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Chinese hot mustard, for garnish (optional)",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of water to a boil over high heat. Add the noodles and cook, stirring occasionally, according to the package directions.",
+      "Drain, rinse with cold water and drain again.",
+      "In a medium bowl, whisk the dark soy sauce, light soy sauce, black vinegar, sugar, sesame chili oil and chili crisp until combined. Set",
+      "Place a wok or large skillet over high heat and warm the sesame oil. When the oil begins to smoke, add the noodles and cook, without",
+      "stirring, until crispy, about 2 minutes. Flip the noodles and continue",
+      "cooking, without stirring, for 2 minutes. Add the soy sauce mixture and cook, while stirring or tossing, for 90 seconds.",
+      "Divide the noodles among bowls and top with the scallions and hot mustard (if using).",
+      "When shopping for the noodles, make sure to get chow",
+      "mein of the stir-fry variety, not the crunchy condiment kind."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "soja",
+      "sesame",
+      "moutarde"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "vegan",
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 2,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "EASY FRIED CHICKEN MAC ‘N’",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "10 oz (283 g) dried elbow macaroni",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tbsp (42 g) butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 (12-oz [354-ml]) can evaporated milk",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup (85 g) shredded pepper Jack cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup (85 g) shredded sharp cheddar cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 (9-oz [255-g]) bag seasoned chicken batter mix, divided (we like",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Louisiana Fish Fry Products)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 skinless, boneless chicken thighs, cut into 1-inch (2.5-cm) cubes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (240 ml) vegetable oil",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of salted water to a boil over high heat. Add the macaroni and cook until al dente, stirring occasionally, according to the package directions. Drain the pasta and return the macaroni to the pot. Add the butter and stir until the butter has melted and the pasta is fully coated. Meanwhile, place a large saucepan over medium-high heat, and",
+      "bring the evaporated milk to a boil. Reduce the heat to low, add the pepper Jack and cheddar cheeses and whisk until completely melted and smooth, about 5 minutes. Carefully add the buttered macaroni and cook, while stirring, for 4 minutes. Keep warm over very low",
+      "heat while you cook the chicken.",
+      "In a large mixing bowl, whisk 5 tablespoons (40 g) of the chicken batter mix and ½ cup (120 ml) of cold water until well combined.",
+      "Place the remaining batter mix in a separate shallow bowl. Working with a few pieces at a time, dip the chicken in the liquid batter, allowing the excess to drip o , then dredge the chicken in the dry batter mix to evenly coat it. Repeat this process with the remaining",
+      "Place a large skillet over medium-high heat. Pour in the oil and heat to 350°F (175°C). Working in batches, fry the chicken until golden brown, crispy and cooked through, about 2 minutes per side. Transfer to a paper towel–lined plate to drain while you fry the rest.",
+      "Divide the macaroni and cheese among four bowls and top with the fried chicken bites."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose",
+      "poisson"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#poulet",
+      "#volaille",
+      "#poisson",
+      "#fruits-de-mer",
+      "#vegetarien"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "CREOLE SHRIMP & SAUSAGE",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "10 oz (283 g) shrimp, peeled and deveined",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ tbsp (10 g) Creole or Cajun seasoning (we like Tony Chachere’s)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (28 g) butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 oz (283 g) sliced andouille sausage",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 medium yellow onion, diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 garlic cloves, minced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 oz (283 g) dried penne",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup (60 ml) chicken broth",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cups (480 ml) heavy cream",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (100 g) freshly grated Parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Kosher salt and black pepper to taste",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "In a large bowl, combine the shrimp and Creole seasoning and toss",
+      "Place a large skillet over medium heat and warm the butter. When the butter has melted, add the shrimp, arranged in a single layer, and cook for 2 minutes. Flip and continue cooking for 2 minutes. Transfer the shrimp to a plate. In the same skillet over medium heat, cook the sausage and onion until the sausage is lightly browned and the onion softens, about 6 minutes. Add the garlic and cook for 1 minute. Transfer the sausage and onion to the plate with the shrimp.",
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Meanwhile, to the same skillet over medium heat, add the chicken broth, scraping up any browned bits in the pan with a wooden",
+      "spoon, until the broth reduces by half, about 5 minutes. Reduce the",
+      "heat to medium-low and add the cream. When the sauce comes to a gentle simmer, add the Parmesan and cook, while stirring, until fully incorporated and smooth, about 3 minutes. Season to taste with salt and pepper. Add the shrimp, sausage and onion and stir to blend. Add the drained pasta and stir well to combine."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "crustaces"
+    ],
+    "dietaryRestrictions": [
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#poulet",
+      "#volaille",
+      "#poisson",
+      "#fruits-de-mer",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "CAJUN LIME SHRIMP PASTA",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "12 oz (340 g) dried linguine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 lb (454 g) shrimp, cleaned and deveined",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tbsp (15 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (12 g) Cajun seasoning",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tbsp (14 g) unsalted butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (240 ml) heavy cream",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (50 g) grated Parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Juice of 1½ small limes, or more to taste",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Kosher salt (optional)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Black pepper (optional)",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Scoop out and reserve ½ cup (120 ml) of the pasta water before draining the pasta. Meanwhile, in a large mixing bowl, toss together the shrimp, olive oil and Cajun seasoning.",
+      "Place a large skillet over medium-high heat and warm the butter. When the butter has melted, add the shrimp in a single layer and",
+      "cook for 2 minutes per side. Transfer the shrimp to a plate, but leave any accumulated juices in the skillet. Reduce the heat to medium, add the cream and stir with a wooden",
+      "spoon to scrape up any bits on the bottom of the skillet. Reduce the",
+      "heat to low, then add the Parmesan and stir until melted and the sauce is smooth. Add the lime juice and stir to combine. Taste and",
+      "adjust the seasoning, adding salt, pepper or additional lime juice, if",
+      "Add the shrimp and drained pasta to the sauce and stir to blend. If the sauce appears too thick, add the reserved pasta water by the tablespoon (15 ml), while stirring, until it reaches the desired consistency. Plate and serve immediately."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "crustaces"
+    ],
+    "dietaryRestrictions": [
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#poisson",
+      "#fruits-de-mer",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "FOUR-CHEESE BROCCOLI",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "1 lb (454 g) dried pappardelle",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1¼ cups (300 ml) whole milk",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup (75 g) grated Asiago cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup (75 g) grated fontina cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅛ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup (75 g) grated Pecorino Romano cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup (75 g) grated Parmigiano-Reggiano cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Kosher salt to taste",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cups (182 g) frozen broccoli orets, thawed (see Note)",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Meanwhile, place a large saucepan over medium heat, pour in the milk and bring to a simmer. Reduce the heat to low, add the Asiago and fontina, and whisk until completely melted and smooth, about 5 minutes. Whisk in the black pepper. Add the pecorino and Parmigiano-Reggiano and whisk until completely melted and smooth, about 5 minutes. Remove from the heat and season to taste When the pasta is done, transfer it with tongs directly from the water to the saucepan. Add the broccoli and stir until everything is fully coated with sauce. Plate and serve immediately.",
+      "We used frozen broccoli to keep things easy, but fresh",
+      "broccoli would be great if you have it on hand. Add it to the",
+      "boiling water with the pasta during the last 2 minutes of the pasta’s cook time. Drain the broccoli and pasta together and",
+      "add it to the saucepan with the sauce."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose",
+      "oeufs"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "TACO PASTA",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "8 oz (226 g) ground beef (80/20)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ white onion, diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 garlic clove, minced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cups (480 ml) chicken stock",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (6 g) taco seasoning",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (120 ml) red taco sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (120 ml) tomato sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "6 oz (170 g) dried medium pasta shells",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup (60 ml) heavy cream",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cups (226 g) grated sharp cheddar cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tomato, chopped",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (2 g) chopped fresh cilantro, for garnish",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Place a large saucepan or Dutch oven over medium heat. Cook the ground beef, breaking the meat apart with a wooden spoon, until lightly browned, about 5 minutes. Add the onion and garlic and",
+      "cook, stirring occasionally, until the vegetables are softened, about 2",
+      "Add the chicken stock, taco seasoning, taco sauce and tomato sauce and stir to combine. Increase the heat to high and add the uncooked pasta. When the sauce comes to a simmer, reduce the heat to low and cook, covered, until the pasta is al dente, about 12 minutes.",
+      "Remove from the heat and stir in the cream. Working with roughly a handful at a time, add the cheddar and stir until completely",
+      "melted and smooth.",
+      "Top with the tomato and cilantro."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#poulet",
+      "#volaille",
+      "#boeuf",
+      "#viande",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "AVOCADO PENNE",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "12 oz (340 g) dried penne",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 large avocado, halved, peeled and pitted",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (30 ml) lemon juice",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup (60 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp minced garlic",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Kosher salt and black pepper to taste",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 scallions, thinly sliced, for garnish",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Pinch of crushed red pepper akes, for garnish (optional)",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Scoop out and reserve ½ cup (120 ml) of the pasta water before draining the pasta.",
+      "In a food processor or blender, combine the avocado, lemon juice, olive oil and garlic and process until smooth, making sure to scrape down the sides a few times. Add the reserved pasta water and pulse to blend. Season to taste with salt and pepper.",
+      "Return the pasta to the pot (making sure the heat is o ), add the avocado sauce and stir to blend. Plate and garnish with the scallions and red pepper akes (if using)."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "vegan",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "BUTTERY EGG NOODLES WITH",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "PULL-APART CHEESY GARLIC BREAD",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 (1-lb [454-g]) loaf French bread",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 tbsp (112 g) salted butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 garlic cloves, minced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (8 g) chopped fresh parsley, divided",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (112 g) shredded mozzarella cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "BUTTERY EGG NOODLES",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (36 g) kosher salt, plus more as needed",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz (226 g) dried wide egg noodles",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup (57 g) salted butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tsp (6 g) minced garlic",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tbsp (4 g) chopped fresh parsley",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (50 g) freshly grated Parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Black pepper to taste",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat the oven to 375°F (190°C). To make the cheesy garlic bread, use a serrated knife to score the loaf lengthwise and then crosswise to create a 1-inch (2.5-cm)-wide grid pattern. Be careful to not slice all the way through the loaf.",
+      "Place a small saucepan over medium-low heat and warm the butter. When the butter has melted, add the garlic and 1 tablespoon (4 g) of parsley and stir to blend. Remove from the heat. Using a pastry brush, evenly apply the butter mixture to the entire surface of the bread as well as inside all of the cracks and crevices. Then evenly distribute the cheese inside all the crevices.",
+      "Place the bread on a sheet pan, cover it with aluminum foil and",
+      "cook for 30 minutes. Remove the foil and continue cooking until the cheese is fully melted, about 15 minutes. Remove the bread from the oven and garnish it with the remaining 1 tablespoon (4 g) of While the bread is baking, make the buttery egg noodles. Bring a large pot of water with 2 tablespoons (36 g) of salt to a boil over high heat. Add the noodles and cook until al dente, stirring occasionally, according to package directions. Scoop out and reserve ½ cup (120 ml) of the noodle water before draining the noodles. Meanwhile, place a large skillet over medium heat and warm the butter. When the butter begins to bubble, add the garlic and cook,",
+      "stirring constantly, until lightly golden brown, about 2 minutes.",
+      "Remove the pan from the heat.",
+      "Add the noodles to the skillet and stir to combine. Stir in the reserved noodle water by the tablespoon (15 ml) until you achieve a silky, creamy consistency. Stir in the parsley followed by the Parmesan. Season to taste with salt and pepper and serve with the garlic bread."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "oeufs"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "BAKED GNOCCHI WITH SAUSAGE",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "1 lb (454 g) gnocchi",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 cups (268 g) roughly chopped kale (stems removed)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 lb (454 g) ground Italian sausage",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (28 g) butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ white onion, nely chopped",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 garlic cloves, minced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (16 g) all-purpose our",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ cups (360 ml) whole milk",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup (84 g) shredded fontina cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Zest of 1 lemon",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Kosher salt and black pepper to taste",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (50 g) grated Parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat the oven to 400°F (200°C). Grease a 9 × 13–inch (23 × 33 cm) baking dish with nonstick cooking spray and set aside.",
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. When there is 1 minute remaining in the cook time, add the kale. Drain the gnocchi and kale and return them to Meanwhile, place a medium skillet over medium-high heat. Cook the sausage, breaking the meat apart with a wooden spoon, until nicely browned, about 8 minutes. Transfer to a paper towel–lined plate to drain. Reduce the heat to medium and cook the butter and onion until the onion begins to soften, about 4 minutes. Add the garlic and cook for 30 seconds. Add the our and stir to combine. While whisking, slowly add the milk. Cook, whisking steadily, until the sauce has thickened, about 3 minutes. Add the fontina and lemon zest and stir until completely melted and smooth, about 3 minutes. Season with the salt and pepper to taste.",
+      "Add the cooked sausage and cheese sauce to the gnocchi and kale and stir to combine. Transfer this mixture to the baking dish, top with Parmesan cheese and cook, uncovered, until lightly golden brown and bubbly, about 20 minutes."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 6,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "NENE’S MAC ‘N’ CHEESE",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "1 lb (454 g) elbow macaroni",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup (170 g) unsalted butter, divided",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅓ cup (41 g) all-purpose our",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2½ cups (600 ml) whole milk",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ cups (360 ml) heavy whipping cream",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 cups (452 g) shredded sharp cheddar cheese, divided",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cups (216 g) shredded Gruyère cheese, divided",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅛ tsp cayenne pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Drain the pasta and return it to the pot. Add ¼ cup (57 g) of butter, and stir until the butter has melted and the pasta is fully coated.",
+      "Preheat the oven to 350°F (175°C).",
+      "Place a medium saucepan over medium heat and heat ⅓ cup (75 g) of butter. When the butter has melted, add the our and cook,",
+      "stirring constantly, until light brown, about 1 minute. While",
+      "whisking, slowly add the milk and cream and bring to a gentle",
+      "simmer. Working with a handful of cheese at a time, add 3 cups (339 g) of cheddar and 1½ cups (162 g) of Gruyère, and stir until completely melted and smooth. Add the cayenne, salt and pepper. Carefully add the cheese sauce to the pasta and stir to blend.",
+      "Grease a 9 × 13–inch (23 × 33–cm) baking dish with the remaining 2 tablespoons (28 g) of butter. Add the pasta and spread it out in an even layer. Evenly distribute the remaining 1 cup (113 g) of cheddar and ½ cup (54 g) of Gruyère on top. Bake, uncovered, until golden brown and bubbly, about 30 minutes. Let the dish cool for 10 minutes before slicing and serving."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 8,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "GNOCCHI WITH SAUSAGE & SPICY",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "1 (28-oz [794-g]) can whole peeled tomatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup (60 ml) extra-virgin olive oil, plus more for drizzling",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 sprigs fresh rosemary, kept whole",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 sprigs fresh basil, kept whole, plus 1 tbsp (2.5 g) chopped, for",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Place the tomatoes and all of the liquid from the can in a large bowl. Using a potato masher or your hands, break the tomatoes up into smaller chunks.",
+      "Place a large, oven-safe skillet over medium heat and pour in the olive oil. When the oil is hot, add the rosemary and basil sprigs.",
+      "Cook until fragrant and crispy, about 4 minutes. Remove and discard the herbs. Add the garlic and onion to the herb-avored oil, reduce the heat to low and cook until the vegetables soften, about 5 minutes. Add the salt, pepper, oregano, red pepper akes and crushed tomatoes and their juices and cook, uncovered, stirring occasionally, for about 35 minutes, until the sauce has thickened.",
+      "Stir in the cream, cook for 3 minutes and turn o the heat. While the sauce is cooking, bring a large pot of salted water to a",
+      "boil over high heat. Add the gnocchi and cook until al dente, according to package directions. Meanwhile, place another large skillet over medium-high heat. Cook the sausage, breaking the meat apart with a wooden spoon, until nicely browned, about 10 minutes. Transfer the meat to the sauce and stir to combine.",
+      "Preheat the broiler to high. When the gnocchi are done, drain and arrange them in a single layer directly on top of the sauce in the skillet. Add the mozzarella pearls, sprinkle on the Parmesan cheese and drizzle with oil. Place the skillet under the broiler until the cheese is fully melted and the gnocchi is golden brown, about 8 minutes.",
+      "Garnish with the chopped basil."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "ROASTED VEGGIE LASAGNA",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "2 red bell peppers, seeded and diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 green bell peppers, seeded and diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 red onion, diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 medium yellow squash, diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 medium zucchini, diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tbsp (45 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp crushed red pepper akes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ tsp (9 g) kosher salt, divided",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "9 lasagna sheets",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 eggs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 (15-oz [426-g]) tub whole-milk ricotta",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cups (60 g) chopped baby spinach",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 cups (720 ml) jarred marinara (we like Rao’s Homemade brand)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz (226 g) shredded mozzarella",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup (75 g) grated Parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat the oven to 425°F (220°C). Grease a 9 × 13–inch (23 × 33 cm) baking dish with cooking spray.",
+      "Place the red and green bell peppers, onion, squash and zucchini on a sheet pan lined with parchment paper, drizzle with the olive oil,",
+      "season with the red pepper akes, 1 teaspoon of salt and pepper and toss to combine. Spread the vegetables evenly out on the sheet pan and bake until lightly browned, about 30 minutes. While the veggies are roasting, bring a large pot of salted water to a",
+      "boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Drain the pasta and arrange the noodles on another sheet pan to keep them from sticking together.",
+      "In a medium bowl, combine the eggs, ricotta and ½ teaspoon of salt and stir to blend. Set aside. When the vegetables are done, transfer them to a large mixing bowl,",
+      "add the spinach and stir until the spinach wilts, about 3 minutes.",
+      "Add the marinara and stir to thoroughly coat the vegetables. Reduce the oven to 350°F (175°C). In the greased baking dish, add one-quarter of the vegetable sauce mixture, spread it out in an even layer and arrange 3 noodles lengthwise over the top. Evenly distribute half of the ricotta and egg mixture, one-third of the mozzarella, one-third of the Parmesan and one-quarter of the remaining vegetable sauce mixture. Repeat the process with a layer of 3 noodles, the remaining ricotta and egg mixture, half of the remaining mozzarella, half of the remaining Parmesan and half of the remaining vegetable sauce mixture. Repeat the process with another layer of 3 noodles, the rest of the vegetable sauce mixture, mozzarella and Parmesan. Spray the underside of a piece of aluminum foil before covering the baking dish and cook for 30 minutes. Remove the foil and continue",
+      "cooking until golden brown and bubbly, about 15 minutes. Let the dish cool for 15 minutes before slicing and serving."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose",
+      "oeufs"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 8,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#vegetarien"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "GREEK PASTITSIO",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "1 lb (454 g) dried ziti",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 lbs (907 g) ground beef (90/10)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (30 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 medium white onion, diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 garlic cloves, minced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (32 g) tomato paste",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 (15-oz [426-g]) can tomato puree",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp ground cinnamon",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 bay leaf",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ tsp (9 g) kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "CREAMY PARMESAN SAUCE",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (114 g) unsalted butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (63 g) all-purpose our",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 cups (720 ml) whole milk",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp ground nutmeg",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 large eggs",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (100 g) grated Parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Preheat the oven to 350°F (175°C). Grease a 9 × 13–inch (23 × 33 cm) baking dish with either cooking spray or olive oil.",
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Drain, rinse with cold water and drain again. Meanwhile, place a large skillet over medium-high heat. Cook the ground beef, breaking the meat apart with a wooden spoon, until nicely browned, about 7 minutes. Drain and discard the liquid from the skillet before adding the olive oil and onion. Cook until the onion begins to soften, about 7 minutes. Add the garlic, tomato paste, tomato puree, cinnamon, bay leaf, salt, pepper and ¼ cup (60 ml) of water and stir to combine. Reduce the heat to low and cook until the sauce has thickened, about 20 minutes. Remove and discard the bay leaf. To make the creamy Parmesan sauce, in a small saucepan over medium heat, warm the butter. When the butter has melted, add the our and cook, stirring constantly, for 2 minutes. While whisking, slowly add the milk, then whisk in the nutmeg. Reduce the heat to low and cook, stirring occasionally, for 10 minutes. Remove from the heat and allow it to cool for 10 minutes before whisking in the eggs, Parmesan, salt and pepper. In the greased baking dish, arrange the pasta in a single direction as evenly as possible. Top with the meat sauce, spreading it out into an even layer. Pour the creamy Parmesan sauce over the meat, spreading it out into an even layer. Bake, uncovered, until golden brown, about 55 minutes. Allow the dish to cool for 15 minutes before slicing and serving."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose",
+      "oeufs"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 10,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#boeuf",
+      "#viande"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "CHEESY CHICKEN TETRAZZINI",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "2 tbsp (30 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz (226 g) white mushrooms, thinly sliced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 medium yellow onion, diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tbsp (2 g) dried thyme",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 garlic cloves, minced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (120 ml) dry white wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 lb (454 g) cubed cooked skinless chicken breast",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "10 oz (283 g) dried linguine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tbsp (42 g) butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅓ cup (41 g) all-purpose our",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 cups (960 ml) whole milk",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (240 ml) heavy cream",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (240 ml) chicken broth",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅛ tsp ground nutmeg",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (73 g) frozen peas",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup (15 g) chopped fresh at-leaf parsley",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (112 g) shredded mozzarella cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¾ cup (85 g) shredded cheddar cheese",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (50 g) grated Parmesan cheese",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Place a large skillet over medium-high heat and pour in the oil. When the oil is hot, add the mushrooms and cook until softened, about 4 minutes. Add the onion and thyme and cook, stirring occasionally, until the onion is translucent, about 5 minutes. Add the garlic and cook, stirring occasionally, until fragrant, about 1 minute. Add the wine and cook for 4 minutes. Transfer this mixture",
+      "to a bowl, add the cooked chicken and set aside.",
+      "Preheat the oven to 350°F (175°C).",
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Drain and set aside. Meanwhile, place the skillet over medium heat and warm the butter. When the butter has melted, add the our and cook, stirring constantly, for 2 minutes. While whisking, slowly add the milk, cream and chicken broth. Add the salt, pepper and nutmeg and",
+      "whisk until smooth. Bring to a simmer and cook, while whisking, until the sauce thickens slightly, about 6 minutes. Add the cooked pasta and the chicken-mushroom mixture and stir until the pasta is completely coated in sauce. Add the peas and parsley and stir to",
+      "Grease a 9 × 13–inch (23 × 33–cm) baking dish with cooking spray or butter. Transfer the pasta mixture to the baking dish, top evenly with the mozzarella, cheddar and Parmesan, cover with aluminum foil and cook for 30 minutes. Remove the foil and",
+      "continue cooking until lightly golden brown and bubbly, about 15 Allow the dish to cool for 10 minutes before slicing and serving."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 6,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#poulet",
+      "#volaille",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "STRAWBERRY-BALSAMIC PASTA",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "2 tbsp (30 ml) balsamic vinegar glaze",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (30 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz (226 g) dried farfalle",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (20 g) arugula",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (166 g) sliced strawberries",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (75 g) crumbled feta",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (80 g) sliced red onion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (55 g) chopped glazed or candied pecans",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "In a small bowl, whisk to combine the balsamic vinegar glaze and",
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Drain, rinse with cold water and drain again.",
+      "In a large bowl, combine the arugula, strawberries, feta, onion, pecans and pasta. Add the balsamic vinegar glaze mixture and toss to combine."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "fruits_a_coque"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "vegan",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "NIKU UDON SOUP",
+    "category": "soupe",
+    "ingredients": [
+      {
+        "name": "1 (8-g) packet hondashi soup stock base",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tbsp (60 ml) soy sauce, divided",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (30 ml) mirin",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tsp (8 g) sugar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (30 ml) vegetable oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "12 oz (340 g) beef, thinly sliced (top sirloin or ribeye)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz (226 g) fresh udon",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ cups (45 g) fresh spinach",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2½ oz (70 g) shitake mushrooms, thinly sliced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 oz (57 g) sh cakes, sliced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 scallions, thinly sliced, for garnish",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "In a medium saucepan, bring 5 cups (1.2 L) of water to a boil over high heat. Add the hondashi, 2 tablespoons (30 ml) of soy sauce, mirin, sugar and salt and stir to combine. Cover and reduce the heat to low to keep the broth warm while preparing the other elements.",
+      "Place a large skillet over medium-high heat and pour in the vegetable oil. When the oil is hot, add the beef in a single layer and",
+      "cook, without stirring, until lightly browned, about 2 minutes. Flip the beef, add the remaining soy sauce and cook, while stirring, until the sauce thickens slightly, about 1 minute. Remove it from the",
+      "heat.",
+      "Bring a large pot of water to a boil over high heat. Add the noodles and cook, stirring occasionally, according to the package directions. Without draining the pot, transfer the noodles directly into four",
+      "serving bowls. To the boiling water, add the spinach and mushrooms and cook for 1 minute. Drain the vegetables and divide evenly among the four bowls. Ladle the soup broth into the bowls, top with the cooked beef, sh cakes and scallions."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "soja"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#boeuf",
+      "#viande",
+      "#vegetarien"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "RAINBOW ITALIAN PASTA SALAD",
+    "category": "entree",
+    "ingredients": [
+      {
+        "name": "PASTA SALAD",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (36 g) kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz (226 g) tri-color rotini",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (75 g) halved cherry tomatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup (12 g) sliced scallions",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup (23 g) sliced pepperoncini",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (90 g) halved Kalamata olives",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (75 g) chopped bell pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅛ cup (5 g) chopped fresh basil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (112 g) mozzarella pearls or balls",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (70 g) chopped Genoa salami or ham or pepperoni",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "DRESSING",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup (60 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup (60 ml) red wine vinegar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp dried oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "To make the pasta salad, to a large pot of water, add the salt and",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "bring to a boil over high heat. Add the pasta and cook until al dente,",
+      "stirring occasionally, according to the package directions. Drain,",
+      "rinse with cold water until cooled, then drain again. Meanwhile, to make the dressing, in a large mixing bowl, whisk to combine the olive oil, red wine vinegar, salt, pepper and oregano.",
+      "Add the cooked pasta to the bowl with the dressing and toss to combine. Add the tomatoes, scallions, pepperoncini, olives, bell pepper, basil, mozzarella and salami and toss to combine.",
+      "Serve the dish immediately, or place it in the refrigerator to enjoy later for up to 5 days."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose"
+    ],
+    "dietaryRestrictions": [],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "BLT FUSILLI",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "8 oz (226 g) dried fusilli",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "16 strips bacon, diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "6 cups (330 g) chopped green leaf lettuce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 cups (330 g) halved grape tomatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (160 g) chopped red onion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅔ cup (160 ml) Italian dressing",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Freshly ground black pepper to taste",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Drain, rinse with cold water until cooled, then",
+      "drain again. Meanwhile, place a large skillet over medium-high heat. Cook the bacon, stirring occasionally, until crisp, about 5 minutes. Transfer to a paper towel–lined plate to drain.",
+      "In a large mixing bowl, place the lettuce, tomatoes, onion, pasta, bacon and Italian dressing and toss to combine. Plate and season with pepper, as desired."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [],
+    "dietaryRestrictions": [
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "CREAMY CHICKEN NOODLE SOUP",
+    "category": "soupe",
+    "ingredients": [
+      {
+        "name": "8 oz (226 g) wide egg noodles",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ tbsp (22 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 celery ribs, diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 carrots, diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 medium yellow onion, diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 garlic cloves, minced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 (6- to 8-oz [170- to 226-g]) boneless, skinless chicken breasts",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "cubed",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 cups (960 ml) low-sodium chicken broth",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 bay leaves",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tbsp (12 g) chopped fresh parsley",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅛ tsp crushed red pepper akes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Kosher salt and black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tbsp (56 g) butter",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 tbsp (32 g) all-purpose our",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2½ cups (600 ml) 2-percent or whole milk",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (120 ml) heavy cream",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Drain, rinse with cold water and drain again. Meanwhile, place a large saucepan over medium heat and pour in the olive oil. Add the celery, carrots and onion and cook, stirring occasionally, until the vegetables soften, about 4 minutes. Add the garlic and cook until fragrant, about 1 minute. Add the chicken, chicken broth, bay leaves, parsley, red pepper akes and a few pinches of salt and pepper and bring to a boil. Reduce the heat to low, cover and simmer gently until the chicken registers 165°F (75°C) on an instant-read thermometer, about 15 minutes. Remove and discard the bay leaves. Meanwhile, place a medium saucepan over medium heat and warm the butter. When the butter has melted, add the our and cook,",
+      "stirring constantly, for 2 minutes. While whisking, slowly add the milk, then, continuing to whisk, slowly add the cream. Bring to a",
+      "boil, whisking throughout. Carefully transfer this mixture to the chicken soup. Add the drained noodles and stir to blend."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "oeufs",
+      "celeri"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#poulet",
+      "#volaille",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "TOMATO TORTELLINI SOUP",
+    "category": "soupe",
+    "ingredients": [
+      {
+        "name": "8 oz (226 g) ground Italian sausage",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ tbsp (22 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 medium yellow onion, chopped",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅛ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 garlic cloves, minced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp dried oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp dried thyme",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 small zucchini, diced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1½ cups (360 ml) chicken broth",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 (28-oz [794-g]) can crushed tomatoes",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "9 oz (255 g) refrigerated packaged cheese tortellini",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ cup (60 ml) heavy cream",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Place a large skillet over medium-high heat. Cook the sausage,",
+      "breaking the meat apart with a wooden spoon, until lightly browned, about 8 minutes. Remove from the heat, drain any accumulated fat and set the sausage aside on a paper towel–lined",
+      "Place a large saucepan over medium-high heat and pour in the olive oil. Add the onion and black pepper and cook, stirring occasionally, until the onion softens, about 4 minutes. Add the garlic, oregano, thyme and zucchini and cook, stirring occasionally, until the vegetables soften, about 2 minutes.",
+      "Add the chicken broth, tomatoes and tortellini, cover and bring to a",
+      "simmer. Reduce the heat to low and cook until the tortellini are done, about 8 minutes depending on the brand you’re using (follow the time listed on the package instructions). Once the tortellini are done, add the cooked sausage to the soup pot and stir to blend. Add the cream, stir and cook for 1 minute.",
+      "Divide the soup among four bowls and top with the Parmesan and basil, to taste."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "lactose"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#poulet",
+      "#volaille"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "VEGGIE GREEK PASTA SALAD",
+    "category": "entree",
+    "ingredients": [
+      {
+        "name": "8 oz (226 g) medium pasta shells",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (120 ml) extra-virgin olive oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅓ cup (80 ml) red wine vinegar",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Juice of a small lemon",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tsp (10 ml) Dijon mustard",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tsp (10 ml) honey",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp dried oregano",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp kosher salt",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (80 g) chopped red onion",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (90 g) Kalamata olives, pitted and halved",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (100 g) chopped artichoke hearts, drained",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (75 g) diced orange bell pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (75 g) diced red bell pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 cup (149 g) cherry tomatoes, halved",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ cup (75 g) crumbled feta cheese",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring a large pot of salted water to a boil over high heat. Add the pasta and cook until al dente, stirring occasionally, according to the package directions. Drain, rinse with cold water and drain again.",
+      "In a large mixing bowl, whisk to combine the olive oil, red wine vinegar, lemon juice, mustard, honey, oregano, salt and pepper. Add the red onion, olives and artichoke hearts and toss. Add the bell peppers, tomatoes and drained pasta and toss to combine. Gently stir in most of the feta, saving a tablespoon (9 g) or so to sprinkle on the top. Serve immediately or chill in the fridge until ready to serve. It will keep for up to a week."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "lactose",
+      "oeufs",
+      "moutarde"
+    ],
+    "dietaryRestrictions": [
+      "vegetarien",
+      "halal"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#pates",
+      "#vegetarien"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "SPICY FISH BALL SOUP",
+    "category": "soupe",
+    "ingredients": [
+      {
+        "name": "1 (7-oz [198-g]) pouch Sichuan soup base (we like Lee Kum Kee)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "15 oz (425 g) sh balls (thawed if frozen)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Kosher salt and/or soy sauce to taste (optional)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 lb (454 g) at rice noodles or pho noodles",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 oz (85 g) sh cake (thawed if frozen), sliced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 oz (113 g) beansprouts",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 scallions, thinly sliced, for garnish",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 tbsp (18 g) fried garlic, for garnish",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "In a large saucepan, combine the soup mix with 10 cups (2.4 L) of cold water and bring to a boil over high heat. Add the sh balls, reduce the heat to low and simmer for 20 minutes. Taste and adjust the seasoning, adding salt and/or soy sauce (if desired). Meanwhile, bring a large pot of water to a boil and prepare the noodles according to the package instructions. Drain them and",
+      "divide among serving bowls. Divide the sh cake slices and beansprouts evenly among the bowls. When the soup is done, divide the sh balls and broth evenly among the bowls. Top with the scallions and fried garlic."
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "poisson",
+      "soja"
+    ],
+    "dietaryRestrictions": [
+      "halal",
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#poisson",
+      "#fruits-de-mer",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  },
+  {
+    "name": "SURF ‘N’ TURF WONTON NOODLE",
+    "category": "plat",
+    "ingredients": [
+      {
+        "name": "BROTH",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 cups (2 L) chicken broth",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 garlic clove, lightly smashed",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 tsp (45 ml) sesame oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 tsp soy sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 scallions, halved",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Kosher salt and black pepper to taste",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "SHRIMP WONTONS",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 medium shrimp, peeled and deveined",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ scallion, thinly sliced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ garlic clove, minced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp Shaoxing wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp sesame oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp soy sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅛ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "14 wonton wrappers (thawed if frozen)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "PORK WONTONS",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "4 oz (113 g) ground pork",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ scallion, thinly sliced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ garlic clove, minced",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp Shaoxing wine",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "¼ tsp sesame oil",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "½ tsp soy sauce",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "⅛ tsp black pepper",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "14 wonton wrappers (thawed if frozen)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "SOUP",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "1 bunch baby bok choy",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "8 oz (226 g) fresh wonton noodles",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 scallions, thinly sliced, for garnish",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "2 oz (57 g) shitake mushrooms, thinly sliced, for garnish",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "3 oz (85 g) cubed tofu, for garnish (optional)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "Chili crisp or chili oil, for garnish (optional)",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "To make the broth, in a large pot, combine 4 cups (960 ml) of",
+        "quantity": "",
+        "unit": ""
+      },
+      {
+        "name": "water, the chicken broth, garlic, sesame oil, soy sauce and scallions",
+        "quantity": "",
+        "unit": ""
+      }
+    ],
+    "preparationSteps": [
+      "Bring to a simmer over medium heat and cook, uncovered, for 30 minutes. Taste and adjust the seasoning, adding salt and pepper if desired. Remove and discard the scallions and garlic clove. Cover and keep warm over low heat. To make the shrimp wontons, while the broth is cooking, place the shrimp in a food processor. Pulse until it’s an almost smooth paste, about 5 times, making sure to occasionally scrape down the sides. Transfer the paste to a medium mixing bowl and add the scallion, garlic, wine, sesame oil, soy sauce and black pepper and mix well to Working with one wonton wrapper at a time, lightly moisten the edges of the wrapper with water, place 1 teaspoon of the shrimp lling in the center, fold the wrapper in half on the diagonal and gently squeeze to seal. Repeat with the remaining 13 wrappers. Refrigerate until needed. To make the pork wontons, in a medium mixing bowl, combine the pork, scallion, garlic, wine, sesame oil, soy sauce and black pepper and mix well. Working with one wonton wrapper at a time, lightly moisten the edges of the wrapper with water, place 1 teaspoon of the pork lling in the center, fold the wrapper in half on the diagonal and gently squeeze to seal. Repeat with the remaining 13 wrappers. Refrigerate until needed. To build the soup, bring a large pot of water to a boil over high",
+      "heat. Add the bok choy and cook for 1 minute. Transfer the bok choy to a strainer with a slotted spoon, rinse with cold water until cool and drain. Evenly divide the bok choy among four bowls.",
+      "Add the wonton noodles to the boiling water and cook for 1 minute.",
+      "Remove, rinse with cold water and drain. Evenly divide the noodles among the four bowls.",
+      "Add the shrimp and pork wontons to the boiling water and cook until they oat, about 5 minutes. Evenly divide the wontons among the four bowls. Fill the bowls with hot broth and garnish with the scallions, mushrooms, tofu (if using) and chili crisp (if using), as"
+    ],
+    "nutrition": {
+      "kcal": 0,
+      "protein": 0,
+      "lipids": 0,
+      "carbs": 0,
+      "fiber": 0,
+      "sodium": 0
+    },
+    "allergens": [
+      "gluten",
+      "crustaces",
+      "soja",
+      "sesame"
+    ],
+    "dietaryRestrictions": [
+      "sans_gluten"
+    ],
+    "texture": "normale",
+    "establishmentTypes": [
+      "cantine_scolaire",
+      "ehpad",
+      "hopital"
+    ],
+    "preparationTime": 0,
+    "cookingTime": 30,
+    "servings": 4,
+    "tags": [
+      "#noodles",
+      "#pasta",
+      "#italian",
+      "#plat",
+      "#poulet",
+      "#volaille",
+      "#poisson",
+      "#fruits-de-mer",
+      "#pates"
+    ],
+    "compatibleFor": [],
+    "aiCompatibilityScore": 1
+  }
+];

@@ -19,8 +19,11 @@ function showToast(message, type = 'success') {
 
 async function registerUser(data) {
   try {
+    // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+    const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+    
     // Utiliser un chemin relatif
-    const res = await fetch('/api/auth/register', {
+    const res = await fetchFn('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),

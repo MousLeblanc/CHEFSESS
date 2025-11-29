@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChAIf SES - Formulaire de Réception de Marchandises</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            color: #2c3e50;
+            margin: 0;
+            padding: 0;
+        }
+        
+        header {
+            background: #2c3e50;
+            color: #fff;
+            padding: 1.2rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            font-size: 1.7rem;
+            font-weight: bold;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .btn {
+            border: none;
+            padding: 10px 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+        
+        .btn-primary {
+            background: #e67e22;
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            background: #cf7712;
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: #fff;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: #fff;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 3px 18px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .form-title {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .form-subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #e67e22;
+        }
+        
+        .form-section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-weight: 500;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #e67e22;
+            box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.1);
+        }
+        
+        .form-control:disabled {
+            background: #e9ecef;
+            cursor: not-allowed;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .radio-option input[type="radio"] {
+            width: auto;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .compliance-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .compliance-btn {
+            padding: 8px 16px;
+            border: 2px solid #ccc;
+            background: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            min-width: 100px;
+        }
+        
+        .compliance-btn.conforme {
+            border-color: #27ae60;
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+        
+        .compliance-btn.non_conforme {
+            border-color: #e74c3c;
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+        
+        .compliance-btn.active.conforme {
+            background: #27ae60;
+            color: #fff;
+        }
+        
+        .compliance-btn.active.non_conforme {
+            background: #e74c3c;
+            color: #fff;
+        }
+        
+        .acceptance-box {
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .acceptance-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .acceptance-box.accepted {
+            background: #d5f4e6;
+            border: 3px solid #27ae60;
+            color: #27ae60;
+        }
+        
+        .acceptance-box.accepted.active {
+            background: #27ae60;
+            color: #fff;
+        }
+        
+        .acceptance-box.conditionally_accepted {
+            background: #fef5e7;
+            border: 3px solid #f39c12;
+            color: #f39c12;
+        }
+        
+        .acceptance-box.conditionally_accepted.active {
+            background: #f39c12;
+            color: #fff;
+        }
+        
+        .acceptance-box.refused {
+            background: #fadbd8;
+            border: 3px solid #e74c3c;
+            color: #e74c3c;
+        }
+        
+        .acceptance-box.refused.active {
+            background: #e74c3c;
+            color: #fff;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #eee;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-success {
+            background: #d5f4e6;
+            color: #27ae60;
+            border-left: 4px solid #27ae60;
+        }
+        
+        .alert-error {
+            background: #fadbd8;
+            color: #e74c3c;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .alert-info {
+            background: #d6eaf8;
+            color: #3498db;
+            border-left: 4px solid #3498db;
+        }
+        
+        .legend {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: #f9f9f9;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+        
+        .legend strong {
+            color: #27ae60;
+            margin-right: 0.5rem;
+        }
+        
+        .legend .nc {
+            color: #e74c3c;
+        }
+        
+        .order-selector {
+            background: #e8f5e9;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        
+        .order-selector select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+        
+        @media print {
+            .header-actions,
+            .form-actions,
+            .order-selector {
+                display: none;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <i class="fas fa-clipboard-check"></i> Formulaire de Réception de Marchandises
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="window.print()">
+                <i class="fas fa-print"></i> Imprimer
+            </button>
+            <button class="btn btn-secondary" onclick="loadReceipts()">
+                <i class="fas fa-history"></i> Archives
+            </button>
+            <button class="btn btn-secondary" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </button>
+        </div>
+    </header>
+    
+    <div class="container">
+        <h1 class="form-title">FICHE DE CONTRÔLE À LA RÉCEPTION DES MARCHANDISES</h1>
+        <p class="form-subtitle">(Ces documents sont le plus souvent informatisés)</p>
+        
+        <div id="alert-container"></div>
+        
+        <div class="order-selector">
+            <label for="orderSelect"><strong>Sélectionner une commande :</strong></label>
+            <select id="orderSelect" onchange="loadOrderData()">
+                <option value="">-- Sélectionner une commande --</option>
+            </select>
+        </div>
+        
+        <form id="deliveryReceiptForm">
+            <!-- Date et heure de livraison -->
+            <div class="form-section">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="deliveryDate">Date de livraison :</label>
+                        <input type="date" id="deliveryDate" name="deliveryDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="deliveryTime">Heure :</label>
+                        <input type="time" id="deliveryTime" name="deliveryTime" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Identification du produit et Fournisseur -->
+            <div class="form-section">
+                <div class="form-grid">
+                    <div>
+                        <h3 class="form-section-title">
+                            <i class="fas fa-box"></i> IDENTIFICATION DU PRODUIT
+                        </h3>
+                        <div class="form-group">
+                            <label for="productName">Nom :</label>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="text" id="productName" name="productName" class="form-control" style="flex: 1;">
+                                <button type="button" id="barcode-scan-btn" class="btn btn-primary" onclick="initBarcodeScanner()" title="Scanner le code-barres">
+                                    <i class="fas fa-barcode"></i> Scanner
+                                </button>
+                            </div>
+                            <small style="color: #7f8c8d; margin-top: 0.25rem; display: block;">
+                                <i class="fas fa-info-circle"></i> Scannez le code-barres pour remplir automatiquement les informations
+                            </small>
+                        </div>
+                        <div class="form-group">
+                            <label for="referenceNumber">Numéro de référence / Code-barres :</label>
+                            <input type="text" id="referenceNumber" name="referenceNumber" class="form-control" placeholder="EAN-13, UPC, etc.">
+                        </div>
+                        <div id="barcode-scanner-container" style="display: none; margin-top: 1rem; padding: 1rem; background: #f9f9f9; border-radius: 8px;">
+                            <div id="barcode-scanner-preview" style="position: relative;">
+                                <video id="barcode-video" width="100%" style="max-width: 400px; border-radius: 8px;" autoplay playsinline></video>
+                                <canvas id="barcode-canvas" style="display: none;"></canvas>
+                                <div id="barcode-overlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 200px; border: 2px solid #27ae60; border-radius: 8px; pointer-events: none;"></div>
+                            </div>
+                            <div style="margin-top: 1rem; text-align: center;">
+                                <button type="button" class="btn btn-secondary" onclick="stopBarcodeScanner()">
+                                    <i class="fas fa-stop"></i> Arrêter le scan
+                                </button>
+                            </div>
+                        </div>
+                        <div id="barcode-result" style="display: none; margin-top: 1rem; padding: 1rem; background: #d5f4e6; border-radius: 8px; border-left: 4px solid #27ae60;">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <strong style="color: #27ae60;">✅ Produit trouvé !</strong>
+                                    <div id="barcode-product-info" style="margin-top: 0.5rem; font-size: 0.9rem;"></div>
+                                </div>
+                                <button type="button" class="btn btn-secondary" onclick="clearBarcodeResult()" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Présentation commerciale :</label>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" id="refrigere" name="commercialPresentation" value="réfrigéré">
+                                    <label for="refrigere">Réfrigéré</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="surgele" name="commercialPresentation" value="surgelé">
+                                    <label for="surgele">Surgelé</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="conserve" name="commercialPresentation" value="conserve">
+                                    <label for="conserve">Conserve</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="4gamme" name="commercialPresentation" value="4ème gamme">
+                                    <label for="4gamme">4ème gamme</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="5gamme" name="commercialPresentation" value="5ème gamme">
+                                    <label for="5gamme">5ème gamme</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="source">Source :</label>
+                            <input type="text" id="source" name="source" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="countryOfOrigin">Pays d'origine :</label>
+                            <input type="text" id="countryOfOrigin" name="countryOfOrigin" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="batchNumber">Numéro de lot :</label>
+                            <input type="text" id="batchNumber" name="batchNumber" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="healthStamp">Estampille sanitaire :</label>
+                            <input type="text" id="healthStamp" name="healthStamp" class="form-control">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="form-section-title">
+                            <i class="fas fa-truck"></i> FOURNISSEUR
+                        </h3>
+                        <div class="form-group">
+                            <label for="supplierName">Nom ou raison sociale :</label>
+                            <input type="text" id="supplierName" name="supplierName" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="supplierAddress">Adresse :</label>
+                            <textarea id="supplierAddress" name="supplierAddress" class="form-control" rows="3" disabled></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Normes d'usine certifiées qualité :</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-option">
+                                    <input type="checkbox" id="iso9000" name="qualityStandards" value="ISO 9000">
+                                    <label for="iso9000">ISO 9000</label>
+                                </div>
+                                <div class="checkbox-option">
+                                    <input type="checkbox" id="iso9001" name="qualityStandards" value="ISO 9001">
+                                    <label for="iso9001">ISO 9001</label>
+                                </div>
+                                <div class="checkbox-option">
+                                    <input type="checkbox" id="iso22000" name="qualityStandards" value="ISO 22000">
+                                    <label for="iso22000">ISO 22000</label>
+                                </div>
+                                <div class="checkbox-option">
+                                    <input type="checkbox" id="haccp" name="qualityStandards" value="HACCP">
+                                    <label for="haccp">HACCP</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="approvalNumber">Numéro d'agrément :</label>
+                            <input type="text" id="approvalNumber" name="approvalNumber" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="deliveryDriverName">Nom du livreur :</label>
+                            <input type="text" id="deliveryDriverName" name="deliveryDriverName" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="transportCompany">Entreprise de transport :</label>
+                            <input type="text" id="transportCompany" name="transportCompany" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Emballage et Transport -->
+            <div class="form-section">
+                <div class="form-grid">
+                    <div>
+                        <h3 class="form-section-title">
+                            <i class="fas fa-box-open"></i> EMBALLAGE
+                        </h3>
+                        <div class="form-group">
+                            <label>Intégrité :</label>
+                            <div class="compliance-group">
+                                <button type="button" class="compliance-btn conforme" data-field="packaging.integrity" data-value="conforme">C</button>
+                                <button type="button" class="compliance-btn non_conforme" data-field="packaging.integrity" data-value="non_conforme">NC</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Conformité de l'étiquetage :</label>
+                            <div class="compliance-group">
+                                <button type="button" class="compliance-btn conforme" data-field="packaging.labellingCompliance" data-value="conforme">C</button>
+                                <button type="button" class="compliance-btn non_conforme" data-field="packaging.labellingCompliance" data-value="non_conforme">NC</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="form-section-title">
+                            <i class="fas fa-shipping-fast"></i> TRANSPORT / LIVRAISON
+                        </h3>
+                        <div class="form-group">
+                            <label>Propreté du véhicule :</label>
+                            <div class="compliance-group">
+                                <button type="button" class="compliance-btn conforme" data-field="transport.vehicleCleanliness" data-value="conforme">C</button>
+                                <button type="button" class="compliance-btn non_conforme" data-field="transport.vehicleCleanliness" data-value="non_conforme">NC</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Température de l'enceinte :</label>
+                            <div class="compliance-group">
+                                <button type="button" class="compliance-btn conforme" data-field="transport.enclosureTemperature" data-value="conforme">C</button>
+                                <button type="button" class="compliance-btn non_conforme" data-field="transport.enclosureTemperature" data-value="non_conforme">NC</button>
+                            </div>
+                            <input type="number" id="transportTemperature" name="transportTemperature" class="form-control" placeholder="Température mesurée (°C)" style="margin-top: 0.5rem;">
+                        </div>
+                        <div class="form-group">
+                            <label>Livreur (propreté des vêtements) :</label>
+                            <div class="compliance-group">
+                                <button type="button" class="compliance-btn conforme" data-field="transport.driverCleanliness" data-value="conforme">C</button>
+                                <button type="button" class="compliance-btn non_conforme" data-field="transport.driverCleanliness" data-value="non_conforme">NC</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Comparaison du bon de commande avec le bon de livraison ou la facture :</label>
+                            <div class="compliance-group">
+                                <button type="button" class="compliance-btn conforme" data-field="transport.orderComparison" data-value="conforme">C</button>
+                                <button type="button" class="compliance-btn non_conforme" data-field="transport.orderComparison" data-value="non_conforme">NC</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="transportNotes">Notes transport :</label>
+                            <textarea id="transportNotes" name="transportNotes" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Examen organoleptique et Critères d'acceptation -->
+            <div class="form-section">
+                <div class="form-grid">
+                    <div>
+                        <h3 class="form-section-title">
+                            <i class="fas fa-eye"></i> EXAMEN ORGANOLEPTIQUE
+                        </h3>
+                        <div class="form-group">
+                            <label>Aspect caractéristique :</label>
+                            <div class="compliance-group">
+                                <button type="button" class="compliance-btn conforme" data-field="organolepticExamination.appearance" data-value="conforme">C</button>
+                                <button type="button" class="compliance-btn non_conforme" data-field="organolepticExamination.appearance" data-value="non_conforme">NC</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Odeur :</label>
+                            <div class="compliance-group">
+                                <button type="button" class="compliance-btn conforme" data-field="organolepticExamination.odour" data-value="conforme">C</button>
+                                <button type="button" class="compliance-btn non_conforme" data-field="organolepticExamination.odour" data-value="non_conforme">NC</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Couleur :</label>
+                            <div class="compliance-group">
+                                <button type="button" class="compliance-btn conforme" data-field="organolepticExamination.colour" data-value="conforme">C</button>
+                                <button type="button" class="compliance-btn non_conforme" data-field="organolepticExamination.colour" data-value="non_conforme">NC</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Qualité :</label>
+                            <div class="compliance-group">
+                                <button type="button" class="compliance-btn conforme" data-field="organolepticExamination.quality" data-value="conforme">C</button>
+                                <button type="button" class="compliance-btn non_conforme" data-field="organolepticExamination.quality" data-value="non_conforme">NC</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="organolepticNotes">Notes :</label>
+                            <textarea id="organolepticNotes" name="organolepticNotes" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="form-section-title">
+                            <i class="fas fa-check-circle"></i> CRITÈRES D'ACCEPTATION
+                        </h3>
+                        <div class="form-group">
+                            <div class="acceptance-box accepted" data-status="accepted">
+                                <i class="fas fa-check"></i> MARCHANDISES ACCEPTÉES
+                                <div style="font-size: 0.85rem; margin-top: 0.5rem; font-weight: normal;">
+                                    Si tous les points de contrôle sont satisfaisants
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="acceptance-box conditionally_accepted" data-status="conditionally_accepted">
+                                <i class="fas fa-exclamation-triangle"></i> MARCHANDISES ACCEPTÉES SOUS RÉSERVE
+                                <div style="font-size: 0.85rem; margin-top: 0.5rem; font-weight: normal;">
+                                    Si non-conformités mineures (quantités, poids, délais de livraison)
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="acceptance-box refused" data-status="refused">
+                                <i class="fas fa-times-circle"></i> MARCHANDISES REFUSÉES
+                                <div style="font-size: 0.85rem; margin-top: 0.5rem; font-weight: normal;">
+                                    Si non-conformités majeures (critères d'acceptabilité qualité non respectés)
+                                </div>
+                                <div style="font-size: 0.75rem; margin-top: 0.5rem; font-weight: bold;">
+                                    ISOLER OU BLOQUER LES MARCHANDISES - TRAITER L'ERREUR AVEC LE FOURNISSEUR
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="acceptanceNotes">Notes d'acceptation :</label>
+                            <textarea id="acceptanceNotes" name="acceptanceNotes" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Étiquetage du produit -->
+            <div class="form-section">
+                <h3 class="form-section-title">
+                    <i class="fas fa-tag"></i> ÉTIQUETAGE DU PRODUIT
+                </h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Schéma de traçabilité totale :</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="traceabilityYes" name="totalTraceability" value="true">
+                                <label for="traceabilityYes">OUI</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="traceabilityNo" name="totalTraceability" value="false">
+                                <label for="traceabilityNo">NON</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Label qualité :</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="qualityLabelYes" name="hasQualityLabel" value="true">
+                                <label for="qualityLabelYes">OUI</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="qualityLabelNo" name="hasQualityLabel" value="false">
+                                <label for="qualityLabelNo">NON</label>
+                            </div>
+                        </div>
+                        <div class="radio-group" style="margin-top: 0.5rem;">
+                            <div class="radio-option">
+                                <input type="radio" id="aoc" name="labelType" value="AOC">
+                                <label for="aoc">AOC</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="labelRouge" name="labelType" value="Label Rouge">
+                                <label for="labelRouge">Label Rouge</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="ab" name="labelType" value="AB">
+                                <label for="ab">AB</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Catégorie :</label>
+                        <input type="text" id="category" name="category" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Classe :</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="classA" name="class" value="A">
+                                <label for="classA">A</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="classB" name="class" value="B">
+                                <label for="classB">B</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="productionDate">Date de production :</label>
+                        <input type="date" id="productionDate" name="productionDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="useByDate">Date limite de consommation :</label>
+                        <input type="date" id="useByDate" name="useByDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="remainingShelfLife">Durée de vie restante (jours) :</label>
+                        <input type="number" id="remainingShelfLife" name="remainingShelfLife" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="bestBeforeDate">Date limite d'utilisation optimale :</label>
+                        <input type="date" id="bestBeforeDate" name="bestBeforeDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="coreTemperature">Température à cœur (°C) :</label>
+                        <input type="number" id="coreTemperature" name="coreTemperature" class="form-control" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="netWeightAtPacking">Poids net à l'emballage (kg) :</label>
+                        <input type="number" id="netWeightAtPacking" name="netWeightAtPacking" class="form-control" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="numberOfPieces">Nombre de pièces :</label>
+                        <input type="number" id="numberOfPieces" name="numberOfPieces" class="form-control">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contrôle et signature -->
+            <div class="form-section">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="checkedBy">Contrôlé par :</label>
+                        <input type="text" id="checkedBy" name="checkedBy" class="form-control" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="signature">Signature :</label>
+                        <input type="text" id="signature" name="signature" class="form-control" placeholder="Nom du contrôleur">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="legend">
+                <strong>C</strong> = CONFORME <span class="nc">NC</span> = NON-CONFORME
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                    <i class="fas fa-redo"></i> Réinitialiser
+                </button>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Enregistrer et Archiver
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/delivery-receipt.js"></script>
+    <script src="/js/barcode-scanner.js"></script>
+</body>
+</html>
+

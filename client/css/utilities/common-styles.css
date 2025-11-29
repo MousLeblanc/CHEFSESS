@@ -171,11 +171,13 @@
 }
 
 /* ===== Summary boxes ===== */
+/* ✅ ACCESSIBILITÉ : Couleur de texte explicite pour meilleur contraste (WCAG AA) */
 .summary-box {
   background: #f8f5fb;
   padding: 0.75rem 1rem;
   border-radius: 8px;
   border: 1px solid #e5d7f3;
+  color: #2d3748; /* Texte foncé pour contraste sur fond mauve clair */
 }
 
 .summary-box-alt {
@@ -183,6 +185,13 @@
   padding: 0.75rem 1rem;
   border-radius: 8px;
   border: 1px solid #e1bee7;
+  color: #2d3748; /* Texte foncé pour contraste sur fond mauve clair */
+}
+
+.summary-box strong,
+.summary-box-alt strong {
+  color: #1a202c; /* Texte encore plus foncé pour les labels en gras */
+  font-weight: 600;
 }
 
 /* ===== Icon utilities ===== */

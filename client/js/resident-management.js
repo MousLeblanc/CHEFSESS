@@ -15,11 +15,11 @@ class ResidentManager {
 
   async loadAllResidentsForSummary() {
     try {
-      const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
-      if (!storedUser) return;
-      const user = JSON.parse(storedUser);
+      // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+      const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+      if (!user) return;
       const siteId = user?.siteId;
-      if (!siteId) return;
+      if (!siteId || (typeof isValidObjectId === 'function' && !isValidObjectId(siteId))) return;
 
       // Charger uniquement les résidents ACTIFS du site
       const response = await fetch(`/api/residents/site/${siteId}?status=actif&limit=1000`, {
@@ -253,14 +253,17 @@ class ResidentManager {
 
   async loadResidents() {
     try {
-      // Récupérer le siteId depuis l'utilisateur connecté
-      const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
-      if (!storedUser) {
+      // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+      const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+      if (!user) {
         this.showToast('Erreur: Utilisateur non connecté', 'error');
         return;
       }
-      const user = JSON.parse(storedUser);
       const siteId = user?.siteId;
+      if (!siteId || (typeof isValidObjectId === 'function' && !isValidObjectId(siteId))) {
+        this.showToast('Erreur: Site ID invalide', 'error');
+        return;
+      }
       
       if (!siteId) {
         this.showToast('Erreur: Site ID manquant', 'error');
@@ -1574,8 +1577,22 @@ class ResidentManager {
 
 // Initialiser le gestionnaire de résidents
 let residentManager;
-document.addEventListener('DOMContentLoaded', () => {
-  residentManager = new ResidentManager();
-  // Exposer globalement pour les attributs onclick
-  window.residentManager = residentManager;
-});
+
+function initResidentManagement() {
+  if (!residentManager) {
+    residentManager = new ResidentManager();
+    // Exposer globalement pour les attributs onclick
+    window.residentManager = residentManager;
+  }
+  return residentManager;
+}
+
+// Initialiser automatiquement si le DOM est déjà chargé
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initResidentManagement();
+  });
+} else {
+  // DOM déjà chargé, initialiser immédiatement
+  initResidentManagement();
+}

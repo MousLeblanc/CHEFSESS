@@ -1,7 +1,10 @@
 // auth-api.js – API simplifiée pour gérer l'authentification depuis index.html
 
 export async function login(email, password) {
-  const res = await fetch('/api/auth/login', {
+  // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+  const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+  
+  const res = await fetchFn('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })

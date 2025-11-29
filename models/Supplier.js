@@ -131,6 +131,7 @@ const supplierSchema = new mongoose.Schema({
     ref: 'Group'
   },
   // Zones de livraison : villes et codes postaux où le fournisseur peut livrer
+  // Chaque zone peut avoir ses propres règles de livraison
   deliveryZones: [{
     city: {
       type: String,
@@ -142,7 +143,46 @@ const supplierSchema = new mongoose.Schema({
     },
     // Si postalCode est fourni, on utilise le code postal
     // Sinon, on utilise la ville entière
-  }]
+    // Règles de livraison pour cette zone
+    deliveryRules: {
+      // Livraison gratuite à partir de ce montant (optionnel)
+      freeDeliveryThreshold: {
+        type: Number,
+        min: 0,
+        default: null
+      },
+      // Frais de livraison si le seuil n'est pas atteint
+      deliveryFee: {
+        type: Number,
+        min: 0,
+        default: 0
+      },
+      // Devise (par défaut EUR)
+      currency: {
+        type: String,
+        default: 'EUR',
+        enum: ['EUR', 'USD', 'GBP']
+      }
+    }
+  }],
+  // Livraison gratuite globale (déprécié, utiliser deliveryRules par zone)
+  // Conservé pour compatibilité
+  freeDelivery: {
+    enabled: {
+      type: Boolean,
+      default: false
+    },
+    threshold: {
+      type: Number,
+      min: 0,
+      default: null
+    },
+    currency: {
+      type: String,
+      default: 'EUR',
+      enum: ['EUR', 'USD', 'GBP']
+    }
+  }
 }, {
   timestamps: true
 });

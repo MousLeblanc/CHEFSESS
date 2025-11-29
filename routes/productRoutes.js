@@ -3,6 +3,7 @@ import {
   createProduct,
   getMyProducts,
   getAllProducts,
+  getProductById,
   getProductsBySupplier,
   updateProduct,
   deleteProduct,
@@ -88,6 +89,7 @@ router.delete('/:id', protect, csrfProtection, isSupplier, deleteProduct);
 
 // --- Acheteur / Resto : voir tous les produits par fournisseur ---
 router.get('/', protect, getAllProducts); // optionnel (si tu veux montrer tous les produits)
-router.get('/supplier/:supplierId', protect, canViewProducts, getProductsBySupplier); // produits d'un fournisseur
+router.get('/supplier/:supplierId', protect, canViewProducts, getProductsBySupplier); // produits d'un fournisseur (DOIT être avant /:id)
+router.get('/:id', protect, canViewProducts, getProductById); // obtenir un produit par ID
 
 export default router;

@@ -490,7 +490,10 @@
             };
 
             try {
-                const response = await fetch('/api/auth/register', {
+                // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+        const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+        
+        const response = await fetchFn('/api/auth/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

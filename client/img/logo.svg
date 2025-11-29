@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200">
+  <defs>
+    <style>
+      .text-primary { fill: #1a5f7a; font-family: 'Arial', sans-serif; font-weight: bold; }
+      .text-secondary { fill: #ff6b35; font-family: 'Arial', sans-serif; }
+      .bg-teal { fill: #1a5f7a; }
+      .bg-orange { fill: #ff6b35; }
+      .bg-light-teal { fill: #7fb3c8; }
+      .bg-light-coral { fill: #ffb3a7; }
+      .bg-white { fill: #ffffff; }
+      .stroke-primary { stroke: #1a5f7a; stroke-width: 3; fill: none; }
+    </style>
+  </defs>
+  
+  <!-- Background circle with colored halves -->
+  <circle cx="200" cy="80" r="60" fill="url(#gradient)" stroke="#1a5f7a" stroke-width="3"/>
+  
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#7fb3c8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffb3a7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Chef's hat -->
+  <g transform="translate(200, 50)">
+    <!-- Hat body (white) -->
+    <ellipse cx="0" cy="10" rx="25" ry="20" fill="#ffffff"/>
+    <!-- Hat brim with stripes -->
+    <rect x="-30" y="25" width="60" height="8" fill="#ffffff"/>
+    <rect x="-30" y="25" width="60" height="2" fill="#1a5f7a"/>
+    <rect x="-30" y="28" width="60" height="2" fill="#ffb3a7"/>
+    <rect x="-30" y="30" width="60" height="2" fill="#1a5f7a"/>
+    <!-- Cross on hat -->
+    <g transform="translate(0, 15)">
+      <rect x="-3" y="-6" width="6" height="12" fill="#ff6b35"/>
+      <rect x="-6" y="-3" width="12" height="6" fill="#ff6b35"/>
+    </g>
+  </g>
+  
+  <!-- Spoon (left) -->
+  <g transform="translate(130, 50)">
+    <!-- Spoon bowl -->
+    <ellipse cx="0" cy="0" rx="8" ry="10" fill="#ff6b35"/>
+    <!-- Spoon handle -->
+    <rect x="-2" y="8" width="4" height="25" fill="#1a5f7a"/>
+    <!-- Dots below spoon -->
+    <circle cx="0" cy="40" r="2" fill="#1a5f7a"/>
+    <circle cx="0" cy="45" r="2" fill="#1a5f7a"/>
+    <circle cx="0" cy="50" r="2" fill="#1a5f7a"/>
+  </g>
+  
+  <!-- Fork (right) -->
+  <g transform="translate(270, 50)">
+    <!-- Fork tines -->
+    <rect x="-2" y="-15" width="4" height="15" fill="#1a5f7a"/>
+    <rect x="-6" y="-15" width="2" height="12" fill="#1a5f7a"/>
+    <rect x="4" y="-15" width="2" height="12" fill="#1a5f7a"/>
+    <!-- Fork handle -->
+    <rect x="-2" y="0" width="4" height="25" fill="#ff6b35"/>
+    <rect x="-2" y="20" width="4" height="3" fill="#1a5f7a"/>
+    <!-- Dots below fork -->
+    <circle cx="0" cy="32" r="2" fill="#1a5f7a"/>
+    <circle cx="0" cy="37" r="2" fill="#1a5f7a"/>
+    <circle cx="0" cy="42" r="2" fill="#1a5f7a"/>
+  </g>
+  
+  <!-- Text: CHEF SES -->
+  <text x="200" y="165" text-anchor="middle" class="text-primary" font-size="32" font-weight="bold">CHEF SES</text>
+  
+  <!-- Divider line -->
+  <line x1="120" y1="175" x2="280" y2="175" stroke="#ff6b35" stroke-width="2"/>
+  
+  <!-- Text: FOOD MANAGEMENT SYSTEM -->
+  <text x="200" y="190" text-anchor="middle" class="text-secondary" font-size="14" font-weight="normal">FOOD MANAGEMENT SYSTEM</text>
+</svg>
+

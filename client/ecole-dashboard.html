@@ -561,8 +561,12 @@
     
     async function checkCustomerOrdersUpdates() {
       try {
-        // Déterminer l'endpoint selon le rôle de l'utilisateur
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+        const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+        if (!user) {
+          console.warn('⚠️ Utilisateur non connecté');
+          return;
+        }
         const endpoint = user.role === 'fournisseur' ? '/api/orders/supplier' : '/api/orders';
         
         console.log(`🔍 [CLIENT] Vérification des commandes - Rôle: ${user.role}, Endpoint: ${endpoint}`);

@@ -151,26 +151,33 @@ async function loadUserAndSiteInfo() {
   } catch (error) {
     console.error('❌ Erreur lors du chargement des infos utilisateur:', error);
     // En cas d'erreur réseau, essayer de récupérer depuis sessionStorage comme fallback
-    const userString = sessionStorage.getItem('user');
-    if (userString) {
-      try {
-        currentUser = JSON.parse(userString);
-        console.log('⚠️ Utilisation des données en cache (sessionStorage)');
-        
-        // Utiliser le siteId stocké dans sessionStorage (spécifique à cet onglet)
-        const storedSiteId = sessionStorage.getItem('currentSiteId');
-        const targetSiteId = storedSiteId || currentUser.siteId;
-        
-        if (targetSiteId) {
-          sessionStorage.setItem('currentSiteId', targetSiteId);
-          await loadSiteInfo(targetSiteId);
+    // ✅ VALIDATION : Utiliser getStoredUser pour une validation stricte
+    if (typeof getStoredUser === 'function') {
+      currentUser = getStoredUser();
+    } else {
+      const userString = sessionStorage.getItem('user');
+      if (userString) {
+        try {
+          currentUser = typeof safeJSONParse === 'function' 
+            ? safeJSONParse(userString, null)
+            : JSON.parse(userString);
+          console.log('⚠️ Utilisation des données en cache (sessionStorage)');
+          
+          // Utiliser le siteId stocké dans sessionStorage (spécifique à cet onglet)
+          const storedSiteId = sessionStorage.getItem('currentSiteId');
+          const targetSiteId = storedSiteId || currentUser.siteId;
+          
+          if (targetSiteId) {
+            sessionStorage.setItem('currentSiteId', targetSiteId);
+            await loadSiteInfo(targetSiteId);
+          }
+        } catch (e) {
+          console.error('❌ Erreur lors du parsing des données cache:', e);
+          window.location.href = 'index.html';
         }
-      } catch (e) {
-        console.error('❌ Erreur lors du parsing des données cache:', e);
+      } else {
         window.location.href = 'index.html';
       }
-    } else {
-      window.location.href = 'index.html';
     }
   }
 }
@@ -213,6 +220,43 @@ function updateSiteHeader() {
 // Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('✅ DOM chargé - Initialisation EHPAD Dashboard');
+  
+  // Écouter les changements de session depuis d'autres onglets
+  if (window.sessionSync) {
+    window.sessionSync.onSessionChange((user) => {
+      if (user) {
+        // Vérifier que le rôle correspond avant de recharger
+        const currentPath = window.location.pathname;
+        const isEHPADDashboard = currentPath.includes('ehpad-dashboard');
+        const isCollectiviteDashboard = currentPath.includes('collectivite-dashboard');
+        
+        if (user.role === 'collectivite' && (isEHPADDashboard || isCollectiviteDashboard)) {
+          console.log('🔄 Session mise à jour depuis un autre onglet, rechargement...');
+          // Recharger les informations utilisateur et du site
+          loadUserAndSiteInfo();
+        } else if (user.role !== 'collectivite') {
+          console.log(`⚠️ Changement de rôle détecté (${user.role}) - Ne pas recharger cet onglet`);
+          // Ne pas recharger si le rôle ne correspond pas
+        }
+      } else {
+        // Vérifier si on est vraiment déconnecté avant de rediriger
+        fetch('/api/auth/me', {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        }).then(response => {
+          if (response.status === 401) {
+            console.log('🚪 Déconnexion confirmée depuis un autre onglet');
+            window.location.href = '/index.html';
+          } else {
+            console.log('⚠️ Pas vraiment déconnecté - probablement changement de rôle');
+          }
+        }).catch(() => {
+          // En cas d'erreur, rediriger quand même
+          window.location.href = '/index.html';
+        });
+      }
+    });
+  }
   
   // Charger les informations utilisateur et du site
   await loadUserAndSiteInfo();
@@ -304,7 +348,7 @@ function initTabs() {
   const tabContents = document.querySelectorAll('.tab-content');
   
   tabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const tab = btn.dataset.tab;
       
       // Retirer la classe active de tous les boutons et contenus
@@ -321,26 +365,110 @@ function initTabs() {
         return;
       }
       
+      // ⚡ Chargement lazy des scripts pour cet onglet
+      if (window.lazyScriptLoader) {
+        try {
+          await window.lazyScriptLoader.loadTabScripts(tab);
+        } catch (error) {
+          console.error(`❌ Erreur lors du chargement des scripts pour l'onglet "${tab}":`, error);
+        }
+      }
+      
       // 📦 Charger le stock quand l'onglet Stock est sélectionné
       if (tab === 'stock') {
         console.log('📦 Chargement du stock pour l\'onglet Stock');
-        initStockTab(); // Initialise les event listeners et charge les données
+        // Attendre un peu pour que le script soit complètement chargé
+        setTimeout(() => {
+          if (typeof initStockTab === 'function') {
+            initStockTab(); // Initialise les event listeners et charge les données
+          } else {
+            console.warn('⚠️ initStockTab non disponible, le script stock-common.js est peut-être en cours de chargement');
+          }
+        }, 100);
       }
       
       // 🚚 Charger les fournisseurs quand l'onglet Fournisseurs est sélectionné
       if (tab === 'suppliers') {
         console.log('🚚 Chargement des fournisseurs');
-        loadSuppliersData();
+        // Attendre un peu pour que le script soit complètement chargé
+        setTimeout(() => {
+          if (typeof loadSuppliersData === 'function') {
+            loadSuppliersData();
+          } else {
+            console.warn('⚠️ loadSuppliersData non disponible, le script supplier-common.js est peut-être en cours de chargement');
+          }
+        }, 100);
       }
       
       // ⚖️ Charger la comparaison quand l'onglet Comparaison est sélectionné
       if (tab === 'supplier-comparison') {
         console.log('⚖️ Chargement de la comparaison des fournisseurs');
-        if (typeof window.loadSupplierComparison === 'function') {
-          window.loadSupplierComparison();
-        } else {
-          console.error('❌ loadSupplierComparison non disponible');
-        }
+        // Attendre un peu pour que le script soit complètement chargé
+        setTimeout(() => {
+          if (typeof window.loadSupplierComparison === 'function') {
+            window.loadSupplierComparison();
+          } else {
+            console.warn('⚠️ loadSupplierComparison non disponible, le script supplier-comparison.js est peut-être en cours de chargement');
+          }
+        }, 100);
+      }
+      
+      // 🍽️ Initialiser le générateur de menu si nécessaire (onglet menus)
+      if (tab === 'menus') {
+        // Le script custom-menu-generator.js est chargé lazy, attendre un peu
+        setTimeout(() => {
+          if (typeof customMenuGenerator !== 'undefined' && customMenuGenerator) {
+            console.log('✅ Générateur de menu personnalisé prêt');
+          }
+        }, 100);
+      }
+      
+      // 👥 Initialiser la gestion des résidents si nécessaire (onglet residents)
+      if (tab === 'residents') {
+        // Le script resident-management.js est chargé lazy, attendre un peu
+        setTimeout(() => {
+          if (typeof initResidentManagement === 'function') {
+            initResidentManagement();
+            console.log('✅ Gestionnaire de résidents initialisé');
+          } else if (typeof window.residentManager !== 'undefined' && window.residentManager) {
+            // Si déjà initialisé, recharger les données
+            if (window.residentManager.loadResidents) {
+              window.residentManager.loadResidents();
+            }
+            console.log('✅ Gestionnaire de résidents déjà initialisé');
+          } else {
+            console.warn('⚠️ initResidentManagement non disponible, le script resident-management.js est peut-être en cours de chargement');
+          }
+        }, 200);
+      }
+      
+      // 🎨 Initialiser le générateur de recettes si nécessaire (onglet recipe-generator)
+      if (tab === 'recipe-generator') {
+        // Le script recipe-generator.js est chargé lazy, attendre un peu
+        setTimeout(() => {
+          if (typeof initRecipeGenerator === 'function') {
+            initRecipeGenerator();
+          }
+        }, 100);
+      }
+      
+      // 💰 Initialiser le gestionnaire de food cost si nécessaire (onglet foodcost)
+      if (tab === 'foodcost') {
+        // Le script foodcost-manager.js est chargé lazy, attendre un peu
+        setTimeout(() => {
+          if (typeof initFoodCostManager === 'function') {
+            initFoodCostManager();
+            console.log('✅ Gestionnaire de food cost initialisé');
+          } else if (typeof window.foodCostManager !== 'undefined' && window.foodCostManager) {
+            // Si déjà initialisé, recharger les données
+            if (window.foodCostManager.loadStats) {
+              window.foodCostManager.loadStats();
+            }
+            console.log('✅ Gestionnaire de food cost déjà initialisé');
+          } else {
+            console.warn('⚠️ initFoodCostManager non disponible, le script foodcost-manager.js est peut-être en cours de chargement');
+          }
+        }, 200);
       }
       
       // ⚙️ Charger les paramètres quand l'onglet Paramètres est sélectionné
