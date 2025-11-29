@@ -418,9 +418,17 @@ function initTabs() {
         // Le script custom-menu-generator.js est chargé lazy, attendre un peu
         setTimeout(() => {
           if (typeof customMenuGenerator !== 'undefined' && customMenuGenerator) {
-            console.log('✅ Générateur de menu personnalisé prêt');
+            // S'assurer que le générateur est initialisé (peut être appelé plusieurs fois)
+            if (typeof customMenuGenerator.init === 'function') {
+              customMenuGenerator.init();
+              console.log('✅ Générateur de menu personnalisé initialisé');
+            } else {
+              console.log('✅ Générateur de menu personnalisé prêt');
+            }
+          } else {
+            console.warn('⚠️ customMenuGenerator non disponible après chargement lazy');
           }
-        }, 100);
+        }, 200);
       }
       
       // 👥 Initialiser la gestion des résidents si nécessaire (onglet residents)

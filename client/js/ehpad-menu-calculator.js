@@ -3,8 +3,8 @@
  * Extrait de ehpad-dashboard.html pour améliorer la maintenabilité
  */
 
-// Initialiser le générateur de menu personnalisé
-document.addEventListener('DOMContentLoaded', () => {
+// Fonction d'initialisation qui peut être appelée à tout moment
+function initEHPADMenuCalculator() {
   // Vérifier que ResidentUtils est disponible
   if (typeof window.ResidentUtils === 'undefined') {
     console.error('❌ ResidentUtils non disponible. Assurez-vous que resident-utils.js est chargé avant ce script.');
@@ -25,7 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
   
-  customMenuGenerator.init();
+  // Initialiser le générateur (peut être appelé plusieurs fois sans problème)
+  if (typeof customMenuGenerator.init === 'function') {
+    customMenuGenerator.init();
+  }
 
   // ===== Calculateur de portions → synchronisation avec le générateur =====
   const $n = document.getElementById('portion-normal');
@@ -547,5 +550,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-});
+}
+
+// Initialiser au chargement du DOM si disponible, sinon immédiatement
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initEHPADMenuCalculator);
+} else {
+  // DOM déjà chargé, initialiser immédiatement
+  initEHPADMenuCalculator();
+}
 

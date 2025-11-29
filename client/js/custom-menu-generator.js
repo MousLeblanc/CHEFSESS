@@ -11,17 +11,25 @@ class CustomMenuGenerator {
         this.acceptedMenu = null;
         this.addGoalModal = null;
         this.weeklyMenus = []; // Stocker les menus de la semaine pour remplacement individuel
+        this.initialized = false; // Flag pour éviter les initialisations multiples
     }
     
     /**
      * Initialiser le générateur
+     * Peut être appelé plusieurs fois sans problème (idempotent)
      */
     init() {
+        // Si déjà initialisé, ne rien faire
+        if (this.initialized) {
+            console.log('🎯 Générateur déjà initialisé, skip');
+            return;
+        }
+        
         console.log('🎯 Initialisation du générateur de menu personnalisé');
         
         // ✅ REFACTORISÉ : Utiliser la classe Modal réutilisable
         const modalEl = document.getElementById('add-nutritional-goal-modal');
-        if (modalEl && typeof window.Modal !== 'undefined') {
+        if (modalEl && typeof window.Modal !== 'undefined' && !this.addGoalModal) {
             this.addGoalModal = new window.Modal('add-nutritional-goal-modal', {
                 onOpen: () => {
                     this.updateModalGoalsList();
@@ -91,6 +99,9 @@ class CustomMenuGenerator {
                 this.generateCustomMenu();
             });
         }
+        
+        // Marquer comme initialisé
+        this.initialized = true;
     }
     
     showAddGoalModal() {
