@@ -34,13 +34,16 @@ const recipeSchema = new mongoose.Schema({
   allergens: [{ type: String }], // ex: ["gluten", "lait", "oeuf"]
 
   // Profil nutritionnel (optionnel mais utile pour IA)
+  // ⚠️ IMPORTANT : Toutes les valeurs sont pour 100g de recette finale
+  // Les valeurs sont calculées à partir des ingrédients en utilisant CIQUAL (ANSES)
+  // et normalisées pour 100g de recette finale
   nutritionalProfile: {
-    kcal: Number,
-    protein: Number,
-    lipids: Number,
-    carbs: Number,
-    fiber: Number,
-    sodium: Number
+    kcal: Number,    // kcal pour 100g de recette
+    protein: Number, // g pour 100g de recette
+    lipids: Number,  // g pour 100g de recette
+    carbs: Number,   // g pour 100g de recette
+    fiber: Number,   // g pour 100g de recette
+    sodium: Number   // mg pour 100g de recette
   },
 
   // Liste d'ingrédients

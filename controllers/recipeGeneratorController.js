@@ -1,7 +1,7 @@
 // controllers/recipeGeneratorController.js
 import asyncHandler from 'express-async-handler';
 import RecipeEnriched from '../models/Recipe.js';
-import openai from '../services/openaiClient.js';
+import aiService from '../services/aiService.js';
 
 /**
  * Génère de nouvelles recettes adaptées aux profils d'établissement
@@ -26,23 +26,21 @@ export const generateRecipes = asyncHandler(async (req, res) => {
     const prompt = buildRecipeGenerationPrompt(context, filters, count);
 
     // Appeler l'IA pour générer les recettes
-    const aiResponse = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [
-        {
-          role: "system",
-          content: "Tu es un expert en nutrition et en cuisine adaptée aux établissements de soins. Tu génères des recettes saines, équilibrées et adaptées aux besoins spécifiques des patients/résidents."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
+    const response = await aiService.generate([
+      {
+        role: "system",
+        content: "Tu es un expert en nutrition et en cuisine adaptée aux établissements de soins. Tu génères des recettes saines, équilibrées et adaptées aux besoins spécifiques des patients/résidents."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ], {
       temperature: 0.7,
       max_tokens: 4000
     });
 
-    const generatedContent = aiResponse.choices[0].message.content;
+    const generatedContent = response.content;
     console.log('🤖 Réponse IA reçue');
 
     // Parser la réponse JSON de l'IA
@@ -124,13 +122,44 @@ function buildRecipeGenerationPrompt(context, filters, count) {
   // Ajouter les filtres spécifiques
   if (filters.texture) {
     const textureDescriptions = {
+      // Textures simples
       'normale': 'texture normale (mastication complète)',
       'hachée': 'texture hachée (morceaux petits)',
       'mixée': 'texture mixée (purée épaisse)',
       'lisse': 'texture lisse (sans morceaux)',
-      'liquide': 'texture liquide (pour troubles sévères de déglutition)'
+      'liquide': 'texture liquide (pour troubles sévères de déglutition)',
+      // IDDSI
+      'iddsi_7': 'IDDSI 7 - Normal facile à mastiquer (texture normale, facile à mâcher)',
+      'iddsi_6': 'IDDSI 6 - Petites morceaux tendres (petits morceaux mous et tendres)',
+      'iddsi_5': 'IDDSI 5 - Haché lubrifié (aliments hachés finement avec sauce/liquide)',
+      'iddsi_4': 'IDDSI 4 - Purée lisse (purée épaisse, lisse, sans morceaux)',
+      'iddsi_3': 'IDDSI 3 - Purée fluide (purée plus liquide, facile à avaler)',
+      'iddsi_2': 'IDDSI 2 - Liquide légèrement épais (liquide épaissi)',
+      'iddsi_1': 'IDDSI 1 - Liquide très légèrement épais (liquide très légèrement épaissi)',
+      'iddsi_0': 'IDDSI 0 - Liquide (liquide fin, eau)',
+      'finger_food': 'Finger Food (aliments à manger avec les doigts, adaptés)'
     };
-    prompt += `- Texture requise: ${textureDescriptions[filters.texture] || filters.texture}\n`;
+    
+    const textureInstructions = {
+      'iddsi_7': 'Couper en petits morceaux faciles à mâcher. Cuire jusqu\'à tendreté.',
+      'iddsi_6': 'Couper en très petits morceaux (max 1.5cm). Cuire jusqu\'à très tendre.',
+      'iddsi_5': 'HACHER FINEMENT tous les aliments. Ajouter sauce/liquide pour lubrifier. Texture finale: haché fin avec sauce.',
+      'iddsi_4': 'MIXER en purée ÉPAISSE et LISSE. Passer au tamis si nécessaire. Aucun morceau visible.',
+      'iddsi_3': 'MIXER en purée FLUIDE. Ajouter du liquide pour obtenir une consistance fluide mais homogène.',
+      'iddsi_2': 'MIXER complètement puis ÉPAISSIR avec un épaississant (gélatine, amidon) pour obtenir un liquide légèrement épais.',
+      'iddsi_1': 'MIXER complètement puis ÉPAISSIR LÉGÈREMENT avec un épaississant pour obtenir un liquide très légèrement épais.',
+      'iddsi_0': 'MIXER complètement en liquide fin, filtrer si nécessaire. Consistance de l\'eau.',
+      'finger_food': 'Préparer en portions individuelles faciles à saisir avec les doigts.'
+    };
+    
+    const textureDesc = textureDescriptions[filters.texture] || filters.texture;
+    const textureInstr = textureInstructions[filters.texture] || '';
+    
+    prompt += `- Texture requise (CRITIQUE): ${textureDesc}\n`;
+    if (textureInstr) {
+      prompt += `- Instructions de préparation OBLIGATOIRES pour cette texture: ${textureInstr}\n`;
+    }
+    prompt += `⚠️ IMPORTANT: La texture "${filters.texture}" DOIT être respectée. Les étapes de préparation DOIVENT inclure les instructions de mixage/hachage appropriées.\n`;
   }
 
   if (filters.pathologies && filters.pathologies.length > 0) {
@@ -171,13 +200,27 @@ function buildRecipeGenerationPrompt(context, filters, count) {
 - Goûts familiers et rassurants\n`;
   }
 
+  // Construire les exemples d'étapes selon la texture
+  let preparationStepsExample = '';
+  if (filters.texture === 'iddsi_2') {
+    preparationStepsExample = '"Cuire les ingrédients jusqu\'à tendreté complète", "MIXER tous les ingrédients cuits en purée lisse", "ÉPAISSIR avec un épaississant (amidon ou gélatine) jusqu\'à obtenir un liquide légèrement épais (texture IDDSI 2)"';
+  } else if (filters.texture === 'iddsi_3') {
+    preparationStepsExample = '"Cuire les ingrédients jusqu\'à très tendre", "MIXER en purée fluide, ajouter du liquide si nécessaire", "Vérifier la consistance fluide et homogène (texture IDDSI 3)"';
+  } else if (filters.texture === 'iddsi_4') {
+    preparationStepsExample = '"Cuire les ingrédients jusqu\'à très tendre", "MIXER en purée ÉPAISSE et LISSE", "Passer au tamis fin pour éliminer tous les morceaux (texture IDDSI 4)"';
+  } else if (filters.texture === 'iddsi_5') {
+    preparationStepsExample = '"HACHER FINEMENT tous les ingrédients cuits", "Ajouter sauce/liquide pour lubrifier", "Vérifier que tous les morceaux sont hachés finement (texture IDDSI 5)"';
+  } else {
+    preparationStepsExample = '"Étape 1 de préparation", "Étape 2 de préparation"';
+  }
+
   prompt += `\nRetourne UNIQUEMENT un tableau JSON avec ${count} recettes au format suivant:
 [
   {
     "name": "Nom de la recette",
     "category": "entrée|plat|dessert|soupe",
     "description": "Description courte",
-    "texture": "${filters.texture || 'normale'}",
+    "texture": "${filters.texture || 'normale'}", // ⚠️ CRITIQUE: DOIT être exactement "${filters.texture || 'normale'}" - NE PAS changer cette valeur
     "diet": ["régime1", "régime2"],
     "pathologies": ["pathologie1", "pathologie2"],
     "allergens": ["allergène1", "allergène2"],
@@ -194,14 +237,24 @@ function buildRecipeGenerationPrompt(context, filters, count) {
       {"name": "Ingrédient 2", "quantity": 1, "unit": "c.à.s"}
     ],
     "preparationSteps": [
-      "Étape 1 de préparation",
-      "Étape 2 de préparation"
+      ${preparationStepsExample}
     ],
     "establishmentType": ["${context}"],
     "compatibleFor": ["${filters.texture || 'normale'}", "${filters.pathologies?.[0] || 'général'}"],
     "aiCompatibilityScore": 1.0
   }
-]`;
+]
+
+⚠️ RÈGLE ABSOLUE: 
+1. La texture de chaque recette DOIT être exactement "${filters.texture || 'normale'}" dans le champ "texture".
+2. Les étapes de préparation DOIVENT inclure explicitement les actions de transformation selon la texture demandée.
+3. Chaque étape doit mentionner explicitement: "MIXER", "HACHER", "ÉPAISSIR" selon la texture.
+4. La dernière étape DOIT vérifier que la texture finale correspond à "${filters.texture || 'normale'}".
+${filters.texture === 'iddsi_2' ? '\n   EXEMPLE pour IDDSI 2: Les étapes doivent inclure "MIXER" puis "ÉPAISSIR avec épaississant" pour obtenir un liquide légèrement épais.' : ''}
+${filters.texture === 'iddsi_3' ? '\n   EXEMPLE pour IDDSI 3: Les étapes doivent inclure "MIXER en purée fluide" et "ajouter liquide" pour fluidité.' : ''}
+${filters.texture === 'iddsi_4' ? '\n   EXEMPLE pour IDDSI 4: Les étapes doivent inclure "MIXER en purée ÉPAISSE" et "passer au tamis" pour éliminer les morceaux.' : ''}
+${filters.texture === 'iddsi_5' ? '\n   EXEMPLE pour IDDSI 5: Les étapes doivent inclure "HACHER FINEMENT" et "ajouter sauce/liquide" pour lubrifier.' : ''}
+`;
 
   return prompt;
 }
@@ -216,11 +269,14 @@ function validateAndNormalizeRecipe(recipe, context, filters) {
   }
 
   // Normaliser les champs
+  // ⚠️ FORCER la texture des filtres si elle est définie (priorité absolue)
+  const forcedTexture = filters.texture || recipe.texture || 'normale';
+  
   const normalizedRecipe = {
     name: recipe.name.trim(),
     category: recipe.category.toLowerCase(),
     description: recipe.description || '',
-    texture: recipe.texture || 'normale',
+    texture: forcedTexture, // Toujours utiliser la texture des filtres en priorité
     diet: Array.isArray(recipe.diet) ? recipe.diet : [],
     pathologies: Array.isArray(recipe.pathologies) ? recipe.pathologies : [],
     allergens: Array.isArray(recipe.allergens) ? recipe.allergens : [],
@@ -248,9 +304,22 @@ function validateAndNormalizeRecipe(recipe, context, filters) {
     normalizedRecipe.category = 'plat';
   }
 
-  const validTextures = ['normale', 'hachée', 'mixée', 'lisse', 'liquide'];
+  // Valider les textures (inclure les textures IDDSI)
+  const validTextures = [
+    'normale', 'hachée', 'mixée', 'lisse', 'liquide',
+    'iddsi_7', 'iddsi_6', 'iddsi_5', 'iddsi_4', 'iddsi_3', 'iddsi_2', 'iddsi_1', 'iddsi_0',
+    'finger_food'
+  ];
+  
+  // Si la texture n'est pas valide, utiliser celle des filtres ou 'normale' par défaut
   if (!validTextures.includes(normalizedRecipe.texture)) {
-    normalizedRecipe.texture = 'normale';
+    normalizedRecipe.texture = filters.texture || 'normale';
+  }
+  
+  // ⚠️ FORCER la texture des filtres (priorité absolue)
+  if (filters.texture) {
+    normalizedRecipe.texture = filters.texture;
+    console.log(`✅ Texture forcée à: ${filters.texture} (demandée par l'utilisateur)`);
   }
 
   return normalizedRecipe;

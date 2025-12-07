@@ -543,12 +543,179 @@ class MessagesDisplay {
   }
 
   showNotification(notification) {
-    // Afficher une notification toast
+    // 🔊 Jouer une alerte sonore
+    this.playNotificationSound();
+    
+    // Afficher une notification toast non-bloquante
     if (typeof showToast === 'function') {
       showToast(notification.message || notification.title, 'info');
     } else {
-      alert(notification.message || notification.title);
+      // Créer une notification toast fermable au lieu d'un alert bloquant
+      this.showDismissibleToast(notification.title || 'Nouveau message', notification.message || notification.title);
     }
+  }
+
+  playNotificationSound() {
+    // Utiliser le client de notifications s'il est disponible
+    if (window.notificationClient && typeof window.notificationClient.playSound === 'function') {
+      try {
+        window.notificationClient.playSound();
+        console.log('🔊 Alerte sonore jouée pour le nouveau message');
+      } catch (error) {
+        console.warn('⚠️ Erreur lors de la lecture du son:', error);
+        // Fallback: créer un beep simple
+        this.playSimpleBeep();
+      }
+    } else {
+      // Fallback: créer un beep simple
+      this.playSimpleBeep();
+    }
+  }
+
+  playSimpleBeep() {
+    try {
+      // Créer un contexte audio simple pour un beep
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Si l'audioContext est suspendu, le reprendre
+      if (audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+          this.createBeep(audioContext);
+        }).catch(err => {
+          console.warn('⚠️ Impossible de réactiver l\'AudioContext:', err);
+        });
+      } else {
+        this.createBeep(audioContext);
+      }
+    } catch (error) {
+      console.warn('⚠️ Impossible de créer un beep:', error);
+    }
+  }
+
+  createBeep(audioContext) {
+    try {
+      // Créer un beep court et doux
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Fréquence agréable (800 Hz)
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      
+      // Volume doux (30%)
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+      
+      // Durée courte (200ms)
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+    } catch (error) {
+      console.warn('⚠️ Erreur lors de la création du beep:', error);
+    }
+  }
+
+  showDismissibleToast(title, message) {
+    // Créer un conteneur de toasts s'il n'existe pas
+    let container = document.getElementById('messages-toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'messages-toast-container';
+      container.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-width: 400px;
+      `;
+      document.body.appendChild(container);
+    }
+
+    // Créer le toast
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      background: white;
+      border-left: 4px solid #3498db;
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      min-width: 300px;
+      animation: slideInRight 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    `;
+
+    toast.innerHTML = `
+      <div style="display: flex; align-items: start; gap: 1rem;">
+        <div style="font-size: 1.5rem;">🔔</div>
+        <div style="flex: 1;">
+          <div style="font-weight: 600; margin-bottom: 0.5rem; color: #2c3e50;">${title}</div>
+          <div style="color: #666; font-size: 0.9rem;">${message}</div>
+        </div>
+        <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                style="background: none; border: none; font-size: 1.5rem; color: #999; cursor: pointer; padding: 0; margin-left: 0.5rem; line-height: 1;">
+          ×
+        </button>
+      </div>
+    `;
+
+    // Ajouter l'animation CSS si elle n'existe pas
+    if (!document.getElementById('toast-animations')) {
+      const style = document.createElement('style');
+      style.id = 'toast-animations';
+      style.textContent = `
+        @keyframes slideInRight {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        @keyframes slideOutRight {
+          from {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          to {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    container.appendChild(toast);
+
+    // Fermer automatiquement après 5 secondes
+    const autoClose = setTimeout(() => {
+      toast.style.animation = 'slideOutRight 0.3s ease';
+      setTimeout(() => {
+        if (toast.parentElement) {
+          toast.remove();
+        }
+      }, 300);
+    }, 5000);
+
+    // Fermer au clic (annuler le timer)
+    toast.addEventListener('click', () => {
+      clearTimeout(autoClose);
+      toast.style.animation = 'slideOutRight 0.3s ease';
+      setTimeout(() => {
+        if (toast.parentElement) {
+          toast.remove();
+        }
+      }, 300);
+    });
   }
 
   formatDate(dateString) {

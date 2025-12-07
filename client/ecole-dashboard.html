@@ -114,7 +114,35 @@
           </button>
         </div>
         
-        <div style="background: #f0fdf4; padding: 1rem; border-radius: 8px; margin-top: 1.5rem; border-left: 4px solid #10b981;">
+          <!-- ✅ NOUVEAU: Critères durables / développement durable -->
+          <div style="background: #ecfdf5; padding: 1rem; border-radius: 8px; margin-top: 1.5rem; border: 1px solid #86efac;">
+            <label style="font-weight: 600; margin-bottom: 0.75rem; display: block; color: #166534;">
+              <i class="fas fa-leaf"></i> Critères Durables
+            </label>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; background: white; padding: 0.6rem 0.8rem; border-radius: 6px; border: 1px solid #d1fae5; font-weight: normal;">
+                <input type="checkbox" id="pref-local" style="width: 18px; height: 18px; accent-color: #10b981;">
+                <i class="fas fa-map-marker-alt" style="color: #059669;"></i> Produits locaux
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; background: white; padding: 0.6rem 0.8rem; border-radius: 6px; border: 1px solid #d1fae5; font-weight: normal;">
+                <input type="checkbox" id="pref-seasonal" style="width: 18px; height: 18px; accent-color: #10b981;">
+                <i class="fas fa-seedling" style="color: #059669;"></i> Produits de saison
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; background: white; padding: 0.6rem 0.8rem; border-radius: 6px; border: 1px solid #d1fae5; font-weight: normal;">
+                <input type="checkbox" id="pref-organic" style="width: 18px; height: 18px; accent-color: #10b981;">
+                <i class="fas fa-certificate" style="color: #059669;"></i> Bio / Label qualité
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; background: white; padding: 0.6rem 0.8rem; border-radius: 6px; border: 1px solid #d1fae5; font-weight: normal;">
+                <input type="checkbox" id="pref-lowcarbon" style="width: 18px; height: 18px; accent-color: #10b981;">
+                <i class="fas fa-globe-europe" style="color: #059669;"></i> Bas carbone
+              </label>
+            </div>
+            <p style="margin: 0.5rem 0 0 0; font-size: 0.8rem; color: #065f46;">
+              <i class="fas fa-info-circle"></i> Ces critères favoriseront les recettes respectant vos engagements développement durable.
+            </p>
+          </div>
+          
+          <div style="background: #f0fdf4; padding: 1rem; border-radius: 8px; margin-top: 1rem; border-left: 4px solid #10b981;">
           <p style="margin: 0; color: #047857; font-size: 0.9rem;">
             <i class="fas fa-info-circle"></i> 
             <strong>Utilisation :</strong> Créez des groupes d'élèves par niveau (Maternelle, Primaire, Secondaire) avec le nombre d'élèves et leurs restrictions alimentaires. Cliquez sur "Générer un menu" pour créer un menu adapté à tous les groupes avec les quantités appropriées.
@@ -817,6 +845,9 @@
     }
   </script>
 
+  <!-- Modal réutilisable -->
+  <script src="js/modal.js"></script>
+  
   <!-- Générateur de menu personnalisé avec objectifs nutritionnels -->
   <script src="js/custom-menu-generator.js"></script>
   <script>
@@ -841,9 +872,13 @@
     });
   </script>
 
+  <!-- CSRF Helper pour les requêtes sécurisées -->
+  <script src="js/csrf-helper.js"></script>
+  
   <!-- Script pour la gestion des groupes d'élèves -->
   <script type="module" src="js/supplier-comparison.js"></script>
   <script type="module" src="js/ecole-dashboard.js"></script>
 
+<script src="js/ciqual-compliance.js"></script>
 </body>
 </html>

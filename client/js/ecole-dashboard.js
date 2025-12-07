@@ -348,6 +348,9 @@ async function generateMenuFromAgeGroups() {
     }
   });
   
+  // ✅ IMPORTANT: Créer une liste d'allergènes séparée pour le filtrage STRICT
+  const allergens = [];
+  
   // Convertir les allergies
   allAllergies.forEach(allergy => {
     const allergyMap = {
@@ -357,26 +360,91 @@ async function generateMenuFromAgeGroups() {
       'fruits_a_coque': 'sans fruits à coque',
       'œufs': 'sans œufs',
       'poisson': 'sans poisson',
-      'crustaces': 'sans crustacés'
+      'crustaces': 'sans crustacés',
+      'soja': 'sans soja',
+      'celeri': 'sans céleri',
+      'moutarde': 'sans moutarde',
+      'sesame': 'sans sésame',
+      'mollusques': 'sans mollusques',
+      'sulfites': 'sans sulfites',
+      'lupin': 'sans lupin'
     };
     if (allergyMap[allergy]) {
       dietaryRestrictions.push(allergyMap[allergy]);
     }
+    // ✅ Ajouter aussi l'allergène brut pour le filtrage strict
+    allergens.push(allergy);
   });
+  
+  console.log(`🚫 Allergènes à exclure strictement: ${allergens.join(', ') || 'Aucun'}`);
   
   // Récupérer le type de repas depuis le select
   const mealTypeSelect = document.getElementById('group-meal-type-select');
   const selectedMealType = mealTypeSelect?.value || 'déjeuner';
   
-  // Afficher un message de confirmation
-  const confirmMessage = `Génération d'un menu ${selectedMealType} pour ${totalStudents} élèves répartis en ${groups.length} groupe(s).\n\n` +
-    `Groupes:\n${groups.map((g, i) => `  ${i + 1}. ${g.ageRange}: ${g.peopleCount} élèves`).join('\n')}\n\n` +
-    (dietaryRestrictions.length > 0 ? `Restrictions: ${dietaryRestrictions.join(', ')}\n\n` : '') +
-    `Continuer ?`;
+  // ✅ NOUVEAU: Collecter les préférences de durabilité
+  const sustainability = {
+    local: document.getElementById('pref-local')?.checked || false,
+    seasonal: document.getElementById('pref-seasonal')?.checked || false,
+    organic: document.getElementById('pref-organic')?.checked || false,
+    lowCarbon: document.getElementById('pref-lowcarbon')?.checked || false
+  };
+  
+  const hasSustainabilityPrefs = Object.values(sustainability).some(v => v);
+  console.log(`🌿 Critères durables: ${hasSustainabilityPrefs ? JSON.stringify(sustainability) : 'Aucun'}`);
+
+  
+  // ✅ Calculer le détail des allergies avec leurs effectifs
+  const allergyDetails = [];
+  let totalAllergicStudents = 0;
+  groups.forEach(g => {
+    if (g.allergies && g.allergies.length > 0) {
+      g.allergies.forEach(a => {
+        const existing = allergyDetails.find(d => d.type === a.type);
+        if (existing) {
+          existing.count += a.count;
+        } else {
+          allergyDetails.push({ type: a.type, count: a.count });
+        }
+        totalAllergicStudents += a.count;
+      });
+    }
+  });
+  
+  // ✅ Déterminer si on doit proposer le mode alternatif
+  const allergyPercentage = totalStudents > 0 ? (totalAllergicStudents / totalStudents) * 100 : 0;
+  const shouldOfferAlternativeMode = allergyDetails.length > 0 && allergyPercentage < 50;
+  
+  // ✅ Afficher un message de confirmation amélioré
+  let confirmMessage = `Génération d'un menu ${selectedMealType} pour ${totalStudents} élèves répartis en ${groups.length} groupe(s).\n\n`;
+  confirmMessage += `Groupes:\n${groups.map((g, i) => `  ${i + 1}. ${g.ageRange}: ${g.peopleCount} élèves`).join('\n')}\n\n`;
+  
+  if (allergyDetails.length > 0) {
+    confirmMessage += `🚫 Allergies déclarées:\n`;
+    allergyDetails.forEach(a => {
+      confirmMessage += `  • ${a.type}: ${a.count} élève(s) sur ${totalStudents} (${Math.round(a.count/totalStudents*100)}%)\n`;
+    });
+    confirmMessage += `\n`;
+    
+    if (shouldOfferAlternativeMode) {
+      confirmMessage += `💡 Recommandation: Seulement ${Math.round(allergyPercentage)}% des élèves ont des allergies.\n`;
+      confirmMessage += `   → Menu principal pour la majorité (${totalStudents - totalAllergicStudents} élèves)\n`;
+      confirmMessage += `   → Alternatives préparées pour les élèves allergiques (${totalAllergicStudents} élèves)\n\n`;
+      confirmMessage += `Voulez-vous générer le menu en mode "Cantine" (OK) ou en mode "Strict sans allergènes" (Annuler puis re-cliquer) ?`;
+    } else {
+      confirmMessage += `⚠️ ${Math.round(allergyPercentage)}% des élèves ont des allergies → Mode strict activé.\n`;
+    }
+  }
+  
+  confirmMessage += `\nContinuer ?`;
   
   if (!confirm(confirmMessage)) {
     return;
   }
+  
+  // ✅ En mode cantine (< 50% allergiques), ne pas filtrer strictement
+  const useStrictMode = !shouldOfferAlternativeMode && allergens.length > 0;
+  const cantineMode = shouldOfferAlternativeMode;
   
   // Utiliser le générateur de menu personnalisé
   try {
@@ -385,7 +453,8 @@ async function generateMenuFromAgeGroups() {
     // Vérifier si customMenuGenerator est disponible
     if (typeof window.customMenuGenerator === 'undefined' || !window.customMenuGenerator) {
       // Si pas disponible, utiliser directement l'API
-      await generateMenuViaAPI(totalStudents, selectedMealType, dietaryRestrictions, groups);
+      // ✅ Passer les allergènes + mode cantine + durabilité
+      await generateMenuViaAPI(totalStudents, selectedMealType, dietaryRestrictions, groups, allergens, useStrictMode, cantineMode, allergyDetails, sustainability);
     } else {
       // Utiliser le générateur existant
       // Temporairement mettre à jour le nombre de personnes dans le formulaire
@@ -413,8 +482,11 @@ async function generateMenuFromAgeGroups() {
 }
 
 // Fonction pour générer un menu via l'API directement
-async function generateMenuViaAPI(numberOfPeople, mealType, dietaryRestrictions, groups) {
+async function generateMenuViaAPI(numberOfPeople, mealType, dietaryRestrictions, groups, allergens = [], useStrictMode = true, cantineMode = false, allergyDetails = [], sustainability = {}) {
   console.log('📡 Génération via API directe...');
+  console.log(`🍽️ Mode: ${cantineMode ? 'CANTINE (menu principal + alternatives)' : 'STRICT (sans allergènes)'}`);
+  console.log(`🚫 Allergènes passés à l'API: ${useStrictMode ? (allergens.join(', ') || 'Aucun') : 'Non filtré (mode cantine)'}`);
+  console.log(`🌿 Durabilité: ${JSON.stringify(sustainability)}`);
   
   const progressDiv = document.getElementById('custom-menu-progress');
   const progressText = document.getElementById('custom-progress-text');
@@ -436,10 +508,25 @@ async function generateMenuViaAPI(numberOfPeople, mealType, dietaryRestrictions,
         numberOfPeople,
         mealType,
         dietaryRestrictions,
+        // ✅ En mode cantine: pas de filtrage strict, on génère le menu principal
+        allergens: useStrictMode ? (allergens || []) : [],
         nutritionalGoals: [], // Pas d'objectifs nutritionnels spécifiques pour l'instant
         useStockOnly: false,
         prioritizeVariety: true,
-        useFullRecipeCatalog: true
+        useFullRecipeCatalog: true,
+        // ✅ Mode strict UNIQUEMENT si > 50% des élèves ont des allergies
+        strictMode: useStrictMode,
+        filtersAsPreferences: !useStrictMode,
+        // ✅ AJOUT : Inclure les données des groupes d'âge pour adapter les quantités + mode cantine
+        ageGroups: groups.map(g => ({
+          ageRange: g.ageRange,
+          count: g.peopleCount,
+          diets: g.diets,
+          allergies: g.allergies
+        })),
+        cantineMode: cantineMode, // ✅ Nouveau: mode cantine pour afficher les alertes allergènes
+        allergyDetails: cantineMode ? allergyDetails : [], // ✅ Détail des allergies pour alternatives
+        sustainability: sustainability || {} // ✅ NOUVEAU: Critères de durabilité
       })
     });
     
@@ -453,7 +540,7 @@ async function generateMenuViaAPI(numberOfPeople, mealType, dietaryRestrictions,
     
     if (result.success && result.menu) {
       // Afficher les résultats dans la section des résultats du générateur
-      displayMenuResults(result, groups);
+      displayMenuResults(result, groups, cantineMode, allergyDetails);
       
       // Scroll vers les résultats
       const resultsDiv = document.getElementById('custom-menu-results');
@@ -471,7 +558,7 @@ async function generateMenuViaAPI(numberOfPeople, mealType, dietaryRestrictions,
 }
 
 // Fonction pour afficher les résultats du menu avec les détails des groupes
-function displayMenuResults(result, groups) {
+function displayMenuResults(result, groups, cantineMode = false, allergyDetails = []) {
   const resultsDiv = document.getElementById('custom-menu-results');
   if (!resultsDiv) {
     console.warn('⚠️ Div des résultats non trouvée, création...');
@@ -506,6 +593,186 @@ function displayMenuResults(result, groups) {
     `;
   }
   
+  // ✅ Section alternatives générées automatiquement par le serveur
+  let alternativesSection = '';
+  const totalStudents = groups.reduce((sum, g) => sum + g.peopleCount, 0);
+  
+  if (result.alternatives && result.alternatives.length > 0) {
+    const alternativesOk = result.alternatives.filter(a => a.mainMenuOk);
+    const alternativesNeeded = result.alternatives.filter(a => a.needed && !a.mainMenuOk);
+    const studentsOnMain = result.studentsOnMainMenu || totalStudents;
+    
+    if (alternativesNeeded.length > 0) {
+      // Il y a des alternatives à préparer
+      alternativesSection = `
+        <div style="background: #f0f9ff; padding: 1.5rem; border-radius: 8px; margin-top: 1rem; border-left: 4px solid #3b82f6;">
+          <h4 style="margin: 0 0 1rem 0; color: #1e40af;">
+            <i class="fas fa-utensils"></i> Organisation du service
+          </h4>
+          
+          <!-- Menu principal -->
+          <div style="background: #f0fdf4; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 3px solid #22c55e;">
+            <h5 style="margin: 0 0 0.5rem 0; color: #166534;">
+              <i class="fas fa-check-circle"></i> Menu principal: ${menu.nomMenu}
+            </h5>
+            <p style="margin: 0; color: #065f46;">
+              ✅ Pour <strong>${studentsOnMain} élève(s)</strong> sur ${totalStudents}
+              ${alternativesOk.length > 0 ? `<br><span style="font-size: 0.85rem;">(Compatible avec: ${alternativesOk.map(a => `${a.count} sans ${a.allergen}`).join(', ')})</span>` : ''}
+            </p>
+          </div>
+          
+          <!-- Alternatives -->
+          ${alternativesNeeded.map(alt => `
+            <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem; border-left: 3px solid #f59e0b;">
+              <h5 style="margin: 0 0 0.5rem 0; color: #92400e;">
+                <i class="fas fa-exchange-alt"></i> Alternative sans ${alt.allergen}
+                <span style="background: #fcd34d; padding: 0.2rem 0.5rem; border-radius: 999px; font-size: 0.75rem; margin-left: 0.5rem;">
+                  ${alt.count} portion(s)
+                </span>
+              </h5>
+              ${alt.alternative ? `
+                <p style="margin: 0; color: #78350f; font-weight: 600;">
+                  🍽️ ${alt.alternative.name}
+                </p>
+                ${alt.alternative.description ? `<p style="margin: 0.25rem 0 0 0; color: #666; font-size: 0.9rem;">${alt.alternative.description}</p>` : ''}
+              ` : `
+                <p style="margin: 0; color: #78350f;">
+                  💡 ${alt.suggestion || `Adapter le menu principal sans ${alt.allergen}`}
+                </p>
+              `}
+            </div>
+          `).join('')}
+        </div>
+      `;
+    } else if (alternativesOk.length > 0) {
+      // Le menu convient à tous !
+      alternativesSection = `
+        <div style="background: #f0fdf4; padding: 1.5rem; border-radius: 8px; margin-top: 1rem; border-left: 4px solid #22c55e;">
+          <h4 style="margin: 0 0 0.5rem 0; color: #166534;">
+            <i class="fas fa-check-circle"></i> Menu compatible avec toutes les allergies !
+          </h4>
+          <p style="margin: 0; color: #065f46; font-size: 0.95rem;">
+            🎉 Ce menu convient aux <strong>${totalStudents} élèves</strong>:
+          </p>
+          <ul style="margin: 0.5rem 0 0 0; padding-left: 1.5rem; color: #065f46;">
+            ${alternativesOk.map(a => `<li>✅ ${a.count} élève(s) sans ${a.allergen}: ${a.message}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
+  } else if (cantineMode && allergyDetails && allergyDetails.length > 0) {
+    // Fallback si pas d'alternatives générées par le serveur
+    alternativesSection = `
+      <div style="background: #f0fdf4; padding: 1.5rem; border-radius: 8px; margin-top: 1rem; border-left: 4px solid #22c55e;">
+        <h4 style="margin: 0 0 0.5rem 0; color: #166534;">
+          <i class="fas fa-check-circle"></i> Menu généré
+        </h4>
+        <p style="margin: 0; color: #065f46; font-size: 0.95rem;">
+          Pour ${totalStudents} élèves (allergies: ${allergyDetails.map(a => `${a.count} au ${a.type}`).join(', ')})
+        </p>
+      </div>
+    `;
+  }
+  
+  // ✅ NOUVEAU: Section durabilité si critères appliqués
+  let sustainabilitySection = '';
+  if (result.sustainability && result.sustainability.applied) {
+    const crit = result.sustainability.criteria || {};
+    const score = Math.max(0, result.sustainability.recipeSustainabilityScore || 0);
+    const badgeColor = score >= 50 ? '#22c55e' : score >= 25 ? '#f59e0b' : '#ef4444';
+    
+    const lowScoreWarning = score < 25 ? `
+      <p style="margin: 0.5rem 0 0 0; font-size: 0.8rem; color: #dc2626;">
+        <i class="fas fa-exclamation-triangle"></i> Score bas : cette recette ne correspond pas idéalement aux critères sélectionnés (viande rouge, etc.). 
+        Régénérez pour trouver une alternative plus durable.
+      </p>
+    ` : '';
+    
+    // ✅ Détail du score de durabilité (utiliser les détails ajustés du serveur)
+    const scoreDetails = [];
+    const details = result.sustainability.details || {};
+    
+    if (crit.local && details.local) {
+      scoreDetails.push(details.local);
+    }
+    if (crit.seasonal && details.seasonal) {
+      scoreDetails.push(details.seasonal);
+    }
+    if (crit.organic && details.organic) {
+      scoreDetails.push(details.organic);
+    }
+    if (crit.lowCarbon && details.lowCarbon) {
+      scoreDetails.push(`Carbone: ${details.lowCarbon}`);
+    }
+    
+    const scoreDetailText = scoreDetails.length > 0 
+      ? `<span style="font-size: 0.7rem; color: #6b7280; margin-left: 0.5rem;">(${scoreDetails.join(' | ')})</span>` 
+      : '';
+    
+    sustainabilitySection = `
+      <div style="background: ${score >= 25 ? '#ecfdf5' : '#fef2f2'}; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid ${score >= 25 ? '#10b981' : '#ef4444'};">
+        <h4 style="margin: 0 0 0.5rem 0; color: ${score >= 25 ? '#166534' : '#991b1b'}; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;">
+          <span><i class="fas fa-leaf"></i> Critères Durables</span>
+          <span style="background: ${badgeColor}; color: white; padding: 0.2rem 0.5rem; border-radius: 999px; font-size: 0.75rem;">
+            Score: ${score}/100
+          </span>
+          ${scoreDetailText}
+        </h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
+          ${crit.local ? '<span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem;"><i class="fas fa-map-marker-alt"></i> Local</span>' : ''}
+          ${crit.seasonal ? '<span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem;"><i class="fas fa-seedling"></i> Saison</span>' : ''}
+          ${crit.organic ? '<span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem;"><i class="fas fa-certificate"></i> Bio</span>' : ''}
+          ${crit.lowCarbon ? '<span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem;"><i class="fas fa-globe-europe"></i> Bas carbone</span>' : ''}
+        </div>
+        ${lowScoreWarning}
+      </div>
+    `;
+  }
+  
+  // ✅ NOUVEAU: Badge de saisonnalité intelligente
+  let seasonalityBadge = '';
+  if (result.seasonality) {
+    const seasonal = result.seasonality;
+    const isAllSeasonal = seasonal.allSeasonal;
+    const seasonScore = seasonal.score || 0;
+    const monthName = seasonal.monthName || 'ce mois';
+    
+    if (isAllSeasonal) {
+      seasonalityBadge = `
+        <div style="background: #f0fdf4; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; border: 2px solid #22c55e; display: flex; align-items: center; gap: 0.75rem;">
+          <span style="background: #22c55e; color: white; padding: 0.4rem 0.75rem; border-radius: 6px; font-weight: 600; font-size: 0.9rem;">
+            <i class="fas fa-check-circle"></i> ✔ Ingrédients de saison
+          </span>
+          <span style="color: #166534; font-size: 0.9rem;">
+            Tous les ingrédients sont de saison en <strong>${monthName}</strong>
+          </span>
+        </div>
+      `;
+    } else if (seasonScore >= 70) {
+      seasonalityBadge = `
+        <div style="background: #fefce8; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; border: 2px solid #eab308; display: flex; align-items: center; gap: 0.75rem;">
+          <span style="background: #eab308; color: white; padding: 0.4rem 0.75rem; border-radius: 6px; font-weight: 600; font-size: 0.9rem;">
+            <i class="fas fa-seedling"></i> ${seasonScore}% de saison
+          </span>
+          <span style="color: #854d0e; font-size: 0.85rem;">
+            ${seasonal.nonSeasonalIngredients?.length || 0} ingrédient(s) hors saison: ${(seasonal.nonSeasonalIngredients || []).slice(0, 3).join(', ')}${(seasonal.nonSeasonalIngredients || []).length > 3 ? '...' : ''}
+          </span>
+        </div>
+      `;
+    } else if (seasonScore > 0) {
+      seasonalityBadge = `
+        <div style="background: #fef2f2; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; border: 2px solid #ef4444; display: flex; align-items: center; gap: 0.75rem;">
+          <span style="background: #ef4444; color: white; padding: 0.4rem 0.75rem; border-radius: 6px; font-weight: 600; font-size: 0.9rem;">
+            <i class="fas fa-exclamation-triangle"></i> ${seasonScore}% de saison
+          </span>
+          <span style="color: #991b1b; font-size: 0.85rem;">
+            Plusieurs ingrédients hors saison - Régénérez pour une option plus locale
+          </span>
+        </div>
+      `;
+    }
+  }
+
   resultsDiv.innerHTML = `
     <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
       <h3 style="margin: 0 0 1rem 0; color: #10b981;"><i class="fas fa-utensils"></i> Menu généré</h3>
@@ -515,7 +782,13 @@ function displayMenuResults(result, groups) {
         <p style="margin: 0; color: #065f46;">${menu.description || ''}</p>
       </div>
       
+      ${seasonalityBadge}
+      
+      ${sustainabilitySection}
+      
       ${groupsBreakdown}
+      
+      ${alternativesSection}
       
       <div style="margin-top: 1.5rem;">
         <h4 style="margin: 0 0 0.5rem 0; color: #374151;"><i class="fas fa-list"></i> Ingrédients (pour ${result.numberOfPeople} personnes):</h4>
@@ -526,16 +799,98 @@ function displayMenuResults(result, groups) {
         </ul>
       </div>
       
+      ${(menu.instructions || menu.preparationSteps) && (menu.instructions || menu.preparationSteps).length > 0 ? `
+        <div style="margin-top: 1.5rem; background: #f9fafb; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #3b82f6;">
+          <h4 style="margin: 0 0 1rem 0; color: #1e40af;">
+            <i class="fas fa-tasks"></i> Étapes de préparation
+            ${menu.tempsCuisson ? `<span style="font-size: 0.85rem; font-weight: normal; color: #6b7280; margin-left: 0.5rem;">
+              <i class="fas fa-clock"></i> ${menu.tempsCuisson}
+            </span>` : ''}
+            ${menu.difficulte ? `<span style="font-size: 0.85rem; font-weight: normal; color: #6b7280; margin-left: 0.5rem;">
+              <i class="fas fa-signal"></i> ${menu.difficulte}
+            </span>` : ''}
+          </h4>
+          <ol style="margin: 0; padding-left: 1.5rem; color: #374151; line-height: 1.8;">
+            ${(menu.instructions || menu.preparationSteps).map((step, index) => 
+              `<li style="margin-bottom: 0.75rem;">${step}</li>`
+            ).join('')}
+          </ol>
+        </div>
+      ` : ''}
+      
       ${nutrition ? `
         <div style="margin-top: 1.5rem; background: #f9fafb; padding: 1rem; border-radius: 8px;">
           <h4 style="margin: 0 0 0.5rem 0; color: #374151;"><i class="fas fa-chart-bar"></i> Valeurs nutritionnelles (par personne):</h4>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; font-size: 0.9rem;">
             ${nutrition.perPerson ? Object.entries(nutrition.perPerson).slice(0, 8).map(([key, value]) => 
-              `<div><strong>${key}:</strong> ${value.toFixed(1)}</div>`
+              `<div><strong>${key}:</strong> ${typeof value === 'number' ? value.toFixed(1) : value}</div>`
             ).join('') : ''}
           </div>
         </div>
       ` : ''}
+      
+      ${result.nutritionalEvaluation ? `
+        <div style="margin-top: 1rem; background: ${result.nutritionalEvaluation.score >= 85 ? '#f0fdf4' : result.nutritionalEvaluation.score >= 50 ? '#fef3c7' : '#fef2f2'}; padding: 1rem; border-radius: 8px; border-left: 4px solid ${result.nutritionalEvaluation.score >= 85 ? '#22c55e' : result.nutritionalEvaluation.score >= 50 ? '#f59e0b' : '#dc2626'};">
+          <h4 style="margin: 0 0 0.75rem 0; color: ${result.nutritionalEvaluation.score >= 85 ? '#166534' : result.nutritionalEvaluation.score >= 50 ? '#92400e' : '#991b1b'};">
+            <i class="fas fa-${result.nutritionalEvaluation.score >= 85 ? 'check-circle' : 'exclamation-triangle'}"></i>
+            Évaluation ANSES - ${result.nutritionalEvaluation.reference || result.ageGroup}
+            <span style="margin-left: 0.5rem; font-size: 0.85rem; background: ${result.nutritionalEvaluation.score >= 85 ? '#dcfce7' : result.nutritionalEvaluation.score >= 50 ? '#fef9c3' : '#fee2e2'}; padding: 0.25rem 0.5rem; border-radius: 999px; font-weight: bold;">${result.nutritionalEvaluation.score}/100</span>
+          </h4>
+          ${result.nutritionalEvaluation.score >= 85 ? `
+            <p style="margin: 0; color: #166534;"><i class="fas fa-check"></i> ✅ Menu complet et équilibré pour cette tranche d'âge</p>
+          ` : `
+            ${result.nutritionalEvaluation.completionMessage ? `
+              <div style="background: white; padding: 0.75rem; border-radius: 6px; margin-bottom: 0.75rem; border: 1px solid ${result.nutritionalEvaluation.score >= 50 ? '#fcd34d' : '#fca5a5'};">
+                <strong style="color: #dc2626;">🍽️ ${result.nutritionalEvaluation.completionMessage}</strong>
+              </div>
+            ` : ''}
+            ${result.nutritionalEvaluation.suggestedCompletions && result.nutritionalEvaluation.suggestedCompletions.length > 0 ? `
+              <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem;">
+                <strong style="color: #1e40af;">🍴 Menu complet suggéré:</strong>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem;">
+                  ${result.nutritionalEvaluation.suggestedCompletions.map(s => `
+                    <div style="flex: 1; min-width: 200px; background: ${s.type === 'entrée' ? '#fef3c7' : s.type === 'dessert' ? '#fce7f3' : '#e0f2fe'}; padding: 0.75rem; border-radius: 8px; border-left: 3px solid ${s.type === 'entrée' ? '#f59e0b' : s.type === 'dessert' ? '#ec4899' : '#3b82f6'};">
+                      <div style="font-size: 0.75rem; text-transform: uppercase; color: ${s.type === 'entrée' ? '#92400e' : s.type === 'dessert' ? '#9d174d' : '#1e40af'}; font-weight: 600; margin-bottom: 0.25rem;">
+                        ${s.type === 'entrée' ? '🥗 Entrée' : s.type === 'dessert' ? '🍨 Dessert' : '🥘 ' + s.type}
+                      </div>
+                      <div style="font-weight: 600; color: #1f2937;">${s.name}</div>
+                      ${s.calories ? `<div style="font-size: 0.85rem; color: #666;">+${s.calories} kcal</div>` : ''}
+                    </div>
+                  `).join('')}
+                </div>
+                <p style="margin: 0.75rem 0 0 0; font-size: 0.85rem; color: #666; font-style: italic;">
+                  💡 Ce menu complet (entrée + plat + dessert) respectera les recommandations ANSES.
+                </p>
+              </div>
+            ` : ''}
+            ${result.nutritionalEvaluation.warnings && result.nutritionalEvaluation.warnings.length > 0 ? `
+              <div style="margin-bottom: 0.75rem;">
+                <strong style="color: #92400e;">⚠️ Points d'attention:</strong>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: #78350f; font-size: 0.9rem;">
+                  ${result.nutritionalEvaluation.warnings.map(w => `<li>${w.message}</li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
+          `}
+        </div>
+      ` : ''}
+      
+      ${menu.allergens && menu.allergens.length > 0 ? `
+        <div style="margin-top: 1rem; background: #fef2f2; padding: 1rem; border-radius: 8px; border-left: 4px solid #dc2626;">
+          <h4 style="margin: 0 0 0.5rem 0; color: #991b1b;"><i class="fas fa-exclamation-triangle"></i> Allergènes présents:</h4>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            ${menu.allergens.map(allergen => 
+              `<span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500;">
+                ${allergen}
+              </span>`
+            ).join('')}
+          </div>
+        </div>
+      ` : `
+        <div style="margin-top: 1rem; background: #f0fdf4; padding: 1rem; border-radius: 8px; border-left: 4px solid #22c55e;">
+          <h4 style="margin: 0; color: #166534;"><i class="fas fa-check-circle"></i> Aucun allergène majeur détecté</h4>
+        </div>
+      `}
       
       <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
         <button onclick="window.acceptGeneratedMenu()" style="background: #10b981; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600;">

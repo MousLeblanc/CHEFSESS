@@ -3,7 +3,7 @@ import asyncHandler from 'express-async-handler';
 import RecipeEnriched from '../models/Recipe.js';
 import Stock from '../models/Stock.js';
 import Resident from '../models/Resident.js';
-import openai from '../services/openaiClient.js';
+import aiService from '../services/aiService.js';
 
 /**
  * Convertit un code de texture IDDSI en label lisible
@@ -913,18 +913,16 @@ CRITÈRES DE SÉLECTION POUR UN MENU PROFESSIONNEL ${establishmentType.toUpperCa
 Choisis ${numDishes} recettes qui forment un repas COMPLET, ÉQUILIBRÉ, APPÉTISSANT et VARIÉ.`;
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
-      ],
+    const response = await aiService.generate([
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ], {
       response_format: { type: "json_object" },
       temperature: 0.8, // ✅ Plus de créativité pour menus variés
       max_tokens: 3000  // ✅ Plus d'espace pour réflexion qualité
     });
 
-    const aiResponse = JSON.parse(completion.choices[0].message.content);
+    const aiResponse = aiService.parseJSON(response.content);
     
     // Récupérer les recettes sélectionnées par l'IA
     const selectedRecipes = filteredRecipes.filter(r => 

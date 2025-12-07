@@ -24,6 +24,7 @@
     "migrate-stock": "node scripts/migrate-stock.js",
     "migrate-suppliers": "node scripts/migrate-supplier-data.js",
     "test-openai": "node scripts/test-openai-key.js",
+    "test-claude": "node scripts/test-claude-migration.js",
     "check-user": "node scripts/check-user-tanneurs.js",
     "create-fournisseur": "node scripts/create-fournisseur-test.js",
     "init-tanneurs-stock": "node scripts/init-tanneurs-stock.js",
@@ -55,6 +56,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
     "@google-cloud/vision": "^5.3.2",
     "axios": "^1.11.0",
     "bcryptjs": "^3.0.2",

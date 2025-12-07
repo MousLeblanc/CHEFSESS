@@ -710,11 +710,18 @@ class DashboardMenuIntegration {
         ${dish.description ? `<p style="color: #7f8c8d; font-style: italic; margin: 0.5rem 0;">${dish.description}</p>` : ''}
         
         ${dish.nutrition && (dish.nutrition.calories || dish.nutrition.proteins || dish.nutrition.carbs || dish.nutrition.fats) ? `
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; font-size: 0.9rem;">
-          ${dish.nutrition.calories ? `<span style="background: white; padding: 0.5rem 1rem; border-radius: 20px;">🔥 ${dish.nutrition.calories} kcal</span>` : ''}
-          ${dish.nutrition.proteins ? `<span style="background: white; padding: 0.5rem 1rem; border-radius: 20px;">💪 ${dish.nutrition.proteins}g protéines</span>` : ''}
-          ${dish.nutrition.carbs ? `<span style="background: white; padding: 0.5rem 1rem; border-radius: 20px;">🌾 ${dish.nutrition.carbs}g glucides</span>` : ''}
-          ${dish.nutrition.fats ? `<span style="background: white; padding: 0.5rem 1rem; border-radius: 20px;">🥑 ${dish.nutrition.fats}g lipides</span>` : ''}
+        <div style="margin: 1rem 0;">
+          <div style="display: inline-flex; align-items: center; gap: 0.25rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 0.25rem 0.55rem; border-radius: 12px; font-size: 0.65rem; font-weight: 600; margin-bottom: 0.35rem; box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2);">
+            <i class="fas fa-check-circle" style="font-size: 0.65rem;"></i>
+            <span>CIQUAL</span>
+            <span style="background: rgba(255, 255, 255, 0.2); padding: 0.1rem 0.3rem; border-radius: 8px; font-weight: 700; font-size: 0.65rem;">100%</span>
+          </div>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.9rem;">
+            ${dish.nutrition.calories ? `<span style="background: white; padding: 0.5rem 1rem; border-radius: 20px;">🔥 ${dish.nutrition.calories} kcal</span>` : ''}
+            ${dish.nutrition.proteins ? `<span style="background: white; padding: 0.5rem 1rem; border-radius: 20px;">💪 ${dish.nutrition.proteins}g protéines</span>` : ''}
+            ${dish.nutrition.carbs ? `<span style="background: white; padding: 0.5rem 1rem; border-radius: 20px;">🌾 ${dish.nutrition.carbs}g glucides</span>` : ''}
+            ${dish.nutrition.fats ? `<span style="background: white; padding: 0.5rem 1rem; border-radius: 20px;">🥑 ${dish.nutrition.fats}g lipides</span>` : ''}
+          </div>
         </div>
         ` : `
         <div style="background: #fff3cd; padding: 0.75rem; border-radius: 6px; margin: 1rem 0; font-size: 0.9rem; font-style: italic; color: #856404;">
@@ -792,11 +799,18 @@ class DashboardMenuIntegration {
         ${dish.description ? `<p style="color: #7f8c8d; font-style: italic; margin: 0.5rem 0;">${dish.description}</p>` : ''}
         
         ${dish.nutrition && (dish.nutrition.calories || dish.nutrition.proteins || dish.nutrition.carbs || dish.nutrition.fats) ? `
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; font-size: 0.9rem;">
-          ${dish.nutrition.calories ? `<span style="background: white; padding: 0.5rem 1rem; border-radius: 20px;">🔥 ${dish.nutrition.calories} kcal</span>` : ''}
-          ${dish.nutrition.proteins ? `<span style="background: white; padding: 0.5rem 1rem; border-radius: 20px;">💪 ${dish.nutrition.proteins}g protéines</span>` : ''}
-          ${dish.nutrition.carbs ? `<span style="background: white; padding: 0.5rem 1rem; border-radius: 20px;">🌾 ${dish.nutrition.carbs}g glucides</span>` : ''}
-          ${dish.nutrition.fats ? `<span style="background: white; padding: 0.5rem 1rem; border-radius: 20px;">🥑 ${dish.nutrition.fats}g lipides</span>` : ''}
+        <div style="margin: 1rem 0;">
+          <div style="display: inline-flex; align-items: center; gap: 0.25rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 0.25rem 0.55rem; border-radius: 12px; font-size: 0.65rem; font-weight: 600; margin-bottom: 0.35rem; box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2);">
+            <i class="fas fa-check-circle" style="font-size: 0.65rem;"></i>
+            <span>CIQUAL</span>
+            <span style="background: rgba(255, 255, 255, 0.2); padding: 0.1rem 0.3rem; border-radius: 8px; font-weight: 700; font-size: 0.65rem;">100%</span>
+          </div>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.9rem;">
+            ${dish.nutrition.calories ? `<span style="background: white; padding: 0.5rem 1rem; border-radius: 20px;">🔥 ${dish.nutrition.calories} kcal</span>` : ''}
+            ${dish.nutrition.proteins ? `<span style="background: white; padding: 0.5rem 1rem; border-radius: 20px;">💪 ${dish.nutrition.proteins}g protéines</span>` : ''}
+            ${dish.nutrition.carbs ? `<span style="background: white; padding: 0.5rem 1rem; border-radius: 20px;">🌾 ${dish.nutrition.carbs}g glucides</span>` : ''}
+            ${dish.nutrition.fats ? `<span style="background: white; padding: 0.5rem 1rem; border-radius: 20px;">🥑 ${dish.nutrition.fats}g lipides</span>` : ''}
+          </div>
         </div>
         ` : `
         <div style="background: #fff3cd; padding: 0.75rem; border-radius: 6px; margin: 1rem 0; font-size: 0.9rem; font-style: italic; color: #856404;">

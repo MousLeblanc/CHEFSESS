@@ -262,7 +262,27 @@ class RecipeGenerator {
   }
 }
 
-// Initialiser le générateur de recettes quand la page est chargée
-document.addEventListener('DOMContentLoaded', () => {
-  new RecipeGenerator();
-});
+// Initialiser le générateur de recettes
+function initRecipeGenerator() {
+  // Vérifier si déjà initialisé
+  if (window.recipeGeneratorInstance) {
+    return window.recipeGeneratorInstance;
+  }
+  
+  // Créer une nouvelle instance
+  window.recipeGeneratorInstance = new RecipeGenerator();
+  return window.recipeGeneratorInstance;
+}
+
+// Initialiser quand la page est chargée
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initRecipeGenerator);
+} else {
+  // DOM déjà chargé
+  initRecipeGenerator();
+}
+
+// Exporter pour initialisation manuelle si nécessaire
+if (typeof window !== 'undefined') {
+  window.initRecipeGenerator = initRecipeGenerator;
+}

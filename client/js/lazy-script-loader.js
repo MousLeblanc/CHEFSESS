@@ -163,6 +163,12 @@ class LazyScriptLoader {
     try {
       await Promise.all(loadPromises);
       console.log(`✅ Tous les scripts pour l'onglet "${tabName}" sont chargés`);
+      
+      // Initialiser le générateur de recettes si l'onglet recipe-generator est activé
+      if (tabName === 'recipe-generator' && typeof window.initRecipeGenerator === 'function') {
+        console.log('🔧 Initialisation du générateur de recettes...');
+        window.initRecipeGenerator();
+      }
     } catch (error) {
       console.error(`❌ Erreur lors du chargement des scripts pour l'onglet "${tabName}":`, error);
       throw error;

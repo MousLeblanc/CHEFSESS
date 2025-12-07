@@ -8,6 +8,167 @@ import openai from '../services/openaiClient.js';
 
 dotenv.config();
 
+// ========== SAISONNALITÉ INTELLIGENTE ==========
+// Tableau des produits de saison par mois (France/Belgique)
+// Source: calendrier des fruits et légumes de saison
+const SEASONAL_PRODUCTS = {
+  // Janvier - Hiver
+  1: {
+    legumes: ['carotte', 'chou', 'chou-fleur', 'chou de bruxelles', 'endive', 'épinard', 'mâche', 'navet', 'panais', 'poireau', 'pomme de terre', 'potiron', 'courge', 'betterave', 'céleri', 'topinambour', 'salsifis', 'rutabaga'],
+    fruits: ['pomme', 'poire', 'kiwi', 'orange', 'clémentine', 'mandarine', 'citron', 'pamplemousse'],
+    proteines: ['poulet', 'dinde', 'porc', 'boeuf', 'veau', 'lapin', 'canard', 'cabillaud', 'merlu', 'lieu', 'sole', 'raie']
+  },
+  // Février - Hiver
+  2: {
+    legumes: ['carotte', 'chou', 'chou-fleur', 'endive', 'épinard', 'mâche', 'navet', 'panais', 'poireau', 'pomme de terre', 'courge', 'betterave', 'céleri', 'topinambour'],
+    fruits: ['pomme', 'poire', 'kiwi', 'orange', 'clémentine', 'citron', 'pamplemousse'],
+    proteines: ['poulet', 'dinde', 'porc', 'boeuf', 'veau', 'lapin', 'cabillaud', 'merlu', 'lieu', 'sole']
+  },
+  // Mars - Fin hiver/début printemps
+  3: {
+    legumes: ['carotte', 'chou', 'endive', 'épinard', 'mâche', 'navet', 'poireau', 'pomme de terre', 'radis', 'asperge'],
+    fruits: ['pomme', 'poire', 'kiwi', 'orange', 'citron'],
+    proteines: ['poulet', 'agneau', 'veau', 'lapin', 'cabillaud', 'merlu', 'bar', 'turbot']
+  },
+  // Avril - Printemps
+  4: {
+    legumes: ['asperge', 'carotte', 'épinard', 'radis', 'petit pois', 'artichaut', 'laitue', 'cresson', 'oseille', 'blette'],
+    fruits: ['pomme', 'rhubarbe', 'fraise'],
+    proteines: ['poulet', 'agneau', 'veau', 'lapin', 'bar', 'turbot', 'maquereau']
+  },
+  // Mai - Printemps
+  5: {
+    legumes: ['asperge', 'carotte', 'épinard', 'petit pois', 'artichaut', 'laitue', 'radis', 'concombre', 'courgette', 'haricot vert', 'fève'],
+    fruits: ['fraise', 'cerise', 'rhubarbe'],
+    proteines: ['poulet', 'agneau', 'veau', 'lapin', 'bar', 'turbot', 'maquereau', 'sardine']
+  },
+  // Juin - Été
+  6: {
+    legumes: ['artichaut', 'aubergine', 'carotte', 'concombre', 'courgette', 'haricot vert', 'petit pois', 'poivron', 'tomate', 'laitue', 'radis', 'fenouil', 'betterave'],
+    fruits: ['fraise', 'framboise', 'cerise', 'abricot', 'melon', 'pêche', 'nectarine'],
+    proteines: ['poulet', 'agneau', 'lapin', 'sardine', 'maquereau', 'thon', 'dorade']
+  },
+  // Juillet - Été
+  7: {
+    legumes: ['aubergine', 'carotte', 'concombre', 'courgette', 'haricot vert', 'poivron', 'tomate', 'laitue', 'maïs', 'fenouil', 'betterave', 'artichaut'],
+    fruits: ['fraise', 'framboise', 'groseille', 'cassis', 'myrtille', 'abricot', 'melon', 'pêche', 'nectarine', 'prune', 'pastèque'],
+    proteines: ['poulet', 'lapin', 'sardine', 'maquereau', 'thon', 'dorade', 'rouget']
+  },
+  // Août - Été
+  8: {
+    legumes: ['aubergine', 'carotte', 'concombre', 'courgette', 'haricot vert', 'poivron', 'tomate', 'laitue', 'maïs', 'fenouil', 'betterave', 'brocoli'],
+    fruits: ['framboise', 'mûre', 'myrtille', 'melon', 'pêche', 'nectarine', 'prune', 'mirabelle', 'raisin', 'figue', 'pastèque'],
+    proteines: ['poulet', 'lapin', 'sardine', 'maquereau', 'thon', 'dorade', 'rouget']
+  },
+  // Septembre - Automne
+  9: {
+    legumes: ['aubergine', 'carotte', 'chou', 'courgette', 'haricot vert', 'poivron', 'tomate', 'potiron', 'courge', 'brocoli', 'épinard', 'fenouil', 'betterave', 'céleri'],
+    fruits: ['pomme', 'poire', 'raisin', 'prune', 'figue', 'melon', 'mûre', 'framboise', 'noisette', 'noix'],
+    proteines: ['poulet', 'dinde', 'porc', 'boeuf', 'lapin', 'canard', 'bar', 'dorade', 'maquereau']
+  },
+  // Octobre - Automne
+  10: {
+    legumes: ['carotte', 'chou', 'chou-fleur', 'courge', 'potiron', 'potimarron', 'épinard', 'navet', 'panais', 'poireau', 'brocoli', 'betterave', 'céleri', 'fenouil', 'endive'],
+    fruits: ['pomme', 'poire', 'raisin', 'coing', 'châtaigne', 'noix', 'noisette', 'kaki'],
+    proteines: ['poulet', 'dinde', 'porc', 'boeuf', 'lapin', 'canard', 'bar', 'dorade', 'cabillaud']
+  },
+  // Novembre - Automne/Hiver
+  11: {
+    legumes: ['carotte', 'chou', 'chou-fleur', 'chou de bruxelles', 'courge', 'potiron', 'épinard', 'mâche', 'navet', 'panais', 'poireau', 'betterave', 'céleri', 'endive', 'topinambour'],
+    fruits: ['pomme', 'poire', 'kiwi', 'orange', 'clémentine', 'mandarine', 'châtaigne', 'noix'],
+    proteines: ['poulet', 'dinde', 'porc', 'boeuf', 'canard', 'lapin', 'cabillaud', 'merlu', 'lieu']
+  },
+  // Décembre - Hiver
+  12: {
+    legumes: ['carotte', 'chou', 'chou-fleur', 'chou de bruxelles', 'endive', 'épinard', 'mâche', 'navet', 'panais', 'poireau', 'pomme de terre', 'potiron', 'courge', 'betterave', 'céleri', 'topinambour', 'salsifis'],
+    fruits: ['pomme', 'poire', 'kiwi', 'orange', 'clémentine', 'mandarine', 'citron', 'pamplemousse', 'châtaigne', 'noix'],
+    proteines: ['poulet', 'dinde', 'porc', 'boeuf', 'veau', 'canard', 'oie', 'chapon', 'cabillaud', 'merlu', 'lieu', 'sole', 'huître', 'coquille saint-jacques']
+  }
+};
+
+/**
+ * Vérifie si un ingrédient est de saison pour le mois actuel
+ * @param {string} ingredientName - Nom de l'ingrédient
+ * @param {number} month - Mois (1-12), par défaut mois actuel
+ * @returns {boolean} true si l'ingrédient est de saison
+ */
+function isIngredientSeasonal(ingredientName, month = null) {
+  const currentMonth = month || (new Date().getMonth() + 1);
+  const seasonalData = SEASONAL_PRODUCTS[currentMonth];
+  
+  if (!seasonalData) return true; // Si pas de données, considérer comme OK
+  
+  const normalizedName = ingredientName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  
+  // Vérifier dans toutes les catégories
+  const allSeasonal = [
+    ...seasonalData.legumes,
+    ...seasonalData.fruits,
+    ...seasonalData.proteines
+  ];
+  
+  // Vérification flexible (contient ou est contenu)
+  return allSeasonal.some(seasonal => {
+    const normalizedSeasonal = seasonal.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return normalizedName.includes(normalizedSeasonal) || normalizedSeasonal.includes(normalizedName);
+  });
+}
+
+/**
+ * Calcule le score de saisonnalité d'une recette
+ * @param {Object} recipe - Recette avec ingrédients
+ * @param {number} month - Mois (1-12)
+ * @returns {Object} { score: 0-100, seasonalIngredients: [], nonSeasonalIngredients: [] }
+ */
+function calculateSeasonalityScore(recipe, month = null) {
+  const currentMonth = month || (new Date().getMonth() + 1);
+  const ingredients = recipe.ingredients || [];
+  
+  if (ingredients.length === 0) {
+    return { score: 100, seasonalIngredients: [], nonSeasonalIngredients: [], allSeasonal: true };
+  }
+  
+  const seasonalIngredients = [];
+  const nonSeasonalIngredients = [];
+  
+  // Ingrédients neutres (toujours disponibles, pas de saison spécifique)
+  const neutralIngredients = ['sel', 'poivre', 'huile', 'beurre', 'crème', 'lait', 'farine', 'sucre', 'oeuf', 'œuf', 'riz', 'pâte', 'pain', 'eau', 'vinaigre', 'moutarde', 'ail', 'oignon', 'échalote', 'persil', 'thym', 'laurier', 'romarin', 'basilic', 'coriandre', 'curry', 'paprika', 'cumin'];
+  
+  for (const ing of ingredients) {
+    const name = (ing.name || '').toLowerCase();
+    
+    // Ignorer les ingrédients neutres
+    const isNeutral = neutralIngredients.some(n => name.includes(n));
+    if (isNeutral) continue;
+    
+    if (isIngredientSeasonal(name, currentMonth)) {
+      seasonalIngredients.push(name);
+    } else {
+      nonSeasonalIngredients.push(name);
+    }
+  }
+  
+  const totalRelevant = seasonalIngredients.length + nonSeasonalIngredients.length;
+  const score = totalRelevant > 0 ? Math.round((seasonalIngredients.length / totalRelevant) * 100) : 100;
+  
+  return {
+    score,
+    seasonalIngredients,
+    nonSeasonalIngredients,
+    allSeasonal: nonSeasonalIngredients.length === 0,
+    month: currentMonth,
+    monthName: getMonthName(currentMonth)
+  };
+}
+
+/**
+ * Retourne le nom du mois en français
+ */
+function getMonthName(month) {
+  const months = ['', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+  return months[month] || '';
+}
+
 /**
  * Filtre les ingrédients selon un critère nutritionnel
  * @param {string} nutrientKey - Clé du nutriment (proteins, vitaminC, fibers, calcium, iron, etc.)
@@ -54,22 +215,92 @@ function buildRecipeFilters({
   avoidMenuName = null,
   avoidMenuNames = [], // Liste de tous les menus à éviter
   filtersAsPreferences = true,
-  nutritionalGoals = []
+  nutritionalGoals = [],
+  ageGroups = [] // ✅ AJOUTÉ: Groupes d'âge pour filtre alcool
 }) {
   const filters = {};
   
   // Filtrer par catégorie selon le type de repas
-  // EXCLURE les accompagnements (purée, légumes seuls, etc.) - ce sont des plats complets qu'on cherche
+  // ✅ MODIFIÉ: Pour le déjeuner, EXIGER des PLATS COMPLETS AVEC PROTÉINES
   if (mealType === 'déjeuner' || mealType === 'dîner') {
-    filters.category = { $in: ['plat', 'entrée', 'plat_complet'] };
-    // Exclure les accompagnements et plats incomplets (purée seule, légumes seuls, etc.)
-    // Ces recettes ne sont pas des menus complets mais des accompagnements
+    // Catégories acceptées
+    filters.category = { $in: ['plat', 'plat_complet', 'Plat Principal', 'viande', 'poisson', 'volaille'] };
+    
     if (!filters.$and) filters.$and = [];
+    
+    // 🚫 CRITIQUE SÉCURITÉ ENFANTS: Exclure les recettes avec ALCOOL
+    // Vérifier si on cuisine pour des enfants (maternelle, primaire, collège, lycée)
+    const childAgeGroups = ['maternelle', 'primaire', 'primaire_cp_ce1', 'primaire_ce2_cm1', 'primaire_cm2', 'college', 'lycee', 'secondaire'];
+    const isForChildren = ageGroups && ageGroups.some(g => childAgeGroups.includes(g.ageRange));
+    
+    if (isForChildren) {
+      // Vin, bière, liqueurs = INTERDIT pour les cantines scolaires
+      const alcoholKeywords = /vin rouge|vin blanc|vin |au vin|wine|bière|beer|alcool|alcohol|cognac|calvados|armagnac|rhum|rum|whisky|vodka|liqueur|porto|madère|marsala|champagne|cidre alcool|coq au vin|boeuf bourguignon/i;
+      
+      filters.$and.push(
+        // Exclure les recettes avec alcool dans le nom
+        { name: { $not: { $regex: alcoholKeywords } } },
+        // Exclure les recettes avec alcool dans la description
+        { description: { $not: { $regex: alcoholKeywords } } }
+      );
+      
+      console.log(`   🚫 MODE ENFANTS: Recettes avec ALCOOL exclues (coq au vin, boeuf bourguignon, etc.)`);
+      
+      // ✅ NOUVEAU: EXCLURE les VIANDES ROUGES pour enfants (santé + environnement)
+      // Boeuf, veau, agneau, mouton = riches en graisses saturées + forte empreinte carbone
+      const redMeatKeywords = /boeuf|bœuf|veau|agneau|mouton|entrecôte|côte de boeuf|steak|bavette|onglet|hampe|paleron|jarret|joue de boeuf|queue de boeuf|tournedos|filet de boeuf|rosbif|pot.?au.?feu|blanquette de veau|osso.?bucco|escalope de veau|côte de veau|rôti de veau|gigot|souris d'agneau|carré d'agneau|navarin/i;
+      
+      filters.$and.push(
+        // Exclure les recettes avec viande rouge dans le nom
+        { name: { $not: { $regex: redMeatKeywords } } },
+        // Exclure les recettes avec viande rouge dans les ingrédients principaux
+        { 'ingredients.name': { $not: { $regex: /^(boeuf|bœuf|veau|agneau|mouton|steak|entrecôte|bavette)/i } } }
+      );
+      
+      console.log(`   🥩 MODE ENFANTS: VIANDES ROUGES exclues (boeuf, veau, agneau) → privilégier poulet, poisson, légumineuses`);
+      
+      // ✅ EXIGER des LÉGUMES dans les repas enfants (équilibre alimentaire)
+      const vegetableKeywords = 'légume|carotte|haricot|courgette|tomate|poivron|brocoli|épinard|chou|salade|petits pois|pois|aubergine|navet|betterave|céleri|poireau|fenouil|artichaut|asperge|concombre|radis|champignon|oignon|ail|échalote|endive|laitue|mâche|roquette|jardinière|printanier|primeur|ratatouille|légumes';
+      
+      filters.$and.push(
+        // ✅ OBLIGATOIRE ENFANTS: Le plat doit contenir des légumes
+        {
+          $or: [
+            { name: { $regex: vegetableKeywords, $options: 'i' } },
+            { description: { $regex: vegetableKeywords, $options: 'i' } },
+            { 'ingredients.name': { $regex: vegetableKeywords, $options: 'i' } }
+          ]
+        }
+      );
+      
+      console.log(`   🥗 MODE ENFANTS: Recettes avec LÉGUMES obligatoires (équilibre alimentaire)`);
+    }
+    
+    // ✅ CRITIQUE: EXIGER une source de protéine dans le nom ou les ingrédients
+    // Le plat DOIT contenir une de ces protéines pour être un repas complet
+    const proteinKeywords = 'poulet|chicken|boeuf|bœuf|beef|veau|porc|pork|jambon|ham|dinde|turkey|agneau|lamb|canard|duck|lapin|poisson|fish|saumon|salmon|thon|tuna|cabillaud|colin|merlu|dorade|bar|truite|sardine|anchois|crevette|shrimp|oeuf|œuf|egg|tofu|lentilles|pois chiches|haricots';
+    
     filters.$and.push(
+      // ✅ OBLIGATOIRE: Le plat doit contenir une protéine
+      {
+        $or: [
+          { name: { $regex: proteinKeywords, $options: 'i' } },
+          { description: { $regex: proteinKeywords, $options: 'i' } },
+          { 'ingredients.name': { $regex: proteinKeywords, $options: 'i' } }
+        ]
+      },
+      // Exclure les accompagnements
       { name: { $not: { $regex: /^(purée|puree|accompagnement|garniture|légumes? seuls?|légumes? uniquement)/i } } },
       { name: { $not: { $regex: /(purée|puree) de (carottes?|pommes? de terre|légumes?)/i } } },
-      { description: { $not: { $regex: /^(purée|puree|accompagnement|garniture|seulement des légumes)/i } } }
+      // Exclure les pâtes/riz simples sans protéines
+      { name: { $not: { $regex: /^(pâtes?|spaghetti|linguine|tagliatelle|riz) (à l'ail|ail|huile|beurre|nature)/i } } },
+      { name: { $not: { $regex: /^(courgettes?|carottes?|haricots?|épinards?|brocoli) (à l'ail|sautée?s?|poêlée?s?)/i } } },
+      // Exclure les soupes/veloutés comme plat principal
+      { name: { $not: { $regex: /^(soupe|velouté|potage|bouillon|consommé|gaspacho|minestrone)/i } } },
+      { category: { $not: { $regex: /^(entrée|entree|starter|soup|soupe|accompagnement)/i } } }
     );
+    
+    console.log(`   🍖 Filtrage: Plats COMPLETS avec PROTÉINES uniquement`);
   } else if (mealType === 'petit-déjeuner') {
     filters.category = { $in: ['petit-déjeuner'] };
   }
@@ -165,10 +396,10 @@ function buildRecipeFilters({
       if (restrictionConditions.length > 0) {
         filters.$or = (filters.$or || []).concat(restrictionConditions);
       }
-    } else {
-      // Mode strict : toutes les restrictions doivent être respectées
-      filters.dietaryRestrictions = { $all: dietaryRestrictions };
     }
+    // ✅ En mode strict (filtersAsPreferences=false), on ne filtre PAS sur dietaryRestrictions
+    // Le pré-filtrage JavaScript sur les allergènes se charge d'exclure les recettes dangereuses
+    // L'ancien code filtrait sur dietaryRestrictions=$all ce qui excluait TOUTES les recettes
   }
   
   // Normaliser les conditions $or/$and
@@ -481,19 +712,28 @@ Réponds UNIQUEMENT avec un JSON valide:
           const normalizedForbiddenAllergens = allergens.map(a => {
             const normalized = a.toLowerCase().trim();
             const allergenMap = {
-              'oeufs': ['oeufs', 'oeuf', 'eggs', 'œufs', 'œuf'],
+              'oeufs': ['oeufs', 'oeuf', 'eggs', 'œufs', 'œuf', 'mayonnaise', 'mayo'],
               'arachides': ['arachides', 'peanuts', 'cacahuètes', 'cacahuete'],
-              'fruits_a_coque': ['fruits à coque', 'fruits_a_coque', 'nuts', 'noix', 'amandes', 'noisettes'],
-              'soja': ['soja', 'soy', 'soya'],
-              'poisson': ['poisson', 'fish'],
-              'crustaces': ['crustacés', 'crustaces', 'shellfish', 'crevettes', 'crabe'],
-              'mollusques': ['mollusques', 'molluscs', 'moules', 'huîtres'],
+              'fruits_a_coque': ['fruits à coque', 'fruits_a_coque', 'nuts', 'noix', 'amandes', 'noisettes', 'pistache', 'cajou', 'pécan', 'macadamia'],
+              'soja': ['soja', 'soy', 'soya', 'tofu', 'edamame'],
+              'poisson': ['poisson', 'fish', 'saumon', 'thon', 'cabillaud', 'merlu', 'bar', 'dorade', 'sole', 'truite'],
+              'crustaces': ['crustacés', 'crustaces', 'shellfish', 'crevettes', 'crabe', 'homard', 'langoustine', 'écrevisse'],
+              'mollusques': ['mollusques', 'molluscs', 'moules', 'huîtres', 'palourdes', 'coquilles', 'poulpe', 'calmar', 'seiche'],
               'celeri': ['céleri', 'celeri', 'celery'],
               'moutarde': ['moutarde', 'mustard'],
-              'gluten': ['gluten', 'blé', 'ble', 'wheat'],
-              'lactose': ['lactose', 'lait', 'milk', 'laitier', 'dairy'],
-              'sesame': ['sésame', 'sesame'],
-              'sulfites': ['sulfites', 'sulfite'],
+              // ✅ GLUTEN - Liste étendue pour éviter les erreurs
+              'gluten': ['gluten', 'blé', 'ble', 'wheat', 'farine', 'pâte', 'pate', 'feuilletée', 'feuilletee', 
+                        'pain', 'biscuit', 'gâteau', 'gateau', 'pasta', 'pâtes', 'semoule', 'orge', 'seigle', 
+                        'avoine', 'épeautre', 'epeautre', 'croûte', 'croute', 'panure', 'chapelure', 'brioche',
+                        'croissant', 'pizza', 'quiche', 'tarte', 'tourte', 'crêpe', 'crepe', 'gaufre'],
+              // ✅ LACTOSE - Liste étendue pour éviter les erreurs  
+              'lactose': ['lactose', 'lait', 'milk', 'laitier', 'dairy', 'fromage', 'cheese', 'gruyère', 'gruyere',
+                         'emmental', 'parmesan', 'mozzarella', 'cheddar', 'brie', 'camembert', 'roquefort',
+                         'comté', 'comte', 'crème', 'creme', 'cream', 'beurre', 'butter', 'yaourt', 'yogurt',
+                         'mascarpone', 'ricotta', 'feta', 'chèvre', 'chevre', 'reblochon', 'raclette',
+                         'béchamel', 'bechamel', 'gratin'],
+              'sesame': ['sésame', 'sesame', 'tahini'],
+              'sulfites': ['sulfites', 'sulfite', 'vin', 'vinaigre'],
               'lupin': ['lupin']
             };
             return allergenMap[normalized] || [normalized];
@@ -715,7 +955,8 @@ function checkRecipeStockAvailability(recipe, stockItems, numberOfPeople) {
   }
   
   // Calculer le multiplicateur pour le nombre de personnes
-  const baseServings = recipe.servings || 4;
+  // Les recettes ont servings=1 (quantités par personne)
+  const baseServings = recipe.servings || 1;
   const servingMultiplier = numberOfPeople / baseServings;
   
   const missingIngredients = [];
@@ -824,6 +1065,228 @@ function filterRecipesByStock(recipes, stockItems, numberOfPeople) {
   return availableRecipes;
 }
 
+// ✅ Multiplicateurs de portions par tranche d'âge (base adulte = 1.0)
+const AGE_PORTION_MULTIPLIERS = {
+  'maternelle': 0.45,        // 2,5-5 ans: 45% d'une portion adulte
+  'primaire': 0.65,          // 6-11 ans: 65% d'une portion adulte
+  'primaire_cp_ce1': 0.55,   // 6-7 ans: 55%
+  'primaire_ce2_cm1': 0.65,  // 8-9 ans: 65%
+  'primaire_cm2': 0.75,      // 10-11 ans: 75%
+  'secondaire': 0.90,        // 12-18 ans: 90%
+  'college': 0.85,           // 12-15 ans: 85%
+  'lycee': 0.95,             // 16-18 ans: 95%
+  'adulte': 1.0,             // Adulte: 100%
+  'senior': 0.80,            // Senior: 80%
+  'ehpad': 0.75              // EHPAD: 75%
+};
+
+// ✅ Références nutritionnelles ANSES par tranche d'âge (pour le DÉJEUNER - repas principal)
+// Source: ANSES - Recommandations nutritionnelles pour les enfants et adolescents
+const ANSES_NUTRITIONAL_REFERENCES = {
+  'maternelle': {
+    label: 'Maternelle (2,5-5 ans)',
+    lunch: {
+      calories: { min: 280, max: 380, unit: 'kcal' },
+      proteins: { min: 8, max: 15, unit: 'g' },
+      lipids: { min: 10, max: 16, unit: 'g' },
+      carbs: { min: 35, max: 55, unit: 'g' },
+      fibers: { min: 3, max: 6, unit: 'g' },
+      sodium: { min: 0, max: 400, unit: 'mg' }
+    }
+  },
+  'primaire': {
+    label: 'Primaire (6-11 ans)',
+    lunch: {
+      calories: { min: 450, max: 580, unit: 'kcal' },
+      proteins: { min: 14, max: 22, unit: 'g' },
+      lipids: { min: 16, max: 24, unit: 'g' },
+      carbs: { min: 55, max: 75, unit: 'g' },
+      fibers: { min: 5, max: 8, unit: 'g' },
+      sodium: { min: 0, max: 600, unit: 'mg' }
+    }
+  },
+  'primaire_cp_ce1': {
+    label: 'CP-CE1 (6-7 ans)',
+    lunch: {
+      calories: { min: 380, max: 480, unit: 'kcal' },
+      proteins: { min: 12, max: 18, unit: 'g' },
+      lipids: { min: 14, max: 20, unit: 'g' },
+      carbs: { min: 45, max: 65, unit: 'g' },
+      fibers: { min: 4, max: 7, unit: 'g' },
+      sodium: { min: 0, max: 500, unit: 'mg' }
+    }
+  },
+  'primaire_ce2_cm1': {
+    label: 'CE2-CM1 (8-9 ans)',
+    lunch: {
+      calories: { min: 450, max: 550, unit: 'kcal' },
+      proteins: { min: 14, max: 20, unit: 'g' },
+      lipids: { min: 16, max: 22, unit: 'g' },
+      carbs: { min: 55, max: 70, unit: 'g' },
+      fibers: { min: 5, max: 8, unit: 'g' },
+      sodium: { min: 0, max: 550, unit: 'mg' }
+    }
+  },
+  'primaire_cm2': {
+    label: 'CM2 (10-11 ans)',
+    lunch: {
+      calories: { min: 500, max: 620, unit: 'kcal' },
+      proteins: { min: 16, max: 24, unit: 'g' },
+      lipids: { min: 18, max: 26, unit: 'g' },
+      carbs: { min: 60, max: 80, unit: 'g' },
+      fibers: { min: 6, max: 9, unit: 'g' },
+      sodium: { min: 0, max: 600, unit: 'mg' }
+    }
+  },
+  'college': {
+    label: 'Collège (12-15 ans)',
+    lunch: {
+      calories: { min: 600, max: 780, unit: 'kcal' },
+      proteins: { min: 20, max: 30, unit: 'g' },
+      lipids: { min: 22, max: 32, unit: 'g' },
+      carbs: { min: 75, max: 100, unit: 'g' },
+      fibers: { min: 7, max: 10, unit: 'g' },
+      sodium: { min: 0, max: 700, unit: 'mg' }
+    }
+  },
+  'lycee': {
+    label: 'Lycée (16-18 ans)',
+    lunch: {
+      calories: { min: 700, max: 900, unit: 'kcal' },
+      proteins: { min: 24, max: 35, unit: 'g' },
+      lipids: { min: 26, max: 38, unit: 'g' },
+      carbs: { min: 85, max: 115, unit: 'g' },
+      fibers: { min: 8, max: 12, unit: 'g' },
+      sodium: { min: 0, max: 800, unit: 'mg' }
+    }
+  },
+  'secondaire': {
+    label: 'Secondaire (12-18 ans)',
+    lunch: {
+      calories: { min: 650, max: 850, unit: 'kcal' },
+      proteins: { min: 22, max: 32, unit: 'g' },
+      lipids: { min: 24, max: 35, unit: 'g' },
+      carbs: { min: 80, max: 110, unit: 'g' },
+      fibers: { min: 7, max: 11, unit: 'g' },
+      sodium: { min: 0, max: 750, unit: 'mg' }
+    }
+  },
+  'adulte': {
+    label: 'Adulte',
+    lunch: {
+      calories: { min: 600, max: 850, unit: 'kcal' },
+      proteins: { min: 20, max: 35, unit: 'g' },
+      lipids: { min: 22, max: 35, unit: 'g' },
+      carbs: { min: 70, max: 100, unit: 'g' },
+      fibers: { min: 8, max: 12, unit: 'g' },
+      sodium: { min: 0, max: 800, unit: 'mg' }
+    }
+  },
+  'senior': {
+    label: 'Senior (65+ ans)',
+    lunch: {
+      calories: { min: 500, max: 700, unit: 'kcal' },
+      proteins: { min: 22, max: 32, unit: 'g' }, // Plus de protéines pour les seniors
+      lipids: { min: 18, max: 28, unit: 'g' },
+      carbs: { min: 55, max: 85, unit: 'g' },
+      fibers: { min: 8, max: 12, unit: 'g' },
+      sodium: { min: 0, max: 600, unit: 'mg' } // Moins de sel
+    }
+  },
+  'ehpad': {
+    label: 'EHPAD (personne âgée dépendante)',
+    lunch: {
+      calories: { min: 450, max: 650, unit: 'kcal' },
+      proteins: { min: 20, max: 30, unit: 'g' }, // Protéines importantes
+      lipids: { min: 16, max: 26, unit: 'g' },
+      carbs: { min: 50, max: 75, unit: 'g' },
+      fibers: { min: 6, max: 10, unit: 'g' },
+      sodium: { min: 0, max: 500, unit: 'mg' } // Sel limité
+    }
+  }
+};
+
+// ✅ Fonction pour évaluer les valeurs nutritionnelles par rapport aux références ANSES
+function evaluateNutrition(nutritionValues, ageRange, mealType = 'lunch') {
+  const reference = ANSES_NUTRITIONAL_REFERENCES[ageRange];
+  if (!reference || !reference[mealType]) {
+    return { valid: true, warnings: [], recommendations: [] };
+  }
+  
+  const refs = reference[mealType];
+  const warnings = [];
+  const recommendations = [];
+  let score = 100;
+  
+  // Mapping des clés nutritionnelles
+  const keyMapping = {
+    'calories': ['calories', 'kcal', 'energy'],
+    'proteins': ['proteins', 'protein', 'proteines'],
+    'lipids': ['lipids', 'lipid', 'fat', 'fats'],
+    'carbs': ['carbs', 'carbohydrates', 'glucides'],
+    'fibers': ['fibers', 'fiber', 'fibres'],
+    'sodium': ['sodium', 'sel', 'salt']
+  };
+  
+  for (const [nutrient, range] of Object.entries(refs)) {
+    // Trouver la valeur correspondante
+    let value = null;
+    const possibleKeys = keyMapping[nutrient] || [nutrient];
+    for (const key of possibleKeys) {
+      if (nutritionValues[key] !== undefined) {
+        value = nutritionValues[key];
+        break;
+      }
+    }
+    
+    if (value === null) continue;
+    
+    if (value < range.min) {
+      const deficit = ((range.min - value) / range.min * 100).toFixed(0);
+      warnings.push({
+        nutrient,
+        type: 'low',
+        value,
+        expected: `${range.min}-${range.max}${range.unit}`,
+        message: `${nutrient}: ${value.toFixed(1)}${range.unit} (trop bas, min: ${range.min}${range.unit}, -${deficit}%)`
+      });
+      score -= 15;
+    } else if (value > range.max) {
+      const excess = ((value - range.max) / range.max * 100).toFixed(0);
+      warnings.push({
+        nutrient,
+        type: 'high',
+        value,
+        expected: `${range.min}-${range.max}${range.unit}`,
+        message: `${nutrient}: ${value.toFixed(1)}${range.unit} (trop élevé, max: ${range.max}${range.unit}, +${excess}%)`
+      });
+      score -= 10;
+    }
+  }
+  
+  // Générer des recommandations
+  if (warnings.some(w => w.nutrient === 'carbs' && w.type === 'low')) {
+    recommendations.push('Ajouter des féculents (riz, pâtes, pain) pour augmenter les glucides');
+  }
+  if (warnings.some(w => w.nutrient === 'proteins' && w.type === 'high')) {
+    recommendations.push('Réduire la portion de viande/poisson ou choisir une source moins protéinée');
+  }
+  if (warnings.some(w => w.nutrient === 'lipids' && w.type === 'high')) {
+    recommendations.push('Réduire les matières grasses ou choisir une cuisson plus légère');
+  }
+  if (warnings.some(w => w.nutrient === 'fibers' && w.type === 'low')) {
+    recommendations.push('Ajouter des légumes ou des légumineuses pour les fibres');
+  }
+  
+  return {
+    valid: warnings.length === 0,
+    score: Math.max(0, score),
+    warnings,
+    recommendations,
+    reference: reference.label
+  };
+}
+
 export async function generateCustomMenu({
   numberOfPeople = 4,
   mealType = 'déjeuner',
@@ -844,13 +1307,46 @@ export async function generateCustomMenu({
   periodDays = 1,
   dayIndex = 1,
   useStockOnly = false,
-  stockItems = []
+  stockItems = [],
+  ageGroups = [], // ✅ Groupes d'âge pour ajuster les portions
+  generateCompleteMeal = true, // ✅ Nouveau: Générer un repas complet (entrée + plat) avec score ANSES >= 85%
+  minANSESScore = 85, // ✅ Nouveau: Score ANSES minimum requis
+  sustainability = {} // ✅ NOUVEAU: Critères de durabilité { local, seasonal, organic, lowCarbon }
 }) {
   console.log(`\n🎯 Génération d'un menu personnalisé...`);
   console.log(`   👥 ${numberOfPeople} personnes`);
   console.log(`   🍽️  Type : ${mealType}`);
+  console.log(`   📊 Score ANSES minimum: ${minANSESScore}%`);
+  
+  // ✅ Calculer le multiplicateur de portion moyen basé sur les groupes d'âge
+  let portionMultiplier = 1.0;
+  if (ageGroups && ageGroups.length > 0) {
+    let totalWeightedMultiplier = 0;
+    let totalPeople = 0;
+    ageGroups.forEach(group => {
+      const multiplier = AGE_PORTION_MULTIPLIERS[group.ageRange] || 1.0;
+      const count = group.count || group.peopleCount || 0;
+      totalWeightedMultiplier += multiplier * count;
+      totalPeople += count;
+      console.log(`   👶 ${group.ageRange}: ${count} personnes (×${multiplier})`);
+    });
+    if (totalPeople > 0) {
+      portionMultiplier = totalWeightedMultiplier / totalPeople;
+    }
+    console.log(`   📏 Multiplicateur de portion moyen: ×${portionMultiplier.toFixed(2)}`);
+  }
   if (forceVariation && avoidMenuName) {
     console.log(`   🔄 Forcer une variation (éviter: "${avoidMenuName}")`);
+  }
+  
+  // ✅ NOUVEAU: Afficher les critères de durabilité
+  const hasSustainabilityPrefs = sustainability && Object.values(sustainability).some(v => v);
+  if (hasSustainabilityPrefs) {
+    console.log(`   🌿 Critères durables activés:`);
+    if (sustainability.local) console.log(`      ✅ Produits locaux`);
+    if (sustainability.seasonal) console.log(`      ✅ Produits de saison`);
+    if (sustainability.organic) console.log(`      ✅ Bio / Label qualité`);
+    if (sustainability.lowCarbon) console.log(`      ✅ Bas carbone`);
   }
   
   // Les objectifs nutritionnels sont optionnels
@@ -900,7 +1396,8 @@ export async function generateCustomMenu({
     avoidMenuName: allAvoidNames.length > 0 ? allAvoidNames[0] : null, // Premier pour compatibilité
     avoidMenuNames: allAvoidNames, // Liste complète
     filtersAsPreferences,
-    nutritionalGoals
+    nutritionalGoals,
+    ageGroups // ✅ AJOUTÉ: Passer les groupes d'âge pour le filtre alcool
   });
   
   console.log(`🔍 Filtres de recherche MongoDB:`, JSON.stringify(recipeFilters, null, 2));
@@ -953,6 +1450,90 @@ export async function generateCustomMenu({
       console.log(`✅ ${compatibleRecipes.length} recettes restantes après double filtrage`);
     } else {
       console.log(`✅ Toutes les recettes sont déjà exclues par MongoDB, pas besoin de filtrage supplémentaire`);
+    }
+  }
+  
+  // ✅ PRÉ-FILTRAGE ALLERGÈNES - CRITIQUE pour la sécurité alimentaire
+  // Filtrer les recettes AVANT la sélection IA pour éviter tout risque
+  if (allergens && allergens.length > 0) {
+    console.log(`\n🚫 PRÉ-FILTRAGE ALLERGÈNES STRICT: ${allergens.join(', ')}`);
+    const beforeAllergenFilter = compatibleRecipes.length;
+    
+    // Map étendue des allergènes avec tous les mots-clés associés
+    const allergenKeywords = {
+      'gluten': ['gluten', 'blé', 'ble', 'wheat', 'farine', 'pâte', 'pate', 'feuilletée', 'feuilletee', 
+                'pain', 'biscuit', 'gâteau', 'gateau', 'pasta', 'pâtes', 'semoule', 'orge', 'seigle', 
+                'avoine', 'épeautre', 'epeautre', 'croûte', 'croute', 'panure', 'chapelure', 'brioche',
+                'croissant', 'pizza', 'quiche', 'tarte', 'tourte', 'crêpe', 'crepe', 'gaufre', 'baguette'],
+      'lactose': ['lactose', 'lait', 'milk', 'laitier', 'dairy', 'fromage', 'cheese', 'gruyère', 'gruyere',
+                 'emmental', 'parmesan', 'mozzarella', 'cheddar', 'brie', 'camembert', 'roquefort',
+                 'comté', 'comte', 'crème', 'creme', 'cream', 'beurre', 'butter', 'yaourt', 'yogurt',
+                 'mascarpone', 'ricotta', 'feta', 'chèvre', 'chevre', 'reblochon', 'raclette',
+                 'béchamel', 'bechamel', 'gratin', 'crémeux', 'cremeux'],
+      'oeufs': ['oeufs', 'oeuf', 'œufs', 'œuf', 'eggs', 'egg', 'mayonnaise', 'mayo', 'meringue', 'omelette'],
+      'arachides': ['arachides', 'arachide', 'peanuts', 'peanut', 'cacahuètes', 'cacahuete'],
+      'fruits_a_coque': ['noix', 'amandes', 'amande', 'noisettes', 'noisette', 'pistache', 'cajou', 'pécan', 'macadamia'],
+      'soja': ['soja', 'soy', 'soya', 'tofu', 'edamame', 'tempeh'],
+      'poisson': ['poisson', 'fish', 'saumon', 'thon', 'cabillaud', 'merlu', 'bar', 'dorade', 'sole', 'truite', 'sardine', 'anchois'],
+      'crustaces': ['crustacés', 'crustaces', 'crevettes', 'crevette', 'crabe', 'homard', 'langoustine', 'écrevisse'],
+      'mollusques': ['mollusques', 'moules', 'huîtres', 'huitres', 'palourdes', 'coquilles', 'poulpe', 'calmar', 'seiche'],
+      'celeri': ['céleri', 'celeri', 'celery'],
+      'moutarde': ['moutarde', 'mustard'],
+      'sesame': ['sésame', 'sesame', 'tahini'],
+      'sulfites': ['sulfites', 'sulfite'],
+      'lupin': ['lupin']
+    };
+    
+    // Collecter tous les mots-clés à exclure
+    const forbiddenKeywords = [];
+    allergens.forEach(allergen => {
+      const normalizedAllergen = allergen.toLowerCase().trim();
+      const keywords = allergenKeywords[normalizedAllergen] || [normalizedAllergen];
+      forbiddenKeywords.push(...keywords);
+    });
+    console.log(`   Mots-clés à exclure: ${forbiddenKeywords.slice(0, 15).join(', ')}${forbiddenKeywords.length > 15 ? '...' : ''}`);
+    
+    compatibleRecipes = compatibleRecipes.filter(recipe => {
+      // Vérifier les allergènes déclarés
+      const recipeAllergens = (recipe.allergens || []).map(a => a.toLowerCase().trim());
+      const hasAllergenDeclared = recipeAllergens.some(recipeAllergen => {
+        return forbiddenKeywords.some(keyword => 
+          recipeAllergen.includes(keyword) || keyword.includes(recipeAllergen)
+        );
+      });
+      
+      // Vérifier dans les ingrédients (nom + description)
+      const ingredientsText = (recipe.ingredients || []).map(ing => {
+        const name = (ing.name || ing || '').toLowerCase();
+        return name;
+      }).join(' ');
+      
+      const hasAllergenInIngredients = forbiddenKeywords.some(keyword => 
+        ingredientsText.includes(keyword)
+      );
+      
+      // Vérifier dans le nom et la description de la recette
+      const recipeName = (recipe.name || '').toLowerCase();
+      const recipeDescription = (recipe.description || '').toLowerCase();
+      const hasAllergenInNameOrDesc = forbiddenKeywords.some(keyword => 
+        recipeName.includes(keyword) || recipeDescription.includes(keyword)
+      );
+      
+      const isExcluded = hasAllergenDeclared || hasAllergenInIngredients || hasAllergenInNameOrDesc;
+      
+      if (isExcluded) {
+        console.log(`   ❌ EXCLU: "${recipe.name}" (contient: ${hasAllergenDeclared ? 'allergène déclaré' : hasAllergenInIngredients ? 'ingrédient interdit' : 'mot-clé dans nom/description'})`);
+      }
+      
+      return !isExcluded;
+    });
+    
+    const excludedByAllergens = beforeAllergenFilter - compatibleRecipes.length;
+    console.log(`🚫 ${excludedByAllergens} recettes exclues pour allergènes sur ${beforeAllergenFilter}`);
+    console.log(`✅ ${compatibleRecipes.length} recettes SÛRES restantes\n`);
+    
+    if (compatibleRecipes.length === 0) {
+      throw new Error(`Aucune recette compatible trouvée sans les allergènes: ${allergens.join(', ')}. Essayez avec moins de restrictions.`);
     }
   }
   
@@ -1132,6 +1713,130 @@ export async function generateCustomMenu({
     }
   }
   
+  // ========== FILTRAGE/PRIORITISATION PAR CRITÈRES DURABLES ==========
+  if (hasSustainabilityPrefs && compatibleRecipes.length > 0) {
+    console.log(`\n🌿 Application des critères de durabilité...`);
+    console.log(`   ${compatibleRecipes.length} recettes avant scoring durabilité`);
+    
+    // Calculer un score de durabilité pour chaque recette
+    compatibleRecipes = compatibleRecipes.map(recipe => {
+      let sustainabilityScore = 0;
+      const tags = (recipe.tags || []).map(t => t.toLowerCase());
+      const name = (recipe.name || '').toLowerCase();
+      const description = (recipe.description || '').toLowerCase();
+      const ingredients = (recipe.ingredients || []).map(i => (i.name || '').toLowerCase());
+      
+      // ✅ Produits locaux
+      if (sustainability.local) {
+        if (tags.includes('local') || tags.includes('terroir') || tags.includes('régional') ||
+            name.includes('local') || name.includes('terroir') || name.includes('fermier') ||
+            description.includes('local') || description.includes('terroir')) {
+          sustainabilityScore += 25;
+        }
+        // Bonus si ingrédients typiques locaux (France/Belgique)
+        const localIngredients = ['boeuf', 'poulet', 'porc', 'carotte', 'pomme de terre', 'poireau', 'navet', 'chou', 'betterave', 'fromage'];
+        if (ingredients.some(ing => localIngredients.some(l => ing.includes(l)))) {
+          sustainabilityScore += 10;
+        }
+      }
+      
+      // ✅ Produits de saison - Utilisation du calendrier SEASONAL_PRODUCTS
+      let seasonalityData = null;
+      if (sustainability.seasonal) {
+        // Calculer le score de saisonnalité réel avec le calendrier
+        seasonalityData = calculateSeasonalityScore({ ingredients: (recipe.ingredients || []) });
+        
+        if (seasonalityData.allSeasonal) {
+          // Tous les ingrédients sont de saison = BONUS MAX
+          sustainabilityScore += 40;
+        } else if (seasonalityData.score >= 80) {
+          // 80%+ ingrédients de saison
+          sustainabilityScore += 30;
+        } else if (seasonalityData.score >= 50) {
+          // 50-80% ingrédients de saison
+          sustainabilityScore += 15;
+        } else {
+          // Moins de 50% de saison = MALUS
+          sustainabilityScore -= 10;
+        }
+        
+        // Bonus si tags explicites "saison"
+        if (tags.includes('saison') || tags.includes('saisonnier') ||
+            description.includes('saison') || description.includes('saisonnier')) {
+          sustainabilityScore += 10;
+        }
+      }
+      
+      // ✅ Bio / Label qualité
+      if (sustainability.organic) {
+        if (tags.includes('bio') || tags.includes('biologique') || tags.includes('label') ||
+            tags.includes('aop') || tags.includes('igp') || tags.includes('label rouge') ||
+            name.includes('bio') || description.includes('bio') || description.includes('label')) {
+          sustainabilityScore += 25;
+        }
+      }
+      
+      // ✅ Bas carbone
+      if (sustainability.lowCarbon) {
+        // Favoriser les recettes végétariennes, sans viande rouge
+        if (tags.includes('végétarien') || tags.includes('vegan') || tags.includes('bas carbone') ||
+            name.includes('légumes') || name.includes('végétarien')) {
+          sustainabilityScore += 30;
+        }
+        // Pénaliser la viande rouge (forte empreinte carbone)
+        const highCarbonMeats = ['boeuf', 'agneau', 'mouton', 'veau'];
+        const hasMeatRed = ingredients.some(ing => highCarbonMeats.some(m => ing.includes(m)));
+        if (hasMeatRed) {
+          sustainabilityScore -= 20;
+        }
+        // Favoriser le poulet/poisson (empreinte plus faible)
+        const lowCarbonProteins = ['poulet', 'dinde', 'poisson', 'cabillaud', 'saumon', 'lentille', 'pois chiche', 'haricot', 'tofu'];
+        if (ingredients.some(ing => lowCarbonProteins.some(p => ing.includes(p)))) {
+          sustainabilityScore += 20;
+        }
+        // ✅ BONUS: Recettes avec beaucoup de légumes = plus écolo
+        const vegetables = ['carotte', 'courgette', 'tomate', 'poivron', 'brocoli', 'épinard', 'haricot vert', 'petit pois', 'aubergine', 'chou', 'navet', 'poireau'];
+        const vegCount = ingredients.filter(ing => vegetables.some(v => ing.includes(v))).length;
+        if (vegCount >= 3) {
+          sustainabilityScore += 20; // 3+ légumes = très équilibré et écolo
+        } else if (vegCount >= 1) {
+          sustainabilityScore += 10; // Au moins 1 légume
+        }
+      }
+      
+      // ✅ BONUS GÉNÉRAL: Favoriser les recettes équilibrées avec légumes (même sans critère bas carbone)
+      const veggieIngredients = ['carotte', 'courgette', 'tomate', 'poivron', 'brocoli', 'épinard', 'haricot', 'petit pois', 'aubergine', 'chou', 'légume'];
+      const hasVegetables = ingredients.some(ing => veggieIngredients.some(v => ing.includes(v)));
+      if (hasVegetables) {
+        sustainabilityScore += 5; // Petit bonus pour les recettes avec légumes
+      }
+      
+      // Score minimum = 0 (pas de score négatif)
+      return { 
+        ...recipe._doc || recipe, 
+        sustainabilityScore: Math.max(0, sustainabilityScore),
+        seasonalityData: seasonalityData // ✅ Stocke les données de saisonnalité
+      };
+    });
+    
+    // Trier par score de durabilité (décroissant), puis conserver les meilleures
+    compatibleRecipes.sort((a, b) => b.sustainabilityScore - a.sustainabilityScore);
+    
+    // Afficher le top 5 avec leurs scores
+    console.log(`🌿 Top 5 recettes par score durabilité:`);
+    compatibleRecipes.slice(0, 5).forEach((r, i) => {
+      console.log(`   ${i + 1}. ${r.name} - Score: ${r.sustainabilityScore}`);
+    });
+    
+    // Si des recettes ont un bon score, prioriser celles-ci
+    const highSustainability = compatibleRecipes.filter(r => r.sustainabilityScore >= 25);
+    if (highSustainability.length > 0) {
+      console.log(`✅ ${highSustainability.length} recettes avec score durabilité >= 25 (prioritaires)`);
+      // Garder seulement les recettes durables en priorité, mais conserver les autres en fallback
+      compatibleRecipes = [...highSustainability, ...compatibleRecipes.filter(r => r.sustainabilityScore < 25)];
+    }
+  }
+  
   // Sélectionner intelligemment une recette avec l'IA
   // Utiliser les allergènes passés en paramètre (priorité) ou extraire depuis les restrictions
   let allAllergens = allergens || [];
@@ -1221,8 +1926,8 @@ export async function generateCustomMenu({
   
   if (!useVariation) {
     // Convertir la recette MongoDB au format attendu
-    // Les recettes n'ont pas toujours de servings défini, on utilise une base de 4
-    const baseServings = selectedRecipe.servings || 4; // Utiliser le nombre de portions de la recette si disponible
+    // Les recettes ont maintenant servings=1 (quantités par personne)
+    const baseServings = selectedRecipe.servings || 1;
     const servingMultiplier = numberOfPeople / baseServings;
     
     // Adapter les ingrédients au nombre de personnes
@@ -1277,12 +1982,18 @@ export async function generateCustomMenu({
         }
       }
       
-      const quantityTotal = quantityPerPerson * numberOfPeople;
+      // ✅ Appliquer le multiplicateur de portion basé sur l'âge
+      const adjustedQuantityPerPerson = quantityPerPerson * portionMultiplier;
+      const quantityTotal = adjustedQuantityPerPerson * numberOfPeople;
+      
+      if (portionMultiplier !== 1.0) {
+        console.log(`   👶 ${ing.name}: ${quantityPerPerson.toFixed(1)}g → ${adjustedQuantityPerPerson.toFixed(1)}g/pers (×${portionMultiplier.toFixed(2)} pour l'âge)`);
+      }
       
       return {
         nom: ing.name,
         unite: ing.unit || 'g',
-        quantiteParPersonne: Math.round(quantityPerPerson * 10) / 10,
+        quantiteParPersonne: Math.round(adjustedQuantityPerPerson * 10) / 10,
         quantiteTotal: Math.round(quantityTotal * 10) / 10
       };
     });
@@ -1457,6 +2168,286 @@ export async function generateCustomMenu({
     });
   }
   
+  // ✅ Évaluer les valeurs nutritionnelles selon les références ANSES
+  let nutritionalEvaluation = null;
+  let primaryAgeRange = null;
+  
+  if (ageGroups && ageGroups.length > 0) {
+    // Trouver le groupe d'âge principal (celui avec le plus d'élèves)
+    const sortedGroups = [...ageGroups].sort((a, b) => (b.count || b.peopleCount || 0) - (a.count || a.peopleCount || 0));
+    primaryAgeRange = sortedGroups[0]?.ageRange;
+    
+    if (primaryAgeRange && ANSES_NUTRITIONAL_REFERENCES[primaryAgeRange]) {
+      console.log(`\n📊 Évaluation nutritionnelle ANSES pour ${primaryAgeRange}...`);
+      nutritionalEvaluation = evaluateNutrition(nutrition.perPerson, primaryAgeRange, 'lunch');
+      
+      if (nutritionalEvaluation.warnings.length > 0) {
+        console.log(`⚠️  Avertissements nutritionnels:`);
+        nutritionalEvaluation.warnings.forEach(w => console.log(`   - ${w.message}`));
+      }
+      if (nutritionalEvaluation.recommendations.length > 0) {
+        console.log(`💡 Recommandations:`);
+        nutritionalEvaluation.recommendations.forEach(r => console.log(`   - ${r}`));
+      }
+      if (nutritionalEvaluation.valid) {
+        console.log(`✅ Menu conforme aux références ANSES pour ${nutritionalEvaluation.reference}`);
+      }
+      
+      // ✅ NOUVEAU: Si le score est trop bas, suggérer des entrées/desserts concrets
+      if (nutritionalEvaluation.score < minANSESScore && generateCompleteMeal) {
+        console.log(`\n⚠️ Score ANSES ${nutritionalEvaluation.score}/100 < ${minANSESScore}%. Recherche de compléments...`);
+        
+        // Analyser ce qui est DÉJÀ présent dans le plat
+        const ingredientNames = (selectedRecipe.ingredients || []).map(i => (i.name || '').toLowerCase()).join(' ');
+        const recipeName = (selectedRecipe.name || '').toLowerCase();
+        const hasStarch = /riz|pâtes|pasta|pomme.?de.?terre|patate|semoule|boulgour|quinoa|pain|féculent/i.test(ingredientNames + ' ' + recipeName);
+        const hasVegetables = /légume|carotte|haricot|courgette|tomate|poivron|brocoli|épinard|chou/i.test(ingredientNames + ' ' + recipeName);
+        const hasProtein = /poulet|boeuf|veau|porc|poisson|saumon|cabillaud|thon|oeuf|œuf|jambon/i.test(ingredientNames + ' ' + recipeName);
+        
+        console.log(`   📊 Analyse du plat: féculents=${hasStarch}, légumes=${hasVegetables}, protéine=${hasProtein}`);
+        
+        // Calculer le déficit calorique
+        const currentCalories = nutrition.perPerson.calories || 0;
+        const targetCalories = ANSES_NUTRITIONAL_REFERENCES[primaryAgeRange]?.lunch?.calories?.min || 280;
+        const calorieDeficit = Math.max(0, targetCalories - currentCalories);
+        
+        // Chercher des entrées et desserts pour compléter
+        const suggestions = [];
+        
+        // Si déficit > 100 kcal, suggérer une entrée ET un dessert
+        // Si déficit 50-100 kcal, suggérer soit une entrée soit un dessert
+        try {
+          if (calorieDeficit > 50) {
+            // Chercher une entrée (soupe, salade)
+            const entrees = await RecipeEnriched.find({
+              category: { $in: ['entrée', 'soupe'] },
+              // Respecter les mêmes allergènes
+              $or: allergens.length > 0 
+                ? [{ allergens: { $nin: allergens } }, { allergens: { $exists: false } }]
+                : [{}]
+            }).limit(5).lean();
+            
+            if (entrees.length > 0) {
+              const entree = entrees[Math.floor(Math.random() * entrees.length)];
+              suggestions.push({
+                type: 'entrée',
+                name: entree.name,
+                category: entree.category,
+                recipeId: entree._id,
+                calories: entree.nutritionalProfile?.calories || 50,
+                reason: 'Compléter le repas avec une entrée pour atteindre les besoins caloriques'
+              });
+            }
+            
+            // Chercher un dessert (fruit, compote, yaourt)
+            const desserts = await RecipeEnriched.find({
+              category: 'dessert',
+              $or: allergens.length > 0 
+                ? [{ allergens: { $nin: allergens } }, { allergens: { $exists: false } }]
+                : [{}]
+            }).limit(5).lean();
+            
+            if (desserts.length > 0) {
+              const dessert = desserts[Math.floor(Math.random() * desserts.length)];
+              suggestions.push({
+                type: 'dessert',
+                name: dessert.name,
+                category: dessert.category,
+                recipeId: dessert._id,
+                calories: dessert.nutritionalProfile?.calories || 80,
+                reason: 'Ajouter un dessert pour compléter l\'apport énergétique'
+              });
+            }
+          }
+          
+          // Si pas assez de suggestions, ajouter des suggestions génériques
+          if (suggestions.length === 0) {
+            if (calorieDeficit > 100) {
+              suggestions.push({ type: 'entrée', name: 'Soupe de légumes', calories: 50, reason: 'Entrée légère pour compléter' });
+              suggestions.push({ type: 'dessert', name: 'Compote de fruits', calories: 80, reason: 'Dessert pour l\'énergie' });
+            } else if (calorieDeficit > 50) {
+              suggestions.push({ type: 'dessert', name: 'Fruit frais de saison', calories: 60, reason: 'Dessert vitaminé' });
+            }
+          }
+          
+        } catch (error) {
+          console.error('Erreur recherche compléments:', error);
+        }
+        
+        // Stocker les suggestions
+        nutritionalEvaluation.suggestedCompletions = suggestions;
+        nutritionalEvaluation.calorieDeficit = calorieDeficit;
+        nutritionalEvaluation.hasStarch = hasStarch;
+        nutritionalEvaluation.hasVegetables = hasVegetables;
+        nutritionalEvaluation.hasProtein = hasProtein;
+        
+        // Message clair et intelligent
+        if (suggestions.length > 0) {
+          const suggestionNames = suggestions.map(s => `${s.type}: ${s.name}`).join(' + ');
+          nutritionalEvaluation.completionMessage = `⚠️ Repas incomplet (${currentCalories.toFixed(0)} kcal / ${targetCalories} kcal min). Complétez avec: ${suggestionNames}`;
+        } else {
+          nutritionalEvaluation.completionMessage = `⚠️ Augmentez les portions pour atteindre les besoins caloriques (${calorieDeficit.toFixed(0)} kcal manquantes).`;
+        }
+        
+        console.log(`💡 Suggestions pour compléter le repas:`);
+        suggestions.forEach(s => console.log(`   - ${s.type}: ${s.name} (+${s.calories} kcal)`));
+      }
+    }
+  }
+  
+  // ✅ GÉNÉRATION AUTOMATIQUE D'ALTERNATIVES pour les élèves allergiques
+  let alternatives = [];
+  
+  // Récupérer les détails des allergies depuis les groupes d'âge
+  const allergyDetails = [];
+  if (ageGroups && ageGroups.length > 0) {
+    ageGroups.forEach(group => {
+      if (group.allergies && group.allergies.length > 0) {
+        group.allergies.forEach(allergy => {
+          const existing = allergyDetails.find(a => a.type === allergy.type);
+          if (existing) {
+            existing.count += allergy.count || 1;
+          } else {
+            allergyDetails.push({ type: allergy.type, count: allergy.count || 1 });
+          }
+        });
+      }
+    });
+  }
+  
+  // Si on a des allergies déclarées, vérifier si le menu principal les contient
+  if (allergyDetails.length > 0) {
+    const menuAllergens = (menuData.allergens || []).map(a => a.toLowerCase());
+    const menuName = (menuData.nomMenu || '').toLowerCase();
+    
+    // Mapping des allergènes vers mots-clés
+    const allergenKeywordsCheck = {
+      'gluten': ['gluten', 'blé', 'farine', 'pâte', 'pain', 'semoule', 'céréale'],
+      'lactose': ['lactose', 'lait', 'fromage', 'crème', 'beurre', 'yaourt', 'dairy'],
+      'arachides': ['arachide', 'cacahuète', 'peanut'],
+      'fruits_a_coque': ['noix', 'noisette', 'amande', 'pistache', 'cajou', 'nut'],
+      'œufs': ['œuf', 'oeuf', 'egg', 'mayonnaise'],
+      'poisson': ['poisson', 'saumon', 'thon', 'cabillaud', 'merlu', 'fish'],
+      'crustaces': ['crustacé', 'crevette', 'crabe', 'homard', 'langouste'],
+      'soja': ['soja', 'tofu', 'soy'],
+      'celeri': ['céleri', 'celeri'],
+      'moutarde': ['moutarde', 'mustard'],
+      'sesame': ['sésame', 'sesame'],
+      'mollusques': ['mollusque', 'moule', 'huître', 'calamar'],
+      'sulfites': ['sulfite', 'vin'],
+      'lupin': ['lupin']
+    };
+    
+    for (const allergy of allergyDetails) {
+      const allergyType = allergy.type.toLowerCase();
+      
+      // Vérifier si le menu est déjà compatible (indiqué "sans X")
+      if (menuName.includes(`sans ${allergyType}`) || menuName.includes(`(sans ${allergyType})`)) {
+        console.log(`✅ Menu "${menuData.nomMenu}" déjà compatible pour ${allergyType}`);
+        alternatives.push({
+          allergen: allergy.type,
+          count: allergy.count,
+          needed: false,
+          message: `Menu compatible - déjà sans ${allergy.type}`,
+          mainMenuOk: true
+        });
+        continue;
+      }
+      
+      // Vérifier si l'allergène est présent dans le menu
+      const keywords = allergenKeywordsCheck[allergyType] || [allergyType];
+      const isPresent = menuAllergens.some(ma => keywords.some(kw => ma.includes(kw))) ||
+                        keywords.some(kw => menuAllergens.includes(kw));
+      
+      if (!isPresent) {
+        console.log(`✅ Allergène "${allergyType}" non présent dans le menu`);
+        alternatives.push({
+          allergen: allergy.type,
+          count: allergy.count,
+          needed: false,
+          message: `Menu compatible - ne contient pas de ${allergy.type}`,
+          mainMenuOk: true
+        });
+        continue;
+      }
+      
+      // ✅ L'allergène EST présent - chercher une alternative
+      console.log(`🔄 Recherche d'alternative sans ${allergyType} pour ${allergy.count} élève(s)...`);
+      
+      try {
+        // Chercher une recette de même catégorie sans cet allergène
+        const alternativeFilters = {
+          category: selectedRecipe.category,
+          allergens: { $nin: keywords },
+          _id: { $ne: selectedRecipe._id }
+        };
+        
+        // Chercher aussi dans les tags/nom pour "sans X"
+        const alternativeRecipes = await RecipeEnriched.find({
+          $and: [
+            { category: selectedRecipe.category },
+            { _id: { $ne: selectedRecipe._id } },
+            {
+              $or: [
+                { allergens: { $nin: keywords } },
+                { name: { $regex: `sans ${allergyType}`, $options: 'i' } },
+                { tags: { $regex: `sans.?${allergyType}`, $options: 'i' } }
+              ]
+            }
+          ]
+        }).limit(5);
+        
+        if (alternativeRecipes.length > 0) {
+          // Choisir une alternative au hasard parmi les options
+          const altRecipe = alternativeRecipes[Math.floor(Math.random() * alternativeRecipes.length)];
+          
+          console.log(`✅ Alternative trouvée: "${altRecipe.name}"`);
+          
+          alternatives.push({
+            allergen: allergy.type,
+            count: allergy.count,
+            needed: true,
+            mainMenuOk: false,
+            alternative: {
+              name: altRecipe.name,
+              description: altRecipe.description || `Alternative sans ${allergy.type}`,
+              recipeId: altRecipe._id,
+              category: altRecipe.category,
+              servings: allergy.count // Nombre de portions à préparer
+            }
+          });
+        } else {
+          // Pas d'alternative trouvée - suggérer une modification
+          console.log(`⚠️ Pas d'alternative trouvée pour ${allergyType}`);
+          
+          alternatives.push({
+            allergen: allergy.type,
+            count: allergy.count,
+            needed: true,
+            mainMenuOk: false,
+            alternative: null,
+            suggestion: `Adapter le menu principal en retirant les ingrédients contenant ${allergy.type}`
+          });
+        }
+      } catch (error) {
+        console.error(`❌ Erreur lors de la recherche d'alternative pour ${allergyType}:`, error);
+        alternatives.push({
+          allergen: allergy.type,
+          count: allergy.count,
+          needed: true,
+          mainMenuOk: false,
+          alternative: null,
+          suggestion: `Prévoir une alternative sans ${allergy.type}`
+        });
+      }
+    }
+  }
+  
+  // Calculer combien d'élèves peuvent manger le menu principal
+  const studentsOnMainMenu = numberOfPeople - alternatives
+    .filter(a => a.needed && !a.mainMenuOk)
+    .reduce((sum, a) => sum + a.count, 0);
+  
   return {
     menu: menuData,
     nutrition: nutrition,
@@ -1478,7 +2469,23 @@ export async function generateCustomMenu({
           percentage: goal.target > 0 ? ((value / goal.target) * 100) : 0
         };
       })
-    }
+    },
+    // ✅ Nouveau: Évaluation nutritionnelle ANSES par tranche d'âge
+    nutritionalEvaluation: nutritionalEvaluation,
+    ageGroup: primaryAgeRange,
+    ansesReference: primaryAgeRange ? ANSES_NUTRITIONAL_REFERENCES[primaryAgeRange] : null,
+    // ✅ Nouveau: Alternatives automatiques pour les allergies
+    alternatives: alternatives,
+    studentsOnMainMenu: studentsOnMainMenu,
+    allergyDetails: allergyDetails,
+    // ✅ NOUVEAU: Info sur les critères de durabilité appliqués
+    sustainability: hasSustainabilityPrefs ? {
+      applied: true,
+      criteria: sustainability,
+      recipeSustainabilityScore: selectedRecipe.sustainabilityScore || 0
+    } : { applied: false },
+    // ✅ NOUVEAU: Info sur la saisonnalité des ingrédients
+    seasonality: calculateSeasonalityScore(selectedRecipe)
   };
 }
 

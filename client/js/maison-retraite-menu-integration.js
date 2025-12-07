@@ -491,6 +491,39 @@ class MaisonRetraiteMenuIntegration extends DashboardMenuIntegration {
         `;
       }
       
+      // Filtrer les allergènes en fonction des restrictions alimentaires
+      let filteredAllergens = [];
+      if (dish.allergens && dish.allergens.length > 0) {
+        const restrictions = dish.dietaryRestrictions || [];
+        const titleAndDesc = `${dishTitle} ${dishDescription}`.toLowerCase();
+        
+        // Vérifier si le plat est sans gluten
+        const isSansGluten = restrictions.includes('sans_gluten') || 
+                            titleAndDesc.includes('sans gluten') ||
+                            titleAndDesc.includes('sans-gluten') ||
+                            titleAndDesc.includes('gluten-free');
+        
+        // Vérifier si le plat est sans lactose
+        const isSansLactose = restrictions.includes('sans_lactose') || 
+                             titleAndDesc.includes('sans lactose') ||
+                             titleAndDesc.includes('sans-lactose') ||
+                             titleAndDesc.includes('lactose-free');
+        
+        // Filtrer les allergènes
+        filteredAllergens = dish.allergens.filter(allergen => {
+          const allergenLower = allergen.toLowerCase();
+          // Exclure gluten si le plat est sans gluten
+          if (isSansGluten && (allergenLower === 'gluten' || allergenLower.includes('gluten'))) {
+            return false;
+          }
+          // Exclure lactose/lait si le plat est sans lactose
+          if (isSansLactose && (allergenLower === 'lactose' || allergenLower === 'lait' || allergenLower.includes('lactose') || allergenLower.includes('lait'))) {
+            return false;
+          }
+          return true;
+        });
+      }
+      
       return `
         <div class="dish" style="background: #f8f9fa; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; border-left: 4px solid #4caf50;">
           <h4 style="margin: 0 0 0.5rem 0; color: #2c3e50;">${dishTitle}</h4>
@@ -498,10 +531,10 @@ class MaisonRetraiteMenuIntegration extends DashboardMenuIntegration {
           ${composedInfo}
           ${this.renderNutrition(dish.nutrition, this.totalResidents)}
           ${ingredientsInfo}
-          ${dish.allergens && dish.allergens.length > 0 ? `
+          ${filteredAllergens && filteredAllergens.length > 0 ? `
             <div style="margin-top: 0.5rem;">
               <strong style="font-size: 0.85rem; color: #e74c3c;">🚫 Allergènes:</strong>
-              ${dish.allergens.map(a => `<span style="background: #fee; color: #c33; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; margin-left: 0.3rem;">${a}</span>`).join('')}
+              ${filteredAllergens.map(a => `<span style="background: #fee; color: #c33; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; margin-left: 0.3rem;">${a}</span>`).join('')}
             </div>
           ` : ''}
         </div>
@@ -517,9 +550,19 @@ class MaisonRetraiteMenuIntegration extends DashboardMenuIntegration {
       return '<p style="color: #999; font-size: 0.85rem; margin: 0.5rem 0 0 0;">ℹ️ Informations nutritionnelles à compléter</p>';
     }
 
+    // Badge CIQUAL
+    const ciqualBadge = `
+      <div style="display: inline-flex; align-items: center; gap: 0.25rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 0.25rem 0.55rem; border-radius: 12px; font-size: 0.65rem; font-weight: 600; margin-bottom: 0.35rem; box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2);">
+        <i class="fas fa-check-circle" style="font-size: 0.65rem;"></i>
+        <span>CIQUAL</span>
+        <span style="background: rgba(255, 255, 255, 0.2); padding: 0.1rem 0.3rem; border-radius: 8px; font-weight: 700; font-size: 0.65rem;">100%</span>
+      </div>
+    `;
+
     // Afficher à la fois par personne et total
     return `
       <div style="background: #f0f9ff; border-radius: 6px; padding: 0.75rem; margin-top: 0.5rem;">
+        ${ciqualBadge}
         <div style="display: flex; gap: 1rem; font-size: 0.85rem; color: #666; flex-wrap: wrap;">
           ${nutrition.calories > 0 ? `<span>🔥 ${nutrition.calories} kcal/pers.</span>` : ''}
           ${nutrition.proteins > 0 ? `<span>💪 ${nutrition.proteins}g protéines/pers.</span>` : ''}

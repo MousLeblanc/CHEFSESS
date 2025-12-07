@@ -374,6 +374,20 @@ function initTabs() {
         }
       }
       
+      // 🤖 Initialiser le générateur de recettes quand l'onglet est activé
+      if (tab === 'recipe-generator') {
+        console.log('🤖 Initialisation du générateur de recettes...');
+        setTimeout(() => {
+          if (typeof window.initRecipeGenerator === 'function') {
+            window.initRecipeGenerator();
+          } else if (typeof RecipeGenerator !== 'undefined') {
+            new RecipeGenerator();
+          } else {
+            console.warn('⚠️ RecipeGenerator non disponible, le script est peut-être en cours de chargement');
+          }
+        }, 100);
+      }
+      
       // 📦 Charger le stock quand l'onglet Stock est sélectionné
       if (tab === 'stock') {
         console.log('📦 Chargement du stock pour l\'onglet Stock');

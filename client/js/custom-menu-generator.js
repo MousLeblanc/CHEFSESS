@@ -330,7 +330,7 @@ class CustomMenuGenerator {
                 // Les filtres sont des préférences, pas des contraintes strictes
                 filtersAsPreferences: true,
                 strictMode: false,
-                // Prioriser la variété et le catalogue de 500+ recettes
+                // Prioriser la variété et le catalogue de 635 recettes certifiées CIQUAL
                 prioritizeVariety: true,
                 useFullRecipeCatalog: true,
                 // Option pour utiliser uniquement le stock disponible

@@ -1,5 +1,94 @@
 import RecipeEnriched from "../models/Recipe.js";
-import { generateAdaptedRecipe, calculateCompatibilityScore } from "../services/aiService.js";
+import aiService from "../services/aiService.js";
+
+/**
+ * Génère des recettes adaptées avec l'IA (fallback si aucune recette trouvée)
+ */
+async function generateAdaptedRecipe(filters) {
+  try {
+    console.log('🤖 Génération de recettes adaptées avec l\'IA...');
+    
+    const prompt = `Génère 3 recettes adaptées pour un établissement de soins avec les critères suivants:
+${filters.texture ? `- Texture: ${filters.texture}` : ''}
+${filters.pathologies && filters.pathologies.length > 0 ? `- Pathologies: ${filters.pathologies.join(', ')}` : ''}
+${filters.diet && filters.diet.length > 0 ? `- Régimes: ${filters.diet.join(', ')}` : ''}
+${filters.allergens && filters.allergens.length > 0 ? `- Allergènes à éviter: ${filters.allergens.join(', ')}` : ''}
+
+Retourne UNIQUEMENT un tableau JSON avec 3 recettes au format:
+[{
+  "name": "Nom de la recette",
+  "category": "plat",
+  "description": "Description",
+  "texture": "${filters.texture || 'normale'}",
+  "diet": ${JSON.stringify(filters.diet || [])},
+  "pathologies": ${JSON.stringify(filters.pathologies || [])},
+  "allergens": [],
+  "ingredients": [{"name": "Ingrédient", "quantity": 100, "unit": "g"}],
+  "preparationSteps": ["Étape 1", "Étape 2"]
+}]`;
+
+    const response = await aiService.generate([
+      {
+        role: "system",
+        content: "Tu es un expert en nutrition pour établissements de soins. Réponds UNIQUEMENT en JSON valide."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ], {
+      temperature: 0.7,
+      max_tokens: 2000
+    });
+
+    const jsonMatch = response.content.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('❌ Erreur génération recettes IA:', error);
+    return [];
+  }
+}
+
+/**
+ * Calcule un score de compatibilité entre une recette et des filtres
+ */
+function calculateCompatibilityScore(recipe, filters) {
+  let score = 0.5; // Score de base
+  
+  // Vérifier la texture
+  if (filters.texture && recipe.texture === filters.texture) {
+    score += 0.2;
+  }
+  
+  // Vérifier les régimes alimentaires
+  if (filters.diet && filters.diet.length > 0) {
+    const recipeDiets = recipe.diet || recipe.dietaryRestrictions || [];
+    const matches = filters.diet.filter(d => recipeDiets.includes(d));
+    score += (matches.length / filters.diet.length) * 0.2;
+  }
+  
+  // Vérifier les pathologies
+  if (filters.pathologies && filters.pathologies.length > 0) {
+    const recipePathologies = recipe.pathologies || [];
+    const matches = filters.pathologies.filter(p => recipePathologies.includes(p));
+    score += (matches.length / filters.pathologies.length) * 0.1;
+  }
+  
+  // Vérifier les allergènes (pénalité si contient des allergènes à éviter)
+  if (filters.allergens && filters.allergens.length > 0) {
+    const recipeAllergens = recipe.allergens || [];
+    const hasForbidden = filters.allergens.some(a => recipeAllergens.includes(a));
+    if (hasForbidden) {
+      score = 0; // Incompatible si contient un allergène interdit
+    }
+  }
+  
+  return Math.min(score, 1.0);
+}
 
 /**
  * Normalise les valeurs du frontend vers le format backend/MongoDB
