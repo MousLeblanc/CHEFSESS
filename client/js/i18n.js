@@ -29,7 +29,12 @@ const translations = {
         socialProof3: 'Jusqu\'à 30 % d\'économies observées',
         tryFree: 'Essayer gratuitement',
         scheduleDemo: 'Planifier une démo',
-        discover: 'Découvrir'
+        discover: 'Découvrir',
+        ciqual1: '✔️ Menus conformes aux recommandations nutritionnelles',
+        ciqual2: '✔️ Données officielles CIQUAL (ANSES)'
+      },
+      meta: {
+        title: 'Chef SES - Plateforme Intelligente de Restauration Collective'
       },
       features: {
         aiMenu: {
@@ -83,6 +88,7 @@ const translations = {
       stats: {
         recipes: 'Recettes enrichies',
         pilot: 'Déploiement en cours',
+        pilotBadge: 'Pilote',
         savings: '% d\'économies moyennes'
       },
       cta: {
@@ -201,7 +207,12 @@ const translations = {
         socialProof3: 'Up to 30% savings observed',
         tryFree: 'Try for free',
         scheduleDemo: 'Schedule a demo',
-        discover: 'Discover'
+        discover: 'Discover',
+        ciqual1: '✔️ Menus compliant with nutritional recommendations',
+        ciqual2: '✔️ Official CIQUAL (ANSES) data'
+      },
+      meta: {
+        title: 'Chef SES - Intelligent Collective Catering Platform'
       },
       features: {
         aiMenu: {
@@ -255,6 +266,7 @@ const translations = {
       stats: {
         recipes: 'Enriched recipes',
         pilot: 'Deployment in progress',
+        pilotBadge: 'Pilot',
         savings: '% average savings'
       },
       cta: {
@@ -358,7 +370,12 @@ const translations = {
         socialProof3: 'Tot 30% besparingen waargenomen',
         tryFree: 'Gratis proberen',
         scheduleDemo: 'Demo plannen',
-        discover: 'Ontdekken'
+        discover: 'Ontdekken',
+        ciqual1: '✔️ Menus conform voedingsaanbevelingen',
+        ciqual2: '✔️ Officiële CIQUAL (ANSES) gegevens'
+      },
+      meta: {
+        title: 'Chef SES - Intelligent Collectief Cateringplatform'
       },
       features: {
         aiMenu: {
@@ -412,6 +429,7 @@ const translations = {
       stats: {
         recipes: 'Verrijkte recepten',
         pilot: 'Implementatie in uitvoering',
+        pilotBadge: 'Piloot',
         savings: '% gemiddelde besparingen'
       },
       cta: {
@@ -1678,8 +1696,22 @@ class I18n {
     // Mettre à jour le titre de la page
     const titleElement = document.querySelector('title');
     if (titleElement) {
-      const titleKey = this.t('meta.title') || 'Chef SES';
-      titleElement.textContent = titleKey;
+      // Vérifier si le titre a un attribut data-i18n
+      if (titleElement.hasAttribute('data-i18n')) {
+        const titleKey = titleElement.getAttribute('data-i18n');
+        const keys = titleKey.split('.');
+        let value = t;
+        for (const k of keys) {
+          value = value?.[k];
+        }
+        if (value !== undefined && value !== null) {
+          titleElement.textContent = value;
+        }
+      } else {
+        // Fallback : utiliser meta.title ou landing.meta.title
+        const titleKey = this.t('landing.meta.title') || this.t('meta.title') || 'Chef SES';
+        titleElement.textContent = titleKey;
+      }
     }
   }
 
