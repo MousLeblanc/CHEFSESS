@@ -19,6 +19,96 @@ const translations = {
       tryDemo: 'Essayer la démo',
       joinPilot: 'Rejoindre le programme pilote'
     },
+    landing: {
+      hero: {
+        badge: 'Plateforme intelligente de restauration collective',
+        title: 'Simplifiez votre gestion alimentaire avec l\'IA',
+        subtitle: 'Réduisez vos coûts de 30%, optimisez vos menus en 2 minutes, et gérez vos stocks intelligemment pour les cuisines collectives des écoles, hôpitaux et EHPAD.',
+        socialProof1: 'Premiers établissements pilotes',
+        socialProof2: 'Retours utilisateurs très positifs',
+        socialProof3: 'Jusqu\'à 30 % d\'économies observées',
+        tryFree: 'Essayer gratuitement',
+        scheduleDemo: 'Planifier une démo',
+        discover: 'Découvrir'
+      },
+      features: {
+        aiMenu: {
+          title: 'Générateur de Menus IA',
+          desc: 'Création automatique de menus basée sur les allergies, la nutrition et le stock disponible.',
+          benefit1: 'Respect automatique des restrictions alimentaires',
+          benefit2: 'Optimisation nutritionnelle garantie',
+          benefit3: 'Utilisation intelligente du stock disponible',
+          timeSave: 'Gagnez 5 heures par semaine sur la planification.'
+        },
+        stock: {
+          title: 'Gestion Intelligente du Stock',
+          desc: 'Suivi en temps réel des ingrédients, dates d\'expiration et livraisons fournisseurs.',
+          benefit1: 'Alertes automatiques de stock bas',
+          benefit2: 'Gestion des dates de péremption',
+          benefit3: 'Optimisation des commandes'
+        },
+        multiSite: {
+          title: 'Gestion Multi-Sites',
+          desc: 'Contrôlez plusieurs cuisines — écoles, hôpitaux, EHPAD — depuis un seul tableau de bord.',
+          benefit1: 'Vue centralisée de tous les sites',
+          benefit2: 'Rapports consolidés',
+          benefit3: 'Gestion des budgets par site'
+        },
+        residents: {
+          title: 'Profils Résidents',
+          desc: 'Gestion des profils nutritionnels, allergies et restrictions alimentaires individuelles.',
+          benefit1: 'Profils nutritionnels personnalisés',
+          benefit2: 'Gestion des allergies et intolérances',
+          benefit3: 'Suivi des portions individuelles'
+        },
+        foodCost: {
+          title: 'Food Cost & Budget',
+          desc: 'Suivi des coûts alimentaires, analyse des dépenses et optimisation du budget.',
+          benefit1: 'Analyse des coûts en temps réel',
+          benefit2: 'Suggestions d\'économies intelligentes',
+          benefit3: 'Comparaison des prix fournisseurs'
+        },
+        suppliers: {
+          title: 'Réseau de Fournisseurs',
+          desc: 'Commandes simplifiées, catalogues numériques et coordination avec vos partenaires.',
+          benefit1: 'Commandes en ligne simplifiées',
+          benefit2: 'Catalogues numériques à jour',
+          benefit3: 'Suivi des livraisons'
+        }
+      },
+      pilot: {
+        title: 'Déploiement pilote en cours',
+        desc: 'Chef SES est actuellement testé avec des cuisines collectives pilotes afin d\'améliorer l\'expérience terrain et préparer le déploiement à plus grande échelle.'
+      },
+      stats: {
+        recipes: 'Recettes enrichies',
+        pilot: 'Déploiement en cours',
+        savings: '% d\'économies moyennes'
+      },
+      cta: {
+        title: 'Prêt à transformer votre restauration collective ?',
+        subtitle: 'Rejoignez les établissements qui font confiance à Chef SES. Démo gratuite, sans engagement.',
+        startNow: 'Commencer maintenant',
+        scheduleDemo: 'Planifier une démo',
+        guarantee: 'Essai gratuit de 14 jours • Sans carte bancaire • Support dédié'
+      },
+      contact: {
+        nameLabel: 'Nom complet *',
+        namePlaceholder: 'Votre nom',
+        emailLabel: 'Email *',
+        emailPlaceholder: 'votre@email.com',
+        phoneLabel: 'Téléphone',
+        phonePlaceholder: '+32 XXX XX XX XX',
+        organizationLabel: 'Établissement',
+        organizationPlaceholder: 'Nom de votre établissement',
+        messageLabel: 'Message *',
+        messagePlaceholder: 'Dites-nous comment nous pouvons vous aider...',
+        privacyAccept: 'J\'accepte la',
+        privacyLink: 'politique de confidentialité',
+        sendButton: 'Envoyer le message',
+        sending: 'Envoi en cours...'
+      }
+    },
     features: {
       title: 'Fonctionnalités Principales',
       subtitle: 'Tout ce dont vous avez besoin pour gérer efficacement votre restauration collective',
@@ -101,6 +191,96 @@ const translations = {
       tryDemo: 'Try Demo',
       joinPilot: 'Join Pilot Program'
     },
+    landing: {
+      hero: {
+        badge: 'Intelligent collective catering platform',
+        title: 'Simplify your food management with AI',
+        subtitle: 'Reduce your costs by 30%, optimize your menus in 2 minutes, and manage your stock intelligently for collective kitchens in schools, hospitals, and care homes.',
+        socialProof1: 'First pilot establishments',
+        socialProof2: 'Very positive user feedback',
+        socialProof3: 'Up to 30% savings observed',
+        tryFree: 'Try for free',
+        scheduleDemo: 'Schedule a demo',
+        discover: 'Discover'
+      },
+      features: {
+        aiMenu: {
+          title: 'AI Menu Generator',
+          desc: 'Automatic menu creation based on allergies, nutrition, and available stock.',
+          benefit1: 'Automatic respect for dietary restrictions',
+          benefit2: 'Guaranteed nutritional optimization',
+          benefit3: 'Smart use of available stock',
+          timeSave: 'Save 5 hours per week on planning.'
+        },
+        stock: {
+          title: 'Smart Stock Management',
+          desc: 'Real-time tracking of ingredients, expiration dates, and supplier deliveries.',
+          benefit1: 'Automatic low stock alerts',
+          benefit2: 'Expiration date management',
+          benefit3: 'Order optimization'
+        },
+        multiSite: {
+          title: 'Multi-Site Management',
+          desc: 'Control multiple kitchens — schools, hospitals, care homes — from one dashboard.',
+          benefit1: 'Centralized view of all sites',
+          benefit2: 'Consolidated reports',
+          benefit3: 'Budget management per site'
+        },
+        residents: {
+          title: 'Resident Profiles',
+          desc: 'Management of nutritional profiles, allergies, and individual dietary restrictions.',
+          benefit1: 'Personalized nutritional profiles',
+          benefit2: 'Allergy and intolerance management',
+          benefit3: 'Individual portion tracking'
+        },
+        foodCost: {
+          title: 'Food Cost & Budget',
+          desc: 'Track food costs, analyze expenses, and optimize budget.',
+          benefit1: 'Real-time cost analysis',
+          benefit2: 'Smart savings suggestions',
+          benefit3: 'Supplier price comparison'
+        },
+        suppliers: {
+          title: 'Supplier Network',
+          desc: 'Simplified orders, digital catalogs, and coordination with your partners.',
+          benefit1: 'Simplified online orders',
+          benefit2: 'Up-to-date digital catalogs',
+          benefit3: 'Delivery tracking'
+        }
+      },
+      pilot: {
+        title: 'Pilot deployment in progress',
+        desc: 'Chef SES is currently being tested with pilot collective kitchens to improve field experience and prepare for larger scale deployment.'
+      },
+      stats: {
+        recipes: 'Enriched recipes',
+        pilot: 'Deployment in progress',
+        savings: '% average savings'
+      },
+      cta: {
+        title: 'Ready to transform your collective catering?',
+        subtitle: 'Join the establishments that trust Chef SES. Free demo, no commitment.',
+        startNow: 'Start now',
+        scheduleDemo: 'Schedule a demo',
+        guarantee: '14-day free trial • No credit card • Dedicated support'
+      },
+      contact: {
+        nameLabel: 'Full name *',
+        namePlaceholder: 'Your name',
+        emailLabel: 'Email *',
+        emailPlaceholder: 'your@email.com',
+        phoneLabel: 'Phone',
+        phonePlaceholder: '+32 XXX XX XX XX',
+        organizationLabel: 'Establishment',
+        organizationPlaceholder: 'Your establishment name',
+        messageLabel: 'Message *',
+        messagePlaceholder: 'Tell us how we can help you...',
+        privacyAccept: 'I accept the',
+        privacyLink: 'privacy policy',
+        sendButton: 'Send message',
+        sending: 'Sending...'
+      }
+    },
     features: {
       title: 'Core Features',
       subtitle: 'Everything you need to efficiently manage your collective catering',
@@ -167,6 +347,96 @@ const translations = {
       subtitle: 'Het intelligente cateringplatform dat menus, voorraden en leveranciers verbindt voor scholen, ziekenhuizen en zorginstellingen.',
       tryDemo: 'Probeer demo',
       joinPilot: 'Doe mee met pilootprogramma'
+    },
+    landing: {
+      hero: {
+        badge: 'Intelligent collectief cateringplatform',
+        title: 'Vereenvoudig uw voedselbeheer met AI',
+        subtitle: 'Verminder uw kosten met 30%, optimaliseer uw menus in 2 minuten en beheer uw voorraad intelligent voor collectieve keukens in scholen, ziekenhuizen en zorginstellingen.',
+        socialProof1: 'Eerste pilootinstellingen',
+        socialProof2: 'Zeer positieve gebruikersfeedback',
+        socialProof3: 'Tot 30% besparingen waargenomen',
+        tryFree: 'Gratis proberen',
+        scheduleDemo: 'Demo plannen',
+        discover: 'Ontdekken'
+      },
+      features: {
+        aiMenu: {
+          title: 'AI Menu Generator',
+          desc: 'Automatische menucreatie op basis van allergieën, voeding en beschikbare voorraad.',
+          benefit1: 'Automatisch respect voor dieetbeperkingen',
+          benefit2: 'Gegarandeerde voedingsoptimalisatie',
+          benefit3: 'Slim gebruik van beschikbare voorraad',
+          timeSave: 'Bespaar 5 uur per week op planning.'
+        },
+        stock: {
+          title: 'Slimme Voorraadbeheer',
+          desc: 'Realtime tracking van ingrediënten, vervaldatums en leveranciersleveringen.',
+          benefit1: 'Automatische lage voorraadwaarschuwingen',
+          benefit2: 'Vervaldatumbeheer',
+          benefit3: 'Besteloptimalisatie'
+        },
+        multiSite: {
+          title: 'Multi-Site Beheer',
+          desc: 'Beheer meerdere keukens — scholen, ziekenhuizen, zorginstellingen — vanaf één dashboard.',
+          benefit1: 'Gecentraliseerde weergave van alle sites',
+          benefit2: 'Geconsolideerde rapporten',
+          benefit3: 'Budgetbeheer per site'
+        },
+        residents: {
+          title: 'Bewonerprofielen',
+          desc: 'Beheer van voedingsprofielen, allergieën en individuele dieetbeperkingen.',
+          benefit1: 'Gepersonaliseerde voedingsprofielen',
+          benefit2: 'Allergie- en intolerantiebeheer',
+          benefit3: 'Individuele portietracking'
+        },
+        foodCost: {
+          title: 'Voedselkosten & Budget',
+          desc: 'Volg voedselkosten, analyseer uitgaven en optimaliseer budget.',
+          benefit1: 'Realtime kostenanalyse',
+          benefit2: 'Slimme besparingssuggesties',
+          benefit3: 'Leveranciersprijsvergelijking'
+        },
+        suppliers: {
+          title: 'Leveranciersnetwerk',
+          desc: 'Vereenvoudigde bestellingen, digitale catalogi en coördinatie met uw partners.',
+          benefit1: 'Vereenvoudigde online bestellingen',
+          benefit2: 'Bijgewerkte digitale catalogi',
+          benefit3: 'Leveringstracking'
+        }
+      },
+      pilot: {
+        title: 'Pilootimplementatie in uitvoering',
+        desc: 'Chef SES wordt momenteel getest met piloot collectieve keukens om de veldervaring te verbeteren en de implementatie op grotere schaal voor te bereiden.'
+      },
+      stats: {
+        recipes: 'Verrijkte recepten',
+        pilot: 'Implementatie in uitvoering',
+        savings: '% gemiddelde besparingen'
+      },
+      cta: {
+        title: 'Klaar om uw collectieve catering te transformeren?',
+        subtitle: 'Sluit u aan bij de instellingen die Chef SES vertrouwen. Gratis demo, geen verplichting.',
+        startNow: 'Nu beginnen',
+        scheduleDemo: 'Demo plannen',
+        guarantee: '14-daagse gratis proefperiode • Geen creditcard • Toegewijd support'
+      },
+      contact: {
+        nameLabel: 'Volledige naam *',
+        namePlaceholder: 'Uw naam',
+        emailLabel: 'E-mail *',
+        emailPlaceholder: 'uw@email.com',
+        phoneLabel: 'Telefoon',
+        phonePlaceholder: '+32 XXX XX XX XX',
+        organizationLabel: 'Instelling',
+        organizationPlaceholder: 'Naam van uw instelling',
+        messageLabel: 'Bericht *',
+        messagePlaceholder: 'Vertel ons hoe we u kunnen helpen...',
+        privacyAccept: 'Ik accepteer het',
+        privacyLink: 'privacybeleid',
+        sendButton: 'Bericht verzenden',
+        sending: 'Verzenden...'
+      }
     },
     features: {
       title: 'Hoofdfuncties',
@@ -1313,6 +1583,8 @@ class I18n {
     if (langSwitcher) {
       langSwitcher.value = this.currentLang;
       console.log(`✅ Sélecteur mis à jour vers: ${this.currentLang}`);
+    } else {
+      console.warn('⚠️ Sélecteur de langue non trouvé lors du changement de langue');
     }
     
     // Déclencher un événement personnalisé pour notifier le changement
@@ -1328,6 +1600,12 @@ class I18n {
 
     console.log(`🌐 Traduction de la page en: ${this.currentLang}`);
     let translatedCount = 0;
+    
+    // Compter les éléments avec data-i18n
+    const elementsToTranslate = document.querySelectorAll('[data-i18n]');
+    const placeholdersToTranslate = document.querySelectorAll('[data-i18n-placeholder]');
+    console.log(`📝 ${elementsToTranslate.length} éléments avec data-i18n trouvés`);
+    console.log(`📝 ${placeholdersToTranslate.length} placeholders avec data-i18n-placeholder trouvés`);
 
     // Traduire tous les éléments avec data-i18n
     document.querySelectorAll('[data-i18n]').forEach(element => {
@@ -1343,7 +1621,15 @@ class I18n {
       
       if (value !== undefined && value !== null) {
         if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-          element.placeholder = value;
+          // Si l'élément a un attribut data-i18n-placeholder, ne pas modifier le placeholder ici
+          // (il sera géré séparément)
+          if (!element.hasAttribute('data-i18n-placeholder')) {
+            element.placeholder = value;
+          }
+          // Pour les inputs/textarea, mettre à jour le textContent seulement si ce n'est pas un placeholder
+          if (element.tagName === 'TEXTAREA' && !element.hasAttribute('data-i18n-placeholder')) {
+            element.textContent = value;
+          }
           translatedCount++;
         } else if (element.tagName === 'OPTION') {
           // Pour les options de select, mettre à jour le textContent
@@ -1353,6 +1639,26 @@ class I18n {
           element.textContent = value;
           translatedCount++;
         }
+      } else {
+        console.warn(`⚠️ Clé de traduction non trouvée: ${key} pour la langue ${this.currentLang}`);
+      }
+    });
+    
+    // Traduire tous les placeholders avec data-i18n-placeholder
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+      const key = element.getAttribute('data-i18n-placeholder');
+      if (!key) return;
+      
+      const keys = key.split('.');
+      let value = t;
+      
+      for (const k of keys) {
+        value = value?.[k];
+      }
+      
+      if (value !== undefined && value !== null) {
+        element.placeholder = value;
+        translatedCount++;
       } else {
         console.warn(`⚠️ Clé de traduction non trouvée: ${key} pour la langue ${this.currentLang}`);
       }
@@ -1380,18 +1686,24 @@ class I18n {
   setupLanguageSwitcher() {
     const langSwitcher = document.getElementById('lang-switcher');
     if (langSwitcher) {
+      console.log('✅ Sélecteur de langue trouvé, configuration en cours...');
       // Mettre à jour la valeur sans cloner (pour éviter de perdre la sélection)
       langSwitcher.value = this.currentLang;
       
       // Vérifier si l'event listener est déjà attaché
       if (!langSwitcher.hasAttribute('data-i18n-listener')) {
+        console.log('🔗 Attachement de l\'event listener au sélecteur de langue');
         // Ajouter l'event listener une seule fois
         langSwitcher.addEventListener('change', (e) => {
           console.log('🌐 Changement de langue demandé:', e.target.value);
           this.setLanguage(e.target.value);
         });
         langSwitcher.setAttribute('data-i18n-listener', 'true');
+      } else {
+        console.log('ℹ️ Event listener déjà attaché au sélecteur de langue');
       }
+    } else {
+      console.warn('⚠️ Sélecteur de langue (lang-switcher) non trouvé dans le DOM');
     }
   }
 

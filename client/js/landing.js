@@ -2,10 +2,12 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   // Navbar scroll effect
-  const navbar = document.getElementById('navbar');
   let lastScroll = 0;
 
   window.addEventListener('scroll', () => {
+    const navbar = document.getElementById('navbar');
+    if (!navbar) return; // Navbar pas encore chargée
+    
     const currentScroll = window.pageYOffset;
     
     if (currentScroll > 50) {
@@ -167,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const body = encodeURIComponent(
           `Nom: ${formData.name}\nEmail: ${formData.email}\nTéléphone: ${formData.phone || 'N/A'}\nÉtablissement: ${formData.organization || 'N/A'}\n\nMessage:\n${formData.message}`
         );
-        const mailtoLink = `mailto:info@chefses.com?subject=${subject}&body=${body}`;
+        const mailtoLink = `mailto:info.chefses@gmail.com?subject=${subject}&body=${body}`;
         window.location.href = mailtoLink;
         showNotification('Message préparé ! Votre client email va s\'ouvrir.', 'success');
         contactForm.reset();

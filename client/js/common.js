@@ -15,11 +15,11 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Initialiser i18n après chargement des composants
   // Le système i18n se réinitialisera automatiquement après le chargement de la navbar
-  setTimeout(() => {
+  // Utiliser plusieurs tentatives pour s'assurer que le sélecteur est bien attaché
+  const initLanguageSwitcher = () => {
     if (window.i18n) {
-      // S'assurer que le sélecteur de langue dans la navbar est configuré
       const langSwitcher = document.getElementById('lang-switcher');
-      if (langSwitcher && window.i18n) {
+      if (langSwitcher) {
         // Configurer le sélecteur via la méthode setupLanguageSwitcher
         window.i18n.setupLanguageSwitcher();
         
@@ -28,12 +28,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (floatingContainer) {
           floatingContainer.remove();
         }
+        
+        // Retraduire la page après le chargement de la navbar
+        window.i18n.translate();
+        return true;
       }
-      
-      // Retraduire la page après le chargement de la navbar
-      window.i18n.translate();
     }
-  }, 500);
+    return false;
+  };
+  
+  // Essayer plusieurs fois avec des délais croissants
+  setTimeout(() => initLanguageSwitcher(), 300);
+  setTimeout(() => {
+    if (!initLanguageSwitcher()) {
+      setTimeout(() => initLanguageSwitcher(), 500);
+    }
+  }, 800);
   
   // Navbar scroll effect
   initNavbarScroll();
@@ -64,6 +74,15 @@ function loadComponent(url, containerId) {
         newScript.appendChild(document.createTextNode(oldScript.innerHTML));
         oldScript.parentNode.replaceChild(newScript, oldScript);
       });
+      
+      // Si c'est la navbar qui est chargée, initialiser le sélecteur de langue
+      if (containerId === 'navbar-container' && window.i18n) {
+        // Attendre un peu pour que le DOM soit mis à jour
+        setTimeout(() => {
+          window.i18n.setupLanguageSwitcher();
+          window.i18n.translate();
+        }, 100);
+      }
     })
     .catch(error => {
       console.warn(`Impossible de charger ${url}:`, error);
