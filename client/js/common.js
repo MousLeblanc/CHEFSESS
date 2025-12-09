@@ -99,8 +99,23 @@ function loadComponent(url, containerId) {
         setTimeout(() => {
           window.i18n.setupLanguageSwitcher();
           // Retraduire toute la page après le chargement de la navbar
+          // Forcer la retraduction plusieurs fois pour s'assurer que tout est traduit
+          console.log('🔄 Retraduction après chargement de la navbar...');
           window.i18n.translate();
-          console.log('✅ Page retraduite après chargement de la navbar');
+          
+          // Vérifier spécifiquement les liens de la navbar
+          const navLinks = document.querySelectorAll('#navbar [data-i18n]');
+          console.log(`📝 ${navLinks.length} liens de navigation trouvés dans la navbar`);
+          navLinks.forEach(link => {
+            const key = link.getAttribute('data-i18n');
+            console.log(`  - Lien avec clé: ${key}, texte actuel: "${link.textContent.trim()}"`);
+          });
+          
+          setTimeout(() => {
+            window.i18n.translate();
+            console.log('✅ Page retraduite après chargement de la navbar (2ème tentative)');
+          }, 200);
+          console.log('✅ Page retraduite après chargement de la navbar (1ère tentative)');
         }, 100);
       }
     })
