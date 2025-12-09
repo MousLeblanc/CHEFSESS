@@ -38,12 +38,30 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   
   // Essayer plusieurs fois avec des délais croissants
-  setTimeout(() => initLanguageSwitcher(), 300);
+  setTimeout(() => {
+    if (initLanguageSwitcher()) {
+      console.log('✅ Sélecteur de langue initialisé au premier essai');
+    }
+  }, 300);
   setTimeout(() => {
     if (!initLanguageSwitcher()) {
-      setTimeout(() => initLanguageSwitcher(), 500);
+      setTimeout(() => {
+        if (initLanguageSwitcher()) {
+          console.log('✅ Sélecteur de langue initialisé au deuxième essai');
+        } else {
+          console.warn('⚠️ Impossible d\'initialiser le sélecteur de langue');
+        }
+      }, 500);
     }
   }, 800);
+  
+  // S'assurer que la page est traduite même si la navbar n'est pas chargée
+  if (window.i18n) {
+    setTimeout(() => {
+      window.i18n.translate();
+      console.log('✅ Traduction finale de la page');
+    }, 1000);
+  }
   
   // Navbar scroll effect
   initNavbarScroll();
@@ -80,7 +98,9 @@ function loadComponent(url, containerId) {
         // Attendre un peu pour que le DOM soit mis à jour
         setTimeout(() => {
           window.i18n.setupLanguageSwitcher();
+          // Retraduire toute la page après le chargement de la navbar
           window.i18n.translate();
+          console.log('✅ Page retraduite après chargement de la navbar');
         }, 100);
       }
     })
