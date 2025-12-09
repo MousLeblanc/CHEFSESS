@@ -1619,16 +1619,31 @@ class I18n {
       window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
     }
     
-    this.translate();
-    this.setupLanguageSwitcher();
+    // Traduire immédiatement si le DOM est prêt
+    const doTranslate = () => {
+      // Attendre un petit délai pour s'assurer que tous les éléments sont dans le DOM
+      setTimeout(() => {
+        this.translate();
+        this.setupLanguageSwitcher();
+      }, 50);
+    };
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', doTranslate);
+    } else {
+      // DOM déjà chargé, traduire immédiatement
+      doTranslate();
+    }
     
     // Attendre un peu pour que la navbar soit chargée avant de créer le sélecteur flottant
     // Si navbar-container existe, la navbar sera chargée de manière asynchrone
     const navbarContainer = document.getElementById('navbar-container');
     if (navbarContainer) {
-      // Attendre que la navbar soit chargée
+      // Attendre que la navbar soit chargée et retraduire
       setTimeout(() => {
         this.createLanguageSwitcher();
+        // Retraduire après le chargement de la navbar
+        this.translate();
       }, 500);
     } else {
       // Pas de navbar-container, créer le sélecteur immédiatement
@@ -1920,10 +1935,12 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     i18n = new I18n();
     window.i18n = i18n;
+    console.log('✅ i18n initialisé après DOMContentLoaded');
   });
 } else {
   // DOM déjà chargé
   i18n = new I18n();
-window.i18n = i18n;
+  window.i18n = i18n;
+  console.log('✅ i18n initialisé (DOM déjà chargé)');
 }
 
