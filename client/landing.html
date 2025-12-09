@@ -173,27 +173,34 @@
 
 
   <!-- Stats Section -->
-  <section class="stats-section" id="stats">
-    <div class="container">
-      <div class="stats-grid">
-        <div class="stat-card-animated" data-target="685">
-          <div class="stat-icon">📊</div>
-          <div class="stat-number" data-count="685">0</div>
-          <div class="stat-label">Recettes enrichies</div>
-        </div>
-<div class="stat-card-animated" data-target="0">
-  <div class="stat-icon">🚧</div>
-  <div class="stat-number" data-count="0">0</div>
-  <div class="stat-label">
-    Établissements pilotes
-    <span class="stat-label-sub">en préparation</span>
+ <section class="stats-section" id="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <!-- 1. Recettes enrichies -->
+      <div class="stat-card-animated" data-target="685">
+        <div class="stat-icon">📊</div>
+        <div class="stat-number" data-count="685">0</div>
+        <div class="stat-label">Recettes enrichies</div>
+      </div>
+
+      <!-- 2. Pilote en cours (carte statique, pas d'animation) -->
+      <div class="stat-card-static">
+        <div class="stat-icon">🚧</div>
+        <div class="stat-status-pill">Pilote</div>
+        <div class="stat-label">Déploiement en cours</div>
+        <!-- Optionnel : petite ligne sous-titre -->
+        <!-- <div class="stat-helper">Recherche de cuisines collectives pilotes</div> -->
+      </div>
+
+      <!-- 3. % d'économies moyennes -->
+      <div class="stat-card-animated" data-target="30">
+        <div class="stat-icon">💰</div>
+        <div class="stat-number" data-count="30">0</div>
+        <div class="stat-label">% d'économies moyennes</div>
+      </div>
   </div>
-</div>
-        <div class="stat-card-animated" data-target="30">
-          <div class="stat-icon">💰</div>
-          <div class="stat-number" data-count="30">0</div>
-          <div class="stat-label">% d'économies moyennes</div>
-        </div>
+</section>
+
       </div>
     </div>
   </section>
