@@ -112,7 +112,27 @@ const translations = {
         privacyAccept: 'J\'accepte la',
         privacyLink: 'politique de confidentialité',
         sendButton: 'Envoyer le message',
-        sending: 'Envoi en cours...'
+        sending: 'Envoi en cours...',
+        mailtoSubject: 'Contact depuis Chef SES',
+        mailtoBodyLabels: {
+          name: 'Nom',
+          email: 'Email',
+          phone: 'Téléphone',
+          organization: 'Établissement',
+          message: 'Message'
+        },
+        mailtoBody: '{nameLabel}: {name}\n{emailLabel}: {email}\n{phoneLabel}: {phone}\n{organizationLabel}: {organization}\n\n{messageLabel}:\n{message}',
+        errors: {
+          required: 'Ce champ est requis',
+          invalidEmail: 'Email invalide',
+          minLength: 'Minimum {min} caractères requis'
+        },
+        notifications: {
+          formErrors: 'Veuillez corriger les erreurs dans le formulaire.',
+          success: 'Message envoyé avec succès ! Nous vous répondrons sous 24h.',
+          mailtoPrepared: 'Message préparé ! Votre client email va s\'ouvrir.',
+          sendError: 'Erreur lors de l\'envoi. Veuillez réessayer.'
+        }
       }
     },
     features: {
@@ -290,7 +310,27 @@ const translations = {
         privacyAccept: 'I accept the',
         privacyLink: 'privacy policy',
         sendButton: 'Send message',
-        sending: 'Sending...'
+        sending: 'Sending...',
+        mailtoSubject: 'Contact from Chef SES',
+        mailtoBodyLabels: {
+          name: 'Name',
+          email: 'Email',
+          phone: 'Phone',
+          organization: 'Establishment',
+          message: 'Message'
+        },
+        mailtoBody: '{nameLabel}: {name}\n{emailLabel}: {email}\n{phoneLabel}: {phone}\n{organizationLabel}: {organization}\n\n{messageLabel}:\n{message}',
+        errors: {
+          required: 'This field is required',
+          invalidEmail: 'Invalid email',
+          minLength: 'Minimum {min} characters required'
+        },
+        notifications: {
+          formErrors: 'Please correct the errors in the form.',
+          success: 'Message sent successfully! We will respond within 24 hours.',
+          mailtoPrepared: 'Message prepared! Your email client will open.',
+          sendError: 'Error sending message. Please try again.'
+        }
       }
     },
     features: {
@@ -453,7 +493,27 @@ const translations = {
         privacyAccept: 'Ik accepteer het',
         privacyLink: 'privacybeleid',
         sendButton: 'Bericht verzenden',
-        sending: 'Verzenden...'
+        sending: 'Verzenden...',
+        mailtoSubject: 'Contact van Chef SES',
+        mailtoBodyLabels: {
+          name: 'Naam',
+          email: 'E-mail',
+          phone: 'Telefoon',
+          organization: 'Instelling',
+          message: 'Bericht'
+        },
+        mailtoBody: '{nameLabel}: {name}\n{emailLabel}: {email}\n{phoneLabel}: {phone}\n{organizationLabel}: {organization}\n\n{messageLabel}:\n{message}',
+        errors: {
+          required: 'Dit veld is verplicht',
+          invalidEmail: 'Ongeldig e-mailadres',
+          minLength: 'Minimaal {min} tekens vereist'
+        },
+        notifications: {
+          formErrors: 'Corrigeer de fouten in het formulier.',
+          success: 'Bericht succesvol verzonden! We antwoorden binnen 24 uur.',
+          mailtoPrepared: 'Bericht voorbereid! Uw e-mailclient wordt geopend.',
+          sendError: 'Fout bij verzenden. Probeer het opnieuw.'
+        }
       }
     },
     features: {
