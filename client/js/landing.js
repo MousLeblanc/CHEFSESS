@@ -122,7 +122,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (!isValid) {
-        showNotification('Veuillez corriger les erreurs dans le formulaire.', 'error');
+        const message = window.i18n ? window.i18n.t('landing.contact.notifications.formErrors') : 'Veuillez corriger les erreurs dans le formulaire.';
+        showNotification(message, 'error');
         return;
       }
 
@@ -156,7 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
           });
           
           if (response.ok) {
-            showNotification('Message envoyé avec succès ! Nous vous répondrons sous 24h.', 'success');
+            const message = window.i18n ? window.i18n.t('landing.contact.notifications.success') : 'Message envoyé avec succès ! Nous vous répondrons sous 24h.';
+            showNotification(message, 'success');
             contactForm.reset();
             return;
           }
@@ -165,16 +167,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Fallback to mailto
-        const subject = encodeURIComponent('Contact depuis Chef SES');
-        const body = encodeURIComponent(
-          `Nom: ${formData.name}\nEmail: ${formData.email}\nTéléphone: ${formData.phone || 'N/A'}\nÉtablissement: ${formData.organization || 'N/A'}\n\nMessage:\n${formData.message}`
-        );
+        const subjectText = window.i18n ? window.i18n.t('landing.contact.mailtoSubject') : 'Contact depuis Chef SES';
+        const subject = encodeURIComponent(subjectText);
+        
+        // Get translated labels
+        let bodyText;
+        if (window.i18n) {
+          const labels = {
+            nameLabel: window.i18n.t('landing.contact.mailtoBodyLabels.name'),
+            emailLabel: window.i18n.t('landing.contact.mailtoBodyLabels.email'),
+            phoneLabel: window.i18n.t('landing.contact.mailtoBodyLabels.phone'),
+            organizationLabel: window.i18n.t('landing.contact.mailtoBodyLabels.organization'),
+            messageLabel: window.i18n.t('landing.contact.mailtoBodyLabels.message')
+          };
+          bodyText = window.i18n.t('landing.contact.mailtoBody')
+            .replace('{nameLabel}', labels.nameLabel)
+            .replace('{emailLabel}', labels.emailLabel)
+            .replace('{phoneLabel}', labels.phoneLabel)
+            .replace('{organizationLabel}', labels.organizationLabel)
+            .replace('{messageLabel}', labels.messageLabel)
+            .replace('{name}', formData.name)
+            .replace('{email}', formData.email)
+            .replace('{phone}', formData.phone || 'N/A')
+            .replace('{organization}', formData.organization || 'N/A')
+            .replace('{message}', formData.message);
+        } else {
+          bodyText = `Nom: ${formData.name}\nEmail: ${formData.email}\nTéléphone: ${formData.phone || 'N/A'}\nÉtablissement: ${formData.organization || 'N/A'}\n\nMessage:\n${formData.message}`;
+        }
+        const body = encodeURIComponent(bodyText);
         const mailtoLink = `mailto:info.chefses@gmail.com?subject=${subject}&body=${body}`;
         window.location.href = mailtoLink;
-        showNotification('Message préparé ! Votre client email va s\'ouvrir.', 'success');
+        const message = window.i18n ? window.i18n.t('landing.contact.notifications.mailtoPrepared') : 'Message préparé ! Votre client email va s\'ouvrir.';
+        showNotification(message, 'success');
         contactForm.reset();
       } catch (error) {
-        showNotification('Erreur lors de l\'envoi. Veuillez réessayer.', 'error');
+        const message = window.i18n ? window.i18n.t('landing.contact.notifications.sendError') : 'Erreur lors de l\'envoi. Veuillez réessayer.';
+        showNotification(message, 'error');
       } finally {
         btnText.style.display = 'inline-block';
         btnLoader.style.display = 'none';
@@ -191,17 +219,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // Remove previous error styling
     field.classList.remove('error');
 
+    // Helper function to get translated error message
+    const t = (key, params = {}) => {
+      if (window.i18n) {
+        let message = window.i18n.t(key);
+        // Replace placeholders like {min}
+        Object.keys(params).forEach(param => {
+          message = message.replace(`{${param}}`, params[param]);
+        });
+        return message;
+      }
+      return key; // Fallback to key if i18n not available
+    };
+
     // Check required fields
     if (field.hasAttribute('required') && !field.value.trim()) {
       isValid = false;
-      errorMessage = 'Ce champ est requis';
+      errorMessage = t('landing.contact.errors.required', {});
     }
     // Validate email
     else if (field.type === 'email' && field.value) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(field.value)) {
         isValid = false;
-        errorMessage = 'Email invalide';
+        errorMessage = t('landing.contact.errors.invalidEmail', {});
       }
     }
     // Validate minlength
@@ -209,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const minLength = parseInt(field.getAttribute('minlength'));
       if (field.value.length < minLength) {
         isValid = false;
-        errorMessage = `Minimum ${minLength} caractères requis`;
+        errorMessage = t('landing.contact.errors.minLength', { min: minLength });
       }
     }
 
