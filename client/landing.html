@@ -325,6 +325,25 @@
   <script src="js/i18n.js"></script>
   <script src="js/common.js"></script>
   <script src="js/landing.js"></script>
+  <script>
+    // S'assurer que la traduction se fait après le chargement complet
+    window.addEventListener('load', () => {
+      if (window.i18n) {
+        console.log('🔄 Traduction finale après chargement complet de la page');
+        setTimeout(() => {
+          window.i18n.translate();
+        }, 300);
+      }
+    });
+    
+    // Écouter les changements de langue
+    window.addEventListener('languageChanged', () => {
+      console.log('🔄 Événement languageChanged déclenché');
+      if (window.i18n) {
+        window.i18n.translate();
+      }
+    });
+  </script>
 </body>
 </html>
 
