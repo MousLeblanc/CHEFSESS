@@ -1,330 +1,217 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <title data-i18n="landing.meta.title">Chef SES - Plateforme Intelligente de Restauration Collective</title>
-  <link rel="stylesheet" href="css/landing.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-</head>
-<body>
-  <!-- Navigation -->
-  <div id="navbar-container"></div>
+// Scripts communs pour toutes les pages du site Chef SES
 
-  <!-- Hero Section -->
-  <section class="hero-section" id="hero">
-    <video
-      autoplay
-      muted
-      loop
-      playsinline
-      class="hero-video"
-      id="hero-video"
-      preload="auto"
-    >
-      <source src="video/collective-catering.mp4" type="video/mp4" />
-      <div class="hero-fallback"></div>
-    </video>
+document.addEventListener('DOMContentLoaded', () => {
+  // Charger navbar et footer
+  const navbarContainer = document.getElementById('navbar-container');
+  const footerContainer = document.getElementById('footer-container');
+  
+  if (navbarContainer) {
+    loadComponent('includes/navbar.html', 'navbar-container');
+  }
+  
+  if (footerContainer) {
+    loadComponent('includes/footer.html', 'footer-container');
+  }
+  
+  // Initialiser i18n après chargement des composants
+  // Le système i18n se réinitialisera automatiquement après le chargement de la navbar
+  // Utiliser plusieurs tentatives pour s'assurer que le sélecteur est bien attaché
+  const initLanguageSwitcher = () => {
+    if (window.i18n) {
+      const langSwitcher = document.getElementById('lang-switcher');
+      if (langSwitcher) {
+        // Configurer le sélecteur via la méthode setupLanguageSwitcher
+        window.i18n.setupLanguageSwitcher();
+        
+        // Supprimer le sélecteur flottant s'il existe maintenant que la navbar est chargée
+        const floatingContainer = document.getElementById('language-switcher-container');
+        if (floatingContainer) {
+          floatingContainer.remove();
+        }
+        
+        // Retraduire la page après le chargement de la navbar
+        window.i18n.translate();
+        return true;
+      }
+    }
+    return false;
+  };
+  
+  // Essayer plusieurs fois avec des délais croissants
+  setTimeout(() => initLanguageSwitcher(), 300);
+  setTimeout(() => {
+    if (!initLanguageSwitcher()) {
+      setTimeout(() => initLanguageSwitcher(), 500);
+    }
+  }, 800);
+  
+  // Navbar scroll effect
+  initNavbarScroll();
+  
+  // Smooth scroll pour les liens d'ancrage
+  initSmoothScroll();
+  
+  // Intersection Observer pour animations
+  initScrollAnimations();
+});
+
+// Charger un composant HTML
+function loadComponent(url, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  fetch(url)
+    .then(response => response.text())
+    .then(html => {
+      container.innerHTML = html;
+      // Ré-exécuter les scripts après chargement
+      const scripts = container.querySelectorAll('script');
+      scripts.forEach(oldScript => {
+        const newScript = document.createElement('script');
+        Array.from(oldScript.attributes).forEach(attr => {
+          newScript.setAttribute(attr.name, attr.value);
+        });
+        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+        oldScript.parentNode.replaceChild(newScript, oldScript);
+      });
+      
+      // Si c'est la navbar qui est chargée, initialiser le sélecteur de langue
+      if (containerId === 'navbar-container' && window.i18n) {
+        // Attendre un peu pour que le DOM soit mis à jour
+        setTimeout(() => {
+          window.i18n.setupLanguageSwitcher();
+          window.i18n.translate();
+        }, 100);
+      }
+    })
+    .catch(error => {
+      console.warn(`Impossible de charger ${url}:`, error);
+    });
+}
+
+// Effet de scroll sur la navbar
+function initNavbarScroll() {
+  const navbar = document.getElementById('navbar');
+  if (!navbar) return;
+  
+  window.addEventListener('scroll', () => {
+    if (window.pageYOffset > 50) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  });
+}
+
+// Smooth scroll pour les liens d'ancrage
+function initSmoothScroll() {
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      const href = this.getAttribute('href');
+      if (href !== '#' && href !== '#top') {
+        e.preventDefault();
+        const target = document.querySelector(href);
+        if (target) {
+          const offset = 80;
+          const targetPosition = target.offsetTop - offset;
+          window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+          });
+        }
+      }
+    });
+  });
+}
+
+// Animations au scroll
+function initScrollAnimations() {
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animate-in');
+      }
+    });
+  }, observerOptions);
+
+  // Observer les éléments avec la classe animate-on-scroll
+  document.querySelectorAll('.animate-on-scroll').forEach(el => {
+    observer.observe(el);
+  });
+}
+
+// Fonction utilitaire pour afficher des notifications
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: ${type === 'success' ? '#67C587' : type === 'error' ? '#e74c3c' : '#4b5563'};
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 10000;
+    animation: slideInRight 0.3s ease;
+    max-width: 400px;
+    font-family: var(--font-poppins);
+  `;
+  notification.textContent = message;
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.animation = 'slideOutRight 0.3s ease';
+    setTimeout(() => {
+      notification.remove();
+    }, 300);
+  }, 3000);
+}
+
+// Ajouter les animations CSS si elles n'existent pas
+if (!document.getElementById('common-animations')) {
+  const style = document.createElement('style');
+  style.id = 'common-animations';
+  style.textContent = `
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
     
-    <div class="hero-overlay"></div>
+    @keyframes slideOutRight {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
     
-    <div class="hero-content">
-      <div class="hero-badge">
-        <span data-i18n="landing.hero.badge">Plateforme intelligente de restauration collective</span>
-      </div>
-      <h1 class="hero-title fade-in-up" data-i18n="landing.hero.title">
-        Simplifiez votre gestion alimentaire avec l'IA
-      </h1>
-      <p class="hero-subtitle fade-in-up delay-1" data-i18n="landing.hero.subtitle">
-       Réduisez vos coûts de 30%, optimisez vos menus en 2 minutes, et gérez vos stocks intelligemment pour les cuisines collectives des écoles, hôpitaux et EHPAD.
-      </p>
-      <p class="hero-ciqual">
-        <span data-i18n="landing.hero.ciqual1">✔️ Menus conformes aux recommandations nutritionnelles</span>  
-        <span data-i18n="landing.hero.ciqual2">✔️ Données officielles CIQUAL (ANSES)</span>
-      </p>
-
-      
-      <!-- Preuve sociale -->
-      <div class="hero-social-proof fade-in-up delay-1">
-        <div class="trust-badges">
-<span data-i18n="landing.hero.socialProof1">Premiers établissements pilotes</span>
-<span data-i18n="landing.hero.socialProof2">Retours utilisateurs très positifs</span>
-<span data-i18n="landing.hero.socialProof3">Jusqu'à 30 % d'économies observées</span>
-        </div>
-      </div>
-      
-      <div class="hero-buttons fade-in-up delay-2">
-        <a href="index.html" class="btn btn-primary" data-i18n="landing.hero.tryFree">
-          Essayer gratuitement
-        </a>
-        <a href="#contact" class="btn btn-secondary" data-i18n="landing.hero.scheduleDemo">
-          Planifier une démo
-        </a>
-      </div>
-    </div>
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
     
-    <div class="hero-scroll-indicator">
-      <span data-i18n="landing.hero.discover">Découvrir</span>
-      <div class="scroll-arrow">↓</div>
-    </div>
-  </section>
-
-  <!-- Features Section -->
-  <section class="features-section" id="features">
-    <div class="container">
-      <h2 class="section-title" data-i18n="features.title">Fonctionnalités Principales</h2>
-      <p class="section-subtitle" data-i18n="features.subtitle">
-        Tout ce dont vous avez besoin pour gérer efficacement votre restauration collective
-      </p>
-      
-      <div class="features-grid">
-        <div class="feature-card" data-aos="fade-up">
-          <div class="feature-icon">🧠</div>
-          <h3 class="feature-title" data-i18n="landing.features.aiMenu.title">Générateur de Menus IA</h3>
-          <p class="feature-description">
-            <span data-i18n="landing.features.aiMenu.desc">Création automatique de menus basée sur les allergies, la nutrition et le stock disponible.</span> 
-            <strong data-i18n="landing.features.aiMenu.timeSave">Gagnez 5 heures par semaine sur la planification.</strong>
-          </p>
-          <ul class="feature-benefits">
-            <li data-i18n="landing.features.aiMenu.benefit1">Respect automatique des restrictions alimentaires</li>
-            <li data-i18n="landing.features.aiMenu.benefit2">Optimisation nutritionnelle garantie</li>
-            <li data-i18n="landing.features.aiMenu.benefit3">Utilisation intelligente du stock disponible</li>
-          </ul>
-        </div>
-        
-        <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
-          <div class="feature-icon">📦</div>
-          <h3 class="feature-title" data-i18n="landing.features.stock.title">Gestion Intelligente du Stock</h3>
-          <p class="feature-description" data-i18n="landing.features.stock.desc">
-            Suivi en temps réel des ingrédients, dates d'expiration et livraisons fournisseurs.
-          </p>
-          <ul class="feature-benefits">
-            <li data-i18n="landing.features.stock.benefit1">Alertes automatiques de stock bas</li>
-            <li data-i18n="landing.features.stock.benefit2">Gestion des dates de péremption</li>
-            <li data-i18n="landing.features.stock.benefit3">Optimisation des commandes</li>
-            
-          </ul>
-        </div>
-        
-        <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
-          <div class="feature-icon">🏥</div>
-          <h3 class="feature-title" data-i18n="landing.features.multiSite.title">Gestion Multi-Sites</h3>
-          <p class="feature-description" data-i18n="landing.features.multiSite.desc">
-            Contrôlez plusieurs cuisines — écoles, hôpitaux, EHPAD — depuis un seul tableau de bord.
-          </p>
-          <ul class="feature-benefits">
-            <li data-i18n="landing.features.multiSite.benefit1">Vue centralisée de tous les sites</li>
-            <li data-i18n="landing.features.multiSite.benefit2">Rapports consolidés</li>
-            <li data-i18n="landing.features.multiSite.benefit3">Gestion des budgets par site</li>
-          </ul>
-        </div>
-        
-        <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
-          <div class="feature-icon">👥</div>
-          <h3 class="feature-title" data-i18n="landing.features.residents.title">Profils Résidents</h3>
-          <p class="feature-description" data-i18n="landing.features.residents.desc">
-            Gestion des profils nutritionnels, allergies et restrictions alimentaires individuelles.
-          </p>
-          <ul class="feature-benefits">
-            <li data-i18n="landing.features.residents.benefit1">Profils nutritionnels personnalisés</li>
-            <li data-i18n="landing.features.residents.benefit2">Gestion des allergies et intolérances</li>
-            <li data-i18n="landing.features.residents.benefit3">Suivi des portions individuelles</li>
-          </ul>
-        </div>
-        
-        <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
-          <div class="feature-icon">💰</div>
-          <h3 class="feature-title" data-i18n="landing.features.foodCost.title">Food Cost & Budget</h3>
-          <p class="feature-description" data-i18n="landing.features.foodCost.desc">
-            Suivi des coûts alimentaires, analyse des dépenses et optimisation du budget.
-          </p>
-          <ul class="feature-benefits">
-            <li data-i18n="landing.features.foodCost.benefit1">Analyse des coûts en temps réel</li>
-            <li data-i18n="landing.features.foodCost.benefit2">Suggestions d'économies intelligentes</li>
-            <li data-i18n="landing.features.foodCost.benefit3">Comparaison des prix fournisseurs</li>
-          </ul>
-        </div>
-        
-        <div class="feature-card" data-aos="fade-up" data-aos-delay="685">
-          <div class="feature-icon">🤝</div>
-          <h3 class="feature-title" data-i18n="landing.features.suppliers.title">Réseau de Fournisseurs</h3>
-          <p class="feature-description" data-i18n="landing.features.suppliers.desc">
-            Commandes simplifiées, catalogues numériques et coordination avec vos partenaires.
-          </p>
-          <ul class="feature-benefits">
-            <li data-i18n="landing.features.suppliers.benefit1">Commandes en ligne simplifiées</li>
-            <li data-i18n="landing.features.suppliers.benefit2">Catalogues numériques à jour</li>
-            <li data-i18n="landing.features.suppliers.benefit3">Suivi des livraisons</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-<section class="pilot-section">
-  <h2 data-i18n="landing.pilot.title">Déploiement pilote en cours</h2>
-  <p data-i18n="landing.pilot.desc">
-    Chef SES est actuellement testé avec des cuisines collectives pilotes
-    afin d'améliorer l'expérience terrain et préparer le déploiement à plus
-    grande échelle.
-  </p>
-</section>
-
-<!-- Stats Section -->
-<section class="stats-section" id="stats">
-  <div class="container">
-    <div class="stats-grid">
-      <!-- 1. Recettes enrichies -->
-      <div class="stat-card-animated" data-target="685">
-        <div class="stat-icon">📊</div>
-        <div class="stat-number" data-count="685">0</div>
-        <div class="stat-label" data-i18n="landing.stats.recipes">Recettes enrichies</div>
-      </div>
-
-      <!-- 2. Pilote en cours (carte statique, pas d'animation) -->
-      <div class="stat-card-static">
-        <div class="stat-icon">🚧</div>
-        <div class="stat-status-pill" data-i18n="landing.stats.pilotBadge">Pilote</div>
-        <div class="stat-label" data-i18n="landing.stats.pilot">Déploiement en cours</div>
-        <!-- Optionnel : petite ligne sous-titre -->
-        <!-- <div class="stat-helper">Recherche de cuisines collectives pilotes</div> -->
-      </div>
-
-      <!-- 3. % d'économies moyennes -->
-      <div class="stat-card-animated" data-target="30">
-        <div class="stat-icon">💰</div>
-        <div class="stat-number" data-count="30">0</div>
-        <div class="stat-label" data-i18n="landing.stats.savings">% d'économies moyennes</div>
-      </div>
-    </div>
-  </div>
-</section>
-  <!-- CTA Section -->
-  <section class="cta-section" id="cta">
-    <div class="container">
-      <div class="cta-content">
-        <h2 class="cta-title" data-i18n="landing.cta.title">Prêt à transformer votre restauration collective ?</h2>
-        <p class="cta-subtitle" data-i18n="landing.cta.subtitle">
-          Rejoignez les établissements qui font confiance à Chef SES. 
-          Démo gratuite, sans engagement.
-        </p>
-        <div class="cta-buttons">
-          <a href="index.html" class="btn btn-primary btn-large" data-i18n="landing.cta.startNow">
-            Commencer maintenant
-          </a>
-          <a href="#contact" class="btn btn-secondary btn-large" data-i18n="landing.cta.scheduleDemo">
-            Planifier une démo
-          </a>
-        </div>
-        <div class="cta-guarantee">
-          <i class="fas fa-shield-alt"></i>
-          <span data-i18n="landing.cta.guarantee">Essai gratuit de 14 jours • Sans carte bancaire • Support dédié</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Contact Section -->
-  <section class="contact-section" id="contact">
-    <div class="container">
-      <h2 class="section-title" data-i18n="contact.title">Contactez-nous</h2>
-      <p class="section-subtitle" data-i18n="contact.subtitle">
-        Intéressé par un partenariat, un test ou un investissement ?
-      </p>
-      
-      <form class="contact-form" id="contact-form">
-        <div class="form-group">
-          <label for="contact-name" data-i18n="landing.contact.nameLabel">Nom complet *</label>
-          <input
-            type="text"
-            id="contact-name"
-            data-i18n-placeholder="landing.contact.namePlaceholder"
-            placeholder="Votre nom"
-            required
-            class="form-input"
-            minlength="2"
-          />
-          <span class="form-error"></span>
-        </div>
-        
-        <div class="form-group">
-          <label for="contact-email" data-i18n="landing.contact.emailLabel">Email *</label>
-          <input
-            type="email"
-            id="contact-email"
-            data-i18n-placeholder="landing.contact.emailPlaceholder"
-            placeholder="votre@email.com"
-            required
-            class="form-input"
-          />
-          <span class="form-error"></span>
-        </div>
-        
-        <div class="form-group">
-          <label for="contact-phone" data-i18n="landing.contact.phoneLabel">Téléphone</label>
-          <input
-            type="tel"
-            id="contact-phone"
-            data-i18n-placeholder="landing.contact.phonePlaceholder"
-            placeholder="+32 XXX XX XX XX"
-            class="form-input"
-          />
-        </div>
-        
-        <div class="form-group">
-          <label for="contact-organization" data-i18n="landing.contact.organizationLabel">Établissement</label>
-          <input
-            type="text"
-            id="contact-organization"
-            data-i18n-placeholder="landing.contact.organizationPlaceholder"
-            placeholder="Nom de votre établissement"
-            class="form-input"
-          />
-        </div>
-        
-        <div class="form-group">
-          <label for="contact-message" data-i18n="landing.contact.messageLabel">Message *</label>
-          <textarea
-            id="contact-message"
-            data-i18n-placeholder="landing.contact.messagePlaceholder"
-            placeholder="Dites-nous comment nous pouvons vous aider..."
-            rows="5"
-            required
-            class="form-textarea"
-            minlength="10"
-          ></textarea>
-          <span class="form-error"></span>
-        </div>
-        
-        <div class="form-group checkbox-group">
-          <label>
-            <input type="checkbox" required />
-            <span data-i18n="landing.contact.privacyAccept">J'accepte la</span> <a href="privacy.html" data-i18n="landing.contact.privacyLink">politique de confidentialité</a> *
-          </label>
-        </div>
-        
-        <button type="submit" class="btn btn-primary btn-large" id="submit-btn">
-          <span class="btn-text" data-i18n="landing.contact.sendButton">Envoyer le message</span>
-          <span class="btn-loader" style="display: none;">
-            <i class="fas fa-spinner fa-spin"></i> <span data-i18n="landing.contact.sending">Envoi en cours...</span>
-          </span>
-        </button>
-      </form>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <div id="footer-container"></div>
-
-  <!-- Charger i18n en premier pour que les traductions soient disponibles -->
-  <script src="js/i18n.js"></script>
-  <script src="js/common.js"></script>
-  <script src="js/landing.js"></script>
-</body>
-</html>
-
+    .animate-on-scroll.animate-in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  `;
+  document.head.appendChild(style);
+}
