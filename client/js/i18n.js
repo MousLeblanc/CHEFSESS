@@ -1743,12 +1743,19 @@ class I18n {
           translatedCount++;
         } else if (element.tagName === 'A') {
           // Pour les liens, mettre à jour le textContent
-          element.textContent = value.trim();
-          translatedCount++;
+          // Vérifier si le texte actuel est différent pour éviter les mises à jour inutiles
+          const currentText = element.textContent.trim();
+          if (currentText !== value.trim()) {
+            element.textContent = value.trim();
+            translatedCount++;
+          }
         } else {
           // Pour tous les autres éléments (h1, p, span, etc.)
-          element.textContent = value;
-          translatedCount++;
+          const currentText = element.textContent.trim();
+          if (currentText !== value.trim()) {
+            element.textContent = value;
+            translatedCount++;
+          }
         }
       } else {
         console.warn(`⚠️ Clé de traduction non trouvée: ${key} pour la langue ${this.currentLang}`);
