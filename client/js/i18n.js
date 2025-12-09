@@ -1623,17 +1623,30 @@ class I18n {
     const doTranslate = () => {
       // Attendre un petit délai pour s'assurer que tous les éléments sont dans le DOM
       setTimeout(() => {
+        console.log('🔄 Appel de translate() depuis init()');
         this.translate();
         this.setupLanguageSwitcher();
-      }, 50);
+      }, 100);
     };
     
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', doTranslate);
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('📄 DOMContentLoaded déclenché');
+        doTranslate();
+      });
     } else {
       // DOM déjà chargé, traduire immédiatement
+      console.log('📄 DOM déjà chargé');
       doTranslate();
     }
+    
+    // S'assurer aussi que la traduction se fait après le chargement complet de la page
+    window.addEventListener('load', () => {
+      console.log('📄 Window load déclenché, retraduction de la page');
+      setTimeout(() => {
+        this.translate();
+      }, 200);
+    });
     
     // Attendre un peu pour que la navbar soit chargée avant de créer le sélecteur flottant
     // Si navbar-container existe, la navbar sera chargée de manière asynchrone
@@ -1728,7 +1741,12 @@ class I18n {
           // Pour les options de select, mettre à jour le textContent
           element.textContent = value;
           translatedCount++;
+        } else if (element.tagName === 'A') {
+          // Pour les liens, mettre à jour le textContent
+          element.textContent = value.trim();
+          translatedCount++;
         } else {
+          // Pour tous les autres éléments (h1, p, span, etc.)
           element.textContent = value;
           translatedCount++;
         }
