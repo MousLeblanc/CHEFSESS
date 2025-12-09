@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Create mailto link
       const subjectText = encodeURIComponent(`${subject} - Contact Chef SES`);
       const body = encodeURIComponent(`Nom: ${name}\nEmail: ${email}\nSujet: ${subject}\n\nMessage:\n${message}`);
-      const mailtoLink = `mailto:info@chefses.com?subject=${subjectText}&body=${body}`;
+      const mailtoLink = `mailto:info.chefses@gmail.com?subject=${subjectText}&body=${body}`;
       
       // Open email client
       window.location.href = mailtoLink;
