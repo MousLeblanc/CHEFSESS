@@ -219,6 +219,7 @@ body {
   color: rgba(255, 255, 255, 0.95);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap; 
 }
 
 .hero-title {
@@ -249,6 +250,7 @@ body {
   justify-content: center;
   flex-wrap: wrap;
   font-size: 0.85rem;
+  flex-wrap: nowrap;
   color: rgba(255, 255, 255, 0.95);
 }
 
@@ -926,6 +928,7 @@ body {
     padding: 0 1rem;
   }
 }
+
 /* Carte statique "Pilote" avec le même look que les autres */
 .stat-card-static {
   background: #ffffff;
@@ -960,4 +963,3 @@ body {
   font-size: 0.9rem;
   color: #6b7280; /* gris doux */
 }
-
