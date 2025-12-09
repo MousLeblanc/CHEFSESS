@@ -2,10 +2,12 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   // Navbar scroll effect
-  const navbar = document.getElementById('navbar');
   let lastScroll = 0;
 
   window.addEventListener('scroll', () => {
+    const navbar = document.getElementById('navbar');
+    if (!navbar) return; // Navbar pas encore chargée
+    
     const currentScroll = window.pageYOffset;
     
     if (currentScroll > 50) {
