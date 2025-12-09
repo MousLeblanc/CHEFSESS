@@ -167,6 +167,7 @@ app.use('/img', express.static(path.join(clientPath, 'img'), {
 app.use(express.static(clientPath, {
   etag: false,
   lastModified: false,
+  index: false, // Désactiver l'index automatique
   setHeaders: (res, path) => {
     res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
     // Définir les MIME types selon l'extension
