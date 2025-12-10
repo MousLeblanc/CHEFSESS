@@ -1,23 +1,45 @@
 import express from 'express';
 import asyncHandler from 'express-async-handler';
+import nodemailer from 'nodemailer';
 
 const router = express.Router();
 
-// Fonction pour envoyer l'email (peut être étendue avec nodemailer plus tard)
-const sendEmail = async (mailOptions) => {
-  // Pour l'instant, on log simplement le message
-  // TODO: Configurer nodemailer ou un service d'email tiers (SendGrid, Mailgun, etc.)
-  console.log('📧 Email de contact reçu:');
-  console.log('   De:', mailOptions.from);
-  console.log('   À:', mailOptions.to);
-  console.log('   Sujet:', mailOptions.subject);
-  console.log('   Contenu:', mailOptions.text);
+// Configuration du transporteur email
+const createTransporter = () => {
+  // Si des variables d'environnement SMTP sont configurées, les utiliser
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_SECURE === 'true', // true pour 465, false pour autres ports
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+  }
   
-  // Simuler un envoi réussi
-  return {
-    messageId: `contact-${Date.now()}@chefses.local`,
-    accepted: [mailOptions.to],
-  };
+  // Si Gmail est configuré avec un mot de passe d'application
+  if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    });
+  }
+  
+  // Mode développement : transporter de test (log uniquement)
+  console.log('⚠️ Aucune configuration SMTP trouvée. Mode développement - emails loggés uniquement.');
+  return nodemailer.createTransport({
+    host: 'smtp.ethereal.email',
+    port: 587,
+    auth: {
+      user: 'test@ethereal.email',
+      pass: 'test',
+    },
+  });
 };
 
 // @desc    Envoyer un message de contact
@@ -44,21 +66,29 @@ router.post('/', asyncHandler(async (req, res) => {
   }
 
   try {
+    const transporter = createTransporter();
+    
     // Préparer le contenu de l'email
     const mailOptions = {
-      from: process.env.SMTP_FROM || `"Chef SES Contact" <noreply@chefses.com>`,
+      from: process.env.SMTP_FROM || process.env.GMAIL_USER || `"Chef SES Contact" <noreply@chefses.com>`,
       to: process.env.CONTACT_EMAIL || 'info.chefses@gmail.com',
       replyTo: email,
       subject: `Contact depuis Chef SES - ${name}`,
       html: `
-        <h2>Nouveau message de contact</h2>
-        <p><strong>Nom:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        ${phone ? `<p><strong>Téléphone:</strong> ${phone}</p>` : ''}
-        ${organization ? `<p><strong>Établissement:</strong> ${organization}</p>` : ''}
-        <hr>
-        <p><strong>Message:</strong></p>
-        <p>${message.replace(/\n/g, '<br>')}</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #67C587;">Nouveau message de contact</h2>
+          <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Nom:</strong> ${name}</p>
+            <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+            ${phone ? `<p><strong>Téléphone:</strong> ${phone}</p>` : ''}
+            ${organization ? `<p><strong>Établissement:</strong> ${organization}</p>` : ''}
+          </div>
+          <hr style="border: 1px solid #e5e5e5; margin: 20px 0;">
+          <div style="background: #ffffff; padding: 20px; border-left: 4px solid #67C587;">
+            <p><strong>Message:</strong></p>
+            <p style="white-space: pre-wrap;">${message.replace(/\n/g, '<br>')}</p>
+          </div>
+        </div>
       `,
       text: `
 Nouveau message de contact
@@ -73,10 +103,12 @@ ${message}
       `,
     };
 
-    // Envoyer l'email (pour l'instant, juste logging)
-    const info = await sendEmail(mailOptions);
+    // Envoyer l'email
+    const info = await transporter.sendMail(mailOptions);
     
-    console.log('✅ Message de contact reçu:', info.messageId);
+    console.log('✅ Email de contact envoyé:', info.messageId);
+    console.log('   À:', mailOptions.to);
+    console.log('   De:', email);
 
     res.status(200).json({
       success: true,
@@ -84,7 +116,21 @@ ${message}
       messageId: info.messageId,
     });
   } catch (error) {
-    console.error('❌ Erreur lors du traitement du message:', error);
+    console.error('❌ Erreur lors de l\'envoi de l\'email:', error);
+    
+    // Si c'est un transporteur de test qui échoue, on log quand même
+    if (!process.env.SMTP_HOST && !process.env.GMAIL_USER) {
+      console.log('📧 Message de contact reçu (mode développement):');
+      console.log('   Nom:', name);
+      console.log('   Email:', email);
+      console.log('   Message:', message);
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Message reçu ! Nous vous répondrons sous 24h. (Mode développement)',
+        development: true,
+      });
+    }
     
     res.status(500).json({
       success: false,
