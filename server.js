@@ -167,6 +167,7 @@ app.use('/img', express.static(path.join(clientPath, 'img'), {
 app.use(express.static(clientPath, {
   etag: false,
   lastModified: false,
+  index: false, // Désactiver l'index automatique
   setHeaders: (res, path) => {
     res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
     // Définir les MIME types selon l'extension
@@ -263,8 +264,8 @@ app.get("*", (req, res, next) => {
     }
     return next(); // Ne pas retourner index.html pour les fichiers statiques
   }
-  // Seulement pour les routes HTML, retourner index.html
-  res.sendFile(path.join(clientPath, "index.html"));
+  // Seulement pour les routes HTML, retourner landing.html
+  res.sendFile(path.join(clientPath, "landing.html"));
 });
 
 // === CONNEXION MONGODB ===
