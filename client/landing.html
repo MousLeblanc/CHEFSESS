@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-page="landing">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Chef SES - Plateforme Intelligente de Restauration Collective</title>
+  <title data-i18n="landing.meta.title">Chef SES - Plateforme Intelligente de Restauration Collective</title>
   <link rel="stylesheet" href="css/landing.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body>
+<body data-page="landing">
   <!-- Navigation -->
   <div id="navbar-container"></div>
 
@@ -33,46 +33,55 @@
     
     <div class="hero-overlay"></div>
     
-    <div class="hero-content">
-      <div class="hero-badge">
-        <span data-i18n="landing.hero.badge">Plateforme intelligente de restauration collective</span>
-      </div>
-      <h1 class="hero-title fade-in-up" data-i18n="landing.hero.title">
+    <div class="container hero-content">
+      <p class="hero-tagline fade-in-up" data-i18n="landing.hero.tagline">
+        PLATEFORME INTELLIGENTE DE RESTAURATION COLLECTIVE
+      </p>
+
+      <h1 class="hero-title fade-in-up delay-1" data-i18n="landing.hero.title">
         Simplifiez votre gestion alimentaire avec l'IA
       </h1>
-      <p class="hero-subtitle fade-in-up delay-1" data-i18n="landing.hero.subtitle">
-       Réduisez vos coûts de 30%, optimisez vos menus en 2 minutes, et gérez vos stocks intelligemment pour les cuisines collectives
-des écoles, hôpitaux et EHPAD.
 
+      <p class="hero-subtitle fade-in-up delay-2" data-i18n="landing.hero.subtitle">
+        Réduisez vos coûts de 30%, optimisez vos menus en 2 minutes, 
+        et gérez vos stocks intelligemment pour les cuisines collectives 
+        (écoles, hôpitaux, EHPAD).
       </p>
-      <p>
-Menus conformes aux recommandations nutritionnelles,
-basés sur les données officielles CIQUAL.
-</p>
 
-      
-      <!-- Preuve sociale -->
-      <div class="hero-social-proof fade-in-up delay-1">
-        <div class="trust-badges">
-<span data-i18n="landing.hero.socialProof1">Premiers établissements pilotes</span>
-<span data-i18n="landing.hero.socialProof2">Retours utilisateurs très positifs</span>
-<span data-i18n="landing.hero.socialProof3">Jusqu'à 30 % d'économies observées</span>
-        </div>
-      </div>
-      
-      <div class="hero-buttons fade-in-up delay-2">
-        <a href="index.html" class="btn btn-primary" data-i18n="landing.hero.tryFree">
+      <p class="hero-badges fade-in-up delay-3">
+        <span class="hero-badge" data-i18n="landing.hero.badge1">
+          Menus conformes aux recommandations nutritionnelles
+        </span>
+        <span class="hero-badge" data-i18n="landing.hero.badge2">
+          Données officielles CIQUAL (ANSES)
+        </span>
+      </p>
+
+      <div class="hero-actions fade-in-up delay-4">
+        <a href="demo.html" class="btn btn-primary" data-i18n="landing.hero.primaryCta">
           Essayer gratuitement
         </a>
-        <a href="#contact" class="btn btn-secondary" data-i18n="landing.hero.scheduleDemo">
+        <a href="contact.html" class="btn btn-secondary" data-i18n="landing.hero.secondaryCta">
           Planifier une démo
         </a>
       </div>
-    </div>
-    
-    <div class="hero-scroll-indicator">
-      <span data-i18n="landing.hero.discover">Découvrir</span>
-      <div class="scroll-arrow">↓</div>
+
+      <div class="hero-chips fade-in-up delay-5">
+        <button class="chip" data-i18n="landing.hero.chip1">
+          Solution clé en main pour cuisines collectives
+        </button>
+        <button class="chip" data-i18n="landing.hero.chip2">
+          Intégration progressive avec vos équipes
+        </button>
+        <button class="chip" data-i18n="landing.hero.chip3">
+          Optimisation des coûts et des stocks
+        </button>
+      </div>
+
+      <div class="hero-scroll-indicator fade-in-up delay-6">
+        <span data-i18n="landing.hero.scroll">Découvrir</span>
+        <div class="scroll-arrow">↓</div>
+      </div>
     </div>
   </section>
 
@@ -180,6 +189,13 @@ basés sur les données officielles CIQUAL.
 <!-- Stats Section -->
 <section class="stats-section" id="stats">
   <div class="container">
+    <h2 class="section-title" data-i18n="landing.stats.title">
+      Déploiement pilote en cours
+    </h2>
+    <p class="section-subtitle" data-i18n="landing.stats.subtitle">
+      Chef SES est actuellement testé avec des cuisines collectives pilotes afin d'améliorer
+      l'expérience terrain et préparer le déploiement à plus grande échelle.
+    </p>
     <div class="stats-grid">
       <!-- 1. Recettes enrichies -->
       <div class="stat-card-animated" data-target="685">
@@ -191,10 +207,10 @@ basés sur les données officielles CIQUAL.
       <!-- 2. Pilote en cours (carte statique, pas d'animation) -->
       <div class="stat-card-static">
         <div class="stat-icon">🚧</div>
-        <div class="stat-status-pill">Pilote</div>
-        <div class="stat-label" data-i18n="landing.stats.pilot">Déploiement en cours</div>
-        <!-- Optionnel : petite ligne sous-titre -->
-        <!-- <div class="stat-helper">Recherche de cuisines collectives pilotes</div> -->
+        <div class="stat-number" data-count="0">0</div>
+        <div class="stat-label" data-i18n="landing.stats.pilotSites">
+          Établissements pilotes en préparation
+        </div>
       </div>
 
       <!-- 3. % d'économies moyennes -->
@@ -206,27 +222,39 @@ basés sur les données officielles CIQUAL.
     </div>
   </div>
 </section>
+
+  <!-- About Section -->
+  <section class="about-section" id="about">
+    <div class="container">
+      <h2 class="section-title" data-i18n="landing.about.title">
+        À propos de Chef SES
+      </h2>
+      <p class="about-text" data-i18n="landing.about.text">
+        Chef SES est une plateforme web complète qui simplifie la gestion de la restauration collective.
+        Elle centralise les profils nutritionnels, la génération de menus, le contrôle des stocks 
+        et la coordination avec les fournisseurs — permettant aux équipes de se concentrer sur l'essentiel :
+        des repas sains et équilibrés.
+      </p>
+    </div>
+  </section>
+
   <!-- CTA Section -->
   <section class="cta-section" id="cta">
     <div class="container">
-      <div class="cta-content">
-        <h2 class="cta-title" data-i18n="landing.cta.title">Prêt à transformer votre restauration collective ?</h2>
-        <p class="cta-subtitle" data-i18n="landing.cta.subtitle">
-          Rejoignez les établissements qui font confiance à Chef SES. 
-          Démo gratuite, sans engagement.
-        </p>
-        <div class="cta-buttons">
-          <a href="index.html" class="btn btn-primary btn-large" data-i18n="landing.cta.startNow">
-            Commencer maintenant
-          </a>
-          <a href="#contact" class="btn btn-secondary btn-large" data-i18n="landing.cta.scheduleDemo">
-            Planifier une démo
-          </a>
-        </div>
-        <div class="cta-guarantee">
-          <i class="fas fa-shield-alt"></i>
-          <span data-i18n="landing.cta.guarantee">Essai gratuit de 14 jours • Sans carte bancaire • Support dédié</span>
-        </div>
+      <h2 class="cta-title" data-i18n="landing.cta.title">
+        Prêt à transformer votre restauration collective ?
+      </h2>
+      <p class="cta-subtitle" data-i18n="landing.cta.subtitle">
+        Rejoignez les établissements qui font confiance à Chef SES. 
+        Démo gratuite, sans engagement.
+      </p>
+      <div class="cta-buttons">
+        <a href="contact.html" class="btn btn-primary btn-large" data-i18n="landing.cta.primaryCta">
+          Demander une démo
+        </a>
+        <a href="demo.html" class="btn btn-secondary btn-large" data-i18n="landing.cta.secondaryCta">
+          Essayer maintenant
+        </a>
       </div>
     </div>
   </section>
@@ -327,6 +355,40 @@ basés sur les données officielles CIQUAL.
   <script src="js/i18n.js"></script>
   <script src="js/common.js"></script>
   <script src="js/landing.js"></script>
+  <script>
+    // S'assurer que la traduction se fait après le chargement complet
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('📄 Landing page - DOMContentLoaded');
+      if (window.i18n) {
+        console.log('✅ i18n disponible, traduction initiale');
+        setTimeout(() => {
+          window.i18n.translate();
+        }, 200);
+      } else {
+        console.warn('⚠️ i18n non disponible au DOMContentLoaded');
+      }
+    });
+    
+    window.addEventListener('load', () => {
+      console.log('📄 Landing page - Window load');
+      if (window.i18n) {
+        console.log('🔄 Traduction finale après chargement complet de la page');
+        setTimeout(() => {
+          window.i18n.translate();
+        }, 300);
+      }
+    });
+    
+    // Écouter les changements de langue
+    window.addEventListener('languageChanged', (event) => {
+      console.log('🔄 Événement languageChanged déclenché', event.detail);
+      if (window.i18n) {
+        console.log('🌐 Retraduction de la page après changement de langue');
+        window.i18n.translate();
+      }
+    });
+  </script>
 </body>
 </html>
+
 
