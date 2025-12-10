@@ -135,6 +135,15 @@ document.addEventListener('DOMContentLoaded', () => {
       btnLoader.style.display = 'inline-block';
       submitBtn.disabled = true;
       
+      // Timeout de sécurité pour réactiver le bouton après 30 secondes
+      const safetyTimeout = setTimeout(() => {
+        console.warn('⚠️ Timeout de sécurité - réactivation du bouton');
+        btnText.style.display = 'inline-block';
+        btnLoader.style.display = 'none';
+        submitBtn.disabled = false;
+        showNotification('Le serveur met trop de temps à répondre. Veuillez réessayer.', 'error');
+      }, 30000);
+      
       try {
         const formData = {
           name: document.getElementById('contact-name').value,
@@ -145,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         // Try to send via API first
+        let apiSuccess = false;
         try {
           // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
           const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
@@ -155,13 +165,45 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify(formData)
           });
           
-          if (response.ok) {
-            showNotification('Message envoyé avec succès ! Nous vous répondrons sous 24h.', 'success');
+          let data;
+          try {
+            data = await response.json();
+          } catch (jsonError) {
+            // Si la réponse n'est pas du JSON valide
+            throw new Error(`Erreur serveur (${response.status}): ${response.statusText}`);
+          }
+          
+          if (response.ok && data.success) {
+            showNotification(data.message || 'Message envoyé avec succès ! Nous vous répondrons sous 24h.', 'success');
             contactForm.reset();
+            apiSuccess = true;
             return;
+          } else {
+            // Erreur retournée par l'API - afficher le message d'erreur
+            const errorMsg = data.message || data.error || `Erreur serveur (${response.status})`;
+            console.error('Erreur API:', errorMsg);
+            throw new Error(errorMsg);
           }
         } catch (apiError) {
+          console.error('Erreur API complète:', apiError);
+          
+          // Si c'est une erreur serveur (500, etc.), afficher l'erreur et ne pas utiliser mailto
+          if (apiError.message.includes('Erreur serveur') || apiError.message.includes('500')) {
+            throw apiError; // Relancer l'erreur pour qu'elle soit gérée par le catch principal
+          }
+          
+          // Si c'est une erreur réseau, ne pas utiliser mailto non plus
+          if (apiError.name === 'TypeError' && apiError.message.includes('fetch')) {
+            throw new Error('Impossible de contacter le serveur. Vérifiez votre connexion.');
+          }
+          
+          // Si l'API échoue pour une autre raison, utiliser le fallback mailto
           console.log('API not available, using mailto fallback');
+        }
+        
+        // Si l'API a réussi, ne pas continuer avec mailto
+        if (apiSuccess) {
+          return;
         }
 
         // Fallback to mailto
@@ -174,8 +216,13 @@ document.addEventListener('DOMContentLoaded', () => {
         showNotification('Message préparé ! Votre client email va s\'ouvrir.', 'success');
         contactForm.reset();
       } catch (error) {
-        showNotification('Erreur lors de l\'envoi. Veuillez réessayer.', 'error');
+        console.error('Erreur complète:', error);
+        showNotification(error.message || 'Erreur lors de l\'envoi. Veuillez réessayer.', 'error');
       } finally {
+        // Annuler le timeout de sécurité
+        clearTimeout(safetyTimeout);
+        
+        // Toujours réactiver le bouton, même en cas d'erreur
         btnText.style.display = 'inline-block';
         btnLoader.style.display = 'none';
         submitBtn.disabled = false;

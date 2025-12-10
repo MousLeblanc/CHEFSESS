@@ -21,11 +21,25 @@ const createTransporter = () => {
   
   // Si Gmail est configuré avec un mot de passe d'application
   if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+    // Enlever les espaces du mot de passe d'application (Gmail les affiche avec des espaces mais il faut les enlever)
+    const appPassword = process.env.GMAIL_APP_PASSWORD.replace(/\s/g, '').trim();
+    
+    console.log('📧 Configuration Gmail détectée');
+    console.log('   User:', process.env.GMAIL_USER);
+    console.log('   App Password length:', appPassword.length, 'caractères');
+    console.log('   App Password (preview):', appPassword.length > 0 ? appPassword.substring(0, 4) + '...' + appPassword.substring(appPassword.length - 4) : 'VIDE');
+    
+    // Vérifier que le mot de passe a la bonne longueur (16 caractères sans espaces)
+    if (appPassword.length !== 16) {
+      console.error('⚠️ ATTENTION: Le mot de passe d\'application doit faire exactement 16 caractères (sans espaces)');
+      console.error('   Longueur actuelle:', appPassword.length);
+    }
+    
     return nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
+        user: process.env.GMAIL_USER.trim(),
+        pass: appPassword,
       },
     });
   }
@@ -68,10 +82,23 @@ router.post('/', asyncHandler(async (req, res) => {
   try {
     const transporter = createTransporter();
     
+    // Vérifier que le transporteur est bien configuré
+    if (!transporter) {
+      throw new Error('Transporteur email non configuré');
+    }
+    
     // Préparer le contenu de l'email
+    const recipientEmail = process.env.CONTACT_EMAIL || 'info.chefses@gmail.com';
+    const senderEmail = process.env.GMAIL_USER || process.env.SMTP_USER || 'noreply@chefses.com';
+    
+    console.log('📧 Préparation de l\'email:');
+    console.log('   De:', senderEmail);
+    console.log('   À:', recipientEmail);
+    console.log('   Reply-To:', email);
+    
     const mailOptions = {
-      from: process.env.SMTP_FROM || process.env.GMAIL_USER || `"Chef SES Contact" <noreply@chefses.com>`,
-      to: process.env.CONTACT_EMAIL || 'info.chefses@gmail.com',
+      from: process.env.SMTP_FROM || `"Chef SES Contact" <${senderEmail}>`,
+      to: recipientEmail,
       replyTo: email,
       subject: `Contact depuis Chef SES - ${name}`,
       html: `
@@ -104,11 +131,17 @@ ${message}
     };
 
     // Envoyer l'email
+    console.log('📤 Tentative d\'envoi de l\'email...');
     const info = await transporter.sendMail(mailOptions);
     
-    console.log('✅ Email de contact envoyé:', info.messageId);
+    console.log('✅ Email de contact envoyé avec succès!');
+    console.log('   Message ID:', info.messageId);
     console.log('   À:', mailOptions.to);
     console.log('   De:', email);
+    console.log('   Réponse acceptée:', info.accepted);
+    if (info.rejected && info.rejected.length > 0) {
+      console.log('   ⚠️ Rejeté:', info.rejected);
+    }
 
     res.status(200).json({
       success: true,
@@ -116,7 +149,14 @@ ${message}
       messageId: info.messageId,
     });
   } catch (error) {
-    console.error('❌ Erreur lors de l\'envoi de l\'email:', error);
+    console.error('❌ Erreur lors de l\'envoi de l\'email:');
+    console.error('   Type:', error.constructor.name);
+    console.error('   Message:', error.message);
+    console.error('   Code:', error.code);
+    if (error.response) {
+      console.error('   Response:', error.response);
+    }
+    console.error('   Stack:', error.stack);
     
     // Si c'est un transporteur de test qui échoue, on log quand même
     if (!process.env.SMTP_HOST && !process.env.GMAIL_USER) {
@@ -132,9 +172,23 @@ ${message}
       });
     }
     
+    // Message d'erreur plus détaillé pour l'utilisateur
+    let errorMessage = 'Erreur lors de l\'envoi du message. Veuillez réessayer plus tard.';
+    if (error.code === 'EAUTH' || error.responseCode === 535) {
+      errorMessage = 'Erreur d\'authentification Gmail. Vérifiez votre mot de passe d\'application dans le fichier .env';
+      console.error('🔴 PROBLÈME D\'AUTHENTIFICATION GMAIL:');
+      console.error('   1. Vérifiez que la validation en 2 étapes est activée sur votre compte Gmail');
+      console.error('   2. Créez un nouveau mot de passe d\'application: https://myaccount.google.com/apppasswords');
+      console.error('   3. Dans .env, GMAIL_APP_PASSWORD doit être SANS ESPACES (16 caractères)');
+      console.error('   4. Redémarrez le serveur après modification du .env');
+    } else if (error.code === 'ECONNECTION') {
+      errorMessage = 'Impossible de se connecter au serveur email.';
+    }
+    
     res.status(500).json({
       success: false,
-      message: 'Erreur lors de l\'envoi du message. Veuillez réessayer plus tard.',
+      message: errorMessage,
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
 }));
