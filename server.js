@@ -48,6 +48,7 @@ import modularMenuRoutes from "./routes/modularMenuRoutes.js";
 import customerOrderRoutes from "./routes/customerOrderRoutes.js";
 import deliveryReceiptRoutes from "./routes/deliveryReceiptRoutes.js";
 import barcodeRoutes from "./routes/barcodeRoutes.js";
+import contactRoutes from "./routes/contactRoutes.js";
 
 // --- OpenAI client ---
 import openai from "./services/openaiClient.js";
@@ -216,6 +217,7 @@ app.use("/api/menu-modular", modularMenuRoutes);
 app.use("/api/customer-orders", customerOrderRoutes);
 app.use("/api/delivery-receipts", deliveryReceiptRoutes);
 app.use("/api/barcode", barcodeRoutes);
+app.use("/api/contact", contactRoutes);
 
 // === HEALTH CHECK ===
 app.get("/api/health", (req, res) => {
