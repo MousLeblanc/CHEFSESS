@@ -95,6 +95,8 @@ export class AIService {
 
   fallbackToOpenAI() {
     console.log('🔄 Basculement vers OpenAI par défaut');
+    console.log(`   Provider actuel: ${this.provider}`);
+    console.log(`   OPENAI_API_KEY disponible: ${process.env.OPENAI_API_KEY ? 'Oui' : 'Non'}`);
     
     // Vérifier que OpenAI est disponible
     if (!process.env.OPENAI_API_KEY) {
@@ -103,6 +105,7 @@ export class AIService {
       console.error('   Le serveur continuera mais les fonctionnalités IA ne fonctionneront pas.');
       // Ne pas faire crasher le serveur, mais marquer comme non initialisé
       this.initialized = false;
+      this.provider = 'none'; // Marquer comme aucun provider disponible
       return;
     }
     
@@ -111,6 +114,7 @@ export class AIService {
     this.openaiClient = openai;
     this.initialized = true;
     console.log('✅ OpenAI configuré comme fallback');
+    console.log(`   Nouveau provider: ${this.provider}`);
   }
 
   /**
@@ -158,8 +162,14 @@ export class AIService {
           return await this.generateOllama(messages, { model, temperature, max_tokens });
 
         case 'openai':
+          console.log('📞 Utilisation de OpenAI');
+          return await this.generateOpenAI(messages, { model, temperature, max_tokens, response_format });
+          
+        case 'none':
+          throw new Error('Aucun provider IA configuré. Configurez ANTHROPIC_API_KEY ou OPENAI_API_KEY sur Render.');
+          
         default:
-          console.log('📞 Utilisation de OpenAI (provider par défaut)');
+          console.log(`📞 Utilisation de ${this.provider} (provider par défaut)`);
           return await this.generateOpenAI(messages, { model, temperature, max_tokens, response_format });
       }
     } catch (error) {
