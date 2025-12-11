@@ -129,15 +129,23 @@ export class AIService {
     // Attendre que le provider soit initialisé
     await this.initPromise;
     
-    // Vérifier que le service est initialisé
-    if (!this.initialized) {
-      throw new Error('Service IA non initialisé. Vérifiez que OPENAI_API_KEY ou ANTHROPIC_API_KEY est configurée.');
-    }
-    
     console.log(`🤖 Appel à generate() avec provider: ${this.provider}`);
     console.log(`   AI_PROVIDER env: ${process.env.AI_PROVIDER || 'non défini (défaut: anthropic)'}`);
     console.log(`   ANTHROPIC_API_KEY: ${process.env.ANTHROPIC_API_KEY ? '✅ Définie' : '❌ Non définie'}`);
     console.log(`   OPENAI_API_KEY: ${process.env.OPENAI_API_KEY ? '✅ Définie' : '❌ Non définie'}`);
+    console.log(`   Service initialisé: ${this.initialized ? '✅ Oui' : '❌ Non'}`);
+    
+    // Vérifier que le service est initialisé
+    if (!this.initialized) {
+      // Message d'erreur spécifique selon le provider
+      if (this.provider === 'anthropic') {
+        throw new Error('ANTHROPIC_API_KEY non configurée. Configurez ANTHROPIC_API_KEY sur Render (Environment > Variables d\'environnement).');
+      }
+      if (this.provider === 'openai') {
+        throw new Error('OPENAI_API_KEY non configurée. Configurez OPENAI_API_KEY sur Render (Environment > Variables d\'environnement).');
+      }
+      throw new Error(`Service IA non initialisé pour provider ${this.provider}. Vérifiez votre configuration sur Render.`);
+    }
     
     const {
       model = null,
@@ -172,8 +180,8 @@ export class AIService {
           throw new Error('Aucun provider IA configuré. Configurez ANTHROPIC_API_KEY ou OPENAI_API_KEY sur Render.');
           
         default:
-          console.log(`📞 Utilisation de ${this.provider} (provider par défaut)`);
-          return await this.generateOpenAI(messages, { model, temperature, max_tokens, response_format });
+          console.error(`❌ Provider inconnu: ${this.provider}`);
+          throw new Error(`Provider IA inconnu: ${this.provider}. Configurez AI_PROVIDER sur Render (anthropic, openai, etc.).`);
       }
     } catch (error) {
       console.error(`❌ Erreur avec ${this.provider}:`, error.message);
