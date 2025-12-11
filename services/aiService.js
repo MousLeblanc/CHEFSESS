@@ -202,8 +202,11 @@ export class AIService {
         throw new Error(`Erreur avec Anthropic Claude: ${error.message}. Vérifiez votre configuration ANTHROPIC_API_KEY sur Render.`);
       }
       
-      // Fallback automatique vers OpenAI si erreur ET si OpenAI est disponible
-      if (this.provider !== 'openai' && process.env.OPENAI_API_KEY) {
+      // Fallback automatique vers OpenAI UNIQUEMENT si le provider n'est pas explicitement Anthropic
+      // Si AI_PROVIDER=anthropic, on ne fait JAMAIS de fallback vers OpenAI
+      const isAnthropicConfigured = process.env.AI_PROVIDER === 'anthropic' || (!process.env.AI_PROVIDER && !process.env.OPENAI_API_KEY);
+      
+      if (!isAnthropicConfigured && this.provider !== 'openai' && process.env.OPENAI_API_KEY) {
         console.log('🔄 Tentative de fallback vers OpenAI...');
         try {
           return await this.generateOpenAI(messages, { model, temperature, max_tokens, response_format });
