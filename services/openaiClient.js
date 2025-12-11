@@ -7,14 +7,26 @@ dotenv.config();
 // Vérifier que la clé API est définie
 const apiKey = process.env.OPENAI_API_KEY;
 if (!apiKey) {
-  console.error('ERREUR: La clé API OpenAI n\'est pas définie dans les variables d\'environnement.');
-  console.error('Veuillez définir la variable d\'environnement OPENAI_API_KEY.');
-  process.exit(1);
+  console.warn('⚠️ OPENAI_API_KEY non définie. Le client OpenAI ne sera pas disponible.');
+  console.warn('   Si vous utilisez Anthropic, c\'est normal. Le serveur continuera de fonctionner.');
+  // Ne pas faire crasher le serveur - créer un client vide qui échouera gracieusement
+  const openai = {
+    chat: {
+      completions: {
+        create: async () => {
+          throw new Error('OPENAI_API_KEY non configurée. Configurez OPENAI_API_KEY ou utilisez un autre provider (Anthropic, etc.)');
+        }
+      }
+    }
+  };
+  export default openai;
+} else {
+  // Créer et configurer le client OpenAI
+  const openai = new OpenAI({
+    apiKey: apiKey,
+  });
+  
+  export default openai;
 }
-
-// Créer et configurer le client OpenAI
-const openai = new OpenAI({
-  apiKey: apiKey,
-});
 
 export default openai;
