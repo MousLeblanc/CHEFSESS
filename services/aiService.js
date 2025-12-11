@@ -37,20 +37,11 @@ export class AIService {
             apiKey: process.env.ANTHROPIC_API_KEY,
           });
           
-          // Tester la connexion avec une requête simple
-          try {
-            await this.client.messages.create({
-              model: 'claude-3-haiku-20240307',
-              max_tokens: 10,
-              messages: [{ role: 'user', content: 'test' }]
-            });
-            this.initialized = true;
-            console.log('✅ Anthropic Claude initialisé et testé');
-          } catch (testError) {
-            console.error('❌ Erreur lors du test de connexion Anthropic:', testError.message);
-            console.warn('⚠️ Basculement vers OpenAI.');
-            this.fallbackToOpenAI();
-          }
+          // Initialiser sans tester la connexion (le test se fera au premier appel)
+          // Cela évite de bloquer le démarrage du serveur
+          this.initialized = true;
+          console.log('✅ Anthropic Claude initialisé');
+          console.log('   La connexion sera testée au premier appel API');
         } catch (error) {
           console.error('❌ Erreur lors de l\'initialisation Anthropic:', error.message);
           console.warn('⚠️ Anthropic SDK non disponible. Basculement vers OpenAI.');
