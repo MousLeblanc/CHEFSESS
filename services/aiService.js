@@ -127,6 +127,11 @@ export class AIService {
       throw new Error('Service IA non initialisé. Vérifiez que OPENAI_API_KEY ou ANTHROPIC_API_KEY est configurée.');
     }
     
+    console.log(`🤖 Appel à generate() avec provider: ${this.provider}`);
+    console.log(`   AI_PROVIDER env: ${process.env.AI_PROVIDER || 'non défini (défaut: anthropic)'}`);
+    console.log(`   ANTHROPIC_API_KEY: ${process.env.ANTHROPIC_API_KEY ? '✅ Définie' : '❌ Non définie'}`);
+    console.log(`   OPENAI_API_KEY: ${process.env.OPENAI_API_KEY ? '✅ Définie' : '❌ Non définie'}`);
+    
     const {
       model = null,
       temperature = 0.7,
@@ -137,19 +142,24 @@ export class AIService {
     try {
       switch (this.provider) {
         case 'anthropic':
+          console.log('📞 Utilisation de Anthropic Claude');
           return await this.generateAnthropic(messages, { model, temperature, max_tokens });
 
         case 'gemini':
+          console.log('📞 Utilisation de Google Gemini');
           return await this.generateGemini(messages, { model, temperature, max_tokens });
 
         case 'mistral':
+          console.log('📞 Utilisation de Mistral AI');
           return await this.generateMistral(messages, { model, temperature, max_tokens, response_format });
 
         case 'ollama':
+          console.log('📞 Utilisation de Ollama');
           return await this.generateOllama(messages, { model, temperature, max_tokens });
 
         case 'openai':
         default:
+          console.log('📞 Utilisation de OpenAI (provider par défaut)');
           return await this.generateOpenAI(messages, { model, temperature, max_tokens, response_format });
       }
     } catch (error) {
