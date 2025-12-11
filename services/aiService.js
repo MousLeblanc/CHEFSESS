@@ -104,10 +104,22 @@ export class AIService {
 
   fallbackToOpenAI() {
     console.log('🔄 Basculement vers OpenAI par défaut');
+    
+    // Vérifier que OpenAI est disponible
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('❌ ERREUR CRITIQUE: Aucune clé API IA configurée !');
+      console.error('   OPENAI_API_KEY et ANTHROPIC_API_KEY sont toutes les deux manquantes.');
+      console.error('   Le serveur continuera mais les fonctionnalités IA ne fonctionneront pas.');
+      // Ne pas faire crasher le serveur, mais marquer comme non initialisé
+      this.initialized = false;
+      return;
+    }
+    
     this.provider = 'openai';
     this.client = openai;
     this.openaiClient = openai;
     this.initialized = true;
+    console.log('✅ OpenAI configuré comme fallback');
   }
 
   /**
