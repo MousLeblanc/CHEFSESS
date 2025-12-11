@@ -24,24 +24,35 @@ export const generateRecipes = asyncHandler(async (req, res) => {
 
     // Construire le prompt pour l'IA
     const prompt = buildRecipeGenerationPrompt(context, filters, count);
+    console.log('📝 Prompt construit, longueur:', prompt.length, 'caractères');
 
     // Appeler l'IA pour générer les recettes
-    const response = await aiService.generate([
-      {
-        role: "system",
-        content: "Tu es un expert en nutrition et en cuisine adaptée aux établissements de soins. Tu génères des recettes saines, équilibrées et adaptées aux besoins spécifiques des patients/résidents."
-      },
-      {
-        role: "user",
-        content: prompt
-      }
-    ], {
-      temperature: 0.7,
-      max_tokens: 4000
-    });
+    console.log('🤖 Appel à l\'IA...');
+    let response;
+    try {
+      response = await aiService.generate([
+        {
+          role: "system",
+          content: "Tu es un expert en nutrition et en cuisine adaptée aux établissements de soins. Tu génères des recettes saines, équilibrées et adaptées aux besoins spécifiques des patients/résidents."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ], {
+        temperature: 0.7,
+        max_tokens: 4000
+      });
+      console.log('✅ Réponse IA reçue');
+    } catch (aiError) {
+      console.error('❌ Erreur lors de l\'appel à l\'IA:', aiError);
+      console.error('   Type:', aiError.constructor.name);
+      console.error('   Message:', aiError.message);
+      throw new Error(`Erreur lors de l'appel à l'IA: ${aiError.message}`);
+    }
 
     const generatedContent = response.content;
-    console.log('🤖 Réponse IA reçue');
+    console.log('📄 Contenu généré, longueur:', generatedContent?.length || 0, 'caractères');
 
     // Parser la réponse JSON de l'IA
     let newRecipes;
