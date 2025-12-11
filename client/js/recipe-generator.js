@@ -82,8 +82,10 @@ class RecipeGenerator {
       this.displayGeneratedRecipes(result.recipes);
       resultsDiv.style.display = 'block';
 
-      // Recharger les statistiques
-      this.loadStats();
+      // Recharger les statistiques après génération (avec un petit délai pour laisser MongoDB se mettre à jour)
+      setTimeout(() => {
+        this.loadStats();
+      }, 500);
 
       // Afficher un message de succès
       this.showNotification(`✅ ${result.count} recettes générées avec succès !`, 'success');
