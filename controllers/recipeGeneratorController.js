@@ -301,6 +301,29 @@ function validateAndNormalizeRecipe(recipe, context, filters) {
   // ⚠️ FORCER la texture des filtres si elle est définie (priorité absolue)
   const forcedTexture = filters.texture || recipe.texture || 'normale';
   
+  // Générer les tags automatiquement
+  const tags = [];
+  tags.push(`#${context}`); // Ex: #ehpad, #hopital
+  if (forcedTexture) {
+    tags.push(`#${forcedTexture}`); // Ex: #iddsi_4, #mixée
+  }
+  if (filters.pathologies && filters.pathologies.length > 0) {
+    filters.pathologies.forEach(patho => {
+      tags.push(`#${patho.toLowerCase().replace(/\s+/g, '_')}`); // Ex: #diabète, #hypertension
+    });
+  }
+  if (filters.diet && filters.diet.length > 0) {
+    filters.diet.forEach(d => {
+      tags.push(`#${d.toLowerCase().replace(/\s+/g, '_')}`); // Ex: #hyperprotéiné, #sans_sel_ajouté
+    });
+  }
+  if (filters.allergens && filters.allergens.length > 0) {
+    filters.allergens.forEach(allergen => {
+      tags.push(`#sans_${allergen.toLowerCase().replace(/\s+/g, '_')}`); // Ex: #sans_gluten, #sans_lactose
+    });
+  }
+  tags.push('#ia_généré'); // Tag pour identifier les recettes générées par IA
+  
   const normalizedRecipe = {
     name: recipe.name.trim(),
     category: recipe.category.toLowerCase(),
@@ -309,6 +332,7 @@ function validateAndNormalizeRecipe(recipe, context, filters) {
     diet: Array.isArray(recipe.diet) ? recipe.diet : [],
     pathologies: Array.isArray(recipe.pathologies) ? recipe.pathologies : [],
     allergens: Array.isArray(recipe.allergens) ? recipe.allergens : [],
+    tags: tags, // Tags automatiques basés sur les filtres
     nutritionalProfile: recipe.nutritionalProfile || {
       kcal: 0,
       protein: 0,
