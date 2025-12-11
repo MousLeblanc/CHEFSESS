@@ -16,7 +16,13 @@ const recipeSchema = new mongoose.Schema({
   // Textures & régimes
   texture: {
     type: String,
-    enum: ["normale", "tendre", "hachée", "mixée", "moulinée", "lisse", "liquide", "boire"],
+    enum: [
+      "normale", "tendre", "hachée", "mixée", "moulinée", "lisse", "liquide", "boire",
+      // Normes IDDSI (International Dysphagia Diet Standardisation Initiative)
+      "iddsi_0", "iddsi_1", "iddsi_2", "iddsi_3", "iddsi_4", "iddsi_5", "iddsi_6", "iddsi_7",
+      // Autres textures spécialisées
+      "finger_food"
+    ],
     default: "normale"
   },
   diet: [{ type: String }], // ex: ["sans sel ajouté", "hypocalorique", "végétarien"]
