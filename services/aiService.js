@@ -180,10 +180,20 @@ export class AIService {
   }
 
   async generateOpenAI(messages, options) {
+    // Vérifier que OpenAI est disponible
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY non configurée. Impossible d\'utiliser OpenAI.');
+    }
+    
     const { model = 'gpt-4o', temperature, max_tokens, response_format } = options;
     
     // Utiliser le client OpenAI (peut être this.client ou this.openaiClient)
     const openaiClient = this.openaiClient || this.client || openai;
+    
+    // Vérifier que le client est valide
+    if (!openaiClient || !openaiClient.chat || !openaiClient.chat.completions) {
+      throw new Error('Client OpenAI non disponible. Vérifiez que OPENAI_API_KEY est configurée.');
+    }
     
     const completion = await openaiClient.chat.completions.create({
       model,
