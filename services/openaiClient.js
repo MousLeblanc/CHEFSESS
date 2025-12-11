@@ -19,14 +19,11 @@ if (!apiKey) {
       }
     }
   };
-  export default openai;
 } else {
   // Créer et configurer le client OpenAI
-  const openai = new OpenAI({
+  openai = new OpenAI({
     apiKey: apiKey,
   });
-  
-  export default openai;
 }
 
 export default openai;
