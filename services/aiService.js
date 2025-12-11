@@ -27,8 +27,11 @@ export class AIService {
         try {
           // Vérifier que la clé API est définie
           if (!process.env.ANTHROPIC_API_KEY) {
-            console.warn('⚠️ ANTHROPIC_API_KEY non définie. Basculement vers OpenAI.');
-            this.fallbackToOpenAI();
+            console.error('❌ ANTHROPIC_API_KEY non définie alors que AI_PROVIDER=anthropic');
+            console.error('   Configurez ANTHROPIC_API_KEY sur Render (Environment > Variables d\'environnement)');
+            // Ne PAS faire de fallback automatique - l'utilisateur a explicitement choisi Anthropic
+            this.initialized = false;
+            this.provider = 'none';
             return;
           }
           
