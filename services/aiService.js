@@ -25,14 +25,35 @@ export class AIService {
     switch (this.provider) {
       case 'anthropic':
         try {
+          // Vérifier que la clé API est définie
+          if (!process.env.ANTHROPIC_API_KEY) {
+            console.warn('⚠️ ANTHROPIC_API_KEY non définie. Basculement vers OpenAI.');
+            this.fallbackToOpenAI();
+            return;
+          }
+          
           const Anthropic = (await import('@anthropic-ai/sdk')).default;
           this.client = new Anthropic({
             apiKey: process.env.ANTHROPIC_API_KEY,
           });
-          this.initialized = true;
-          console.log('✅ Anthropic Claude initialisé');
+          
+          // Tester la connexion avec une requête simple
+          try {
+            await this.client.messages.create({
+              model: 'claude-3-haiku-20240307',
+              max_tokens: 10,
+              messages: [{ role: 'user', content: 'test' }]
+            });
+            this.initialized = true;
+            console.log('✅ Anthropic Claude initialisé et testé');
+          } catch (testError) {
+            console.error('❌ Erreur lors du test de connexion Anthropic:', testError.message);
+            console.warn('⚠️ Basculement vers OpenAI.');
+            this.fallbackToOpenAI();
+          }
         } catch (error) {
-          console.warn('⚠️ Anthropic SDK non installé. Installez avec: npm install @anthropic-ai/sdk');
+          console.error('❌ Erreur lors de l\'initialisation Anthropic:', error.message);
+          console.warn('⚠️ Anthropic SDK non disponible. Basculement vers OpenAI.');
           this.fallbackToOpenAI();
         }
         break;
@@ -97,6 +118,11 @@ export class AIService {
   async generate(messages, options = {}) {
     // Attendre que le provider soit initialisé
     await this.initPromise;
+    
+    // Vérifier que le service est initialisé
+    if (!this.initialized) {
+      throw new Error('Service IA non initialisé. Vérifiez que OPENAI_API_KEY ou ANTHROPIC_API_KEY est configurée.');
+    }
     
     const {
       model = null,
