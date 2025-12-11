@@ -95,9 +95,27 @@ export const generateRecipes = asyncHandler(async (req, res) => {
 
   } catch (error) {
     console.error('❌ Erreur génération recettes:', error);
+    console.error('   Type:', error.constructor.name);
+    console.error('   Message:', error.message);
+    console.error('   Stack:', error.stack);
+    
+    // Message d'erreur plus détaillé pour le client
+    let errorMessage = 'Erreur lors de la génération des recettes';
+    
+    if (error.message && error.message.includes('API key')) {
+      errorMessage = 'Clé API manquante ou invalide. Vérifiez la configuration de l\'IA.';
+    } else if (error.message && error.message.includes('rate limit')) {
+      errorMessage = 'Limite de requêtes atteinte. Veuillez réessayer plus tard.';
+    } else if (error.message && error.message.includes('timeout')) {
+      errorMessage = 'Timeout lors de l\'appel à l\'IA. Veuillez réessayer.';
+    } else if (error.message) {
+      errorMessage = `Erreur: ${error.message}`;
+    }
+    
     res.status(500).json({
       success: false,
-      message: 'Erreur lors de la génération des recettes'
+      message: errorMessage,
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
