@@ -154,6 +154,22 @@ export class AIService {
       }
     } catch (error) {
       console.error(`❌ Erreur avec ${this.provider}:`, error.message);
+      console.error('   Stack:', error.stack?.substring(0, 200));
+      
+      // Si c'est Anthropic qui échoue, donner un message d'erreur spécifique
+      if (this.provider === 'anthropic') {
+        if (!process.env.ANTHROPIC_API_KEY) {
+          throw new Error('ANTHROPIC_API_KEY non configurée. Vérifiez votre configuration sur Render (Environment > Variables d\'environnement).');
+        }
+        if (error.message && error.message.includes('authentication')) {
+          throw new Error('Erreur d\'authentification Anthropic. Vérifiez que votre ANTHROPIC_API_KEY est correcte sur Render.');
+        }
+        if (error.message && error.message.includes('rate limit')) {
+          throw new Error('Limite de requêtes Anthropic atteinte. Veuillez réessayer plus tard.');
+        }
+        // Ne pas faire de fallback vers OpenAI si Anthropic est configuré
+        throw new Error(`Erreur avec Anthropic Claude: ${error.message}. Vérifiez votre configuration ANTHROPIC_API_KEY sur Render.`);
+      }
       
       // Fallback automatique vers OpenAI si erreur ET si OpenAI est disponible
       if (this.provider !== 'openai' && process.env.OPENAI_API_KEY) {
@@ -167,10 +183,6 @@ export class AIService {
       }
       
       // Si pas de fallback possible, donner un message d'erreur clair
-      if (this.provider === 'anthropic' && !process.env.ANTHROPIC_API_KEY) {
-        throw new Error('ANTHROPIC_API_KEY non configurée. Vérifiez votre configuration sur Render.');
-      }
-      
       if (this.provider === 'openai' && !process.env.OPENAI_API_KEY) {
         throw new Error('OPENAI_API_KEY non configurée. Configurez OPENAI_API_KEY ou utilisez un autre provider (Anthropic, etc.)');
       }
@@ -211,6 +223,16 @@ export class AIService {
   }
 
   async generateAnthropic(messages, options) {
+    // Vérifier que la clé API est définie
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error('ANTHROPIC_API_KEY non configurée. Vérifiez votre configuration sur Render (Environment > Variables d\'environnement).');
+    }
+    
+    // Vérifier que le client est initialisé
+    if (!this.client) {
+      throw new Error('Client Anthropic non initialisé. Vérifiez que AI_PROVIDER=anthropic et ANTHROPIC_API_KEY sont configurés sur Render.');
+    }
+    
     // Modèles Claude disponibles: claude-3-5-sonnet-20240620, claude-3-opus-20240229, claude-3-haiku-20240307
     // Utiliser claude-3-haiku-20240307 par défaut (généralement disponible pour tous les comptes)
     const { model = 'claude-3-haiku-20240307', temperature, max_tokens } = options;
@@ -228,17 +250,17 @@ export class AIService {
       return { role: 'user', content: msg.content };
     });
 
-    // Vérifier que le client est initialisé
-    if (!this.client) {
-      throw new Error('Client Anthropic non initialisé');
-    }
-
-    const message = await this.client.messages.create({
-      model: model || 'claude-3-haiku-20240307',
-      max_tokens: max_tokens || 4000,
-      temperature: temperature || 0.7,
-      messages: anthropicMessages
-    });
+    console.log('🤖 Appel à Anthropic Claude...');
+    console.log('   Modèle:', model);
+    console.log('   Messages:', anthropicMessages.length);
+    
+    try {
+      const message = await this.client.messages.create({
+        model: model || 'claude-3-haiku-20240307',
+        max_tokens: max_tokens || 4000,
+        temperature: temperature || 0.7,
+        messages: anthropicMessages
+      });
 
     return {
       content: message.content[0].text,
