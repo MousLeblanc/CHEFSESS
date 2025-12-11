@@ -262,15 +262,27 @@ export class AIService {
         messages: anthropicMessages
       });
 
-    return {
-      content: message.content[0].text,
-      usage: {
-        prompt_tokens: message.usage.input_tokens,
-        completion_tokens: message.usage.output_tokens,
-        total_tokens: message.usage.input_tokens + message.usage.output_tokens
-      },
-      model: message.model
-    };
+      console.log('✅ Réponse Anthropic reçue');
+      
+      return {
+        content: message.content[0].text,
+        usage: {
+          prompt_tokens: message.usage.input_tokens,
+          completion_tokens: message.usage.output_tokens,
+          total_tokens: message.usage.input_tokens + message.usage.output_tokens
+        },
+        model: message.model
+      };
+    } catch (anthropicError) {
+      console.error('❌ Erreur lors de l\'appel à Anthropic:', anthropicError.message);
+      if (anthropicError.status === 401) {
+        throw new Error('Erreur d\'authentification Anthropic. Vérifiez que votre ANTHROPIC_API_KEY est correcte sur Render.');
+      }
+      if (anthropicError.status === 429) {
+        throw new Error('Limite de requêtes Anthropic atteinte. Veuillez réessayer plus tard.');
+      }
+      throw new Error(`Erreur Anthropic: ${anthropicError.message}. Vérifiez votre configuration ANTHROPIC_API_KEY sur Render.`);
+    }
   }
 
   async generateGemini(messages, options) {
