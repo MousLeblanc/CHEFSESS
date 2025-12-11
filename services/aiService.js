@@ -155,10 +155,24 @@ export class AIService {
     } catch (error) {
       console.error(`❌ Erreur avec ${this.provider}:`, error.message);
       
-      // Fallback automatique vers OpenAI si erreur
-      if (this.provider !== 'openai') {
+      // Fallback automatique vers OpenAI si erreur ET si OpenAI est disponible
+      if (this.provider !== 'openai' && process.env.OPENAI_API_KEY) {
         console.log('🔄 Tentative de fallback vers OpenAI...');
-        return await this.generateOpenAI(messages, { model, temperature, max_tokens, response_format });
+        try {
+          return await this.generateOpenAI(messages, { model, temperature, max_tokens, response_format });
+        } catch (openaiError) {
+          console.error('❌ Erreur également avec OpenAI:', openaiError.message);
+          throw new Error(`Erreur avec ${this.provider} et fallback OpenAI échoué: ${error.message}`);
+        }
+      }
+      
+      // Si pas de fallback possible, donner un message d'erreur clair
+      if (this.provider === 'anthropic' && !process.env.ANTHROPIC_API_KEY) {
+        throw new Error('ANTHROPIC_API_KEY non configurée. Vérifiez votre configuration sur Render.');
+      }
+      
+      if (this.provider === 'openai' && !process.env.OPENAI_API_KEY) {
+        throw new Error('OPENAI_API_KEY non configurée. Configurez OPENAI_API_KEY ou utilisez un autre provider (Anthropic, etc.)');
       }
       
       throw error;
