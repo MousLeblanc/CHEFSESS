@@ -223,9 +223,14 @@ export class AIService {
   }
 
   async generateOpenAI(messages, options) {
+    // Protection : ne pas utiliser OpenAI si Anthropic est le provider choisi
+    if (process.env.AI_PROVIDER === 'anthropic' || (!process.env.AI_PROVIDER && !process.env.OPENAI_API_KEY)) {
+      throw new Error('AI_PROVIDER est configuré pour Anthropic mais ANTHROPIC_API_KEY n\'est pas définie. Configurez ANTHROPIC_API_KEY sur Render (Environment > Variables d\'environnement).');
+    }
+    
     // Vérifier que OpenAI est disponible
     if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY non configurée. Impossible d\'utiliser OpenAI.');
+      throw new Error('OPENAI_API_KEY non configurée. Impossible d\'utiliser OpenAI. Configurez OPENAI_API_KEY sur Render ou utilisez AI_PROVIDER=anthropic avec ANTHROPIC_API_KEY.');
     }
     
     const { model = 'gpt-4o', temperature, max_tokens, response_format } = options;
