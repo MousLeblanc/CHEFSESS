@@ -1,163 +1,14 @@
 /* ============================================
    LANDING PAGE - CHEF SES
+   Styles spécifiques à la page landing
+   Les styles réutilisables sont dans ui-theme.css
    ============================================ */
 
-:root {
-  --color-primary: #67C587;
-  --color-primary-dark: #52a871;
-  --color-primary-light: #85d5a5;
-  --color-white: #ffffff;
-  --color-gray-50: #fafafa;
-  --color-gray-100: #f5f5f5;
-  --color-gray-200: #e5e5e5;
-  --color-gray-300: #d4d4d4;
-  --color-gray-400: #a3a3a3;
-  --color-gray-500: #737373;
-  --color-gray-600: #525252;
-  --color-gray-700: #404040;
-  --color-gray-800: #262626;
-  --color-gray-900: #171717;
-  
-  --font-poppins: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  
-  --transition-fast: 150ms ease;
-  --transition-normal: 300ms ease;
-  --transition-slow: 500ms ease;
-}
-
-/* Reset & Base */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  font-family: var(--font-poppins);
-  color: var(--color-gray-900);
-  background: var(--color-white);
-  line-height: 1.6;
-  overflow-x: hidden;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
+/* Import du thème UI réutilisable */
+@import url('./ui-theme.css');
 
 /* ============================================
-   NAVIGATION
-   ============================================ */
-
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  transition: all var(--transition-normal);
-}
-
-.navbar.scrolled {
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.navbar-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0.5rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.navbar-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--color-primary);
-  text-decoration: none;
-}
-
-.brand-icon {
-  font-size: 1.7rem;
-}
-
-.brand-name {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.navbar-links {
-  display: flex;
-  align-items: center;
-  gap: 1.2rem;
-  flex-wrap: wrap;
-}
-
-.nav-link {
-  color: var(--color-gray-700);
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.85rem;
-  transition: color var(--transition-fast);
-  position: relative;
-  white-space: nowrap;
-}
-
-.nav-link:hover {
-  color: var(--color-primary);
-}
-
-.nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: -5px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: var(--color-primary);
-  transition: width var(--transition-normal);
-}
-
-.nav-link:hover::after {
-  width: 100%;
-}
-
-.nav-link-button {
-  background: var(--color-primary);
-  color: var(--color-white) !important;
-  padding: 0.4rem 1.2rem;
-  border-radius: 8px;
-  transition: all var(--transition-normal);
-  font-size: 0.9rem;
-}
-
-.nav-link-button::after {
-  display: none;
-}
-
-.nav-link-button:hover {
-  background: var(--color-primary-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(103, 197, 135, 0.3);
-}
-
-/* ============================================
-   HERO SECTION
+   HERO SECTION (Spécifique à landing)
    ============================================ */
 
 .hero-section {
@@ -455,25 +306,7 @@ body {
   background: var(--color-white);
 }
 
-.section-title {
-  font-size: 2rem;
-  font-weight: 600;
-  text-align: center;
-  margin-bottom: 0.8rem;
-  color: var(--color-gray-900);
-  letter-spacing: -0.3px;
-}
-
-.section-subtitle {
-  font-size: 1rem;
-  text-align: center;
-  color: var(--color-gray-600);
-  margin-bottom: 3rem;
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
-  line-height: 1.6;
-}
+/* Section titles sont dans ui-theme.css */
 
 .features-grid {
   display: grid;
@@ -631,44 +464,22 @@ body {
   color: var(--color-gray-600);
 }
 
-/* Stats Section */
+/* ============================================
+   STATS SECTION (Spécifique à landing)
+   ============================================ */
+
 .stats-section {
   padding: 4rem 0;
   background: var(--color-gray-50);
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
+/* Les styles de base pour stat-card sont dans ui-theme.css */
 .stat-card-animated {
   text-align: center;
   padding: 2rem 1rem;
   background: var(--color-white);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-gray-200);
-}
-
-.stat-icon {
-  font-size: 2rem;
-  margin-bottom: 0.8rem;
-}
-
-.stat-number {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--color-gray-900);
-  margin-bottom: 0.5rem;
-}
-
-.stat-label {
-  font-size: 0.85rem;
-  color: var(--color-gray-600);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 /* CTA Section */
