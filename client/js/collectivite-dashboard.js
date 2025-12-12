@@ -364,9 +364,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <h3>Ajouter un article au stock</h3>
                     <button class="close-modal" onclick="this.closest('.modal-overlay').remove()">&times;</button>
                 </div>
-                <div class="modal-tabs">
-                    <button class="tab-btn active" data-tab="manual">Saisie manuelle</button>
-                    <button class="tab-btn" data-tab="ocr">Scanner OCR</button>
+                <div class="modal-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e5e5;">
+                    <button class="tab-btn active" data-tab="manual" style="flex: 1; padding: 0.75rem 1rem; border: none; background: transparent; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
+                        <i class="fas fa-keyboard"></i> Saisie manuelle
+                    </button>
+                    <button class="tab-btn" data-tab="ocr" style="flex: 1; padding: 0.75rem 1rem; border: none; background: transparent; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
+                        <i class="fas fa-camera"></i> Scanner OCR
+                    </button>
                 </div>
                 <form id="add-stock-form">
                     <!-- Onglet Saisie manuelle -->
@@ -553,23 +557,59 @@ document.addEventListener('DOMContentLoaded', async () => {
         const tabButtons = modal.querySelectorAll('.tab-btn');
         const tabContents = modal.querySelectorAll('.tab-content');
         
+        // Styles pour les onglets actifs
+        const activeStyle = {
+            background: '#007bff',
+            color: '#fff',
+            borderBottom: '3px solid #0056b3'
+        };
+        
+        const inactiveStyle = {
+            background: 'transparent',
+            color: '#333',
+            borderBottom: '3px solid transparent'
+        };
+        
+        // Appliquer les styles initiaux
+        tabButtons.forEach((btn, index) => {
+            if (index === 0) {
+                Object.assign(btn.style, activeStyle);
+            } else {
+                Object.assign(btn.style, inactiveStyle);
+            }
+        });
+        
         tabButtons.forEach(button => {
             button.addEventListener('click', () => {
                 // Retirer la classe active de tous les boutons et contenus
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    Object.assign(btn.style, inactiveStyle);
+                });
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    content.style.display = 'none';
+                });
                 
                 // Ajouter la classe active au bouton cliqué
                 button.classList.add('active');
+                Object.assign(button.style, activeStyle);
                 
                 // Afficher le contenu correspondant
                 const targetTab = button.dataset.tab;
                 const targetContent = modal.querySelector(`#${targetTab}-tab`);
                 if (targetContent) {
                     targetContent.classList.add('active');
+                    targetContent.style.display = 'block';
                 }
             });
         });
+        
+        // Afficher le premier onglet par défaut
+        const firstTab = modal.querySelector('#manual-tab');
+        if (firstTab) {
+            firstTab.style.display = 'block';
+        }
     }
     
     // Initialisation de l'OCR
