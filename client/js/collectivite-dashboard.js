@@ -364,11 +364,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <h3>Ajouter un article au stock</h3>
                     <button class="close-modal" onclick="this.closest('.modal-overlay').remove()">&times;</button>
                 </div>
-                <div class="modal-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e5e5;">
-                    <button class="tab-btn active" data-tab="manual" style="flex: 1; padding: 0.75rem 1rem; border: none; background: transparent; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
+                <div class="modal-tabs" style="display: flex !important; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e5e5; width: 100%;">
+                    <button class="tab-btn active" data-tab="manual" style="flex: 1; padding: 0.75rem 1rem; border: none; background: #007bff; color: #fff; cursor: pointer; border-bottom: 3px solid #0056b3; transition: all 0.3s; font-weight: 500;">
                         <i class="fas fa-keyboard"></i> Saisie manuelle
                     </button>
-                    <button class="tab-btn" data-tab="ocr" style="flex: 1; padding: 0.75rem 1rem; border: none; background: transparent; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
+                    <button class="tab-btn" data-tab="ocr" style="flex: 1; padding: 0.75rem 1rem; border: none; background: transparent; color: #495057; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; font-weight: 500;">
                         <i class="fas fa-camera"></i> Scanner OCR
                     </button>
                 </div>
