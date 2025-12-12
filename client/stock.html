@@ -8,6 +8,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chef SES - Gestion des Stocks</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f5f5; color: #2c3e50; margin: 0; padding: 0;}
     header { background: #2c3e50; color: #fff; padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center;}
@@ -185,8 +186,40 @@
           <input type="hidden" id="item-id" />
           <div class="form-group" style="position:relative;">
             <label for="item-name">Nom de l'ingrédient *</label>
-            <input type="text" id="item-name" class="form-control" required autocomplete="off">
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <input type="text" id="item-name" class="form-control" required autocomplete="off" style="flex: 1;">
+              <button type="button" id="ocr-btn" style="padding: 10px 15px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; white-space: nowrap;" title="Scanner avec OCR">
+                <i class="fas fa-camera"></i> OCR
+              </button>
+            </div>
             <div class="autocomplete-list" id="modal-autocomplete"></div>
+            <input type="file" id="ocr-image-upload" accept="image/*" style="display: none;">
+          </div>
+          
+          <!-- Zone OCR (cachée par défaut) -->
+          <div id="ocr-section" style="display: none; margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; border: 2px dashed #ced4da;">
+            <div style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem;">
+              <button type="button" id="ocr-upload-btn" style="padding: 0.6rem 1.2rem; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                <i class="fas fa-upload"></i> Choisir une image
+              </button>
+              <button type="button" id="ocr-camera-btn" style="padding: 0.6rem 1.2rem; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                <i class="fas fa-camera"></i> Prendre une photo
+              </button>
+            </div>
+            <div id="ocr-preview" style="text-align: center; margin-bottom: 1rem; display: none;">
+              <img id="ocr-preview-img" style="max-width: 100%; max-height: 200px; border-radius: 6px; border: 2px solid #ced4da;">
+            </div>
+            <div id="ocr-loading" style="display: none; text-align: center; color: #3498db; margin-bottom: 1rem;">
+              <i class="fas fa-spinner fa-spin"></i> Traitement OCR en cours...
+            </div>
+            <div id="ocr-results" style="display: none;">
+              <div id="ocr-detected-items" style="padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #ced4da; max-height: 200px; overflow-y: auto; margin-bottom: 0.5rem;">
+                <!-- Les items détectés seront affichés ici -->
+              </div>
+              <button type="button" id="ocr-use-data-btn" style="width: 100%; padding: 0.6rem; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: none;">
+                <i class="fas fa-check"></i> Utiliser ces données
+              </button>
+            </div>
           </div>
           <div class="form-group">
             <label for="item-category">Catégorie *</label>

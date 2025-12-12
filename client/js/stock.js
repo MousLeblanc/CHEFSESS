@@ -612,5 +612,225 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     initModalAutocomplete();
+    initOCR();
     refreshTable();
 });
+
+// ========== GESTION OCR ==========
+function initOCR() {
+  const ocrBtn = document.getElementById('ocr-btn');
+  const uploadBtn = document.getElementById('ocr-upload-btn');
+  const cameraBtn = document.getElementById('ocr-camera-btn');
+  const fileInput = document.getElementById('ocr-image-upload');
+  const ocrSection = document.getElementById('ocr-section');
+  const preview = document.getElementById('ocr-preview');
+  const previewImg = document.getElementById('ocr-preview-img');
+  const loading = document.getElementById('ocr-loading');
+  const results = document.getElementById('ocr-results');
+  const detectedItems = document.getElementById('ocr-detected-items');
+  const useDataBtn = document.getElementById('ocr-use-data-btn');
+  
+  if (!ocrBtn) return;
+  
+  // Afficher/masquer la section OCR
+  ocrBtn.addEventListener('click', () => {
+    ocrSection.style.display = ocrSection.style.display === 'none' ? 'block' : 'none';
+  });
+  
+  // Upload fichier
+  if (uploadBtn && fileInput) {
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) handleOCRImage(file);
+    });
+  }
+  
+  // Caméra
+  if (cameraBtn) {
+    cameraBtn.addEventListener('click', () => {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then(stream => {
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.play();
+            
+            const captureModal = document.createElement('div');
+            captureModal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20000;';
+            captureModal.innerHTML = `
+              <video id="capture-video" autoplay style="max-width: 90%; max-height: 70%; border-radius: 8px;"></video>
+              <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                <button id="capture-btn" style="padding: 1rem 2rem; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer;">
+                  <i class="fas fa-camera"></i> Capturer
+                </button>
+                <button id="cancel-capture-btn" style="padding: 1rem 2rem; background: #e74c3c; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer;">
+                  Annuler
+                </button>
+              </div>
+            `;
+            document.body.appendChild(captureModal);
+            
+            const captureVideo = captureModal.querySelector('#capture-video');
+            captureVideo.srcObject = stream;
+            
+            captureModal.querySelector('#capture-btn')?.addEventListener('click', () => {
+              const canvas = document.createElement('canvas');
+              canvas.width = captureVideo.videoWidth;
+              canvas.height = captureVideo.videoHeight;
+              canvas.getContext('2d').drawImage(captureVideo, 0, 0);
+              
+              canvas.toBlob((blob) => {
+                stream.getTracks().forEach(track => track.stop());
+                captureModal.remove();
+                handleOCRImage(blob);
+              });
+            });
+            
+            captureModal.querySelector('#cancel-capture-btn')?.addEventListener('click', () => {
+              stream.getTracks().forEach(track => track.stop());
+              captureModal.remove();
+            });
+          })
+          .catch(err => {
+            console.error('Erreur caméra:', err);
+            showToast('Impossible d\'accéder à la caméra', 'error');
+          });
+      } else {
+        showToast('Votre navigateur ne supporte pas l\'accès à la caméra', 'error');
+      }
+    });
+  }
+  
+  let ocrDetectedItems = [];
+  
+  async function handleOCRImage(file) {
+    // Afficher la prévisualisation
+    if (previewImg && preview) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImg.src = e.target.result;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    // Masquer les résultats précédents
+    if (results) results.style.display = 'none';
+    if (loading) loading.style.display = 'block';
+    
+    try {
+      // Envoyer l'image au serveur pour OCR
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+      const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+
+      const response = await fetchFn('/api/stock/ocr', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error('Erreur lors du traitement OCR');
+      }
+      
+      const data = await response.json();
+      if (loading) loading.style.display = 'none';
+      
+      if (data.items && data.items.length > 0) {
+        // Stocker les items pour utilisation
+        ocrDetectedItems = data.items;
+        
+        // Afficher les items détectés
+        if (detectedItems) {
+          detectedItems.innerHTML = data.items.map((item, index) => `
+            <div style="padding: 0.75rem; margin-bottom: 0.5rem; background: #f8f9fa; border-radius: 6px; border-left: 3px solid #27ae60;">
+              <strong>${item.name}</strong><br>
+              <small>Quantité: ${item.quantity} ${item.unit} | Catégorie: ${item.category} ${item.price ? '| Prix: ' + item.price + '€' : ''}</small>
+            </div>
+          `).join('');
+        }
+        
+        if (useDataBtn) useDataBtn.style.display = 'block';
+        if (results) results.style.display = 'block';
+      } else {
+        if (detectedItems) {
+          detectedItems.innerHTML = '<p style="color: #e74c3c;">Aucun article détecté dans l\'image. Veuillez réessayer avec une image plus claire.</p>';
+        }
+        if (results) results.style.display = 'block';
+      }
+    } catch (error) {
+      console.error('Erreur OCR:', error);
+      if (loading) loading.style.display = 'none';
+      if (detectedItems) {
+        detectedItems.innerHTML = `<p style="color: #e74c3c;">Erreur lors du traitement: ${error.message}</p>`;
+      }
+      if (results) results.style.display = 'block';
+      showToast(`Erreur OCR: ${error.message}`, 'error');
+    }
+  }
+  
+  // Utiliser les données OCR
+  if (useDataBtn) {
+    useDataBtn.addEventListener('click', () => {
+      if (ocrDetectedItems && ocrDetectedItems.length > 0) {
+        // Préremplir avec le premier item
+        const firstItem = ocrDetectedItems[0];
+        if (elements.itemNameField) elements.itemNameField.value = firstItem.name || '';
+        
+        // Mapper la catégorie OCR vers les catégories du select
+        const categoryMap = {
+          'legumes': 'Légumes',
+          'viandes': 'Viandes et Poissons',
+          'poissons': 'Viandes et Poissons',
+          'produits-laitiers': 'Produits Laitiers',
+          'cereales': 'Céréales et Féculents',
+          'fruits': 'Fruits',
+          'epices': 'Épices et Condiments',
+          'boissons': 'Boissons',
+          'autres': 'Autres'
+        };
+        const mappedCategory = categoryMap[firstItem.category?.toLowerCase()] || firstItem.category || '';
+        if (elements.itemCategoryField && mappedCategory) {
+          // Vérifier si la catégorie existe dans le select
+          const categoryOptionExists = Array.from(elements.itemCategoryField.options).some(opt => opt.value === mappedCategory);
+          if (categoryOptionExists) {
+            elements.itemCategoryField.value = mappedCategory;
+          }
+        }
+        
+        if (elements.itemQuantityField) elements.itemQuantityField.value = firstItem.quantity || '';
+        
+        // Mapper l'unité OCR vers les unités du select
+        const unitMap = {
+          'kg': 'kg',
+          'g': 'g',
+          'l': 'L',
+          'ml': 'ml',
+          'cl': 'ml',
+          'pièce': 'unité',
+          'unité': 'unité',
+          'boîte': 'boite',
+          'conserve': 'conserve',
+          'sachet': 'sachet',
+          'bouteille': 'bouteille',
+          'botte': 'botte'
+        };
+        const mappedUnit = unitMap[firstItem.unit?.toLowerCase()] || firstItem.unit || '';
+        if (elements.itemUnitField && mappedUnit) {
+          const unitOptionExists = Array.from(elements.itemUnitField.options).some(opt => opt.value === mappedUnit);
+          if (unitOptionExists) {
+            elements.itemUnitField.value = mappedUnit;
+          }
+        }
+        
+        // Masquer la section OCR après utilisation
+        if (ocrSection) ocrSection.style.display = 'none';
+        showToast('Données OCR appliquées avec succès !', 'success');
+      }
+    });
+  }
+}
