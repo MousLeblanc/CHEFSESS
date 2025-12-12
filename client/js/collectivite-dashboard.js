@@ -628,72 +628,74 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 console.log('🔍 Traitement OCR en cours...');
                 
-                // Simulation de l'OCR (remplacer par une vraie API OCR)
-                const mockOcrResult = await simulateOCR(file);
-                
-                detectedText.innerHTML = `
-                    <div class="ocr-item">
-                        <strong>Nom détecté:</strong> ${mockOcrResult.name}
-                    </div>
-                    <div class="ocr-item">
-                        <strong>Catégorie suggérée:</strong> ${mockOcrResult.category}
-                    </div>
-                    <div class="ocr-item">
-                        <strong>Quantité:</strong> ${mockOcrResult.quantity}
-                    </div>
-                    <div class="ocr-item">
-                        <strong>Date d'expiration:</strong> ${mockOcrResult.expiration}
-                    </div>
-                `;
-                
+                // Afficher un indicateur de chargement
+                detectedText.innerHTML = '<div style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Traitement de l\'image en cours...</div>';
                 ocrResults.style.display = 'block';
+                useOcrDataBtn.style.display = 'none';
                 
-                // Utiliser les données OCR
-                useOcrDataBtn.addEventListener('click', () => {
-                    fillFormWithOcrData(mockOcrResult);
-                    // Passer à l'onglet manuel
-                    modal.querySelector('[data-tab="manual"]').click();
+                // Envoyer l'image au serveur pour OCR
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                // ✅ SÉCURITÉ : Utiliser fetchWithCSRF pour la protection CSRF
+                const fetchFn = (typeof window !== 'undefined' && window.fetchWithCSRF) ? window.fetchWithCSRF : fetch;
+                
+                const response = await fetchFn('/api/stock/ocr', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
                 });
+                
+                if (!response.ok) {
+                    throw new Error('Erreur lors du traitement OCR');
+                }
+                
+                const data = await response.json();
+                
+                if (data.items && data.items.length > 0) {
+                    // Afficher les items détectés
+                    detectedText.innerHTML = data.items.map((item, index) => `
+                        <div class="ocr-item" style="padding: 0.75rem; margin-bottom: 0.5rem; background: #f8f9fa; border-radius: 6px; border-left: 3px solid #27ae60;">
+                            <strong>${item.name}</strong><br>
+                            <small>Quantité: ${item.quantity} ${item.unit} | Catégorie: ${item.category} ${item.price ? '| Prix: ' + item.price + '€' : ''}</small>
+                        </div>
+                    `).join('');
+                    
+                    // Stocker les items pour utilisation
+                    modal.ocrDetectedItems = data.items;
+                    useOcrDataBtn.style.display = 'block';
+                } else {
+                    detectedText.innerHTML = '<div style="color: #e74c3c; padding: 1rem; text-align: center;">Aucun article détecté dans l\'image. Veuillez réessayer avec une image plus claire.</div>';
+                }
                 
             } catch (error) {
                 console.error('Erreur OCR:', error);
-                alert('Erreur lors du traitement de l\'image');
+                detectedText.innerHTML = `<div style="color: #e74c3c; padding: 1rem; text-align: center;">Erreur lors du traitement: ${error.message}</div>`;
             }
-        }
-        
-        // Simulation de l'OCR (remplacer par une vraie API)
-        async function simulateOCR(file) {
-            // Simulation d'un délai de traitement
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Données simulées basées sur le nom du fichier ou aléatoires
-            const mockResults = [
-                { name: 'Riz Basmati', category: 'cereales', quantity: '2', expiration: '2024-12-31' },
-                { name: 'Tomates', category: 'legumes', quantity: '1.5', expiration: '2024-11-15' },
-                { name: 'Poulet', category: 'viandes', quantity: '1', expiration: '2024-11-10' },
-                { name: 'Lait', category: 'produits-laitiers', quantity: '1', expiration: '2024-11-20' },
-                { name: 'Pommes', category: 'fruits', quantity: '2', expiration: '2024-11-25' }
-            ];
-            
-            return mockResults[Math.floor(Math.random() * mockResults.length)];
         }
         
         // Remplir le formulaire avec les données OCR
         function fillFormWithOcrData(data) {
-            document.getElementById('stock-name').value = data.name;
-            document.getElementById('stock-category').value = data.category;
-            document.getElementById('stock-quantity').value = data.quantity;
-            document.getElementById('stock-expiration').value = data.expiration;
-            
-            // Détecter l'unité automatiquement
-            if (data.quantity.includes('.')) {
-                document.getElementById('stock-unit').value = 'kg';
-            } else {
-                document.getElementById('stock-unit').value = 'pièces';
+            document.getElementById('stock-name').value = data.name || '';
+            document.getElementById('stock-category').value = data.category?.toLowerCase() || 'autres';
+            document.getElementById('stock-quantity').value = data.quantity || '';
+            document.getElementById('stock-unit').value = data.unit || 'g';
+            if (data.price) {
+                document.getElementById('stock-price').value = data.price;
             }
             
             console.log('📝 Formulaire rempli avec les données OCR');
         }
+        
+        // Utiliser les données OCR détectées
+        useOcrDataBtn.addEventListener('click', () => {
+            if (modal.ocrDetectedItems && modal.ocrDetectedItems.length > 0) {
+                // Utiliser le premier item détecté
+                fillFormWithOcrData(modal.ocrDetectedItems[0]);
+                // Passer à l'onglet manuel
+                modal.querySelector('[data-tab="manual"]').click();
+            }
+        });
     }
     
     // Ajout d'un article au stock
